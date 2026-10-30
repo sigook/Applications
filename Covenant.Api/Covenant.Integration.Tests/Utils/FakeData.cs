@@ -110,7 +110,8 @@ public static class FakeData
         Guid companyProfileId = default, Guid jobPositionRateId = default,
         Location location = default, DateTime startAt = default,
         int workersQuantity = 1,
-        DurationTerm durationTerm = DurationTerm.LongTerm)
+        DurationTerm durationTerm = DurationTerm.LongTerm,
+        decimal? workerRate = 15M, decimal? agencyRate = 20M)
     {
         bool ownsAgency = agencyId == default;
         agencyId = ownsAgency ? Guid.NewGuid() : agencyId;
@@ -132,8 +133,8 @@ public static class FakeData
         jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
         location ??= FakeLocation();
         startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-        var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, workersQuantity: workersQuantity,
-            durationTerm: durationTerm).Value;
+        var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, workerRate: workerRate,
+            agencyRate: agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         if (companyProfile is not null) request.CompanyProfile = companyProfile;
         if (rate is not null) request.JobPositionRate = rate;
         return request;

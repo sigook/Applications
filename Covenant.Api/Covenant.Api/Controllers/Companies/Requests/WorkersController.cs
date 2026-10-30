@@ -6,6 +6,7 @@ using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Companies;
 using Covenant.Core.BL.Interfaces.Requests;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -19,7 +20,8 @@ namespace Covenant.Api.Controllers.Companies.Requests;
 public class WorkersController(
     ICompanyService companyService,
     IRequestService requestService,
-    IRequestRepository requestRepository) : ControllerBase
+    IRequestRepository requestRepository,
+    IValidator<FinishAssignmentModel> finishValidator) : ControllerBase
 {
     public const string RouteName = "api/company/requests/{requestId}/workers";
 
@@ -68,6 +70,22 @@ public class WorkersController(
     public async Task<ActionResult> Reject([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CommentsModel model)
     {
         var result = await requestService.RejectWorker(requestId, workerProfileId, model);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Ends the assignment of a booked worker in the specified request.</summary>
+    /// <param name="requestId">Request identifier.</param>
+    /// <param name="workerProfileId">Worker profile identifier.</param>
+    /// <param name="model">Last day worked, reason, comments and whether the worker is notified.</param>
+    [HttpPut("{workerProfileId}/Finish")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult> Finish([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] FinishAssignmentModel model)
+    {
+        var validation = await finishValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+        var result = await requestService.FinishWorker(requestId, workerProfileId, model);
         if (result) return Ok();
         return BadRequest(ModelState.AddErrors(result.Errors));
     }

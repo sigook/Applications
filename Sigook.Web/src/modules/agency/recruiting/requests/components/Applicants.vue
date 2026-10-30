@@ -170,6 +170,7 @@ import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
 defineProps<{ request?: AgencyRequestDetail | null }>();
+const emit = defineEmits<{ (e: 'changed'): void }>();
 
 const route = useRoute();
 const router = useRouter();
@@ -257,6 +258,7 @@ function onCreatedAtSelected() {
 
 function reloadApplicants() {
   grid.value?.reload();
+  emit('changed');
 }
 
 function addApplicant(model: CreateRequestApplicantModel) {
@@ -330,6 +332,7 @@ function addRunner(type: RunnerType) {
     .then(() => {
       isLoading.value = false;
       showAlertSuccess('Runner added');
+      emit('changed');
     })
     .catch((error) => {
       isLoading.value = false;

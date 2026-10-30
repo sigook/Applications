@@ -15,3 +15,7 @@ export function downloadFile(response: Blob, name: string): void {
 export function downloadPDF(response: Blob, name: string): void {
   triggerDownload(response, `${name}.pdf`);
 }
+
+export function openFileUrl(url: string): void {
+  window.open(url, '_blank', 'noopener');
+}

@@ -43,16 +43,31 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         return locations;
     }
 
-    public Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter)
+    public Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId) =>
+        GetJobPositions(cpjpr => cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted);
+
+    public async Task<PaginatedList<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter)
     {
         Expression<Func<CompanyProfileJobPositionRate, bool>> predicate = cpjpr =>
             cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted;
-        return GetJobPositions(predicate.AndSearch(filter.Role, cpjpr => cpjpr.JobPosition));
+        var query = SelectJobPositions(predicate.AndSearch(filter.Role, cpjpr => cpjpr.JobPosition));
+        return await ApplySortJobPositions(query, filter).ThenBy(c => c.Id).ToPaginatedList(filter);
     }
 
-    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression)
-    {
-        var query = Context.CompanyProfileJobPositionRates.Where(expression)
+    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression) =>
+        await SelectJobPositions(expression).OrderBy(c => c.JobPosition).ToListAsync();
+
+    private static IOrderedQueryable<CompanyProfileJobPositionRateModel> ApplySortJobPositions(IQueryable<CompanyProfileJobPositionRateModel> query, GetJobPositionsFilter filter) =>
+        filter.SortBy switch
+        {
+            GetJobPositionsSortBy.AgencyRate => query.AddOrderBy(filter, c => c.Rate),
+            GetJobPositionsSortBy.WorkerRate => query.AddOrderBy(filter, c => c.WorkerRate),
+            GetJobPositionsSortBy.CreatedAt => query.AddOrderBy(filter, c => c.CreatedAt),
+            _ => query.AddOrderBy(filter, c => c.JobPosition)
+        };
+
+    private IQueryable<CompanyProfileJobPositionRateModel> SelectJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression) =>
+        Context.CompanyProfileJobPositionRates.Where(expression)
             .Select(s => new CompanyProfileJobPositionRateModel
             {
                 Id = s.Id,
@@ -92,11 +107,18 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                     Comments = s.Shift.Comments
                 }
             });
-        var result = await query.OrderBy(c => c.JobPosition).ToListAsync();
-        return result;
-    }
 
     public async Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id) => await Context.CompanyProfileJobPositionRates.FirstOrDefaultAsync(cpj => cpj.Id == id);
+
+    public Task<bool> JobPositionExists(Guid companyProfileId, string jobPosition, decimal rate, decimal workerRate, Guid? excludeId = null)
+    {
+        var name = (jobPosition ?? string.Empty).Trim().ToLower();
+        return Context.CompanyProfileJobPositionRates.AnyAsync(c =>
+            c.CompanyProfileId == companyProfileId && !c.IsDeleted &&
+            (excludeId == null || c.Id != excludeId) &&
+            c.Rate == rate && c.WorkerRate == workerRate &&
+            c.JobPosition.Trim().ToLower() == name);
+    }
 
     public Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id) =>
         Context.CompanyProfileJobPositionRates.Where(c => c.Id == id)

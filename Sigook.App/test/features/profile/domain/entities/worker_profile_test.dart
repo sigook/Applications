@@ -42,4 +42,26 @@ void main() {
       expect(profile.missingRequirements, isEmpty);
     });
   });
+
+  group('WorkerProfile country', () {
+    test('location in the USA marks the worker as USA', () {
+      final model = WorkerProfileModel.fromJson({
+        'id': 'worker-001',
+        'location': {
+          'city': {
+            'province': {
+              'country': {'code': 'USA'},
+            },
+          },
+        },
+      });
+
+      expect(model.toEntity().isUsa, isTrue);
+    });
+
+    test('worker without a location is not USA', () {
+      const profile = WorkerProfile(id: 'worker-001');
+      expect(profile.isUsa, isFalse);
+    });
+  });
 }

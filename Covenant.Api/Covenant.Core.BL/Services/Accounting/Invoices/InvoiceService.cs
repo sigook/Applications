@@ -6,6 +6,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Adapters;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Interfaces;
+using Covenant.Common.Models.Accounting.Invoices.Companies;
 using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Notifications;
@@ -51,10 +52,12 @@ public class InvoiceService(
     IOptions<TeamsWebhookConfiguration> teamsOptions,
     IInvoiceDocumentAdapter invoiceDocumentAdapter,
     IValidator<ChangeInvoiceStatusModel> changeStatusValidator,
+    IValidator<UpdateInvoicePaidAtModel> updatePaidAtValidator,
     ILogger<InvoiceService> logger) : IInvoiceService
 {
     private const string InvoiceEmailTemplate = "/Views/Billing/Invoice/InvoiceEmail.cshtml";
     private const int MaxInvoiceNumbersInNotification = 20;
+    private static readonly TimeSpan PdfUrlLifetime = TimeSpan.FromHours(1);
 
     private readonly TeamsWebhookConfiguration teamsConfiguration = teamsOptions.Value;
 
@@ -64,6 +67,14 @@ public class InvoiceService(
     {
         var result = await invoiceRepository.GetInvoicesForAgency(currentUserService.GetAgencyIds(), filter);
         SetDueDays(result.Detail.Items);
+        SetPdfUrls(result.Detail.Items);
+        return result;
+    }
+
+    public async Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter)
+    {
+        var result = await invoiceRepository.GetInvoicesForCompany(currentUserService.GetCompanyId(), filter);
+        SetPdfUrls(result.Items);
         return result;
     }
 
@@ -116,6 +127,15 @@ public class InvoiceService(
         foreach (var invoice in invoices) invoice.SetDueDays(today);
     }
 
+    private void SetPdfUrls(IEnumerable<InvoiceListModel> invoices)
+    {
+        var expiresOn = timeProvider.GetUtcNow().Add(PdfUrlLifetime);
+        foreach (var invoice in invoices.Where(i => i.PdfGeneratedAt.HasValue))
+        {
+            invoice.PdfUrl = invoicesContainer.GetReadUrl(invoice.Id.ToInvoiceBlobName(), $"Invoice {invoice.InvoiceNumber}.pdf", expiresOn);
+        }
+    }
+
     public async Task<Result<InvoicePreviewModel>> PreviewInvoice(CreateInvoiceModel model)
     {
         var result = await BuildInvoice(currentUserService.GetAgencyIds(), model);
@@ -166,15 +186,35 @@ public class InvoiceService(
         return Result.Ok();
     }
 
-    public async Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId)
+    public async Task<Result> UpdateInvoicePaidAt(Guid invoiceId, UpdateInvoicePaidAtModel model)
+    {
+        var validationResult = await updatePaidAtValidator.ValidateAsync(model);
+        if (!validationResult.IsValid) return validationResult.ToResultFailure();
+
+        var invoice = await invoiceRepository.GetInvoiceForAgency(currentUserService.GetAgencyIds(), invoiceId);
+        if (invoice is null) return Result.Fail("Invoice not found");
+
+        var result = invoice.UpdatePaidAt(model.PaidAt!.Value, currentUserService.GetUserId(), timeProvider.GetLocalNow().DateTime);
+        if (!result) return result;
+        await invoiceRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
+    public Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId) => GetInvoicePdf(invoiceId, regenerate: false);
+
+    public Task<InvoiceDocument> RegenerateInvoicePdf(Guid invoiceId) => GetInvoicePdf(invoiceId, regenerate: true);
+
+    private async Task<InvoiceDocument> GetInvoicePdf(Guid invoiceId, bool regenerate)
     {
         var model = await invoiceRepository.GetInvoiceSummaryById(invoiceId);
         if (model is null) return null;
         (await strategies.ResolveForAgency(model.AgencyId)).Decorate(model);
 
         string fileName = invoiceId.ToInvoiceBlobName();
-        byte[] content = await invoicesContainer.Download(fileName);
-        if (content is not { Length: > 0 }) content = await UploadInvoicePdf(model);
+        if (regenerate) await invoicesContainer.DeleteFileIfExists(fileName);
+        byte[] content = regenerate ? null : await invoicesContainer.Download(fileName);
+        if (content is { Length: > 0 }) await invoiceRepository.MarkPdfGenerated(invoiceId, timeProvider.GetLocalNow().DateTime);
+        else content = await UploadInvoicePdf(model);
         if (content is not { Length: > 0 }) return null;
 
         return new InvoiceDocument(content, fileName, model);
@@ -294,6 +334,7 @@ public class InvoiceService(
             {
                 {nameof(model.InvoiceNumber), model.InvoiceNumber.Trim()}
             });
+            await invoiceRepository.MarkPdfGenerated(model.Id, timeProvider.GetLocalNow().DateTime);
         }
         catch (Exception e)
         {

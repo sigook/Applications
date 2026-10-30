@@ -40,16 +40,40 @@ public class WorkerRequest
 
     public string RejectComments { get; private set; }
 
+    public DateTime? FinishedAt { get; private set; }
+    public string FinishedBy { get; private set; }
+    public WorkerRequestFinishReason? FinishReason { get; private set; }
+    public string FinishComments { get; private set; }
+
     public bool IsRejected => WorkerRequestStatus == WorkerRequestStatus.Rejected;
     public bool IsBooked => WorkerRequestStatus == WorkerRequestStatus.Booked;
+    public bool IsFinished => WorkerRequestStatus == WorkerRequestStatus.Finished;
 
-    public DateTime? LimitDateToAddTimeSheet => RejectedAt?.AddMonths(1);
+    public DateTime? LimitDateToAddTimeSheet => (FinishedAt ?? RejectedAt)?.AddMonths(1);
 
     public Result Book()
     {
         WorkerRequestStatus = WorkerRequestStatus.Booked;
         RejectComments = null;
         RejectedAt = null;
+        RejectedBy = null;
+        FinishedAt = null;
+        FinishedBy = null;
+        FinishReason = null;
+        FinishComments = null;
+        return Result.Ok();
+    }
+
+    public Result Finish(DateTime lastDay, WorkerRequestFinishReason reason, string comments = null, string finishedBy = null)
+    {
+        if (!IsBooked) return Result.Fail("Only booked workers can finish an assignment");
+        if (StartWorking.HasValue && lastDay.Date < StartWorking.Value.Date)
+            return Result.Fail("The last day can't be before the start date");
+        WorkerRequestStatus = WorkerRequestStatus.Finished;
+        FinishedAt = lastDay;
+        FinishedBy = finishedBy;
+        FinishReason = reason;
+        FinishComments = comments;
         return Result.Ok();
     }
 

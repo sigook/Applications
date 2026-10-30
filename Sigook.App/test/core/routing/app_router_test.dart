@@ -8,7 +8,7 @@ void main() {
         AppRoutes.jobs,
         AppRoutes.jobDetails,
         AppRoutes.profile,
-        AppRoutes.history,
+        AppRoutes.activity,
       ]) {
         expect(AppRouter.requiresSession(location), true, reason: location);
       }

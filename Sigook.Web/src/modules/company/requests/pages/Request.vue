@@ -45,9 +45,6 @@
         <b-tab-item label="Workers" value="Workers">
           <Workers v-if="visitedTabs.includes('Workers')" :request="request" />
         </b-tab-item>
-        <b-tab-item label="Punch Card" value="PunchCard" v-if="!isDirectHiringComputed">
-          <PunchCard v-if="visitedTabs.includes('PunchCard')" :request="request" />
-        </b-tab-item>
       </b-tabs>
     </RequestHeader>
 
@@ -94,7 +91,6 @@ import { useRequestStatus } from '@/shared/request-detail/useRequestStatus';
 import CancelList from '@/shared/request-detail/CompanyCancelList.vue';
 import RequestAnotherWorker from '@/modules/company/requests/components/DialogRequestWorker.vue';
 import Workers from '@/modules/company/requests/components/CompanyRequestWorkers.vue';
-import PunchCard from '@/modules/company/requests/components/CompanyRequestPunchCard.vue';
 import AgencyShift from '@/shared/request-detail/AgencyShiftDetail.vue';
 import RequestHeader from '@/shared/request-detail/RequestHeader.vue';
 import RequestDetailTab from '@/shared/request-detail/RequestDetailTab.vue';

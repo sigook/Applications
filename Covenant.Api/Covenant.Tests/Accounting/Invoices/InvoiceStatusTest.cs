@@ -49,6 +49,33 @@ public class InvoiceStatusTest
     }
 
     [Fact]
+    public void Invoice_UpdatePaidAt_ChangesPaymentDateAndAudit()
+    {
+        var invoice = new Invoice();
+        invoice.ChangeStatus(InvoiceStatus.Paid, Actor, Now);
+        var otherActor = Guid.NewGuid();
+        var paidOn = new DateTime(2026, 9, 30, 4, 0, 0, DateTimeKind.Utc);
+        var later = Now.AddDays(1);
+
+        var result = invoice.UpdatePaidAt(paidOn, otherActor, later);
+
+        Assert.True(result);
+        Assert.Equal(paidOn, invoice.PaidAt);
+        Assert.Equal(later, invoice.UpdatedAt);
+        Assert.Equal(otherActor, invoice.UpdatedBy);
+    }
+
+    [Fact]
+    public void Invoice_UpdatePaidAt_FailsWhenNotPaid()
+    {
+        var invoice = new Invoice();
+        var result = invoice.UpdatePaidAt(Now, Actor, Now);
+        Assert.False(result);
+        Assert.Null(invoice.PaidAt);
+        Assert.Null(invoice.UpdatedAt);
+    }
+
+    [Fact]
     public void Invoice_ChangeStatus_ToPaid_KeepsGivenPaymentDate()
     {
         var invoice = new Invoice();

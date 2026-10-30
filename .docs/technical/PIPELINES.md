@@ -49,7 +49,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
 
-The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `covenant-api-pipeline.yml` trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline.
+The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `covenant-api-pipeline.yml` trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline.
 
 ---
 

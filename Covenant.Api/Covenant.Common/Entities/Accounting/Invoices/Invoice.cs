@@ -28,6 +28,7 @@ public class Invoice
     public DateTime? UpdatedAt { get; private set; }
     public Guid? UpdatedBy { get; private set; }
     public User UpdatedByUser { get; private set; }
+    public DateTime? PdfGeneratedAt { get; internal set; }
 
     public decimal TotalOvertime => InvoiceTotals.Sum(c => c.Overtime);
     public decimal TotalRegular => InvoiceTotals.Sum(c => c.Regular);
@@ -37,6 +38,15 @@ public class Invoice
         if (Status == next) return Result.Fail($"Invoice is already {next}");
         Status = next;
         PaidAt = next == InvoiceStatus.Paid ? paidAt ?? now : null;
+        UpdatedAt = now;
+        UpdatedBy = changedBy;
+        return Result.Ok();
+    }
+
+    public Result UpdatePaidAt(DateTime paidAt, Guid changedBy, DateTime now)
+    {
+        if (Status != InvoiceStatus.Paid) return Result.Fail("Only paid invoices have a payment date");
+        PaidAt = paidAt;
         UpdatedAt = now;
         UpdatedBy = changedBy;
         return Result.Ok();

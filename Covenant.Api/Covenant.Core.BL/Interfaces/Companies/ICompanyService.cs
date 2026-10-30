@@ -31,10 +31,10 @@ public interface ICompanyService
     Task<Result<NoteModel>> CreateNote(Guid profileId, NoteModel model);
     Task<Result> UpdateNote(Guid profileId, Guid noteId, NoteModel model);
     Task<Result> DeleteNote(Guid profileId, Guid noteId);
-    Task<Result> PetitionJobPosition(Guid profileId, JobPositionPetitionModel model);
+    Task<Result<Guid>> CreateJobPositionWithoutRates(Guid profileId, CreateJobPositionModel model);
+    Task<Result<Guid>> CompanyCreateJobPosition(CreateJobPositionModel model);
     Task<Result> RequestNewJobPosition(ContactDto contact);
     Task<Result> RequestNewWorker(Guid requestId, CommentsModel model);
-    Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter);
     Task<InvoiceSummaryModel> GetCompanyInvoice(Guid invoiceId);
     Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null);
     Task<Result> CreateContact(CompanyProfileContactPersonModel model);

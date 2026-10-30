@@ -39,6 +39,18 @@ public class JobPositionsController(ICompanyService companyService) : Controller
         return Ok(model);
     }
 
+    /// <summary>Creates a job position without rates for the current company; an agency admin sets the rates later.</summary>
+    /// <param name="model">Job position name, description and shift.</param>
+    [HttpPost]
+    [ProducesResponseType(typeof(CompanyProfileJobPositionRateModel), StatusCodes.Status201Created)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Post([FromBody] CreateJobPositionModel model)
+    {
+        var result = await companyService.CompanyCreateJobPosition(model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return CreatedAtAction(nameof(Get), new { id = result.Value }, new CompanyProfileJobPositionRateModel { Id = result.Value });
+    }
+
     /// <summary>Requests the creation of a new job position via a contact submission.</summary>
     /// <param name="contact">Contact details for the job position request.</param>
     [HttpPost("request-new-position")]

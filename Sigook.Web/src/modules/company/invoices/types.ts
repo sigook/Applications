@@ -13,4 +13,5 @@ export interface CompanyInvoiceListItem {
   createdAt: string;
   weekEnding: string | null;
   totalNet: number;
+  pdfUrl: string | null;
 }

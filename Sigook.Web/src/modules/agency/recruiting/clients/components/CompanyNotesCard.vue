@@ -20,8 +20,8 @@
     </b-button>
     <span v-if="createdAt" class="detail-muted company-notes-created">Created {{ createdAt }}</span>
 
-    <b-modal has-modal-card v-model="showModal" width="500px" :destroy-on-hide="true" @close="load">
-      <div class="modal-card" style="width: 100%">
+    <b-modal has-modal-card v-model="showModal" width="640px" :destroy-on-hide="true" @close="load">
+      <div class="modal-card" style="width: 640px">
         <section class="modal-card-body">
           <modal-notes :user-id="profileId" :show-close="false" :on-get="getNotes" :on-create="createNote"
             :on-update="updateNote" :on-delete="deleteNote" @onUpdateNote="load" />

@@ -32,7 +32,8 @@ namespace Covenant.Tests.Utils
             Guid companyProfileId = default, Guid jobPositionRateId = default,
             Location location = default, DateTime startAt = default,
             DateTime? finishAt = null, int workersQuantity = 1,
-            DurationTerm durationTerm = DurationTerm.LongTerm)
+            DurationTerm durationTerm = DurationTerm.LongTerm,
+            decimal? workerRate = 15M, decimal? agencyRate = 20M)
         {
             agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
             companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
@@ -40,7 +41,7 @@ namespace Covenant.Tests.Utils
             location = location ?? FakeLocation();
             startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
             return Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
-                workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
+                workerRate, agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         }
     }
 }

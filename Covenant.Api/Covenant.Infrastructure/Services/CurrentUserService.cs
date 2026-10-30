@@ -22,6 +22,8 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
 
     public bool IsAgencyStaff() => httpContextAccessor.HttpContext.User.IsAgencyStaff();
 
+    public bool IsCompanyUser() => httpContextAccessor.HttpContext.User.IsCompanyUser();
+
     public bool IsSales() => httpContextAccessor.HttpContext.User.IsSales();
 
     public bool IsSuperAdmin() => httpContextAccessor.HttpContext.User.IsSuperAdmin();

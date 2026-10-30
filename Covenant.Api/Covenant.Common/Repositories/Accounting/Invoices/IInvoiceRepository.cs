@@ -14,6 +14,7 @@ public interface IInvoiceRepository : IBaseRepository
     Task<InvoiceListModelWithTotals> GetInvoicesForAgency(IEnumerable<Guid> agencyIds, GetInvoicesFilter filter);
     Task<Invoice> GetInvoiceForAgency(IEnumerable<Guid> agencyIds, Guid invoiceId);
     Task<IReadOnlyList<string>> MarkPendingInvoicesAsDue(DateTime today);
+    Task MarkPdfGenerated(Guid invoiceId, DateTime generatedAt);
     Task<(Guid InvoiceId, string InvoiceNumber)> DeleteInvoiceAndReportsSubcontractor(Guid invoiceId);
     Task<InvoiceSummaryModel> GetInvoiceSummaryById(Guid id);
     Task<InvoiceSummaryModel> GetInvoiceSummaryForCompany(Guid companyId, Guid id);

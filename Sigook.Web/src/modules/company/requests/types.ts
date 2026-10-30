@@ -60,7 +60,8 @@ export interface CompanyRequestDetail {
 export type CreateCompanyRequestModel = Pick<CreateAgencyRequestModel,
   'jobTitle' | 'workersQuantity' | 'workerSalary' | 'description' | 'requirements' | 'responsibilities' |
   'incentive' | 'incentiveDescription' | 'startAt' | 'finishAt' | 'durationBreak' | 'breakIsPaid' | 'isAsap' |
-  'durationTerm' | 'employmentType' | 'punchCardOptionEnabled' | 'shift' | 'jobPositionRateId' | 'locationId'>;
+  'durationTerm' | 'employmentType' | 'punchCardOptionEnabled' | 'shift' | 'jobPositionRateId' | 'locationId' |
+  'companyUserIds'>;
 
 export interface CompanyRequestFormSettings {
   durationBreak: Date;
@@ -98,6 +99,7 @@ export interface CompanyRequestWorker {
   workerId: string;
   workerProfileId: string;
   name: string;
+  email?: string;
   workerRequestStatus: number;
   status?: string;
   profileImage: string;
@@ -106,6 +108,7 @@ export interface CompanyRequestWorker {
   totalHoursWorker: number;
   startWorking: string | null;
   rejectedAt: string | null;
+  finishedAt?: string | null;
 }
 
 export interface ClockInModel {

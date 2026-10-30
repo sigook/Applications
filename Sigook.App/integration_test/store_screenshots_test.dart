@@ -25,7 +25,8 @@ void main() {
     if (Platform.isAndroid) await binding.convertFlutterSurfaceToImage();
 
     final welcome = find.text('Sign In');
-    final jobsPage = find.byTooltip('Filter jobs');
+    final jobsPage = find.text('Jobs');
+    final filterJobs = find.byTooltip('Filter jobs');
     await _waitFor(tester, _any([welcome, jobsPage]));
 
     if (welcome.evaluate().isNotEmpty) {
@@ -44,15 +45,35 @@ void main() {
       await _waitFor(tester, jobsPage, timeout: const Duration(seconds: 60));
     }
 
+    final openPunchCard = find.text('OPEN PUNCH CARD');
     await _waitFor(
       tester,
-      _any([find.byType(JobCard), find.text('No jobs available')]),
+      _any([
+        find.byType(JobCard),
+        find.text('No jobs available'),
+        openPunchCard,
+      ]),
       timeout: const Duration(seconds: 60),
     );
     await _pump(tester, const Duration(seconds: 5));
     await _shoot(binding, tester, '02_jobs');
 
-    if (find.byType(JobCard).evaluate().isNotEmpty) {
+    if (openPunchCard.evaluate().isNotEmpty) {
+      await tester.tap(openPunchCard.first);
+      await _waitFor(tester, find.text('DETAIL'));
+      await _pump(tester, const Duration(seconds: 2));
+      await _waitUntilGone(tester, find.text('CHECKING...'));
+      await _pump(tester, const Duration(seconds: 2));
+      await _shoot(binding, tester, '04_punch_card');
+
+      await tester.tap(find.text('DETAIL'));
+      await _pump(tester, const Duration(seconds: 4));
+      await _shoot(binding, tester, '03_job_detail');
+
+      await tester.tap(find.byTooltip('Back'));
+      await _waitFor(tester, jobsPage);
+      await _pump(tester, const Duration(seconds: 1));
+    } else if (find.byType(JobCard).evaluate().isNotEmpty) {
       await tester.tap(find.byType(JobCard).first);
       await _waitFor(tester, find.text('DETAIL'));
       await _pump(tester, const Duration(seconds: 4));
@@ -69,34 +90,24 @@ void main() {
       await _pump(tester, const Duration(seconds: 1));
     }
 
-    await tester.tap(jobsPage);
-    await _waitFor(tester, find.text('Filter & Sort'));
-    await _pump(tester, const Duration(milliseconds: 800));
-    await _shoot(binding, tester, '05_filter');
-    await tester.tap(find.text('Apply Filters'));
-    await _pump(tester, const Duration(seconds: 1));
+    if (filterJobs.evaluate().isNotEmpty) {
+      await tester.tap(filterJobs);
+      await _waitFor(tester, find.text('Filter & Sort'));
+      await _pump(tester, const Duration(milliseconds: 800));
+      await _shoot(binding, tester, '05_filter');
+      await tester.tap(find.text('Apply Filters'));
+      await _pump(tester, const Duration(seconds: 1));
+    }
 
-    await tester.tap(find.byTooltip('Menu'));
-    await _waitFor(tester, find.text('Logout'));
-    await _pump(tester, const Duration(seconds: 2));
-    await _shoot(binding, tester, '06_menu');
-
-    await tester.tap(find.text('History'));
-    await _waitFor(tester, find.byTooltip('Back'));
+    await tester.tap(find.text('Activity'));
+    await _waitFor(tester, find.text('TIMESHEETS'));
     await _pump(tester, const Duration(seconds: 5));
-    await _shoot(binding, tester, '07_history');
+    await _shoot(binding, tester, '06_activity');
 
-    await tester.tap(find.byTooltip('Menu'));
-    await _waitFor(tester, find.text('Logout'));
-    await _pump(tester, const Duration(milliseconds: 800));
-    await tester.tap(
-      find
-          .descendant(of: find.byType(Drawer), matching: find.byType(InkWell))
-          .first,
-    );
-    await _waitFor(tester, find.byTooltip('Back'));
+    await tester.tap(find.text('Profile'));
+    await _waitFor(tester, find.text('PERSONAL'));
     await _pump(tester, const Duration(seconds: 5));
-    await _shoot(binding, tester, '08_profile');
+    await _shoot(binding, tester, '07_profile');
   });
 }
 

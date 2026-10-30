@@ -230,6 +230,8 @@ class WorkerProfile extends Equatable {
 
   bool get isCanada => countryCode?.toUpperCase() == 'CA';
 
+  bool get isUsa => countryCode?.toUpperCase() == 'USA';
+
   bool get hasMissingRequirements => missingRequirements.isNotEmpty;
 
   String get fullName {

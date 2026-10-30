@@ -1,4 +1,4 @@
-import type { RequestStatus } from '@/shared/constants/enums';
+import type { RequestStatus, WorkerRequestFinishReason } from '@/shared/constants/enums';
 import type { ComplianceDocumentTarget, RequestApplicantStatus } from '@/shared/request-detail/requestApplicant';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 import type { LocationDetailModel, PaginatedList } from '@/shared/types/common';
@@ -8,6 +8,8 @@ import type { RequestComplianceItem, RequestShiftModel } from '@/shared/request-
 
 // Filter for the paginated list of agency requests.
 // Mirrors backend GetRequestForAgencyFilter (Covenant.Common.Models.Requests).
+export const PENDING_REVIEW_QUERY = 'pending-review';
+
 export interface AgencyRequestFilter {
   pageIndex?: number;
   pageSize?: number;
@@ -212,8 +214,6 @@ export interface AgencyRequestWorkerFilter {
   sortBy?: number;
   numberId?: number | string;
   name?: string;
-  phone?: string;
-  socialInsurance?: string;
   externalId?: string;
   createdBy?: string;
   rejectedBy?: string;
@@ -234,10 +234,15 @@ export interface AgencyRequestWorker {
   workerId: string;
   workerProfileId: string;
   name: string;
+  email?: string;
   workerRequestStatus: number;
   rejectComments?: string;
   rejectedBy?: string;
   rejectedAt?: string | null;
+  finishedAt?: string | null;
+  finishedBy?: string;
+  finishReason?: WorkerRequestFinishReason | null;
+  finishComments?: string;
   profileImage?: string;
   address?: string;
   approvedToWork: boolean;

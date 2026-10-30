@@ -4,5 +4,6 @@ public enum RequestStatus
 {
     Open = 1,
     Filled = 3,
-    Cancelled = 4
+    Cancelled = 4,
+    PendingReview = 5
 }

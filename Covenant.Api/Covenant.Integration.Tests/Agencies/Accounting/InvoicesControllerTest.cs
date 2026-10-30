@@ -55,6 +55,9 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     private Task<HttpResponseMessage> ChangeStatus(Guid invoiceId, InvoiceStatus status, DateTime? paidAt = null) =>
         _client.PutAsJsonAsync($"{InvoicesController.RouteName}/{invoiceId}/status", new ChangeInvoiceStatusModel { Status = status, PaidAt = paidAt });
 
+    private Task<HttpResponseMessage> UpdatePaidAt(Guid invoiceId, DateTime? paidAt) =>
+        _client.PutAsJsonAsync($"{InvoicesController.RouteName}/{invoiceId}/paid-at", new UpdateInvoicePaidAtModel { PaidAt = paidAt });
+
     private Task<InvoiceListModelWithTotals> GetInvoices(string query = "") =>
         _client.GetFromJsonAsync<InvoiceListModelWithTotals>($"{InvoicesController.RouteName}{query}");
 
@@ -134,6 +137,30 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     }
 
     [Fact]
+    public async Task UpdatePaidAt_OnlyChangesPaidInvoices()
+    {
+        Invoice invoice = await PostInvoice(_data.ForUpdatePaidAt);
+        var paidOn = DateTime.Today.AddDays(-10);
+
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, (await UpdatePaidAt(invoice.Id, paidOn)).StatusCode);
+
+        (await ChangeStatus(invoice.Id, InvoiceStatus.Paid)).EnsureSuccessStatusCode();
+        (await UpdatePaidAt(invoice.Id, paidOn)).EnsureSuccessStatusCode();
+
+        var updated = await Context.Invoices.AsNoTracking().SingleAsync(i => i.Id == invoice.Id);
+        Assert.Equal(InvoiceStatus.Paid, updated.Status);
+        Assert.Equal(paidOn, updated.PaidAt);
+        Assert.Equal(Data.CurrentUser.Id, updated.UpdatedBy);
+    }
+
+    [Fact]
+    public async Task UpdatePaidAt_WithoutDate_ReturnsBadRequest()
+    {
+        HttpResponseMessage response = await UpdatePaidAt(Guid.NewGuid(), null);
+        Assert.Equal(System.Net.HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task ChangeStatus_ToDue_ReturnsBadRequest()
     {
         HttpResponseMessage response = await ChangeStatus(Guid.NewGuid(), InvoiceStatus.Due);
@@ -203,6 +230,21 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         Assert.NotNull(pending);
         Assert.All(pending.Detail.Items, item => Assert.Equal(InvoiceStatus.Pending, item.Status));
         Assert.DoesNotContain(pending.Detail.Items, i => i.Id == invoice.Id);
+    }
+
+    [Fact]
+    public async Task GetInvoices_FiltersByDueDateAndPaymentDate()
+    {
+        Invoice invoice = await PostInvoice(_data.ForDateFilters, new DateTime(2019, 03, 01));
+        (await ChangeStatus(invoice.Id, InvoiceStatus.Paid, new DateTime(2019, 04, 10))).EnsureSuccessStatusCode();
+
+        async Task<bool> Contains(string query) =>
+            (await GetInvoices(query))!.Detail.Items.Any(i => i.Id == invoice.Id);
+
+        Assert.True(await Contains("?dueDateFrom=2019-03-30&dueDateTo=2019-04-01"));
+        Assert.False(await Contains("?dueDateFrom=2019-04-01&dueDateTo=2019-04-02"));
+        Assert.True(await Contains("?paidAtFrom=2019-04-09&paidAtTo=2019-04-11"));
+        Assert.False(await Contains("?paidAtFrom=2019-04-11&paidAtTo=2019-04-12"));
     }
 
     [Fact]
@@ -323,6 +365,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         public BillableCompany ForPost { get; }
         public BillableCompany ForPaid { get; }
         public BillableCompany ForPaidAt { get; }
+        public BillableCompany ForUpdatePaidAt { get; }
         public BillableCompany ForSameStatus { get; }
         public BillableCompany ForList { get; }
         public BillableCompany ForDelete { get; }
@@ -330,8 +373,9 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
         public BillableCompany ForNotOverdue { get; }
         public BillableCompany ForExport { get; }
         public BillableCompany ForPaymentsReport { get; }
+        public BillableCompany ForDateFilters { get; }
 
-        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForSameStatus, ForList, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport];
+        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForUpdatePaidAt, ForSameStatus, ForList, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport, ForDateFilters];
 
         public Data()
         {
@@ -341,6 +385,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             ForPost = new BillableCompany(Agency, toronto, "post");
             ForPaid = new BillableCompany(Agency, toronto, "paid");
             ForPaidAt = new BillableCompany(Agency, toronto, "paid-at");
+            ForUpdatePaidAt = new BillableCompany(Agency, toronto, "update-paid-at");
             ForSameStatus = new BillableCompany(Agency, toronto, "same-status");
             ForList = new BillableCompany(Agency, toronto, "list");
             ForDelete = new BillableCompany(Agency, toronto, "delete");
@@ -348,6 +393,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             ForNotOverdue = new BillableCompany(Agency, toronto, "not-overdue");
             ForExport = new BillableCompany(Agency, toronto, "export");
             ForPaymentsReport = new BillableCompany(Agency, toronto, "payments-report");
+            ForDateFilters = new BillableCompany(Agency, toronto, "date-filters");
         }
 
         public void Seed(CovenantContext context)

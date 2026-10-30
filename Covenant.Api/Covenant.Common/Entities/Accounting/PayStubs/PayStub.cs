@@ -26,6 +26,7 @@ public class PayStub
     public decimal TotalDeductions { get; private set; }
     public decimal TotalPaid { get; internal set; }
     public DateTime CreatedAt { get; internal set; }
+    public DateTime? PdfGeneratedAt { get; internal set; }
     public List<PayStubItem> Items { get; private set; } = [];
     public List<PayStubWageDetail> WageDetails { get; private set; } = [];
     public List<PayStubPublicHoliday> Holidays { get; private set; } = [];

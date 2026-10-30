@@ -15,6 +15,7 @@ public interface IRequestService
     Task<Result<Guid>> DuplicateRequest(Guid sourceRequestId, RequestCreateModel model);
     Task<Result<Guid>> CompanyCreateRequest(RequestCreateModel model);
     Task<Result> UpdateRequest(Guid requestId, RequestCreateModel model);
+    Task<Result> ApproveRequest(Guid requestId, RequestCreateModel model);
     Task<Result> UpdateRequirements(Guid id, RequestUpdateRequirementsModel model);
     Task<Result> UpdateIsAsap(Guid id);
     Task<Result> UpdateIsAsapRequests(RequestsQuickUpdate requestsQuickUpdate);
@@ -23,6 +24,8 @@ public interface IRequestService
     Task<Result> BulkUpdateRecruiters(BulkRequestRecruiters model);
     Task<Result> ReduceWorkerQuantityByOne(Guid requestId);
     Task<Result> RejectWorker(Guid requestId, Guid workerProfileId, CommentsModel model);
+    Task<Result> FinishWorker(Guid requestId, Guid workerProfileId, FinishAssignmentModel model);
+    Task<Result> FinishAllWorkers(Guid requestId, FinishAssignmentModel model);
     Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId);
     Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
     Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);

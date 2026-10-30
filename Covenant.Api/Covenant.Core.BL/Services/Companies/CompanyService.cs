@@ -34,7 +34,6 @@ using CsvHelper.Configuration;
 using CsvHelper;
 using FluentValidation.Results;
 using FluentValidation;
-using Microsoft.Extensions.Configuration;
 using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Companies;
@@ -61,7 +60,6 @@ public class CompanyService : ICompanyService
     private readonly IUploadedFilesService uploadedFilesService;
     private readonly IDocumentService documentService;
     private readonly IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator;
-    private readonly IConfiguration configuration;
     public CompanyService(
         ICompanyRepository companyRepository,
         IUserRepository userRepository,
@@ -80,8 +78,7 @@ public class CompanyService : ICompanyService
         ICompanyAdapter companyAdapter,
         IUploadedFilesService uploadedFilesService,
         IDocumentService documentService,
-        IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator,
-        IConfiguration configuration)
+        IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator)
     {
         this.companyRepository = companyRepository;
         this.userRepository = userRepository;
@@ -101,7 +98,6 @@ public class CompanyService : ICompanyService
         this.uploadedFilesService = uploadedFilesService;
         this.documentService = documentService;
         this.paymentTermsValidator = paymentTermsValidator;
-        this.configuration = configuration;
     }
 
     public async Task<Result> UpdateContactInformation(Guid profileId, CompanyProfileDetailModel model)
@@ -263,24 +259,26 @@ public class CompanyService : ICompanyService
         return Result.Ok();
     }
 
-    public async Task<Result> PetitionJobPosition(Guid profileId, JobPositionPetitionModel model)
+    public async Task<Result<Guid>> CreateJobPositionWithoutRates(Guid profileId, CreateJobPositionModel model)
     {
-        var emailsString = configuration.GetValue<string>("EmailsPetitionNewJobPosition");
-        if (string.IsNullOrEmpty(emailsString)) return Result.Fail("Petition not available");
-        if (string.IsNullOrEmpty(model?.JobPosition)) return Result.Fail(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
-        var profile = await companyRepository.GetCompanyProfileDetail(cp => cp.Id == profileId);
-        if (profile is null) return Result.Fail("Invalid company");
-        var nickname = currentUserService.GetNickname();
-        var subject = $"Rol {model.JobPosition} requested by {nickname}";
-        foreach (var email in emailsString.Split(","))
-        {
-            await emailService.SendEmail(new EmailParams(email, subject,
-                $"Client:{profile.NumberId} {profile.FullName} <br/> {model.Message} <br/> Please notify {nickname} after create the role")
-            {
-                EmailSettingName = EmailSettingName.Notification
-            });
-        }
-        return Result.Ok();
+        var rJobPosition = CompanyProfileJobPositionRate.CompanyCreate(profileId, model.JobPosition,
+            model.Description, currentUserService.GetNickname());
+        if (!rJobPosition) return Result.Fail<Guid>(rJobPosition.Errors);
+        var jobPosition = rJobPosition.Value;
+        if (await companyRepository.JobPositionExists(profileId, jobPosition.JobPosition, jobPosition.Rate, jobPosition.WorkerRate))
+            return Result.Fail<Guid>(ApiResources.JobPositionAlreadyExists);
+        if (model.Shift != null) jobPosition.AddShift(model.Shift.ToShift());
+        await companyRepository.Create(jobPosition);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok(jobPosition.Id);
+    }
+
+    public async Task<Result<Guid>> CompanyCreateJobPosition(CreateJobPositionModel model)
+    {
+        var companyId = currentUserService.GetCompanyId();
+        var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.CompanyId == companyId);
+        if (companyProfile is null) return Result.Fail<Guid>("Invalid company");
+        return await CreateJobPositionWithoutRates(companyProfile.Id, model);
     }
 
     public async Task<Result> UpdateLogo(Guid profileId)
@@ -443,9 +441,6 @@ public class CompanyService : ICompanyService
         });
         return Result.Ok();
     }
-
-    public Task<PaginatedList<InvoiceListModel>> GetCompanyInvoices(GetCompanyInvoiceFilter filter) =>
-        invoiceRepository.GetInvoicesForCompany(currentUserService.GetCompanyId(), filter);
 
     public async Task<InvoiceSummaryModel> GetCompanyInvoice(Guid invoiceId)
     {

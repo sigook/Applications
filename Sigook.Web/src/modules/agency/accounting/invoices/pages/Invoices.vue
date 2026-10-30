@@ -30,9 +30,9 @@
         <b-table-column field="createdAt" label="Created At (From - To)" sortable searchable>
           <template v-slot:searchable>
             <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
-              :icon-right="createdAtDatesSelected.length > 0 ? 'close-circle' : ''" icon-right-clickable
-              @icon-right-click="onCreatedAtCleared" range v-model="createdAtDatesSelected"
-              @update:modelValue="onCreatedAtSelected" append-to-body>
+              :icon-right="dateRanges.createdAt.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onDateRangeCleared('createdAt')" range v-model="dateRanges.createdAt"
+              @update:modelValue="onDateRangeSelected('createdAt')" append-to-body>
             </b-datepicker>
           </template>
           <template v-slot="props">
@@ -63,12 +63,40 @@
             </b-select>
           </template>
           <template v-slot="props">
-            <b-tooltip :label="statusTooltip(props.row)" type="is-dark" position="is-top" multilined append-to-body>
+            <b-tooltip :label="statusTooltip(props.row)" :active="!!props.row.updatedByName" type="is-dark" position="is-top"
+              multilined append-to-body>
               <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status] }}</b-tag>
             </b-tooltip>
           </template>
         </b-table-column>
-        <b-table-column field="paidAt" label="Payment Date">
+        <b-table-column field="dueDate" label="Due Date (From - To)" searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="dateRanges.dueDate.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onDateRangeCleared('dueDate')" range v-model="dateRanges.dueDate"
+              @update:modelValue="onDateRangeSelected('dueDate')" append-to-body>
+            </b-datepicker>
+          </template>
+          <template v-slot="props">
+            <template v-if="props.row.status !== InvoiceStatus.Paid">
+              {{ dateMonth(props.row.dueDate) }}
+              <p class="is-size-7">
+                <span class="has-text-grey">Net {{ props.row.paymentTermDays }}</span>
+                <span v-if="props.row.dueDays > 0" class="has-text-danger has-text-weight-semibold">
+                  · {{ props.row.dueDays }} {{ props.row.dueDays === 1 ? 'day' : 'days' }} due
+                </span>
+              </p>
+            </template>
+          </template>
+        </b-table-column>
+        <b-table-column field="paidAt" label="Payment Date (From - To)" searchable>
+          <template v-slot:searchable>
+            <b-datepicker size="is-small" :mobile-native="false" placeholder="Search..."
+              :icon-right="dateRanges.paidAt.length > 0 ? 'close-circle' : ''" icon-right-clickable
+              @icon-right-click="onDateRangeCleared('paidAt')" range v-model="dateRanges.paidAt"
+              @update:modelValue="onDateRangeSelected('paidAt')" append-to-body>
+            </b-datepicker>
+          </template>
           <template v-slot="props">
             {{ dateMonth(props.row.paidAt ?? null) }}
           </template>
@@ -84,11 +112,18 @@
               <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
             </template>
             <b-dropdown-item aria-role="listitem" @click="onDownloadInvoicePdf(props.row)">Download</b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" @click="openSendEmailModal(props.row)">Send Email</b-dropdown-item>
-            <b-dropdown-item v-if="props.row.status === InvoiceStatus.Paid" aria-role="listitem"
-              @click="onMarkAsPending(props.row)">
-              Mark as Pending
+            <b-dropdown-item v-if="props.row.pdfUrl" aria-role="listitem" @click="onRegenerateInvoicePdf(props.row)">
+              Regenerate PDF
             </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" @click="openSendEmailModal(props.row)">Send Email</b-dropdown-item>
+            <template v-if="props.row.status === InvoiceStatus.Paid">
+              <b-dropdown-item aria-role="listitem" @click="openMarkPaidModal(props.row)">
+                Edit Payment Date
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="onMarkAsPending(props.row)">
+                Mark as Pending
+              </b-dropdown-item>
+            </template>
             <b-dropdown-item v-else aria-role="listitem" @click="openMarkPaidModal(props.row)">
               Mark as Paid
             </b-dropdown-item>
@@ -119,8 +154,8 @@
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
-import { downloadFile, downloadPDF } from '@/shared/utils/downloadFile';
-import { getAgencyInvoices, downloadInvoicePdf, downloadInvoicesPaymentsReport, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
+import { downloadFile, downloadPDF, openFileUrl } from '@/shared/utils/downloadFile';
+import { getAgencyInvoices, downloadInvoicePdf, regenerateInvoicePdf, downloadInvoicesPaymentsReport, changeInvoiceStatus } from '@/modules/agency/accounting/invoices/api';
 import { currency, dateMonth } from '@/shared/format';
 import { InvoiceStatus, INVOICE_STATUSES, INVOICE_STATUS_LABELS, invoiceStatusTagType } from '@/modules/agency/accounting/invoices/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
@@ -146,7 +181,6 @@ const sortMap = {
 const isLoading = ref(true);
 const totalItems = ref(0);
 const total = ref(0);
-const createdAtDatesSelected = ref<Date[]>([]);
 const serverParams = ref<AgencyInvoiceFilter>(agencyStore.agencyInvoiceFilter ?? {
   sortBy: 0,
   isDescending: true,
@@ -157,20 +191,37 @@ const currentInvoice = ref<AgencyInvoiceListItem | null>(null);
 const showSendEmailModal = ref(false);
 const showMarkPaidModal = ref(false);
 
-if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
-  createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
-  createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
+const dateRangeKeys = {
+  createdAt: ['createdAtFrom', 'createdAtTo'],
+  dueDate: ['dueDateFrom', 'dueDateTo'],
+  paidAt: ['paidAtFrom', 'paidAtTo'],
+} as const satisfies Record<string, readonly [keyof AgencyInvoiceFilter, keyof AgencyInvoiceFilter]>;
+type DateRangeKey = keyof typeof dateRangeKeys;
+
+function initialRange(key: DateRangeKey): Date[] {
+  const [fromKey, toKey] = dateRangeKeys[key];
+  const from = serverParams.value[fromKey];
+  const to = serverParams.value[toKey];
+  return from && to ? [new Date(from), new Date(to)] : [];
 }
 
-function onCreatedAtSelected() {
-  serverParams.value.createdAtFrom = createdAtDatesSelected.value[0]?.toISOString() ?? null;
-  serverParams.value.createdAtTo = createdAtDatesSelected.value[1]?.toISOString() ?? null;
+const dateRanges = ref<Record<DateRangeKey, Date[]>>({
+  createdAt: initialRange('createdAt'),
+  dueDate: initialRange('dueDate'),
+  paidAt: initialRange('paidAt'),
+});
+
+function onDateRangeSelected(key: DateRangeKey) {
+  const [fromKey, toKey] = dateRangeKeys[key];
+  const [from, to] = dateRanges.value[key];
+  serverParams.value[fromKey] = from?.toISOString() ?? null;
+  serverParams.value[toKey] = to?.toISOString() ?? null;
   grid.value?.search();
 }
 
-function onCreatedAtCleared() {
-  createdAtDatesSelected.value = [];
-  onCreatedAtSelected();
+function onDateRangeCleared(key: DateRangeKey) {
+  dateRanges.value[key] = [];
+  onDateRangeSelected(key);
 }
 
 function onStatusChange() {
@@ -178,12 +229,7 @@ function onStatusChange() {
 }
 
 function statusTooltip(invoice: AgencyInvoiceListItem): string {
-  const lines = [`Due Date: ${dateMonth(invoice.dueDate)} (Net ${invoice.paymentTermDays})`, `Due Days: ${invoice.dueDays}`];
-  if (invoice.updatedAt) {
-    const who = invoice.updatedByName ? `${invoice.updatedByName} · ` : '';
-    lines.push(`Updated: ${who}${dateMonth(invoice.updatedAt)}`);
-  }
-  return lines.join(' · ');
+  return `Updated: ${invoice.updatedByName} · ${dateMonth(invoice.updatedAt ?? null)}`;
 }
 
 async function onMarkAsPending(invoice: AgencyInvoiceListItem) {
@@ -227,11 +273,23 @@ function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<Agency
 }
 
 function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
+  if (invoice.pdfUrl) {
+    openFileUrl(invoice.pdfUrl);
+    return;
+  }
+  renderInvoicePdf(invoice, downloadInvoicePdf);
+}
+
+function onRegenerateInvoicePdf(invoice: AgencyInvoiceListItem) {
+  renderInvoicePdf(invoice, regenerateInvoicePdf);
+}
+
+function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
   isLoading.value = true;
-  downloadInvoicePdf(invoice.id)
+  render(invoice.id)
     .then((response) => {
-      isLoading.value = false;
       downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
+      grid.value?.reload();
     })
     .catch((error) => {
       isLoading.value = false;

@@ -5,7 +5,7 @@
         <b-icon icon="briefcase-outline"></b-icon>
       </span>
       <span class="job-card__title">{{ job.numberId }} · {{ job.jobTitle }}</span>
-      <span v-if="job.isAsap" class="job-card__asap">ASAP</span>
+      <span v-if="job.isAsap" class="job-card__asap request-flag request-flag--asap">Asap</span>
     </div>
 
     <div class="job-card__row">
@@ -130,12 +130,6 @@ const pay = computed(() =>
 
 .job-card__asap {
   flex-shrink: 0;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: $danger;
-  font-size: 0.65rem;
-  font-weight: 700;
-  color: $white;
 }
 
 .job-card__row {

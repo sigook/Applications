@@ -2,7 +2,7 @@ import { api } from '@/app/security/apiService';
 import { buildMultipartFormData } from '@/shared/utils/multipart';
 import type { PaginatedList } from '@/shared/types/common';
 import type { ApplicantComplianceItem, ChangeRequestApplicantStatusModel, CompleteApplicantComplianceItemModel, AgencyRequestFilter, AgencyRequestListItem, AgencyRequestDetail, AgencyRequestLookup, CancelRequestPayload, BulkCancelRequestsPayload, BulkCancelRequestsResult, BulkUpdateRecruitersPayload, AgencyRequestWorkerFilter, AgencyRequestWorker, BookWorkerModel, RejectWorkerModel, AgencyRequestApplicantFilter, AgencyRequestApplicant, ApplicantSearchResult, CreateRequestApplicantModel, AgencyRequestSkillModel, SetRequestJobBoardItem, AgencyRequestsPagedResponse } from '@/modules/agency/recruiting/requests/types';
-import type { CreateAgencyRequestModel, RequestShiftModel } from '@/shared/request-detail/types';
+import type { CreateAgencyRequestModel, FinishAssignmentModel, RequestShiftModel } from '@/shared/request-detail/types';
 import type { UpdateApplicantCommentsPayload, AgencyApplicantsFilter, AgencyApplicantsPagedResponse, ChangeApplicantsStatusModel, ChangeApplicantsStatusResult } from '@/modules/agency/recruiting/applicants/types';
 
 const requestsUrl = '/api/agency/recruiting/requests';
@@ -41,6 +41,10 @@ export function getAgencyRequest(id: string): Promise<AgencyRequestDetail> {
 
 export function updateAgencyRequest(requestId: string, model: CreateAgencyRequestModel): Promise<AgencyRequestDetail> {
   return api.put<AgencyRequestDetail>(`${requestsUrl}/${requestId}`, model);
+}
+
+export function approveAgencyRequest(requestId: string, model: CreateAgencyRequestModel): Promise<void> {
+  return api.put(`${requestsUrl}/${requestId}/Approve`, model);
 }
 
 export function cancelAgencyRequest(id: string, payload: CancelRequestPayload): Promise<void> {
@@ -97,6 +101,14 @@ export function bookAgencyRequestWorker(requestId: string, workerProfileId: stri
 
 export function updateAgencyRequestWorkerStartDate(requestId: string, id: string, model: BookWorkerModel): Promise<void> {
   return api.put(`${requestsUrl}/${requestId}/Workers/${id}`, model);
+}
+
+export function finishAgencyRequestWorker(requestId: string, workerProfileId: string, model: FinishAssignmentModel): Promise<void> {
+  return api.put(`${requestsUrl}/${requestId}/Workers/${workerProfileId}/Finish`, model);
+}
+
+export function finishAllAgencyRequestWorkers(requestId: string, model: FinishAssignmentModel): Promise<void> {
+  return api.put(`${requestsUrl}/${requestId}/Workers/Finish`, model);
 }
 
 export function rejectAgencyRequestWorker(requestId: string, workerProfileId: string, model: RejectWorkerModel): Promise<void> {

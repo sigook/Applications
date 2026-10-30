@@ -12,10 +12,15 @@ namespace Covenant.Common.Models.Requests
         public Guid Id { get; set; }
         public Guid WorkerId { get; set; }
         public string Name { get; set; }
+        public string Email { get; set; }
         public WorkerRequestStatus WorkerRequestStatus { get; set; }
         public string RejectComments { get; set; }
         public string RejectedBy { get; set; }
         public DateTime? RejectedAt { get; set; }
+        public DateTime? FinishedAt { get; set; }
+        public string FinishedBy { get; set; }
+        public WorkerRequestFinishReason? FinishReason { get; set; }
+        public string FinishComments { get; set; }
         public string ProfileImage { get; set; }
         public string Address { get; set; }
         public bool ApprovedToWork { get; set; }

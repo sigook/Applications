@@ -19,84 +19,92 @@
         OPEN MY PROFILE
       </b-button>
     </b-message>
-    <h2 class="fz1 pt-3">Jobs</h2>
-    <div>
-      <SigookGrid ref="grid" :fetch="getJobs" v-model:params="serverParams" :sort-map="sortMap"
-        @update:loading="(value) => isGridLoading = value" @click="onRowClick">
-        <template v-if="isTouch" #actions>
-          <div class="filter-trigger">
-            <b-button icon-left="filter-variant" @click="showFilters = true" />
-            <span v-if="activeFilterCount > 0" class="filter-count-badge">{{ activeFilterCount }}</span>
-          </div>
-        </template>
-        <template #mobile-card="{ row }">
-          <JobCard :job="row" clickable @click="onRowClick(row)" />
-        </template>
-        <b-table-column field="numberId" label="Request ID" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.numberId }}
-            <p v-if="props.row.isAsap" class="asap">{{ "Asap" }}</p>
-          </template>
-        </b-table-column>
-        <b-table-column field="jobTitle" label="Position" searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.jobTitle" placeholder="Search..." icon="magnify" size="is-small"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.jobTitle }}
-          </template>
-        </b-table-column>
-        <b-table-column field="location" label="Location" v-slot="props">
-          {{ props.row.location }}
-          <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
-        </b-table-column>
-        <b-table-column field="startAt">
-          <template v-slot:header>
-            <p class="has-text-weight-semibold">Duration</p>
-            <p class="has-text-weight-semibold">(Start - End)</p>
-          </template>
-          <template v-slot="props">
-            {{ dateMonth(props.row.startAt) }}
-            <span v-if="props.row.durationTerm !== appGlobals.$longTerm">
-              - {{ dateMonth(props.row.finishAt) }}
-            </span>
-            <span
-              v-if="(props.row.status === appGlobals.$statusFilled || props.row.status === appGlobals.$statusCancelled) && props.row.durationTerm === appGlobals.$longTerm">
-              - {{ dateMonth(props.row.finishAt) }}
-            </span>
-            <i class="fz-2 block">{{ splitCapital(props.row.durationTerm) }}</i>
-          </template>
-        </b-table-column>
-        <b-table-column field="workerRate" label="Rate / Salary" sortable v-slot="props">
-          {{ currency(props.row.workerRate) }}
-        </b-table-column>
-        <b-table-column field="status" v-slot="props">
-          <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized has-text-weight-bold has-text-centered"
-            :class="props.row.status">
-            {{ props.row.status }}
-          </div>
-        </b-table-column>
-      </SigookGrid>
-      <MobileFiltersPanel v-if="isTouch" v-model="showFilters" :active-count="activeFilterCount"
-        @apply="onSearch" @clear="clearFilters">
-        <b-field label="Request ID">
-          <b-input v-model="serverParams.numberId"></b-input>
-        </b-field>
-        <b-field label="Position">
-          <b-input v-model="serverParams.jobTitle"></b-input>
-        </b-field>
-        <b-field label="Sort by">
-          <b-select v-model="sortKey" expanded>
-            <option v-for="option in WorkerRequestSortOptions" :key="option.key" :value="option.key">
-              {{ option.label }}
-            </option>
-          </b-select>
-        </b-field>
-      </MobileFiltersPanel>
+    <div v-if="activeAssignments.length" class="columns is-multiline pt-3">
+      <div v-for="assignment in activeAssignments" :key="assignment.id" class="column is-half-desktop is-full-touch">
+        <CurrentJobCard :assignment="assignment" />
+      </div>
     </div>
+    <template v-else-if="!isActiveLoading">
+      <h2 class="fz1 pt-3">Jobs</h2>
+      <div>
+        <SigookGrid ref="grid" :fetch="getJobs" v-model:params="serverParams" :sort-map="sortMap"
+          @update:loading="(value) => isGridLoading = value" @click="onRowClick">
+          <template v-if="isTouch" #actions>
+            <b-badge class="is-flex-shrink-0" :value="activeFilterCount || undefined" type="is-info" rounded>
+              <b-button icon-left="filter-variant" @click="showFilters = true" />
+            </b-badge>
+          </template>
+          <template #mobile-card="{ row }">
+            <JobCard :job="row" clickable @click="onRowClick(row)" />
+          </template>
+          <b-table-column field="numberId" label="Request ID" sortable searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+            </template>
+            <template v-slot="props">
+              {{ props.row.numberId }}
+              <div v-if="props.row.isAsap" class="request-flags">
+                <span class="request-flag request-flag--asap">Asap</span>
+              </div>
+            </template>
+          </b-table-column>
+          <b-table-column field="jobTitle" label="Position" searchable>
+            <template v-slot:searchable>
+              <b-input v-model="serverParams.jobTitle" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+            </template>
+            <template v-slot="props">
+              {{ props.row.jobTitle }}
+            </template>
+          </b-table-column>
+          <b-table-column field="location" label="Location" v-slot="props">
+            {{ props.row.location }}
+            <span v-if="props.row.entrance"> - {{ props.row.entrance }}</span>
+          </b-table-column>
+          <b-table-column field="startAt">
+            <template v-slot:header>
+              <p class="has-text-weight-semibold">Duration</p>
+              <p class="has-text-weight-semibold">(Start - End)</p>
+            </template>
+            <template v-slot="props">
+              {{ dateMonth(props.row.startAt) }}
+              <span v-if="props.row.durationTerm !== appGlobals.$longTerm">
+                - {{ dateMonth(props.row.finishAt) }}
+              </span>
+              <span
+                v-if="(props.row.status === appGlobals.$statusFilled || props.row.status === appGlobals.$statusCancelled) && props.row.durationTerm === appGlobals.$longTerm">
+                - {{ dateMonth(props.row.finishAt) }}
+              </span>
+              <i class="fz-2 block">{{ splitCapital(props.row.durationTerm) }}</i>
+            </template>
+          </b-table-column>
+          <b-table-column field="workerRate" label="Rate / Salary" sortable v-slot="props">
+            {{ currency(props.row.workerRate) }}
+          </b-table-column>
+          <b-table-column field="status" v-slot="props">
+            <div v-if="props.row.status && props.row.status !== 'None'" class="capitailized has-text-weight-bold has-text-centered"
+              :class="props.row.status">
+              {{ props.row.status }}
+            </div>
+          </b-table-column>
+        </SigookGrid>
+        <MobileFiltersPanel v-if="isTouch" v-model="showFilters" :active-count="activeFilterCount"
+          @apply="onSearch" @clear="clearFilters">
+          <b-field label="Request ID">
+            <b-input v-model="serverParams.numberId"></b-input>
+          </b-field>
+          <b-field label="Position">
+            <b-input v-model="serverParams.jobTitle"></b-input>
+          </b-field>
+          <b-field label="Sort by">
+            <b-select v-model="sortKey" expanded>
+              <option v-for="option in WorkerRequestSortOptions" :key="option.key" :value="option.key">
+                {{ option.label }}
+              </option>
+            </b-select>
+          </b-field>
+        </MobileFiltersPanel>
+      </div>
+    </template>
   </div>
 </template>
 
@@ -116,6 +124,9 @@ import { appGlobals } from '@/app/globals';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import MobileFiltersPanel from '@/shared/ui/MobileFiltersPanel.vue';
 import JobCard from '@/modules/worker/requests/components/JobCard.vue';
+import CurrentJobCard from '@/modules/worker/requests/components/CurrentJobCard.vue';
+import { getWorkerHistory } from '@/modules/worker/activity/api';
+import type { WorkerAssignmentListItem } from '@/modules/worker/activity/types';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
 
 const router = useRouter();
@@ -155,7 +166,15 @@ const activeFilterCount = computed(() =>
 const currentUser = computed(() => workerStore.workerProfile);
 const isProfileLoaded = computed(() => !!currentUser.value.id);
 const isProfileLoading = ref(!isProfileLoaded.value);
-const isLoading = computed(() => isGridLoading.value || isProfileLoading.value);
+const isActiveLoading = ref(true);
+const activeAssignments = ref<WorkerAssignmentListItem[]>([]);
+const isLoading = computed(() =>
+  isProfileLoading.value || isActiveLoading.value || (!activeAssignments.value.length && isGridLoading.value));
+
+getWorkerHistory({ status: 'Active', pageIndex: 1, pageSize: 10 })
+  .then((page) => { activeAssignments.value = page.items; })
+  .catch((error) => showAlertError(error))
+  .finally(() => { isActiveLoading.value = false; });
 const missingRequirements = computed(() => currentUser.value.missingRequirements ?? []);
 
 if (isProfileLoading.value) {

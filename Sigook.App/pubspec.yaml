@@ -96,11 +96,13 @@ dependencies:
   image_cropper: ^12.0.0
   permission_handler: ^13.0.2
   geolocator: ^13.0.2
-  webview_flutter: ^4.13.0
   riverpod: ^3.4.3
   jwt_decoder: ^2.0.1
   package_info_plus: ^8.0.0
   url_launcher: ^6.3.1
+  open_filex: ^5.0.0
+  pdfx: ^2.11.0
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

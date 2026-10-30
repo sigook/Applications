@@ -1,6 +1,6 @@
 import { api } from '@/app/security/apiService';
 import type { PaginatedList } from '@/shared/types/common';
-import type { RequestShiftModel } from '@/shared/request-detail/types';
+import type { FinishAssignmentModel, RequestShiftModel } from '@/shared/request-detail/types';
 import type { CompanyRequestFilter, CompanyRequestListItem, CompanyRequestDetail, CompanyRequestWorkerFilter, CompanyRequestWorker, ClockInModel, ClockInResult, CommentsModel, CreateCompanyRequestModel } from '@/modules/company/requests/types';
 import type { TimeSheetListItem, TimeSheetModel } from '@/shared/punch-card/types';
 
@@ -36,6 +36,10 @@ export function getRequestWorkers(filter: CompanyRequestWorkerFilter): Promise<P
 
 export function rejectCompanyRequestWorker(requestId: string, workerProfileId: string, model: CommentsModel): Promise<void> {
   return api.put(`/api/company/requests/${requestId}/Workers/${workerProfileId}/Reject`, model);
+}
+
+export function finishCompanyRequestWorker(requestId: string, workerProfileId: string, model: FinishAssignmentModel): Promise<void> {
+  return api.put(`/api/company/requests/${requestId}/Workers/${workerProfileId}/Finish`, model);
 }
 
 export function requestAnotherWorker(requestId: string, comment: CommentsModel): Promise<void> {

@@ -143,6 +143,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<DateTime?>("PdfGeneratedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -399,6 +402,9 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<DateTime>("PaymentDate")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<DateTime?>("PdfGeneratedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Position")
@@ -2551,6 +2557,18 @@ namespace Covenant.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("CreatedBy")
+                        .HasColumnType("text");
+
+                    b.Property<string>("FinishComments")
+                        .HasColumnType("text");
+
+                    b.Property<int?>("FinishReason")
+                        .HasColumnType("integer");
+
+                    b.Property<DateTime?>("FinishedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("FinishedBy")
                         .HasColumnType("text");
 
                     b.Property<string>("RejectComments")

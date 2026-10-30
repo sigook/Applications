@@ -129,17 +129,10 @@
           </template>
         </b-table-column>
         <b-table-column field="notesCount" label="Notes" v-slot="props">
-          <div @click="onNote(props.row, true)">
-            <b-tag icon="note-text" rounded>
-              <label v-if="props.row.notesCount">{{ props.row.notesCount }}</label>
-            </b-tag>
-          </div>
-          <div v-if="props.row.showNotes" class="notes-tooltip">
-            <modal-notes :can-create="false" :user-id="props.row.id" :on-get="getCandidateNotesFn"
-              :on-create="addCandidateNoteFn" :on-delete="deleteCandidateNoteFn"
-              @onUpdateNote="(val) => onUpdateNote(props.row, val.size)" @close="onNote(props.row, false)">
-            </modal-notes>
-          </div>
+          <NotesPopover :can-create="false" :user-id="props.row.id" :notes-count="props.row.notesCount"
+            :on-get="getCandidateNotesFn" :on-create="addCandidateNoteFn" :on-delete="deleteCandidateNoteFn"
+            @update:count="(size) => props.row.notesCount = size">
+          </NotesPopover>
         </b-table-column>
         <b-table-column field="residencyStatus" label="Status" sortable searchable>
           <template v-slot:searchable>
@@ -211,7 +204,7 @@ import type {
   AgencyCandidateFilter,
   CandidatePhoneNumberModel,
   CandidateSkillModel,
-  CandidateRow,
+  Candidate,
 } from '@/modules/agency/recruiting/candidates/types';
 import type { GridHandle, PaginatedList, Source, TableColumnRef } from '@/shared/types/common';
 import {
@@ -240,7 +233,7 @@ import type { NotesFetchPayload, NotesCreatePayload, NotesDeletePayload } from '
 import CreateCandidate from '@/modules/agency/recruiting/candidates/components/CreateCandidate.vue';
 import DetailCandidate from '@/modules/agency/recruiting/candidates/components/DetailCandidate.vue';
 import ModalDocuments from '@/modules/agency/recruiting/candidates/components/ModalDocuments.vue';
-import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
+import NotesPopover from '@/modules/agency/shared/notes/NotesPopover.vue';
 import SkillsForm from '@/shared/ui/FormSkillAdd.vue';
 import CandidateRequest from '@/modules/agency/recruiting/candidates/components/ModalCandidateRequests.vue';
 import BulkData from '@/modules/agency/recruiting/candidates/components/BulkData.vue';
@@ -302,16 +295,16 @@ if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
 }
 
-function loadCandidates(params: AgencyCandidateFilter): Promise<PaginatedList<CandidateRow>> {
+function loadCandidates(params: AgencyCandidateFilter): Promise<PaginatedList<Candidate>> {
   agencyStore.updateAgencyCandidateFilter(params);
   return getAgencyCandidates(params)
     .then((response) => ({
       ...response,
-      items: response.items.map((c) => ({ ...c, showNotes: false, notesCount: c.notesCount || 0 })),
+      items: response.items.map((c) => ({ ...c, notesCount: c.notesCount || 0 })),
     }));
 }
 
-function onCellClick(row: CandidateRow, column: TableColumnRef) {
+function onCellClick(row: Candidate, column: TableColumnRef) {
   if (column.field === 'name' && row.hasDocuments) {
     showDocumentsCandidate(row.id);
   }
@@ -345,14 +338,6 @@ function onResumeOnlyChanged() {
 function showCandidateDetail(id: string) {
   detailId.value = id;
   showDetailCandidate.value = true;
-}
-
-function onNote(row: CandidateRow, status: boolean) {
-  row.showNotes = status;
-}
-
-function onUpdateNote(row: CandidateRow, size: number) {
-  row.notesCount = size;
 }
 
 function showDocumentsCandidate(id: string) {

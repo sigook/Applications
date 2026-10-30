@@ -341,6 +341,79 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         Assert.Contains($"The invitation must be sent it only once every {Request.DaysToWaitToResendInvitation} days.", error);
     }
 
+    [Fact]
+    public async Task PutApprove()
+    {
+        Request request = Data.FakeRequestPendingReview;
+        var model = ApproveModel();
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Approve", model);
+
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var entity = await context.Requests.AsNoTracking().SingleAsync(r => r.Id == request.Id);
+        Assert.Equal(RequestStatus.Open, entity.Status);
+        Assert.Equal(model.BillingTitle, entity.BillingTitle);
+        Assert.Equal(model.JobCosting, entity.JobCosting);
+        Assert.Equal(model.InternalRequirements, entity.InternalRequirements);
+        Assert.True(await context.RequestNotes.AnyAsync(n => n.RequestId == request.Id));
+    }
+
+    [Fact]
+    public async Task PutApproveFailsWhenRequestIsNotPendingReview()
+    {
+        Request request = Data.FakeRequestWithRecentInvitation;
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Approve", ApproveModel());
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        Assert.Equal(RequestStatus.Open, (await context.Requests.AsNoTracking().SingleAsync(r => r.Id == request.Id)).Status);
+    }
+
+    [Fact]
+    public async Task PutApproveReturnsNotFoundForUnknownRequest()
+    {
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{Guid.NewGuid()}/Approve", ApproveModel());
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PutCancelPendingReviewRequest()
+    {
+        Request request = Data.FakeRequestPendingReviewToCancel;
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{request.Id}/Cancel",
+            new RequestCancellationDetailModel { OtherCancellationReason = "Rejected by the agency" });
+
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        Assert.Equal(RequestStatus.Cancelled, (await context.Requests.AsNoTracking().SingleAsync(r => r.Id == request.Id)).Status);
+    }
+
+    [Fact]
+    public async Task SendInvitationFailsWhenRequestIsPendingReview()
+    {
+        var url = $"{RequestUri()}/{Data.FakeRequestPendingReviewForInvitation.Id}/{nameof(RequestsController.SendInvitation)}";
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(url, new { });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static RequestCreateModel ApproveModel() => new()
+    {
+        JobTitle = "General Labour",
+        BillingTitle = "General Labour - Billing",
+        JobCosting = "JC-100",
+        InternalRequirements = "Internal notes",
+        Description = "Description reviewed by the agency",
+        Requirements = "Requirements reviewed by the agency",
+        LocationId = Data.FakeLocation.Id,
+        WorkerSalary = 50_000m
+    };
+
     private static void AssertModelAndEntity(RequestCreateModel model, Request entity)
     {
         Assert.Equal(model.JobTitle, entity.JobTitle);
@@ -424,6 +497,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
                 Data.FakeRequestReduceQuantity, Data.FakeRequestToCancel,
                 Data.FakeIsAsapRequest, Data.FakeRequestUpdateLocation, Data.FakeRequestToOpen,
                 Data.FakeRequestToSendInvitation, Data.FakeRequestWithRecentInvitation,
+                Data.FakeRequestPendingReview, Data.FakeRequestPendingReviewToCancel, Data.FakeRequestPendingReviewForInvitation,
                 Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
             Data.FakeCompany.ContactPeople.Add(Data.FakeContactPerson);
             context.RequestSkills.Add(Data.FakeSkill);
@@ -481,6 +555,9 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         public static readonly Request FakeRequestToOpen;
         public static readonly Request FakeRequestToSendInvitation;
         public static readonly Request FakeRequestWithRecentInvitation;
+        public static readonly Request FakeRequestPendingReview;
+        public static readonly Request FakeRequestPendingReviewToCancel;
+        public static readonly Request FakeRequestPendingReviewForInvitation;
 
         public static readonly User FakeWorker = new User(CvnEmail.Create("w1@mai.com").Value);
         public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId) { Location = FakeData.FakeLocation() };
@@ -492,7 +569,8 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         {
             FakeCompany.AddJobPositionRate(FakeCompanyProfileJobPositionRate);
             FakeCompany.UpdateVaccinationInfo(true, "require vaccine certificate");
-            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation);
+            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation,
+                workerRate: null, agencyRate: null);
             FakeRequest.NumberId = 99;
             FakeRequest.CreatedAt = new DateTime(2021, 01, 01);
             FakeRequest.CreatedBy = "recruiter@mail.com";
@@ -519,6 +597,13 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
             FakeRequestWithRecentInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, workersQuantity: 2);
             FakeRequestWithRecentInvitation.WorkerSalary = 50_000m;
             FakeRequestWithRecentInvitation.MarkInvitationSent(DateTime.Now);
+            FakeRequestPendingReview = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+            FakeRequestPendingReview.SubmitForReview();
+            FakeRequestPendingReviewToCancel = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+            FakeRequestPendingReviewToCancel.SubmitForReview();
+            FakeRequestPendingReviewForInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
+            FakeRequestPendingReviewForInvitation.WorkerSalary = 50_000m;
+            FakeRequestPendingReviewForInvitation.SubmitForReview();
             var sinInfo = new Mock<ISinInformation<CovenantFile>>();
             sinInfo.SetupGet(g => g.SocialInsurance).Returns("989-987-678");
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(true);

@@ -89,6 +89,19 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
         return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
     }
 
+    /// <summary>Discards the stored invoice PDF, renders it again from the current data and returns it.</summary>
+    /// <param name="invoiceId">Identifier of the invoice.</param>
+    [HttpPost("{invoiceId:guid}/pdf/regenerate")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> RegenerateInvoicePdf(Guid invoiceId)
+    {
+        var document = await invoiceService.RegenerateInvoicePdf(invoiceId);
+        if (document is null) return NotFound();
+        return File(document.Content, MediaTypeNames.Application.Pdf, document.FileName);
+    }
+
     /// <summary>Gets the pay stubs linked to an invoice, including delete-warning information.</summary>
     /// <param name="invoiceId">Identifier of the invoice.</param>
     [HttpGet("{invoiceId:guid}/paystubs")]
@@ -123,6 +136,20 @@ public class InvoicesController(IInvoiceService invoiceService, IPayStubReposito
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
         var result = await invoiceService.ChangeInvoiceStatus(invoiceId, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
+    /// <summary>Sets or corrects the payment date of a paid invoice and records who changed it and when.</summary>
+    /// <param name="invoiceId">Identifier of the paid invoice.</param>
+    /// <param name="model">The payment date.</param>
+    [HttpPut("{invoiceId:guid}/paid-at")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdatePaidAt([FromRoute] Guid invoiceId, [FromBody] UpdateInvoicePaidAtModel model)
+    {
+        if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
+        var result = await invoiceService.UpdateInvoicePaidAt(invoiceId, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

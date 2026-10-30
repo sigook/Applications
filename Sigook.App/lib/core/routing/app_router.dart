@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../services/analytics_service.dart';
+import '../widgets/navigation/app_shell.dart';
 import '../../features/splash/presentation/pages/splash_screen.dart';
 import '../../features/welcome/presentation/pages/welcome_page.dart';
 import '../../features/registration/presentation/pages/registration_screen.dart';
@@ -10,10 +11,11 @@ import '../../features/jobs/presentation/pages/jobs_page.dart';
 import '../../features/jobs/presentation/pages/job_page.dart';
 import '../../features/profile/domain/entities/worker_requirement.dart';
 import '../../features/profile/presentation/pages/user_profile_page.dart';
+import '../../features/profile/presentation/widgets/profile_nav_icon.dart';
 import '../../features/about/presentation/pages/about_page.dart';
 import '../../features/legal/presentation/pages/privacy_policy_page.dart';
 import '../../features/legal/presentation/pages/terms_page.dart';
-import '../../features/history/presentation/pages/history_page.dart';
+import '../../features/activity/presentation/pages/activity_page.dart';
 import '../../features/registration/presentation/pages/registration_confirmation_page.dart';
 
 class AppRoutes {
@@ -26,11 +28,14 @@ class AppRoutes {
   static const String jobs = '/jobs';
   static const String jobDetails = '/jobs/details';
   static const String profile = '/profile';
+  static const String activity = '/activity';
   static const String history = '/history';
   static const String about = '/about';
   static const String privacyPolicy = '/privacy-policy';
   static const String terms = '/terms';
 }
+
+enum JobPageTab { detail, punchCard }
 
 class RouterRefreshNotifier extends ChangeNotifier {
   void refresh() => notifyListeners();
@@ -66,7 +71,7 @@ class AppRouter {
     AppRoutes.jobs,
     AppRoutes.jobDetails,
     AppRoutes.profile,
-    AppRoutes.history,
+    AppRoutes.activity,
   };
 
   static bool requiresSession(String location) =>
@@ -189,17 +194,63 @@ class AppRouter {
           },
         ),
       ),
-      GoRoute(
-        path: AppRoutes.jobs,
-        name: 'jobs',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          name: state.name ?? state.matchedLocation,
-          child: const JobsPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) =>
+            AppShell(
+              navigationShell: navigationShell,
+              profileIcon: const ProfileNavIcon(icon: Icons.person_outline),
+              profileSelectedIcon: const ProfileNavIcon(icon: Icons.person),
+            ),
+        branches: [
+          StatefulShellBranch(
+            observers: [AnalyticsNavigatorObserver(analytics)],
+            routes: [
+              GoRoute(
+                path: AppRoutes.jobs,
+                name: 'jobs',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  name: state.name ?? state.matchedLocation,
+                  child: const JobsPage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            observers: [AnalyticsNavigatorObserver(analytics)],
+            routes: [
+              GoRoute(
+                path: AppRoutes.activity,
+                name: 'activity',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  name: state.name ?? state.matchedLocation,
+                  child: const ActivityPage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            observers: [AnalyticsNavigatorObserver(analytics)],
+            routes: [
+              GoRoute(
+                path: AppRoutes.profile,
+                name: 'profile',
+                pageBuilder: (context, state) => NoTransitionPage(
+                  key: state.pageKey,
+                  name: state.name ?? state.matchedLocation,
+                  child: UserProfilePage(
+                    section: ProfileSection.values
+                        .where(
+                          (s) => s.name == state.uri.queryParameters['section'],
+                        )
+                        .firstOrNull,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       GoRoute(
         path: AppRoutes.jobDetails,
@@ -207,18 +258,21 @@ class AppRouter {
         pageBuilder: (context, state) {
           final extra = state.extra;
           final String jobId;
-          final bool isFromHistory;
+          final JobPageTab initialTab;
           if (extra is Map<String, dynamic>) {
             jobId = extra['id'] as String;
-            isFromHistory = (extra['isFromHistory'] as bool?) ?? false;
+            initialTab = (extra['tab'] as JobPageTab?) ?? JobPageTab.detail;
           } else {
             jobId = extra as String;
-            isFromHistory = false;
+            initialTab = JobPageTab.detail;
           }
           return CustomTransitionPage(
             key: state.pageKey,
             name: state.name ?? state.matchedLocation,
-            child: JobPage(jobId: jobId, isFromHistory: isFromHistory),
+            child: JobPage(
+              jobId: jobId,
+              initialTab: initialTab,
+            ),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
                   const begin = Offset(1.0, 0.0);
@@ -238,32 +292,8 @@ class AppRouter {
         },
       ),
       GoRoute(
-        path: AppRoutes.profile,
-        name: 'profile',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          name: state.name ?? state.matchedLocation,
-          child: UserProfilePage(
-            section: ProfileSection.values
-                .where((s) => s.name == state.uri.queryParameters['section'])
-                .firstOrNull,
-          ),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
-      ),
-      GoRoute(
         path: AppRoutes.history,
-        name: 'history',
-        pageBuilder: (context, state) => CustomTransitionPage(
-          key: state.pageKey,
-          name: state.name ?? state.matchedLocation,
-          child: const HistoryPage(),
-          transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
-          },
-        ),
+        redirect: (context, state) => AppRoutes.activity,
       ),
       GoRoute(
         path: AppRoutes.about,
@@ -273,7 +303,14 @@ class AppRouter {
           name: state.name ?? state.matchedLocation,
           child: const AboutPage(),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
-            return FadeTransition(opacity: animation, child: child);
+            const begin = Offset(1.0, 0.0);
+            const end = Offset.zero;
+            var tween = Tween(begin: begin, end: end)
+                .chain(CurveTween(curve: Curves.easeInOut));
+            return SlideTransition(
+              position: animation.drive(tween),
+              child: child,
+            );
           },
         ),
       ),

@@ -5,3 +5,7 @@ import type { CompanyInvoiceFilter, CompanyInvoiceListItem } from '@/modules/com
 export function getCompanyInvoice(filter: CompanyInvoiceFilter): Promise<PaginatedList<CompanyInvoiceListItem>> {
   return api.get<PaginatedList<CompanyInvoiceListItem>>('/api/company/invoices', { params: { ...filter } });
 }
+
+export function downloadCompanyInvoicePdf(invoiceId: string): Promise<Blob> {
+  return api.get<Blob>(`/api/company/invoices/${invoiceId}/pdf`, { responseType: 'blob' });
+}

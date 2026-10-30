@@ -5,8 +5,7 @@ const WorkerRegister = () => import("@/modules/worker/register/pages/Register.vu
 const WorkerRequests = () => import("@/modules/worker/requests/pages/Requests.vue");
 const WorkerRequest = () => import("@/modules/worker/requests/pages/Request.vue");
 const WorkerRequestApplied = () => import("@/modules/worker/requests/pages/RequestApplied.vue");
-const WorkerTimeSheet = () => import("@/modules/worker/requests/pages/TimeSheet.vue");
-const WorkerHistory = () => import("@/modules/worker/history/pages/History.vue");
+const WorkerActivity = () => import("@/modules/worker/activity/pages/Activity.vue");
 const WorkerProfile = () => import("@/modules/worker/profile/pages/WorkerProfile.vue");
 const WorkerApply = () => import("@/modules/worker/requests/pages/Apply.vue");
 
@@ -60,21 +59,15 @@ const routesWorker: RouteRecordRaw[] = [
   { path: "/worker-request/:id", redirect: (to) => `/worker-requests/${to.params.id}` },
   { path: "/worker-request-applied/:id", redirect: (to) => `/worker-requests/applied/${to.params.id}` },
   {
-    path: "/timesheet",
-    component: WorkerTimeSheet,
+    path: "/worker-activity",
+    component: WorkerActivity,
     meta: {
       requiresAuth: true,
       role: [worker],
     },
   },
-  {
-    path: "/worker-history",
-    component: WorkerHistory,
-    meta: {
-      requiresAuth: true,
-      role: [worker],
-    },
-  },
+  { path: "/worker-my-work", redirect: "/worker-activity" },
+  { path: "/worker-history", redirect: "/worker-activity" },
   {
     path: "/worker-profile",
     component: WorkerProfile,

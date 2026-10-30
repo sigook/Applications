@@ -73,6 +73,11 @@
                 @click="onDownloadPayStubPdf(props.row)">
               </b-button>
             </b-tooltip>
+            <b-tooltip v-if="props.row.pdfUrl || props.row.pdfGenerated" label="Regenerate PDF" type="is-dark" position="is-top" append-to-body>
+              <b-button type="is-warning" outlined rounded icon-right="file-refresh" class="mr-2"
+                @click="onRegeneratePayStubPdf(props.row)">
+              </b-button>
+            </b-tooltip>
             <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
               <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
                 class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
@@ -102,12 +107,13 @@
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
-import { downloadPDF } from '@/shared/utils/downloadFile';
+import { downloadPDF, openFileUrl } from '@/shared/utils/downloadFile';
 import { dateMonth, currency } from '@/shared/format';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import {
   getAgencyPayStubs,
   downloadPayStubPdf,
+  regeneratePayStubPdf,
   sendPayStubEmail,
   sendPayStubEmailBulk,
   deleteAgencyPayStub,
@@ -165,10 +171,23 @@ function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<Agency
 }
 
 function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
+  if (payStub.pdfUrl) {
+    openFileUrl(payStub.pdfUrl);
+    return;
+  }
+  renderPayStubPdf(payStub, downloadPayStubPdf);
+}
+
+function onRegeneratePayStubPdf(payStub: AgencyPayStubRow) {
+  renderPayStubPdf(payStub, regeneratePayStubPdf);
+}
+
+function renderPayStubPdf(payStub: AgencyPayStubRow, render: (payStubId: string) => Promise<Blob>) {
   isLoading.value = true;
-  downloadPayStubPdf(payStub.id)
+  render(payStub.id)
     .then((response) => {
       isLoading.value = false;
+      payStub.pdfGenerated = true;
       downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
     })
     .catch((error) => {

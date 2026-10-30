@@ -54,6 +54,7 @@ public class TimesheetService(
         var entity = await workerRequestRepository.GetWorkerRequestByWorkerProfileId(workerProfileId, requestId);
         if (entity is null) return Result.Fail<RegisterTimeSheetResultModel>("Worker not found");
         if (entity.IsRejected) return Result.Fail<RegisterTimeSheetResultModel>("Worker is rejected");
+        if (entity.IsFinished) return Result.Fail<RegisterTimeSheetResultModel>("Worker assignment has ended");
         if (entity.TimeSheets.Any(a => a.Date == clockInDate.Date))
             return Result.Fail<RegisterTimeSheetResultModel>("Worker already clock in");
 
@@ -73,11 +74,12 @@ public class TimesheetService(
         {
             return Result.Fail<Guid>(ApiResources.InvalidRequest);
         }
-        if (workerRequest.IsRejected)
+        if (!workerRequest.IsBooked)
         {
+            var notBookedError = workerRequest.IsFinished ? "Worker assignment has ended" : "Worker is rejected";
             DateTime? limitDateToAddTimeSheet = workerRequest.LimitDateToAddTimeSheet;
-            if (!limitDateToAddTimeSheet.HasValue) return Result.Fail<Guid>("Worker is rejected");
-            if (now > limitDateToAddTimeSheet) return Result.Fail<Guid>("Worker is rejected");
+            if (!limitDateToAddTimeSheet.HasValue) return Result.Fail<Guid>(notBookedError);
+            if (now > limitDateToAddTimeSheet) return Result.Fail<Guid>(notBookedError);
         }
         var isHoliday = await catalogRepository.IsHoliday(timeSheetModel.TimeIn, workerRequest.Request.JobLocation.City.Province.Country.Code);
         var totalHours = timeSheetModel.Hours;

@@ -52,6 +52,7 @@ public class GenerateAgencyRequestReportHandler : GenerateAgencyReportHandler<Ge
             RequestStatus.Open => "Open",
             RequestStatus.Filled => "Filled",
             RequestStatus.Cancelled => "Cancelled",
+            RequestStatus.PendingReview => "Pending Review",
             _ => "Unknown"
         };
         sheet.Cell($"J{row}").SetValue(statusText);

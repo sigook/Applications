@@ -46,7 +46,7 @@ public class AgencyBookWorkerServiceTest
         sinInfo.SetupGet(g => g.SocialInsurance).Returns("980-897-987");
         sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
         _worker.PatchSinInformation(sinInfo.Object);
-        request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workersQuantity: 1).Value;
+        request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workerRate: 15M, agencyRate: 20M, workersQuantity: 1).Value;
         _workerRepository = new Mock<IWorkerRepository>();
         _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(_worker);
         _workerRequestRepository = new Mock<IWorkerRequestRepository>();

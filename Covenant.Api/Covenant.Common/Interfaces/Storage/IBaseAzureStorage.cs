@@ -11,4 +11,5 @@ public interface IBaseAzureStorage
     Task<bool> FileExist(string fileName);
     Task DeleteFileIfExists(string fileName);
     Task DeleteFilesIfExists(IEnumerable<string> fileNames);
+    string GetReadUrl(string fileName, string downloadName, DateTimeOffset expiresOn);
 }

@@ -12,6 +12,7 @@ import 'core/services/azure_crash_reporting_service.dart';
 import 'core/services/crash_reporting_service.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/feedback/environment_banner.dart';
+import 'core/widgets/navigation/document_preview_page.dart';
 import 'core/constants/error_messages.dart';
 import 'features/app_update/presentation/pages/update_required_page.dart';
 import 'features/app_update/presentation/providers/app_update_providers.dart';
@@ -41,6 +42,8 @@ Future<void> mainCommon() async {
 
     debugPrint('🌐 Loading error messages...');
     await ErrorMessages.load();
+
+    DocumentPreviewPage.clearShareCache().ignore();
 
     debugPrint('🔐 Initializing secure storage...');
     const secureStorage = FlutterSecureStorage();

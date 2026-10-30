@@ -297,11 +297,13 @@ Holiday eligibility is worker-side only (`WorkerProfileHoliday`).
 ### WorkerRequest (`WorkerRequest.cs`)
 
 Assignment of a worker to a request. `Id`, `RequestId`, `WorkerProfileId` → **WorkerProfile**,
-`WorkerRequestStatus` (`Enums/WorkerRequestStatus.cs`: **`Rejected = 2`, `Booked = 3`** — there
+`WorkerRequestStatus` (`Enums/WorkerRequestStatus.cs`: **`Rejected = 2`, `Booked = 3`, `Finished = 4`** — there
 is no value 1), `StartWorking`, `WeekStartWorking` (computed Sunday of the start week),
-`CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments`, `LimitDateToAddTimeSheet`
-(= RejectedAt + 1 month). Owns the `TimeSheets` collection and `WorkerRequestNote`s. Rebooking a
-rejected worker reuses the same row (`Book()` clears rejection fields). Unique
+`CreatedBy`/`RejectedBy`/`RejectedAt`/`RejectComments` (removal for cause),
+`FinishedAt` (last day worked)/`FinishedBy`/`FinishReason` (`WorkerRequestFinishReason`)/`FinishComments`
+(normal end of assignment), `LimitDateToAddTimeSheet` (= (FinishedAt ?? RejectedAt) + 1 month).
+Owns the `TimeSheets` collection and `WorkerRequestNote`s. Rebooking a rejected or finished worker
+reuses the same row (`Book()` clears rejection and finish fields). Unique
 `(RequestId, WorkerProfileId)` (`WorkerRequestConfiguration.cs`).
 
 ### RequestApplicant (`RequestApplicant.cs`)
@@ -396,8 +398,9 @@ Weekly pay stub for a worker. `WorkerProfileId` FK, `NumberId` (long), `PayStubN
 (**string**), `PayStubNumberId`, `Position`, period (`DateWorkBegins`/`DateWorkEnd`,
 `PaymentDate`, `WeekEnding`), earnings (`RegularWage`, `GrossPayment`, `Vacations` — 4% Canada,
 `TotalEarnings`), deductions (`Cpp`, `Ei`, `FederalTax`, `ProvincialTax`, `TotalDeductions`),
-`TotalPaid`. The worker's display number comes from `WorkerProfile.NumberId`, not from PayStub.
-PDFs are cached in blob storage — regenerate after render changes.
+`TotalPaid`, `PdfGeneratedAt` (set once the PDF is in blob storage; drives the list `PdfUrl`). The worker's
+display number comes from `WorkerProfile.NumberId`, not from PayStub. PDFs are cached in blob storage —
+the agency rebuilds one with "Regenerate PDF" after render or data changes.
 
 | Child | Purpose |
 |---|---|
@@ -422,7 +425,8 @@ index `IX_Invoices_InvoiceNumber`), `Email` (optional recipient override, falls 
 `CompanyProfile.Company.Email`), `CreatedAt`, `WeekEnding` (null for direct hiring), totals
 (`SubTotal`, `Tax`, `TotalNet`), `Status` (`InvoiceStatus` Pending/Paid/Due stored as string),
 `PaidAt` (date the company paid, set only while `Paid`), `UpdatedAt`, `UpdatedBy` → User (null
-when the `MarkOverdueInvoices` job changed the status). The due date is not stored: it is
+when the `MarkOverdueInvoices` job changed the status), `PdfGeneratedAt` (set once the PDF is in blob
+storage; drives the list `PdfUrl`). The due date is not stored: it is
 `CreatedAt + CompanyProfile.PaymentTermDays`. There are no rate snapshot or bill-to/bill-from columns:
 multipliers come from global config at creation and company/agency address data is read live
 through `CompanyProfile` and `CompanyProfile.Agency` when the summary/PDF is built. Which

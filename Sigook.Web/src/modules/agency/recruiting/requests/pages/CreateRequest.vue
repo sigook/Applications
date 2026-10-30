@@ -49,15 +49,23 @@
                       open-on-focus name="rol" selectable-footer @select="onJobPositionSelected"
                       @select-footer="() => showRolesModal = true">
                       <template #footer>
-                        <a>
-                          <span v-if="isAdmin">Add new...</span>
-                          <span v-else>Request new...</span>
-                        </a>
+                        <a><span>Add new...</span></a>
                       </template>
                       <template #empty>You don't have any roles created</template>
                     </b-autocomplete>
                   </b-field>
-                  <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
+                  <div v-if="jobPositionSelected" class="role-rate">
+                    <b-tag v-if="roleHasRates">Rate for this position: {{ request.rate }}</b-tag>
+                    <b-tag v-else type="is-warning">Rates pending</b-tag>
+                    <b-tooltip v-if="isAdmin" label="Edit role" type="is-dark" append-to-body>
+                      <b-button size="is-small" type="is-text" icon-left="pencil"
+                        aria-label="Edit role rates" @click="openEditRole" />
+                    </b-tooltip>
+                    <b-tooltip label="Duplicate role" type="is-dark" append-to-body>
+                      <b-button size="is-small" type="is-text" icon-left="content-copy"
+                        aria-label="Duplicate role" @click="openDuplicateRole" />
+                    </b-tooltip>
+                  </div>
                 </div>
                 <div class="column is-6 is-4-desktop">
                   <b-field :label="`${'Branch office'} *`" :message="errors.branchOffice || ''"
@@ -239,7 +247,7 @@
               </div>
               <div class="settings-actions">
                 <b-button type="is-primary" native-type="submit" expanded>
-                  {{ isUpdate ? 'Update' : "Create" }}
+                  {{ submitLabel }}
                 </b-button>
               </div>
             </div>
@@ -249,15 +257,14 @@
 
       <div class="mobile-submit is-hidden-desktop">
         <b-button type="is-primary" native-type="submit" expanded>
-          {{ isUpdate ? 'Update' : "Create" }}
+          {{ submitLabel }}
         </b-button>
       </div>
     </form>
 
-    <b-modal custom-content-class="card" v-model="showRolesModal" @close="showRolesModal = false" width="850px">
-      <position-form v-if="isAdmin" :profile-id="companyProfileId"
-        @updateContent="onUpdateRolesModal"></position-form>
-      <request-position-form v-else :profile-id="companyProfileId" @closeModal="() => showRolesModal = false" />
+    <b-modal custom-content-class="card" v-model="showRolesModal" @close="closeRolesModal" width="850px">
+      <position-form :kind="isAdmin ? 'full' : 'basic'" :create="createRole" :update="updateRole" :load="loadRole"
+        :current-position="editingRole" :is-duplicate="isDuplicatingRole" @updateContent="onUpdateRolesModal"></position-form>
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showLocationModal" @close="showLocationModal = false" width="500px">
@@ -279,18 +286,19 @@ import dayjs from 'dayjs';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { useAdmin } from '@/shared/composables/useAdmin';
+import { useRecruitingAccess } from '@/shared/composables/useRecruitingAccess';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
-import { createAgencyCompanyLocation, getAgencyCompanyJobPositions, getAgencyCompanyLocation } from '@/modules/agency/recruiting/clients/api';
-import { postAgencyRequest, updateAgencyRequest, duplicateAgencyRequest, getAgencyRequestLookup } from '@/modules/agency/recruiting/requests/api';
+import { createAgencyCompanyLocation, getAgencyCompanyJobPositionsDropdown, getAgencyCompanyLocation, createAgencyCompanyJobPosition, createAgencyCompanyJobPositionWithoutRates, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from '@/modules/agency/recruiting/clients/api';
+import { postAgencyRequest, updateAgencyRequest, duplicateAgencyRequest, getAgencyRequestLookup, approveAgencyRequest } from '@/modules/agency/recruiting/requests/api';
 import {
   DurationTerm,
   DurationTermLabels,
   EmploymentType,
   EmploymentTypeLabels,
+  RequestStatus,
 } from '@/shared/constants/enums';
 import PageHeader from '@/shared/ui/PageHeader.vue';
-import PositionForm from '@/modules/agency/recruiting/clients/components/JobPositionForm.vue';
-import RequestPositionForm from '@/modules/agency/recruiting/clients/components/RequestJobPositionForm.vue';
+import PositionForm from '@/shared/company-profile/JobPositionForm.vue';
 import LocationForm from '@/shared/company-profile/LocationForm.vue';
 import RequestComplianceModal from '@/modules/agency/recruiting/applicants/components/RequestComplianceModal.vue';
 import { buildDefaultComplianceItems } from '@/modules/agency/recruiting/applicants/compliance';
@@ -306,6 +314,7 @@ const route = useRoute();
 const router = useRouter();
 const { isSalesView, requestBase } = useModuleBase();
 const { isAdmin } = useAdmin();
+const { hasRecruitingAccess } = useRecruitingAccess();
 
 const crumbs = computed<PageBreadcrumb[]>(() => [
   { label: isSalesView.value ? 'Sales' : 'Recruiting' },
@@ -401,14 +410,26 @@ const request = ref<AgencyRequestFormState>({
 const sameBillingTitle = ref(true);
 const errorMessage = 'Please make sure all required fields are filled out correctly';
 const showRolesModal = ref(false);
+const editingRole = ref<AgencyCompanyJobPosition | null>(null);
+const isDuplicatingRole = ref(false);
+const roleHasRates = computed(() =>
+  (jobPositionSelected.value?.rate ?? 0) > 0 && (jobPositionSelected.value?.workerRate ?? 0) > 0);
 const showLocationModal = ref(false);
 const showComplianceModal = ref(false);
 const sourceRequest = ref<AgencyRequestDetail | null>(null);
 const isDuplicate = computed(() => !!(route.meta as Record<string, unknown>).isDuplicate && !!sourceRequest.value);
 const isUpdate = computed(() => !!sourceRequest.value && !isDuplicate.value);
+const isReview = computed(() =>
+  isUpdate.value && hasRecruitingAccess.value && sourceRequest.value?.status === RequestStatus.PendingReview);
 const companyUserTagInput = ref<InstanceType<typeof BTaginput> | null>(null);
 
+const submitLabel = computed(() => {
+  if (isReview.value) return 'Save & Approve';
+  return isUpdate.value ? 'Update' : 'Create';
+});
+
 const pageTitle = computed(() => {
+  if (isReview.value) return `Review Request (${request.value.numberId})`;
   if (isUpdate.value) return `Update Request (${request.value.numberId})`;
   if (isDuplicate.value) return `Duplicate Request (from ${sourceRequest.value?.numberId})`;
   return 'Create Request';
@@ -652,7 +673,13 @@ function onSubmit() {
       finishAt: request.value.finishAt?.toISOString() ?? null,
       durationBreak: dayjs(request.value.durationBreak).format('HH:mm'),
     };
-    if (isUpdate.value) {
+    if (isReview.value && !directHiring.value && !roleHasRates.value) {
+      showAlertError('The role has no rates yet. An agency admin must set them before approving.');
+      return;
+    }
+    if (isReview.value) {
+      approveRequest(payload);
+    } else if (isUpdate.value) {
       updateRequest(payload);
     } else {
       createRequest(payload);
@@ -679,9 +706,44 @@ function createRequest(payload: CreateAgencyRequestModel) {
     });
 }
 
-async function onUpdateRolesModal() {
+function createRole(model: AgencyCompanyJobPosition): Promise<{ id: string }> {
+  return isAdmin.value
+    ? createAgencyCompanyJobPosition(companyProfileId.value, model)
+    : createAgencyCompanyJobPositionWithoutRates(companyProfileId.value, model);
+}
+
+function updateRole(id: string, model: AgencyCompanyJobPosition): Promise<void> {
+  return updateAgencyCompanyJobPosition(companyProfileId.value, id, model);
+}
+
+function loadRole(id: string): Promise<AgencyCompanyJobPosition> {
+  return getAgencyCompanyJobPositionById(companyProfileId.value, id);
+}
+
+function openEditRole() {
+  editingRole.value = jobPositionSelected.value;
+  showRolesModal.value = true;
+}
+
+function openDuplicateRole() {
+  editingRole.value = jobPositionSelected.value;
+  isDuplicatingRole.value = true;
+  showRolesModal.value = true;
+}
+
+function closeRolesModal() {
   showRolesModal.value = false;
-  companyJobPositions.value = await getAgencyCompanyJobPositions(companyProfileId.value);
+  editingRole.value = null;
+  isDuplicatingRole.value = false;
+}
+
+async function onUpdateRolesModal(id?: string) {
+  closeRolesModal();
+  companyJobPositions.value = await getAgencyCompanyJobPositionsDropdown(companyProfileId.value);
+  const role = companyJobPositions.value.find((cjp) => cjp.id === id);
+  if (!role) return;
+  form.setFieldValue('jobPosition', role.jobPosition);
+  onJobPositionSelected(role);
 }
 
 async function onUpdateLocationModal() {
@@ -703,6 +765,21 @@ function updateRequest(payload: CreateAgencyRequestModel) {
     });
 }
 
+function approveRequest(payload: CreateAgencyRequestModel) {
+  isLoading.value = true;
+  const requestId = request.value.id as string;
+  approveAgencyRequest(requestId, payload)
+    .then(() => {
+      isLoading.value = false;
+      showAlertSuccess('Request approved');
+      router.push(requestBase.value + '/' + requestId);
+    })
+    .catch((error) => {
+      isLoading.value = false;
+      showAlertError(error);
+    });
+}
+
 function onSameBillingChecked(value: boolean) {
   if (value) {
     form.setFieldValue('billingTitle', jobTitle.value);
@@ -711,3 +788,12 @@ function onSameBillingChecked(value: boolean) {
   }
 }
 </script>
+
+<style scoped>
+.role-rate {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+</style>

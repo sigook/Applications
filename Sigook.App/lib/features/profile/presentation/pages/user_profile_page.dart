@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_cropper/image_cropper.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import '../../../../core/routing/app_router.dart';
 import '../../../../core/theme/app_theme.dart';
 import '../../../../core/widgets/feedback/error_state_widget.dart';
 import '../../../../core/widgets/feedback/loading_indicator.dart';
+import '../../../../core/widgets/navigation/app_tab_bar.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../domain/entities/worker_requirement.dart';
 import '../../profile_image/presentation/viewmodels/profile_image_viewmodel.dart';
@@ -147,14 +146,7 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
         backgroundColor: AppTheme.secondaryRed,
         foregroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          tooltip: 'Back',
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            notifyLogoFlash();
-            context.go(AppRoutes.jobs);
-          },
-        ),
+        automaticallyImplyLeading: false,
         title: const NavbarLogo(),
       ),
       body: profileAsync.when(
@@ -198,50 +190,24 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
                   ),
                 ),
 
-                bottom: PreferredSize(
-                  preferredSize: const Size.fromHeight(74.0),
-                  child: Container(
-                    color: Colors.white,
-                    child: TabBar(
-                      controller: _tabController,
-                      labelColor: AppTheme.primaryBlue,
-                      unselectedLabelColor: Colors.grey.shade600,
-                      indicatorColor: AppTheme.primaryBlue,
-                      indicatorWeight: 3,
-                      isScrollable: false,
-                      tabAlignment: TabAlignment.fill,
-                      labelStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                      ),
-                      unselectedLabelStyle: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w500,
-                      ),
-                      tabs: const [
-                        Tab(
-                          icon: Icon(Icons.person_outline, size: 20),
-                          text: 'Personal',
-                        ),
-                        Tab(
-                          icon: Icon(Icons.work_history_outlined, size: 20),
-                          text: 'Experience',
-                        ),
-                        Tab(
-                          icon: Icon(Icons.tune_outlined, size: 20),
-                          text: 'Preferences',
-                        ),
-                        Tab(
-                          icon: Icon(Icons.rate_review_outlined, size: 20),
-                          text: 'Comments',
-                        ),
-                        Tab(
-                          icon: Icon(Icons.manage_accounts_outlined, size: 20),
-                          text: 'Account',
-                        ),
-                      ],
+                bottom: AppTabBar(
+                  controller: _tabController,
+                  tabs: const [
+                    AppTabItem(icon: Icons.person_outline, label: 'PERSONAL'),
+                    AppTabItem(
+                      icon: Icons.work_history_outlined,
+                      label: 'EXPERIENCE',
                     ),
-                  ),
+                    AppTabItem(icon: Icons.tune_outlined, label: 'PREFERENCES'),
+                    AppTabItem(
+                      icon: Icons.rate_review_outlined,
+                      label: 'COMMENTS',
+                    ),
+                    AppTabItem(
+                      icon: Icons.manage_accounts_outlined,
+                      label: 'ACCOUNT',
+                    ),
+                  ],
                 ),
               ),
             ],
@@ -250,9 +216,9 @@ class _UserProfilePageState extends ConsumerState<UserProfilePage>
               children: [
                 PersonalDetailsTab(scrollTo: widget.section),
                 const WorkExperienceTab(),
-                PreferencesTab(appVersion: _appVersion),
+                const PreferencesTab(),
                 const CommentsTab(),
-                const AccountSettingsTab(),
+                AccountSettingsTab(appVersion: _appVersion),
               ],
             ),
           ),

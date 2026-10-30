@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Covenant.Common.Models.Accounting.PayStubs
 {
     public class PayStubListModel
@@ -14,5 +16,8 @@ namespace Covenant.Common.Models.Accounting.PayStubs
         public string PayStubNumber { get; set; }
         public long PayStubNumberId { get; set; }
         public bool CanDelete { get; set; }
+        [JsonIgnore]
+        public DateTime? PdfGeneratedAt { get; set; }
+        public string PdfUrl { get; set; }
     }
 }

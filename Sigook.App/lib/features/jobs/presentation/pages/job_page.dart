@@ -5,20 +5,23 @@ import '../../../../core/providers/analytics_providers.dart';
 import '../../../../core/routing/app_router.dart';
 import '../../../../core/services/analytics_service.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/widgets/navigation/app_tab_bar.dart';
 import '../../../../core/widgets/navigation/navbar_logo.dart';
 import '../../domain/entities/job_details.dart';
 import '../../domain/usecases/get_job_details.dart';
 import '../providers/jobs_providers.dart';
 import '../widgets/job_details_tab.dart';
 import '../widgets/punch_card_tab.dart';
-import '../widgets/timesheet_tab.dart';
-import '../widgets/app_drawer.dart';
 
 class JobPage extends ConsumerStatefulWidget {
   final String jobId;
-  final bool isFromHistory;
+  final JobPageTab initialTab;
 
-  const JobPage({super.key, required this.jobId, this.isFromHistory = false});
+  const JobPage({
+    super.key,
+    required this.jobId,
+    this.initialTab = JobPageTab.detail,
+  });
 
   @override
   ConsumerState<JobPage> createState() => _JobPageState();
@@ -137,10 +140,14 @@ class _JobPageState extends ConsumerState<JobPage>
 
     final jobDetails = _jobDetails!;
     final showTimesheetPunchcard = jobDetails.shouldShowTimesheetAndPunchcard;
-    final tabCount = showTimesheetPunchcard ? 3 : 1;
+    final tabCount = showTimesheetPunchcard ? 2 : 1;
 
     return DefaultTabController(
       length: tabCount,
+      initialIndex:
+          widget.initialTab == JobPageTab.punchCard && showTimesheetPunchcard
+          ? 1
+          : 0,
       child: Scaffold(
         backgroundColor: AppTheme.surfaceGrey,
         appBar: AppBar(
@@ -154,88 +161,18 @@ class _JobPageState extends ConsumerState<JobPage>
               Navigator.of(context).pop();
             },
           ),
-          actions: [
-            Builder(
-              builder: (context) => IconButton(
-                tooltip: 'Menu',
-                icon: const Icon(Icons.menu, color: Colors.white),
-                onPressed: () {
-                  notifyLogoFlash();
-                  Scaffold.of(context).openEndDrawer();
-                },
-              ),
-            ),
-          ],
-          bottom: PreferredSize(
-            preferredSize: const Size.fromHeight(60),
-            child: Container(
-              color: Colors.white,
-              child: TabBar(
-                indicator: UnderlineTabIndicator(
-                  borderSide: const BorderSide(
-                    color: AppTheme.primaryBlue,
-                    width: 3,
-                  ),
-                  insets: const EdgeInsets.symmetric(horizontal: 16),
-                ),
-                labelColor: AppTheme.primaryBlue,
-                unselectedLabelColor: Colors.grey.shade600,
-                labelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 0.8,
-                ),
-                unselectedLabelStyle: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  letterSpacing: 0.5,
-                ),
-                tabs: [
-                  Tab(
-                    height: 60,
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.work_outline, size: 24),
-                        const SizedBox(height: 4),
-                        const Text('DETAIL'),
-                      ],
-                    ),
-                  ),
-                  if (showTimesheetPunchcard) ...[
-                    Tab(
-                      height: 60,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.access_time, size: 24),
-                          const SizedBox(height: 4),
-                          const Text('PUNCH CARD'),
-                        ],
-                      ),
-                    ),
-                    Tab(
-                      height: 60,
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.receipt_long, size: 24),
-                          const SizedBox(height: 4),
-                          const Text('TIME SHEET'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ],
-              ),
-            ),
+          bottom: AppTabBar(
+            tabs: [
+              const AppTabItem(icon: Icons.work_outline, label: 'DETAIL'),
+              if (showTimesheetPunchcard)
+                const AppTabItem(icon: Icons.access_time, label: 'PUNCH CARD'),
+            ],
           ),
         ),
         body: TabBarView(
           children: [
             JobDetailsTab(
               jobDetails: jobDetails,
-              isFromHistory: widget.isFromHistory,
               onApplySuccess: () {
                 context.go(AppRoutes.jobs);
               },
@@ -245,11 +182,9 @@ class _JobPageState extends ConsumerState<JobPage>
                 jobDetails: jobDetails,
                 onRefreshCheckpoint: _refreshJobDetails,
               ),
-              TimesheetTab(jobId: widget.jobId),
             ],
           ],
         ),
-        endDrawer: const AppDrawer(currentRoute: AppRoutes.jobs),
       ),
     );
   }

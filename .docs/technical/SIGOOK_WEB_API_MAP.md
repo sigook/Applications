@@ -124,12 +124,13 @@ Agency-side management of client companies. Bases: `companyProfilesUrl = /api/ag
 ### Job Positions
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyCompanyJobPositions(id)` | GET | `/api/agency/recruiting/clients/{id}/JobPositions` | — | `AgencyCompanyJobPosition[]` | Roles + rates at company |
+| `getAgencyCompanyJobPositions(id, filter)` | GET | `/api/agency/recruiting/clients/{id}/JobPositions` | `AgencyCompanyJobPositionFilter` (params: `role`, `sortBy` = `JobPositionSortBy`, `isDescending`, `pageIndex`, `pageSize`) | `PaginatedList<AgencyCompanyJobPosition>` | Roles grid of the client detail (server search/sort/pagination) |
+| `getAgencyCompanyJobPositionsDropdown(id)` | GET | `/api/agency/recruiting/clients/{id}/JobPositions/Dropdown` | — | `AgencyCompanyJobPosition[]` | Every active role, ordered by name (CreateRequest after adding a role) |
 | `getAgencyCompanyJobPositionById(profileId, id)` | GET | `/api/agency/recruiting/clients/{profileId}/jobpositions/{id}` | — | `AgencyCompanyJobPosition` | |
 | `createAgencyCompanyJobPosition(id, model)` | POST | `/api/agency/recruiting/clients/{id}/JobPositions` | `AgencyCompanyJobPosition` | `{ id: string }` | |
 | `updateAgencyCompanyJobPosition(profileId, id, model)` | PUT | `/api/agency/recruiting/clients/{profileId}/jobpositions/{id}` | `AgencyCompanyJobPosition` | `void` | |
 | `deleteAgencyCompanyJobPosition(profileId, id)` | DELETE | `/api/agency/recruiting/clients/{profileId}/jobpositions/{id}` | — | `void` | |
-| `petitionAgencyCompanyJobPosition(id, model)` | POST | `/api/agency/recruiting/clients/{id}/JobPositions/Petition` | `PetitionJobPositionPayload` | `void` | Request new position type |
+| `createAgencyCompanyJobPositionWithoutRates(id, model)` | POST | `/api/agency/recruiting/clients/{id}/JobPositions/WithoutRates` | `CreateJobPositionModel` | `{ id }` | Non-admin creates a role (name, description, shift) without rates |
 
 ### Company Documents
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -191,7 +192,7 @@ Backend: `Covenant.Api/Covenant.Api/Controllers/Agencies/Sales/Clients/{Interact
 |----------|------------|----------|--------------|---------------|-------|
 | `updateIsAsapRequests(model)` | PUT | `/api/agency/recruiting/requests/is-asap` | `UpdateIsAsapRequestsPayload` | `void` | Mark requests as ASAP |
 
-**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `PetitionJobPositionPayload`, `UpdateIsAsapRequestsPayload` (the feature's `types.ts`); `CompanyProfileDetail`, `AgencyCompanyProfileDetail`, `CompanyProfileSummary`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/shared/company-profile/types`, `src/shared/punch-card/types` and the feature's `types.ts`)
+**Types:** `AgencyCompanyFilter`, `AgencyCompanyListItem`, `AgencyCompanyContactPerson`, `AgencyCompanyLocationModel`, `AgencyCompanyJobPosition`, `VaccinationRequiredModel`, `InvoiceNotesModel`, `InvoiceRecipientModel`, `UpdateIsAsapRequestsPayload` (the feature's `types.ts`); `CompanyProfileDetail`, `AgencyCompanyProfileDetail`, `CompanyProfileSummary`, `CompanyProfileDocumentModel`, `CompanyProfileListItem`, `CompanyProfileSettingsUpdate`, `CompanyUserModel`, `CreateCompanyUserModel` (`src/shared/company-profile/types`, `src/shared/punch-card/types` and the feature's `types.ts`)
 
 **Pinia:** `agencyCompanyProfileFilter` in `useAgencyStore`.
 
@@ -206,17 +207,19 @@ Agency → company billing.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyInvoices(filter)` | GET | `/api/agency/accounting/invoices` | `AgencyInvoiceFilter` (params) | `AgencyInvoiceListResponse` | |
+| `getAgencyInvoices(filter)` | GET | `/api/agency/accounting/invoices` | `AgencyInvoiceFilter` (params) | `AgencyInvoiceListResponse` | Each row carries `pdfUrl` (1-hour read-only SAS) once its PDF exists, else `null` |
 | `previewAgencyInvoice(payload)` | POST | `/api/agency/accounting/invoices/Preview` | `CreateAgencyInvoiceModel` | `InvoiceSummaryModel` | Preview before creation |
 | `createAgencyInvoice(payload)` | POST | `/api/agency/accounting/invoices` | `CreateAgencyInvoiceModel` | `void` | |
 | `deleteAgencyInvoice(payload)` | DELETE | `/api/agency/accounting/invoices/{invoiceId}` | `DeleteInvoicePayload` (in body via `data`) | `void` | |
-| `downloadInvoicePdf(id)` | GET | `/api/agency/accounting/invoices/{id}/pdf` | — | Blob | |
+| `downloadInvoicePdf(id)` | GET | `/api/agency/accounting/invoices/{id}/pdf` | — | Blob | Only when `pdfUrl` is `null`; renders and stores the PDF. With `pdfUrl` the page opens the URL directly |
+| `regenerateInvoicePdf(id)` | POST | `/api/agency/accounting/invoices/{id}/pdf/regenerate` | — | Blob | "Regenerate PDF" (shown only when `pdfUrl` is set): discards the stored PDF and renders it again from current data |
 | `getPayStubsByInvoice(id)` | GET | `/api/agency/accounting/invoices/{id}/paystubs` | — | `PayStubDeleteWarningItem[]` | Linked pay stubs (delete warning) |
 | `sendInvoiceEmail(payload)` | POST | `/api/agency/accounting/invoices/{invoiceId}/email` | FormData (multipart) | `void` | Email invoice + attachments |
 | `changeInvoiceStatus(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/status` | `ChangeInvoiceStatusModel` | `void` | Pending/Due → Paid (with optional `paidAt`, ISO instant of the picked day) or Paid → Pending; `Due` is job-only; backend records `UpdatedAt`/`UpdatedBy` |
+| `updateInvoicePaidAt(id, payload)` | PUT | `/api/agency/accounting/invoices/{invoiceId}/paid-at` | `UpdateInvoicePaidAtModel` | `void` | Sets or corrects `PaidAt` of a `Paid` invoice (ISO instant of the picked day); backend records `UpdatedAt`/`UpdatedBy` |
 | `downloadInvoicesPaymentsReport(filter)` | GET | `/api/agency/accounting/invoices/payments-report` | `AgencyInvoiceFilter` (params) | Blob | Payments follow-up Excel (B4 Tax, Amount, Net, Due Date, Due Days, Payment Date) |
 
-**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (the feature's `types.ts` + `src/shared/types/invoice`)
+**Types:** `AgencyInvoiceFilter` (incl. `status`), `AgencyInvoiceListResponse` (rows carry `paymentTermDays`, `dueDate`, `dueDays`, `paidAt`), `InvoiceStatus` enum + `INVOICE_STATUS_LABELS`/`INVOICE_STATUSES`/`invoiceStatusTagType`, `ChangeInvoiceStatusModel`, `UpdateInvoicePaidAtModel`, `InvoiceSummaryModel`, `CreateAgencyInvoiceModel`, `DeleteInvoicePayload`, `PayStubDeleteWarningItem`, `SendInvoiceEmailPayload` (the feature's `types.ts` + `src/shared/types/invoice`)
 
 **Pinia:** `agencyInvoiceFilter` in `useAgencyStore`.
 
@@ -259,8 +262,9 @@ Pay stub generation and payroll administration.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyPayStubs(filter)` | GET | `/api/agency/accounting/paystubs` | `AgencyPayStubFilter` (params) | `PaginatedList<AgencyPayStubListItem>` | |
-| `downloadPayStubPdf(id)` | GET | `/api/agency/accounting/paystubs/{id}/pdf` | — | Blob | |
+| `getAgencyPayStubs(filter)` | GET | `/api/agency/accounting/paystubs` | `AgencyPayStubFilter` (params) | `PaginatedList<AgencyPayStubListItem>` | Each row carries `pdfUrl` (1-hour read-only SAS) once its PDF exists, else `null` |
+| `downloadPayStubPdf(id)` | GET | `/api/agency/accounting/paystubs/{id}/pdf` | — | Blob | Only when `pdfUrl` is `null`; renders and stores the PDF. With `pdfUrl` the page opens the URL directly |
+| `regeneratePayStubPdf(id)` | POST | `/api/agency/accounting/paystubs/{id}/pdf/regenerate` | — | Blob | "Regenerate PDF" (shown once the PDF exists): discards the stored PDF and renders it again from current data |
 | `deleteAgencyPayStub(id)` | DELETE | `/api/agency/accounting/paystubs/{id}` | — | `void` | |
 | `sendPayStubEmail(id)` | POST | `/api/agency/accounting/paystubs/{id}/email` | — | `void` | Email to worker |
 | `sendPayStubEmailBulk(payStubIds)` | POST | `/api/agency/accounting/paystubs/email/bulk` | `{ payStubIds: string[] }` | `void` | Bulk email |
@@ -313,6 +317,7 @@ Core job request lifecycle. Bases: `requestsUrl = /api/agency/recruiting/request
 | `getAllAgencyRequests(filter)` | GET | `/api/agency/recruiting/requests/all` | `AgencyRequestFilter` (params) | `AgencyRequestListItem[]` | Unpaged |
 | `getAgencyRequest(id)` | GET | `/api/agency/recruiting/requests/{id}` | — | `AgencyRequestDetail` | Carries `applicantsCount`, `runnersCount` and `workersCount` (all `WorkerRequests`, booked and rejected) for the tab counters, plus `skills`, `requestedBy` and `reportTo` so the detail page loads them in the same call |
 | `updateAgencyRequest(id, model)` | PUT | `/api/agency/recruiting/requests/{id}` | `CreateAgencyRequestModel` | `AgencyRequestDetail` | |
+| `approveAgencyRequest(id, model)` | PUT | `/api/agency/recruiting/requests/{id}/Approve` | `CreateAgencyRequestModel` | `void` | Review mode of `CreateRequest.vue` ("Save & Approve"); `PendingReview` → `Open` |
 | `cancelAgencyRequest(id, payload)` | PUT | `/api/agency/recruiting/requests/{id}/Cancel` | `CancelRequestPayload` | `void` | Cancel + reason |
 | `bulkCancelRequests(payload)` | PUT | `/api/agency/recruiting/requests/bulk-cancel` | `BulkCancelRequestsPayload` | `BulkCancelRequestsResult` | Cancel many at once |
 | `bulkUpdateRecruiters(payload)` | PUT | `/api/agency/recruiting/requests/bulk-recruiters` | `BulkUpdateRecruitersPayload` | `void` | Replace recruiters on many at once; empty list unassigns. Admin/SuperAdmin only |
@@ -496,6 +501,7 @@ Company portal (client) view of their profile, requests and workers.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `getCompanyJobPositions()` | GET | `/api/company/profile/jobpositions` | — | `CompanyProfileJobPositionRate[]` | Roles + rates |
+| `createCompanyJobPosition(model)` | POST | `/api/company/profile/jobpositions` | `CreateJobPositionModel` | `{ id }` | Company creates a role without rates (agency admin sets them) |
 
 ### Requests
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
@@ -535,7 +541,8 @@ Company portal (client) view of their profile, requests and workers.
 | `getContactPeople()` | GET | `/api/company/profile/contactpeople` | — | `CompanyContactPersonModel[]` | |
 | `saveContactPerson(model)` | POST | `/api/company/profile/contactpeople` | `CompanyContactPersonModel` | `void` | Create/update |
 | `deleteContactPerson(id)` | DELETE | `/api/company/profile/contactpeople/{id}` | — | `void` | |
-| `getCompanyInvoice(filter)` | GET | `/api/company/invoices` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | |
+| `getCompanyInvoice(filter)` | GET | `/api/company/invoices` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | `pdfUrl` (1-hour SAS) once the PDF exists |
+| `downloadCompanyInvoicePdf(invoiceId)` | GET | `/api/company/invoices/{invoiceId}/pdf` | — | `Blob` (`responseType: 'blob'`) | Same cached PDF as the agency download; only used when `pdfUrl` is `null` |
 | `getCompanyRequestTimeSheetFile(requestId)` | GET | `/api/company/requests/{requestId}/TimeSheets/File` | — | Blob | Excel punch-card export, ownership-checked server-side |
 
 **Types:** from `src/shared/company-profile/types`, `src/shared/punch-card/types`, `src/shared/types/invoice` (`InvoiceSummaryModel`) and each feature's `types.ts`. The sales deals/interactions enums + models live in `src/modules/agency/sales/clients/types.ts`; their API calls are in §4.
@@ -570,9 +577,9 @@ In-app notification bell (agency roles). A single aggregated call returns every 
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getNotifications()` | GET | `/api/agency/notifications` | — | `NotificationsResponse` | Grouped by type; no notification kinds are defined, so the payload is empty |
+| `getNotifications()` | GET | `/api/agency/notifications` | — | `NotificationsResponse` | Grouped by type. Only kind: `pendingReviewRequests` (company requests waiting for approval; empty for sales-only users) |
 
-**Types:** `NotificationsResponse`, `AppNotification`, `NotificationGroup`, `NotificationType` (`src/modules/agency/shared/notifications/types`)
+**Types:** `NotificationsResponse`, `PendingReviewRequestNotification`, `AppNotification`, `NotificationGroup`, `NotificationType` (`src/modules/agency/shared/notifications/types`)
 
 **Composable:** `useNotifications` loads once, maps each typed list to generic `AppNotification[]` grouped by `NotificationType`.
 
@@ -741,7 +748,7 @@ Public landing site endpoints (no auth).
 
 ---
 
-## 23. Worker portal — `src/modules/worker/{requests,profile,register,history}/api.ts` + `src/shared/worker-profile/api.ts` (profile sections) + `src/modules/agency/recruiting/workers/api.ts` (wage/timesheet history)
+## 23. Worker portal — `src/modules/worker/{requests,profile,register,activity}/api.ts` + `src/shared/worker-profile/api.ts` (profile sections) + `src/modules/agency/recruiting/workers/api.ts` (wage/timesheet history)
 Worker portal: profile build, applications, timesheet.
 
 ### Requests (Job Applications)
@@ -756,7 +763,6 @@ Worker portal: profile build, applications, timesheet.
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `workerRegisterTime(requestId, lat, lon)` | POST | `/api/worker/requests/{requestId}/timesheet` | `{ latitude, longitude }` | `void` | Clock-in with GPS |
-| `workerGetTimeSheet(requestId)` | GET | `/api/worker/requests/{requestId}/timesheet` | — | `PaginatedList<WorkerTimeSheetItem>` (API `WorkerTimeSheetListModel`: punches, approved times, missing hours, worker-side amounts; never the agency rate) | Loaded only when the Time Sheet tab is opened; the punch card no longer depends on it. On touch widths each row is a card that opens a detail sheet |
 | `getPunchStatus(requestId, latitude, longitude)` | GET | `/api/worker/requests/{requestId}/timesheet/punch-status/{latitude}/{longitude}` | — | `PunchStatus` (`clockType`, `clockIn`, `clockOut`, `dayHours`, `weekHours`) | One call for the whole punch card: next punch (ClockOut while the latest punch is open and under 14 h, ClockIn otherwise), the stamps of the open or today's punch, and the hours since Sunday. Coordinates resolve the time zone. Replaces `clock-type`, which the API keeps only (`[Obsolete]`) for older mobile builds |
 
 ### Comments
@@ -770,11 +776,16 @@ Worker portal: profile build, applications, timesheet.
 | `getMyProfile()` | GET | `/api/worker/profile/me` | — | `WorkerProfileDetail` | |
 | `registerWorker(payload, requestId?)` | POST | `/api/worker/profile?requestId=` | FormData (multipart) | `string` (profile id) | Registration; `requestId` (request number from `/register-worker/:requestId`) also adds the new worker as applicant |
 
-### Request History
+### Activity — `src/modules/worker/activity/api.ts`
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getWorkerRequestHistory(filter)` | GET | `/api/worker/history` | `WorkerRequestFilter` (params) | `PaginatedList<WorkerRequestListItem>` | |
-| `getWorkerRequestHistoryDetail(id)` | GET | `/api/worker/history/{id}` | — | `WorkerRequestDetail` | |
+| `getActivitySummary(weekStart)` | GET | `/api/worker/activity/summary?weekStart=` | `weekStart` = local Sunday `YYYY-MM-DD` | `WorkerActivitySummary` (`lastPayStub`, `weekHours`) | Summary cards; "Last pay" hidden for USA workers |
+| `getWorkerWeekTimeSheets(weekStart)` | GET | `/api/worker/activity/timesheets?weekStart=` | `weekStart` = local Sunday `YYYY-MM-DD` | `WorkerWeekTimeSheets` (`weekStart`, `weekEnd`, `hours` totals, `items`) | One row per day: clock in/out (rounded when present), break, regular/OT/holiday/total hours, `status` (Open/Pending/Approved/Paid) and the adjustments (missing hours, bonus, deductions, reimbursements + descriptions) shown in the detail sheet. Next week is disabled on the current week |
+| `getWorkerHistory(filter)` | GET | `/api/worker/history` | `WorkerHistoryFilter` (pagination + `status`: Past/Completed/Ended; Activity sends `Past` by default, Jobs sends `Active`) | `PaginatedList<WorkerAssignmentListItem>` | One row per assignment (`WorkerRequest`) with client, start/end and hours worked. Rows are read-only |
+| `getWorkerPayStubs(filter)` | GET | `/api/worker/paystubs` | `WorkerPayStubFilter` (pagination + `year`) | `PaginatedList<WorkerPayStubListItem>` | Newest week first; `pdfUrl` (1-hour SAS) once the PDF exists |
+| `getWorkerPayStubYears()` | GET | `/api/worker/paystubs/years` | — | `number[]` | Years with pay stubs, newest first; empty → "no pay stubs yet" |
+| `getWorkerPayStubYtd(year)` | GET | `/api/worker/paystubs/ytd/{year}` | — | `WorkerPayStubYtd` (`earnings`, `totalDeductions`, `totalPaid`) | |
+| `downloadWorkerPayStubPdf(payStubId)` | GET | `/api/worker/paystubs/{payStubId}/pdf` | — | Blob | 404 when the pay stub belongs to another worker; only used when `pdfUrl` is `null` |
 
 ### Job Experience
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |

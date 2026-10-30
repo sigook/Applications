@@ -1,14 +1,32 @@
 // One HTTP call returns every notification kind in a single payload, grouped by
 // type. Mirrors backend Covenant.Common.Models.Notifications.NotificationsModel.
 // New kinds: add a list here + a NotificationType + a mapper in useNotifications.
-export type NotificationsResponse = Record<string, never>;
+import { PENDING_REVIEW_QUERY } from '@/modules/agency/recruiting/requests/types';
 
-export enum NotificationType {}
+export interface PendingReviewRequestNotification {
+  requestId: string;
+  numberId: number;
+  jobTitle: string;
+  companyName: string;
+  createdAt: string;
+}
 
-export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {};
+export interface NotificationsResponse {
+  pendingReviewRequests: PendingReviewRequestNotification[];
+}
+
+export enum NotificationType {
+  PendingReviewRequest = 'pendingReviewRequest',
+}
+
+export const NOTIFICATION_TYPE_LABELS: Record<NotificationType, string> = {
+  [NotificationType.PendingReviewRequest]: 'Requests to review',
+};
 
 // Detail page each notification type links to from the bell.
-export const NOTIFICATION_TYPE_ROUTES: Record<NotificationType, string> = {};
+export const NOTIFICATION_TYPE_ROUTES: Record<NotificationType, string> = {
+  [NotificationType.PendingReviewRequest]: `/recruiting/requests?status=${PENDING_REVIEW_QUERY}`,
+};
 
 // Generic, UI-agnostic notification rendered by the bell. Any kind maps to this.
 export interface AppNotification {

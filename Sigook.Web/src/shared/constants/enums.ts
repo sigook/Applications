@@ -34,12 +34,14 @@ export enum RequestStatus {
   Open = 1,
   Filled = 3,
   Cancelled = 4,
+  PendingReview = 5,
 }
 
 export const RequestStatusLabels: Record<RequestStatus, string> = {
   [RequestStatus.Open]: 'Open',
   [RequestStatus.Filled]: 'Filled',
   [RequestStatus.Cancelled]: 'Cancelled',
+  [RequestStatus.PendingReview]: 'Pending Review',
 };
 
 export enum CompanyStatus {
@@ -55,11 +57,39 @@ export enum CompanyStatus {
 export enum WorkerRequestStatus {
   Rejected = 2,
   Booked = 3,
+  Finished = 4,
 }
 
 export const WorkerRequestStatusLabels: Record<WorkerRequestStatus, string> = {
   [WorkerRequestStatus.Rejected]: 'Rejected',
   [WorkerRequestStatus.Booked]: 'Booked',
+  [WorkerRequestStatus.Finished]: 'Finished',
+};
+
+export const WorkerRequestStatusTagTypes: Record<WorkerRequestStatus, string> = {
+  [WorkerRequestStatus.Rejected]: 'is-danger',
+  [WorkerRequestStatus.Booked]: 'is-success',
+  [WorkerRequestStatus.Finished]: 'is-info',
+};
+
+export const WorkerRequestStatusOptions = [
+  WorkerRequestStatus.Booked,
+  WorkerRequestStatus.Finished,
+  WorkerRequestStatus.Rejected,
+].map(id => ({ id, value: WorkerRequestStatusLabels[id] }));
+
+export enum WorkerRequestFinishReason {
+  ContractCompleted = 1,
+  ClientReducedStaff = 2,
+  WorkerResigned = 3,
+  Other = 4,
+}
+
+export const WorkerRequestFinishReasonLabels: Record<WorkerRequestFinishReason, string> = {
+  [WorkerRequestFinishReason.ContractCompleted]: 'Contract completed',
+  [WorkerRequestFinishReason.ClientReducedStaff]: 'Client reduced staff',
+  [WorkerRequestFinishReason.WorkerResigned]: 'Worker resigned',
+  [WorkerRequestFinishReason.Other]: 'Other',
 };
 
 export enum WorkerStatus {

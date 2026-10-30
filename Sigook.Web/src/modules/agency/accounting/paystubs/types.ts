@@ -115,6 +115,7 @@ export interface AgencyPayStubListItem {
   payStubNumber: string;
   payStubNumberId: number;
   canDelete: boolean;
+  pdfUrl: string | null;
 }
 
 // Skip payroll number autocomplete item. Mirrors backend BaseModel<Guid>.
@@ -185,4 +186,5 @@ export interface WorkerReadyForPayStubModel {
 export interface AgencyPayStubRow extends AgencyPayStubListItem {
   emailSending?: boolean;
   emailSent?: boolean;
+  pdfGenerated?: boolean;
 }

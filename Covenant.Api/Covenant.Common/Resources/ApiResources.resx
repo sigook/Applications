@@ -558,6 +558,9 @@
   <data name="InvalidJobPosition">
     <value>Invalid job position</value>
   </data>
+  <data name="JobPositionAlreadyExists">
+    <value>A role with this name and rates already exists for this client</value>
+  </data>
   <data name="Subject">
     <value>Subject</value>
   </data>

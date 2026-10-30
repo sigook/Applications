@@ -39,7 +39,8 @@ namespace Covenant.Common.Entities.Companies
         /// When the company creates an account the company doesn't have the rates
         /// that's why by default are in zero
         /// </summary>
-        public static Result<CompanyProfileJobPositionRate> CompanyCreate(Guid companyProfileId, string jobPosition)
+        public static Result<CompanyProfileJobPositionRate> CompanyCreate(Guid companyProfileId, string jobPosition,
+            string description = "Created by company", string createdBy = null)
         {
             if (string.IsNullOrWhiteSpace(jobPosition))
                 return Result.Fail<CompanyProfileJobPositionRate>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
@@ -50,11 +51,13 @@ namespace Covenant.Common.Entities.Companies
                 JobPosition = jobPosition,
                 Rate = default,
                 WorkerRate = default,
-                Description = "Created by company",
+                Description = description,
                 CreatedAt = DateTime.Now,
-                CreatedBy = default
+                CreatedBy = createdBy
             });
         }
+
+        public bool HasRates => Rate > 0 && WorkerRate > 0;
 
         public static Result<CompanyProfileJobPositionRate> Create(Guid companyProfileId, string jobPosition,
             decimal agencyRate, decimal workerRate, string description = null, string createdBy = null)

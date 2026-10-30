@@ -1,11 +1,9 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Models.Requests.Workers;
-using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
+using Covenant.Common.Models.Requests.Workers;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Covenant.Api.Controllers.Workers.History;
@@ -14,23 +12,20 @@ namespace Covenant.Api.Controllers.Workers.History;
 [ApiController]
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Worker)]
-public class HistoryController : ControllerBase
+public class HistoryController(IRequestRepository requestRepository) : ControllerBase
 {
     public const string RouteName = "api/worker/history";
 
-    private readonly IRequestRepository _requestRepository;
-
-    public HistoryController(IRequestRepository requestRepository) =>
-        _requestRepository = requestRepository;
+    private readonly IRequestRepository _requestRepository = requestRepository;
 
     /// <summary>
-    /// Lists the request history for the authenticated worker.
+    /// Lists every assignment of the authenticated worker, newest first, with the worker-facing status Active, Completed or Ended.
     /// </summary>
-    /// <param name="pagination">Pagination parameters.</param>
+    /// <param name="filter">Pagination and the optional worker-facing status (Active, Completed, Ended, or Past = Completed and Ended).</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerRequestListModel>), StatusCodes.Status200OK)]
-    public async Task<ActionResult> Get(Pagination pagination) =>
-        Ok(await _requestRepository.GetRequestsHistoryForWorker(User.GetUserId(), pagination));
+    public async Task<ActionResult> Get([FromQuery] GetWorkerHistoryFilter filter) =>
+        Ok(await _requestRepository.GetRequestsHistoryForWorker(User.GetUserId(), filter));
 
     /// <summary>
     /// Gets the detail of a historic request for the authenticated worker.

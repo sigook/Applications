@@ -10,6 +10,7 @@
         <router-view />
       </div>
     </div>
+    <b-loading v-else-if="isAuthPending" :model-value="true" :can-cancel="false" />
     <div v-else-if="isLandingRoute" class="landing-page">
       <LandingBackground />
       <LandingHeader />
@@ -49,6 +50,7 @@ const isANewVersion = ref(false);
 const isLogged = ref(false);
 
 const isCallback = computed(() => route.name === 'callback' || route.meta?.layout === 'auth');
+const isAuthPending = computed(() => !!route.meta?.requiresAuth);
 const isLandingRoute = computed(() =>
   route.meta?.layout === 'landing'
   || (route.meta?.layout === 'landing-anonymous' && !securityStore.user)

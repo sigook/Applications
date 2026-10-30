@@ -79,6 +79,34 @@ public class JobPositionsControllerTest : IClassFixture<CustomWebApplicationFact
         Assert.Equal(entity.Shift?.SaturdayFinish, model.Shift?.SaturdayFinish);
     }
 
+    [Fact]
+    public async Task PostCreatesJobPositionWithoutRates()
+    {
+        var model = new CreateJobPositionModel
+        {
+            JobPosition = "Picker",
+            Description = "Warehouse",
+            Shift = new ShiftModel
+            {
+                Tuesday = true,
+                TuesdayStart = TimeSpan.Parse("07:00"),
+                TuesdayFinish = TimeSpan.Parse("15:00")
+            }
+        };
+        HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
+        response.EnsureSuccessStatusCode();
+        var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var entity = await context.CompanyProfileJobPositionRates.Include(c => c.Shift).SingleAsync(c => c.Id == detail.Id);
+        Assert.Equal(model.JobPosition, entity.JobPosition);
+        Assert.Equal(model.Description, entity.Description);
+        Assert.Equal(Startup.FakePosition.CompanyProfileId, entity.CompanyProfileId);
+        Assert.Equal(0, entity.Rate);
+        Assert.Equal(0, entity.WorkerRate);
+        Assert.False(entity.HasRates);
+        Assert.True(entity.Shift.Tuesday);
+    }
+
     public class Startup
     {
         public void ConfigureServices(IServiceCollection services)

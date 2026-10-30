@@ -260,7 +260,71 @@ class _AccountSettingsSectionCardState
 
         const Divider(height: 28),
 
+        // ── About ──────────────────────────────────────────────────────────
+        InkWell(
+          onTap: () => context.push(AppRoutes.about),
+          borderRadius: BorderRadius.circular(8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Icon(Icons.info_outline, size: 20, color: Colors.grey.shade600),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('About Sigook', style: TextStyle(fontSize: 14)),
+                      Text(
+                        'Services, terms & privacy',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Icon(Icons.chevron_right, color: Colors.grey.shade500),
+              ],
+            ),
+          ),
+        ),
+
+        const Divider(height: 28),
+
+        // ── Logout ─────────────────────────────────────────────────────────
+        SizedBox(
+          width: double.infinity,
+          child: OutlinedButton.icon(
+            onPressed: _showLogoutDialog,
+            icon: const Icon(Icons.logout, size: 20),
+            label: const Text('Logout'),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AppTheme.secondaryRed,
+              side: const BorderSide(color: AppTheme.secondaryRed, width: 1.5),
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              padding: const EdgeInsets.symmetric(vertical: 12),
+            ),
+          ),
+        ),
+
+        const Divider(height: 36),
+
         // ── Deactivate Account ─────────────────────────────────────────────
+        Padding(
+          padding: const EdgeInsets.only(bottom: 6),
+          child: Text(
+            'DANGER ZONE',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 0.6,
+              color: Colors.grey.shade600,
+            ),
+          ),
+        ),
         Padding(
           padding: const EdgeInsets.only(bottom: 8),
           child: Text(
@@ -292,25 +356,6 @@ class _AccountSettingsSectionCardState
             style: OutlinedButton.styleFrom(
               foregroundColor: Colors.red.shade600,
               side: BorderSide(color: Colors.red.shade400),
-              shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12)),
-              padding: const EdgeInsets.symmetric(vertical: 12),
-            ),
-          ),
-        ),
-
-        const Divider(height: 28),
-
-        // ── Logout ─────────────────────────────────────────────────────────
-        SizedBox(
-          width: double.infinity,
-          child: OutlinedButton.icon(
-            onPressed: _showLogoutDialog,
-            icon: const Icon(Icons.logout, size: 20),
-            label: const Text('Logout'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AppTheme.secondaryRed,
-              side: const BorderSide(color: AppTheme.secondaryRed, width: 1.5),
               shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12)),
               padding: const EdgeInsets.symmetric(vertical: 12),

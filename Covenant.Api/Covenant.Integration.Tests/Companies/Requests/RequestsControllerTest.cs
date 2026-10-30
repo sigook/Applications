@@ -74,6 +74,35 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     }
 
     [Fact]
+    public async Task PostIgnoresAgencyOnlyFields()
+    {
+        var model = Data.NewRequest;
+        model.BillingTitle = "Billing";
+        model.JobCosting = "Costing";
+        model.InternalRequirements = "Internal";
+        model.SalesRepresentativeId = Guid.NewGuid();
+        model.UsesRunners = false;
+        model.ComplianceItems = [new RequestComplianceItemModel { Name = "ID", IsMandatory = true }];
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync(Url, model);
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var id = Guid.Parse(response.Headers.Location.Segments.Last());
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var request = await context.Requests.AsNoTracking()
+            .Include(r => r.RequestComission)
+            .Include(r => r.ComplianceItems)
+            .SingleAsync(r => r.Id == id);
+        Assert.Equal(RequestStatus.PendingReview, request.Status);
+        Assert.Equal(model.JobTitle, request.BillingTitle);
+        Assert.Null(request.JobCosting);
+        Assert.Null(request.InternalRequirements);
+        Assert.True(request.UsesRunners);
+        Assert.Null(request.RequestComission);
+        Assert.Empty(request.ComplianceItems);
+    }
+
+    [Fact]
     public async Task Get()
     {
         HttpResponseMessage response = await _client.GetAsync(Url);
@@ -207,7 +236,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
         };
 
 
-        public static readonly RequestCreateModel NewRequest = new RequestCreateModel
+        public static RequestCreateModel NewRequest => new RequestCreateModel
         {
             JobTitle = "Cut grass",
             WorkersQuantity = 1,

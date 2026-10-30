@@ -12,6 +12,7 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
+using System.Net;
 using System.Net.Http.Json;
 using Xunit;
 
@@ -103,6 +104,57 @@ public partial class WorkersControllerTest : BaseTestOrder, IClassFixture<Seeded
         AgencyWorkerRequestModel detail = list.Items.Single(w => w.Id == worker.Id);
         Assert.Equal(model.Comments, detail.RejectComments);
         DateAssert.Equal(entity.RejectedAt, detail.RejectedAt);
+    }
+
+    [Fact]
+    public async Task Finish()
+    {
+        var worker = _data.WorkerRequestFinish;
+        var model = new FinishAssignmentModel
+        {
+            LastDay = new DateTime(2019, 01, 20),
+            Reason = WorkerRequestFinishReason.ContractCompleted,
+            Comments = "Season ended"
+        };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{worker.WorkerProfileId}/Finish", model);
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var entity = await context.WorkerRequests.SingleAsync(s => s.Id == worker.Id);
+        Assert.Equal(WorkerRequestStatus.Finished, entity.WorkerRequestStatus);
+        DateAssert.Equal(model.LastDay, entity.FinishedAt);
+        Assert.Equal(model.Reason, entity.FinishReason);
+        Assert.Equal(model.Comments, entity.FinishComments);
+        Assert.Equal("recruiter@mail.com", entity.FinishedBy);
+
+        response = await _client.GetAsync($"{RequestUri()}/{worker.Id}");
+        var detail = await response.Content.ReadFromJsonAsync<AgencyWorkerRequestModel>();
+        Assert.Equal(WorkerRequestStatus.Finished, detail.WorkerRequestStatus);
+        Assert.Equal(model.Reason, detail.FinishReason);
+        DateAssert.Equal(model.LastDay, detail.FinishedAt);
+    }
+
+    [Fact]
+    public async Task FinishWithoutLastDayIsBadRequest()
+    {
+        var model = new FinishAssignmentModel { Reason = WorkerRequestFinishReason.ContractCompleted };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{_data.WorkerRequestList.WorkerProfileId}/Finish", model);
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task FinishAll()
+    {
+        var requestId = _data.RequestToFinishAll.Id;
+        var model = new FinishAssignmentModel { LastDay = new DateTime(2019, 01, 25), Reason = WorkerRequestFinishReason.ClientReducedStaff };
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{WorkersController.RouteName.Replace("{requestId}", requestId.ToString())}/Finish", model);
+        response.EnsureSuccessStatusCode();
+        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var workers = await context.WorkerRequests.Where(w => w.RequestId == requestId).ToListAsync();
+        Assert.Equal(2, workers.Count);
+        Assert.All(workers, w => Assert.Equal(WorkerRequestStatus.Finished, w.WorkerRequestStatus));
+        var request = await context.Requests.SingleAsync(r => r.Id == requestId);
+        Assert.Equal(0, request.WorkersQuantityWorking);
+        Assert.Equal(RequestStatus.Open, request.Status);
     }
 
     [Fact]

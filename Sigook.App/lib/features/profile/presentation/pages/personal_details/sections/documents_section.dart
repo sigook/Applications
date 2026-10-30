@@ -6,7 +6,6 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/navigation/document_preview_page.dart';
-import '../../../../../auth/presentation/viewmodels/auth_viewmodel.dart';
 import '../../../../../catalog/domain/entities/catalog_item.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../../../registration/domain/entities/value_objects/identification_number.dart';
@@ -71,15 +70,8 @@ class _DocumentsSectionCardState extends ConsumerState<DocumentsSectionCard> {
     return result.isSuccess ? result.file : null;
   }
 
-  void _previewDocument(String url, String title) {
-    final token = ref.read(authViewModelProvider).token?.accessToken;
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            DocumentPreviewPage(url: url, title: title, token: token),
-      ),
-    );
-  }
+  void _previewDocument(String url, String title) =>
+      DocumentPreviewPage.open(context, url: url, title: title);
 
   @override
   Widget build(BuildContext context) {

@@ -87,7 +87,11 @@ POST api/company/requests             → RequestsController.Post (Controllers/C
 Key facts about the `Request` entity (`Covenant.Common/Entities/Requests/Request.cs`):
 
 - Rates (`AgencyRate`, `WorkerRate`) come from the selected `CompanyProfileJobPositionRate`.
-- A new request starts as `RequestStatus.Open`. The enum has exactly three values: `Open = 1`, `Filled = 3`, `Cancelled = 4` (value 2 intentionally skipped).
+- **Roles without rates.** While creating a request, the company (`POST api/company/profile/jobpositions`) and a non-admin agency user (`POST api/agency/recruiting/clients/{profileId}/jobpositions/WithoutRates`) can create a role with only name, description and shift; it is stored with `Rate = WorkerRate = 0` (`CompanyProfileJobPositionRate.CompanyCreate`). Agency admins create roles with rates (`POST …/jobpositions`) and set the rates of a pending role with the pencil next to the role tag (Create/Review Request page and the Rate KPI of the request detail), which calls `PUT …/jobpositions/{id}`. That update copies the new rates to every request of the role that still has no rates (`IRequestRepository.GetRequestsPendingRates`); requests that already have rates keep them.
+- **Duplicate role.** Next to the pencil, every agency user sees a duplicate button that opens the same role form prefilled from the selected role in create mode: admins get the full form (rates copied), recruiters the basic one (saved through `WithoutRates`, so it starts with rates pending). On the Create/Review Request page the new role becomes the request's role; on the Rate KPI of the request detail it only creates the role (the request keeps its current role).
+- **No duplicate roles.** A client can have several roles with the same name as long as their rates differ; two active roles with the same name (trimmed, case-insensitive) AND the same `Rate` and `WorkerRate` are rejected (deleted roles don't count). Two roles without rates with the same name therefore collide, while a role without rates may share the name of one with rates. Every create and update path (`AgencyService.CreateCompanyJobPosition`/`UpdateCompanyJobPosition`, `CompanyService.CreateJobPositionWithoutRates`) checks `ICompanyRepository.JobPositionExists` and returns 400 `JobPositionAlreadyExists`.
+- **No rates, no work.** `Request.HasRates` = `WorkerSalary` set, or `AgencyRate > 0` and `WorkerRate > 0`. Without rates the request cannot be approved, booked (`AddWorker`), applied to (`IsAvailableToApply`) or invited (`SendInvitation`), and it is hidden from the worker job board and the worker's request list.
+- A request created by the agency starts as `RequestStatus.Open`; one created by the company starts as `PendingReview` and is published (website, worker app, invitations, bookings) only after admin/recruiting approves it. The enum has four values: `Open = 1`, `Filled = 3`, `Cancelled = 4`, `PendingReview = 5` (value 2 intentionally skipped).
 - `WorkerSalary` (`Request.cs:53`) set = **Direct Hiring** order (permanent placement); changes billing and attendance behavior (see §6).
 - State transitions (fill on capacity, reopen, cancel restrictions) are automatic inside the entity — **do not re-implement them**; the authoritative description is `.docs/business/REQUEST_STATE_MANAGEMENT.md`.
 
@@ -95,7 +99,8 @@ Request management endpoints on the same controller:
 
 ```
 PUT api/agency/recruiting/requests/{id}                              → RequestService.UpdateRequest
-PUT api/agency/recruiting/requests/{id}/Cancel                       → RequestService.CancelRequest   (only Open + zero workers)
+PUT api/agency/recruiting/requests/{id}/Approve                      → RequestService.ApproveRequest  (PendingReview → Open + saves the form; policy Recruiting)
+PUT api/agency/recruiting/requests/{id}/Cancel                       → RequestService.CancelRequest   (only Open/PendingReview + zero workers)
 PUT api/agency/recruiting/requests/{id}/Open                         → RequestService.OpenRequest     (reopen)
 PUT api/agency/recruiting/requests/{id}/IncreaseWorkersQuantityByOne → AgencyService.IncreaseWorkersQuantityByOne
 PUT api/agency/recruiting/requests/{id}/ReduceWorkersQuantityByOne   → RequestService.ReduceWorkerQuantityByOne
@@ -113,7 +118,7 @@ GET  api/worker/requests/{id}                 → RequestsController.GetById
 POST api/worker/requests/{requestId}/Apply    → RequestsController.Apply → WorkerService.Apply(model, requestId)
 ```
 
-The worker's history (`GET api/worker/history[/{id}]` → `Controllers/Workers/History/HistoryController.cs` → `IRequestRepository.GetRequestsHistoryForWorker`) lists **only `Cancelled` requests** of the worker's agency on which the worker had a `WorkerRequest`, newest `NumberId` first. Requests that are still `Open` or `Filled` never appear there, even if the worker was rejected or finished; this is intentional.
+The worker's history (`GET api/worker/history[/{id}]` → `Controllers/Workers/History/HistoryController.cs` → `IRequestRepository.GetRequestsHistoryForWorker`) lists one row per `WorkerRequest` of the worker, ordered by `StartWorking ?? CreatedAt` descending. Each row carries a worker-facing status: `Booked` → **Active**, `Finished` with reason `ContractCompleted` → **Completed**, anything else (other finish reasons, rejected) → **Ended**; the worker never sees "Rejected". `?status=` filters by that label; `?status=Past` returns Completed and Ended together (everything but Active). `HoursWorked` = approved hours minus one `DurationBreak` per timesheet when the break is unpaid. See section 4, "Worker view: Activity".
 
 There is no `/Available` suffix — the plain `GET api/worker/requests` already returns only requests the authenticated worker can apply to. The list is built in one SQL query (`GetWorkerRequestsFilter`): a worker with at least one `Booked` assignment sees only their booked requests; otherwise they see the agency's `Open` requests they were not rejected from (`status` = `null`) plus their own booked ones (`status` = `"Booked"`). Query parameters: `sortBy` (`NumberId`, the default, or `Rate`), `isDescending` (defaults to `true`, so the plain call returns newest first), `numberId` (exact match) and `jobTitle` (case-insensitive contains). There is no status filter on purpose: because of the rule above a worker only ever sees one kind of row, so filtering by status would be a no-op. Sigook.App maps its four sort options (newest / oldest / highest rate / lowest rate) to the two sort parameters and has one search box: an all-digit query is sent as `numberId`, anything else as `jobTitle`. Sigook.Web sorts through the `numberId` and `workerRate` column headers and searches through the searchable `numberId`/`jobTitle` columns on desktop, and through the `MobileFiltersPanel` sheet on touch widths.
 
@@ -146,7 +151,7 @@ POST api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Book
 
 `BookWorker` validates the worker profile (approved, not DNU) and calls `Request.AddWorker`, which creates the `WorkerRequest` with `WorkerRequestStatus.Booked` and auto-transitions the request to `Filled` when capacity is reached (see `REQUEST_STATE_MANAGEMENT.md`).
 
-`WorkerRequestStatus` (`Covenant.Common/Enums/WorkerRequestStatus.cs`) has two values: `Rejected = 2` and `Booked`.
+`WorkerRequestStatus` (`Covenant.Common/Enums/WorkerRequestStatus.cs`) has three values: `Rejected = 2` (removed for cause), `Booked = 3` and `Finished = 4` (the assignment ended normally: contract completed, client reduced staff, worker resigned, other).
 
 ### Managing booked workers
 
@@ -154,8 +159,12 @@ POST api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Book
 GET api/agency/recruiting/requests/{requestId}/workers                        → workers assigned to the request
 GET api/agency/recruiting/requests/{requestId}/workers/{id}                   → single worker request
 PUT api/agency/recruiting/requests/{requestId}/workers/{id}                   → WorkerRequest.UpdateStartWorking (change start date)
-PUT api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Reject → RequestService.RejectWorker (may reopen a Filled request)
+PUT api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Reject → RequestService.RejectWorker (for cause; may reopen a Filled request)
+PUT api/agency/recruiting/requests/{requestId}/workers/{workerProfileId}/Finish → RequestService.FinishWorker (end of assignment; may reopen a Filled request)
+PUT api/agency/recruiting/requests/{requestId}/workers/Finish                   → RequestService.FinishAllWorkers (finishes every booked worker)
 ```
+
+`Finish` takes `FinishAssignmentModel { LastDay, Reason, Comments }` (validated by `FinishAssignmentModelValidator`). Finishing an assignment sends no email to the worker. A finished or rejected worker can still get hours added until `LimitDateToAddTimeSheet` (last day / rejection date + 1 month) but can't punch. Rebooking a finished worker reuses the same row. The company has the single-worker `PUT api/company/requests/{requestId}/workers/{workerProfileId}/Finish`.
 
 The company sees its assigned workers via `api/company/requests/{requestId}/workers` (`Controllers/Companies/Requests/WorkersController.cs`).
 
@@ -164,6 +173,8 @@ The company sees its assigned workers via `api/company/requests/{requestId}/work
 ## 4. Time Tracking Flow (Punch Card)
 
 ### Step 1: Worker clocks in / out
+
+The worker reaches the punch card from Jobs: while booked, Jobs shows only the worker's active assignments (`GET api/worker/history?status=Active`), each with an **OPEN PUNCH CARD** button that opens the job page on its Punch Card tab (Sigook.Web `/worker-requests/applied/{id}?tab=punch`, Sigook.App `jobDetails` with `JobPageTab.punchCard`). A booked worker cannot apply to other jobs, so the open-jobs list and filter are hidden. Jobs is the only place that shows active assignments. Punching itself only happens on the Punch Card tab (job title, distance badge and coordinates live there).
 
 A single punch endpoint; the service decides whether the punch is a clock-in or a clock-out:
 
@@ -186,7 +197,8 @@ GET api/worker/requests/{requestId}/timesheet/clock-type/{latitude}/{longitude}
   before punch-status. New clients never call it.
 
 GET api/worker/requests/{requestId}/timesheet
-→ ITimesheetRepository.GetTimeSheetsForWorker   (worker's own timesheet list, Time Sheet tab only)
+→ ITimesheetRepository.GetTimeSheetsForWorker   (per-job timesheet list; kept only for app builds
+  released before Activity. Current clients read timesheets from api/worker/activity/timesheets)
 ```
 
 ### Step 2: Agency reviews and edits the punch card
@@ -208,6 +220,27 @@ On the agency punch card the per-day hours input is disabled and the edit icon h
 ### Step 3: Hours breakdown
 
 Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.
+
+### Worker view: Activity
+
+Jobs shows what the worker does now (active assignments with the punch card); Activity shows the record: Sigook.Web `/worker-activity`, Sigook.App `/activity` (`/worker-my-work`, `/worker-history` and `/history` redirect there), with tabs Pay Stubs · Timesheets · History. History lists only past assignments (`?status=Past`, chips Completed / Ended); active ones never appear in Activity. Pay stubs are generated only for Canadian workers, so a worker whose profile location is in the USA (`location.city.province.country.code == "USA"`) gets neither the Pay Stubs tab nor the "Last pay" summary card, and opens on Timesheets. The job page only has Detail and Punch Card.
+
+```
+GET api/worker/activity/summary?weekStart=YYYY-MM-DD    → ActivityController → WorkerActivityService.GetSummary (last pay stub + week hours)
+GET api/worker/activity/timesheets?weekStart=YYYY-MM-DD → ActivityController → WorkerActivityService.GetWeekTimeSheets
+GET api/worker/history?status=Past|Completed|Ended      → HistoryController (see Step 2A)
+GET api/worker/paystubs?year=                           → PayStubsController (Controllers/Workers/PayStubs/) → IPayStubRepository.GetPayStubsForWorker
+GET api/worker/paystubs/years                           → years with pay stubs, newest first
+GET api/worker/paystubs/ytd/{year}                      → earnings / deductions / net for the year
+GET api/worker/paystubs/{payStubId}/pdf                 → PayStubService.GetPayStubPdfForWorker (404 if not the worker's)
+```
+
+- **Week**: Sunday–Saturday, sent by the client as its local Sunday (`weekStart`); the service normalises any date to that Sunday.
+- **Day status**: Paid (has a `TimeSheetTotalPayroll`) → Approved (approved in/out present) → Pending (clocked out) → Open. The clients show an Open day before today as **No clock-out**.
+- **Hours**: regular / overtime / holiday per day come from `TimesheetCalculatorService.CalculateHoursBreakdown`, accumulated per request across the week (approved times when present, else the worked duration).
+- **Clock times**: `ClockInRounded ?? ClockIn` and `ClockOutRounded ?? ClockOut`. A timesheet created or entered by the agency has no clock times and is shown as **Manual entry**; `TimeIn`/`TimeOut` and the approved times are durations from 00:00, never wall-clock times, and are never displayed as such.
+- **Day detail** (tap a day): hours (in–out, break, regular, overtime, total) and, when present, adjustments: missing hours / overtime, bonus or others, deductions, reimbursements with their descriptions.
+- **Summary**: last pay stub, this week's hours (total, regular, OT, pending approval) and the current Active assignment.
 
 ---
 
