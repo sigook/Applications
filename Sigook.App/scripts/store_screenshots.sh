@@ -12,6 +12,10 @@
 #      ENV_FILE        default .env.staging
 #      SCREENSHOT_SKIP_BUILD  "true" reuses the binary of a previous call (same
 #                      platform, same dart-defines), e.g. iPad after iPhone
+#      SCREENSHOT_ANDROID_SIZE     Android display size, default 1080x1920 (phone);
+#                      1600x2560 for the tablet slots
+#      SCREENSHOT_ANDROID_DENSITY  optional Android display density, e.g. 320 so a
+#                      1600x2560 display is 800 dp wide and the app lays out as a tablet
 #
 # The app is built and installed before `flutter drive` so the location
 # permission can be granted up front: the punch card tab requests it, and the
@@ -60,10 +64,13 @@ case "$PLATFORM" in
     adb -s "$DEVICE" shell pm grant "$PACKAGE" android.permission.ACCESS_FINE_LOCATION
     adb -s "$DEVICE" shell pm grant "$PACKAGE" android.permission.ACCESS_COARSE_LOCATION
     adb -s "$DEVICE" emu geo fix "$LON" "$LAT" || echo "geo fix skipped (not an emulator)"
-    # Play wants 9:16; the Flutter surface follows the window, so a temporary
-    # display size yields 1080x1920 captures on any emulator
-    adb -s "$DEVICE" shell wm size 1080x1920
-    trap 'adb -s "$DEVICE" shell wm size reset' EXIT
+    # The Flutter surface follows the window, so a temporary display size
+    # (and density) yields captures of that size on any emulator
+    adb -s "$DEVICE" shell wm size "${SCREENSHOT_ANDROID_SIZE:-1080x1920}"
+    if [ -n "${SCREENSHOT_ANDROID_DENSITY:-}" ]; then
+      adb -s "$DEVICE" shell wm density "$SCREENSHOT_ANDROID_DENSITY"
+    fi
+    trap 'adb -s "$DEVICE" shell wm size reset; adb -s "$DEVICE" shell wm density reset' EXIT
     ;;
   ios)
     BUNDLE=com.all2job.all2job
