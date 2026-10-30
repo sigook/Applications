@@ -67,28 +67,23 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-field>
-            <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-success" outlined rounded icon-right="file-multiple" class="mr-2"
-                @click="onDownloadPayStubPdf(props.row)">
-              </b-button>
-            </b-tooltip>
-            <b-tooltip v-if="props.row.pdfUrl || props.row.pdfGenerated" label="Regenerate PDF" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-warning" outlined rounded icon-right="file-refresh" class="mr-2"
-                @click="onRegeneratePayStubPdf(props.row)">
-              </b-button>
-            </b-tooltip>
-            <b-tooltip :label="props.row.emailSent ? 'Email Sent' : 'Send Email'" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-info" outlined rounded :icon-right="props.row.emailSent ? 'email-check' : 'email'"
-                class="mr-2" :loading="props.row.emailSending" :disabled="props.row.emailSent"
-                @click="onSendPayStubEmail(props.row)">
-              </b-button>
-            </b-tooltip>
-            <b-tooltip label="Delete" type="is-dark" position="is-top" append-to-body>
-              <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeletePayStub(props.row)">
-              </b-button>
-            </b-tooltip>
-          </b-field>
+          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+            <template #trigger>
+              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
+            </template>
+            <b-dropdown-item aria-role="listitem" @click="onDownloadPayStubPdf(props.row)">Download</b-dropdown-item>
+            <b-dropdown-item v-if="props.row.pdfUrl || props.row.pdfGenerated" aria-role="listitem"
+              @click="onRegeneratePayStubPdf(props.row)">
+              Regenerate PDF
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" :disabled="props.row.emailSent || props.row.emailSending"
+              @click="onSendPayStubEmail(props.row)">
+              {{ props.row.emailSent ? 'Email Sent' : props.row.emailSending ? 'Sending...' : 'Send Email' }}
+            </b-dropdown-item>
+            <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeletePayStub(props.row)">
+              Delete
+            </b-dropdown-item>
+          </b-dropdown>
         </b-table-column>
       </SigookGrid>
     </div>
