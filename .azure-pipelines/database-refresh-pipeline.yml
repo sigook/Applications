@@ -77,7 +77,7 @@ stages:
               scriptType: 'bash'
               scriptLocation: 'inlineScript'
               inlineScript: |
-                az webapp restart --resource-group SigookStaging --name sigook-api-staging
+                az webapp restart --resource-group Sigook --name sigook-api-staging
 
   - stage: RefreshFiles
     displayName: 'Refresh Staging Files'

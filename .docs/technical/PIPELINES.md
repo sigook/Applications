@@ -71,7 +71,7 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 - Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
 **Stage 2 - Deploy** (only on push to dev/main, not PRs; `deployment` job on environment `staging`/`production`):
-- Deploy `sigook.azurecr.io/api:$(Build.BuildId)` with `AzureWebAppContainer@1` to Azure App Service
+- Zero-downtime slot swap (see [Zero-downtime deploys](#zero-downtime-deploys)): start the `warmup` slot → `AzureWebAppContainer@1` deploys `sigook.azurecr.io/api:$(Build.BuildId)` to it → swap into production → stop the slot (`always()`)
 - Staging: `https://sigook-api-staging.azurewebsites.net`
 - Production: `https://sigook-api.azurewebsites.net`
 
@@ -93,9 +93,21 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 - Image: `sigook.azurecr.io/web:<tag>` plus the immutable `$(Build.BuildId)`
 
 **Stage 2 - Deploy** (only on push to dev/main; `deployment` job on environment `staging`/`production`):
-- Deploy `sigook.azurecr.io/web:$(Build.BuildId)` with `AzureWebAppContainer@1`
+- Same slot swap as the API, deploying `sigook.azurecr.io/web:$(Build.BuildId)` to the `warmup` slot
 - Staging: `https://sigook-web-staging.azurewebsites.net`
 - Production: `https://sigook.azurewebsites.net`
+
+### Zero-downtime deploys
+
+All four container apps (`sigook-api`, `sigook`, `sigook-api-staging`, `sigook-web-staging`) live in resource group `Sigook` on the single App Service plan `Sigook` (**P0v3**; slots need Premium/Standard). Each app has a `warmup` slot (`<app>-warmup.azurewebsites.net`):
+
+- The pipeline deploys to the slot, App Service warms it up by pinging `WEBSITE_SWAP_WARMUP_PING_PATH` (`/health`) until it returns `WEBSITE_SWAP_WARMUP_PING_STATUSES` (`200`), and only then swaps. Both are slot settings on both sides
+- App Service Health Check is `/health` on every app and slot. The API maps it in `UseCovenantHealthChecks`; Sigook.Web answers it from `nginx.conf` (`location = /health`), and `sigook-web-staging` (plus its slot) lists `/health` in Easy Auth `globalValidation.excludedPaths` so the probe is not answered with 401
+- The slot is stopped after the swap: the previous version would otherwise keep running `SigookBackgroundService` (Service Bus consumers). The next deploy starts it again
+- Managed identities do **not** swap. Each slot has its own system identity with the same Key Vault roles as its app: API slots get `Key Vault Secrets User` on the vault plus `Key Vault Certificate User` on `sigook-identity-signing` and `sigook-identity-encryption`; `sigook-web-staging/warmup` gets `Key Vault Secrets User` on `staging-web--EasyAuth--ClientSecret`. Easy Auth (`authsettingsV2`) is configured on both `sigook-web-staging` and its slot
+- Rollback: start the slot (it still holds the previous image) and swap again
+- EF migrations run when the new version boots in the slot, so for the warm-up window the live version runs against the migrated schema; keep migrations backward compatible
+- Open Sigook.Web tabs keep the old bundle after a swap. `App.vue` compares the running build (`<meta name="build">` in `index.html`) with `/version.json` (served `no-store`) every 5 minutes and whenever the tab becomes visible, and shows `AppVersionToast` when they differ. Lazy chunks of the old build no longer exist in the new image, so `main.ts` reloads the page on `vite:preloadError` (at most once every 10 s, tracked in `sessionStorage`)
 
 **Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `agency-portal`)
@@ -285,7 +297,7 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
-- Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
+- Final step restarts `sigook-api-staging` (resource group `Sigook`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
 **Stage RefreshFiles - Refresh Staging Files:**
 - `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` for each of the containers `files`, `invoices` and `paystubs`, from `https://sigookfiles.blob.core.windows.net/{container}` to `https://sigookfilesstaging.blob.core.windows.net/{container}`, with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
