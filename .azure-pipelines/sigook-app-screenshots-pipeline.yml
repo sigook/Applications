@@ -7,6 +7,7 @@ name: Sigook.App-Screenshots-$(Date:yyyyMMdd)$(Rev:.r)
 # ready to unzip into Sigook.App/ and commit:
 #   store-screenshots-ios:      fastlane/screenshots/en-CA/                               iPhone 6.9" + iPad 13" (deliver)
 #   store-screenshots-android:  fastlane/metadata/android/en-CA/images/phoneScreenshots/  1080x1920 (supply)
+#                               .../tenInchScreenshots/ + sevenInchScreenshots/           1600x2560, same files in both
 # Two jobs: iOS on a hosted macOS agent (nobody on the team has a Mac) and
 # Android on a hosted Linux agent with KVM. The org has a single hosted
 # parallel job, so they run one after the other. The Android ones can also
@@ -353,6 +354,12 @@ stages:
             adb devices
 
             bash scripts/store_screenshots.sh android "$DEVICE" "$OUT"
+
+            IMAGES="$(outputRoot)/fastlane/metadata/android/en-CA/images"
+            SCREENSHOT_SKIP_BUILD=true SCREENSHOT_ANDROID_SIZE=1600x2560 SCREENSHOT_ANDROID_DENSITY=320 \
+              bash scripts/store_screenshots.sh android "$DEVICE" "$IMAGES/tenInchScreenshots"
+            mkdir -p "$IMAGES/sevenInchScreenshots"
+            cp "$IMAGES/tenInchScreenshots/"*.png "$IMAGES/sevenInchScreenshots/"
             adb -s "$DEVICE" emu kill || true
       - task: Bash@3
         displayName: 'List captures'

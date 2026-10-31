@@ -7,7 +7,6 @@ public enum GetInvoicesFilterSortBy : byte
     InvoiceNumber,
     CreatedAt,
     CompanyFullName,
-    SalesRepresentative,
     Status
 }
 
@@ -21,7 +20,6 @@ public class GetInvoicesFilter : Pagination
     public DateTime? PaidAtFrom { get; set; }
     public DateTime? PaidAtTo { get; set; }
     public string CompanyFullName { get; set; }
-    public string SalesRepresentative { get; set; }
     public InvoiceStatus? Status { get; set; }
 
     public GetInvoicesFilterSortBy? SortBy { get; set; }

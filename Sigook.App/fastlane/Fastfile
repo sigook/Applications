@@ -149,12 +149,12 @@ platform :android do
     UI.success("✅ Successfully uploaded to Google Play track '#{track}'!")
   end
 
-  desc "Replace the phone screenshots of the Play listing with fastlane/metadata/android/<locale>/images/phoneScreenshots"
+  desc "Replace the phone and tablet screenshots of the Play listing with fastlane/metadata/android/<locale>/images/{phone,sevenInch,tenInch}Screenshots"
   lane :screenshots do
     metadata_path = project_path("fastlane/metadata/android")
-    files = Dir.glob("#{metadata_path}/*/images/phoneScreenshots/*.png")
-    UI.user_error!("❌ No screenshots under fastlane/metadata/android/<locale>/images/phoneScreenshots/") if files.empty?
-    UI.message("🖼  #{files.size} screenshot(s): #{files.map { |f| File.basename(f) }.join(', ')}")
+    files = Dir.glob("#{metadata_path}/*/images/{phone,sevenInch,tenInch}Screenshots/*.png")
+    UI.user_error!("❌ No screenshots under fastlane/metadata/android/<locale>/images/{phone,sevenInch,tenInch}Screenshots/") if files.empty?
+    UI.message("🖼  #{files.size} screenshot(s): #{files.map { |f| f.delete_prefix("#{metadata_path}/") }.join(', ')}")
 
     json_key_raw = ENV["GOOGLE_PLAY_JSON_KEY"]
     UI.user_error!("❌ GOOGLE_PLAY_JSON_KEY environment variable is not set") if json_key_raw.nil? || json_key_raw.empty?

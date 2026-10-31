@@ -34,6 +34,8 @@ variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.Web'
   isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
   isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  azureResourceGroup: 'Sigook'
+  deploySlot: 'warmup'
   ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
     deployEnvironment: 'production'
     dockerTag: 'latest_production'
@@ -177,14 +179,49 @@ stages:
               steps:
                 - download: none
 
-                # Deploy to Azure App Service (Container)
+                # Zero-downtime deploy: the image boots in the warmup slot and App
+                # Service swaps it into production once it answers, then the slot stops
+                - task: AzureAppServiceManage@0
+                  displayName: 'Start $(deploySlot) slot'
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    Action: 'Start Azure App Service'
+                    WebAppName: $(azureAppName)
+                    SpecifySlotOrASE: true
+                    ResourceGroupName: $(azureResourceGroup)
+                    Slot: $(deploySlot)
+
                 - task: AzureWebAppContainer@1
-                  displayName: 'Deploy to $(azureAppName)'
+                  displayName: 'Deploy to $(azureAppName)/$(deploySlot)'
                   inputs:
                     azureSubscription: 'SigookPipelines'
                     appName: $(azureAppName)
+                    deployToSlotOrASE: true
+                    resourceGroupName: $(azureResourceGroup)
+                    slotName: $(deploySlot)
                     containers: 'sigook.azurecr.io/web:$(Build.BuildId)'
                     appSettings: '-CVN_VERSION $(Build.BuildId)'
+
+                - task: AzureAppServiceManage@0
+                  displayName: 'Swap $(deploySlot) into production'
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    Action: 'Swap Slots'
+                    WebAppName: $(azureAppName)
+                    ResourceGroupName: $(azureResourceGroup)
+                    SourceSlot: $(deploySlot)
+                    SwapWithProduction: true
+
+                - task: AzureAppServiceManage@0
+                  displayName: 'Stop $(deploySlot) slot'
+                  condition: always()
+                  inputs:
+                    azureSubscription: 'SigookPipelines'
+                    Action: 'Stop Azure App Service'
+                    WebAppName: $(azureAppName)
+                    SpecifySlotOrASE: true
+                    ResourceGroupName: $(azureResourceGroup)
+                    Slot: $(deploySlot)
 
                 - script: |
                     echo "🚀 Deployed sigook.azurecr.io/web:$(Build.BuildId) to $(azureAppName) ($(deployEnvironment))"

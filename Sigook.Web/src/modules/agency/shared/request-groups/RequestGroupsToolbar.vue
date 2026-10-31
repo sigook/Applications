@@ -1,11 +1,11 @@
 <template>
-  <div class="request-groups-toolbar">
+  <div class="sigook-grid-toolbar request-groups-toolbar">
     <b-switch v-model="onlyMine" class="request-groups-toolbar-filter" @update:modelValue="emit('search')">
       Assigned to me
     </b-switch>
     <template v-if="hasGroups">
-      <b-button size="is-small" icon-left="chevron-double-down" @click="emit('expandAll')">Expand all requests</b-button>
-      <b-button size="is-small" icon-left="chevron-double-up" @click="emit('collapseAll')">Collapse all</b-button>
+      <b-button icon-left="chevron-double-down" @click="emit('expandAll')">Expand all requests</b-button>
+      <b-button icon-left="chevron-double-up" @click="emit('collapseAll')">Collapse all</b-button>
     </template>
     <export :url="exportUrl" :params="exportParams" :file-name="exportFileName"
       @onDataLoading="(value: boolean) => emit('loading', value)" />
@@ -35,11 +35,7 @@ const emit = defineEmits<{
 
 <style scoped lang="scss">
 .request-groups-toolbar {
-  display: flex;
-  align-items: center;
   justify-content: flex-end;
-  gap: 8px;
-  margin-bottom: 8px;
 
   :deep(.field) {
     margin-bottom: 0;

@@ -57,22 +57,29 @@ const isLandingRoute = computed(() =>
 );
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
-const VERSION_CHECK_INTERVAL_MS = 60 * 60 * 1000;
+const VERSION_CHECK_INTERVAL_MS = 5 * 60 * 1000;
+const runningVersion = `v${document.querySelector<HTMLMetaElement>('meta[name="build"]')?.content ?? ''}`;
 
 let versionIntervalId: ReturnType<typeof setInterval> | null = null;
 
 async function getAppVersion() {
-  const item = localStorage.getItem('versionApp');
-  const { data } = await axios.get('/version.json');
-  if (item === 'null' || item === null) {
-    localStorage.setItem('versionApp', data.version);
-  } else if (data.version !== item) {
-    isANewVersion.value = true;
+  try {
+    const { data } = await axios.get<{ version: string }>('/version.json', { params: { t: Date.now() } });
+    if (data.version !== runningVersion) {
+      isANewVersion.value = true;
+    }
+  } catch {
+    return;
+  }
+}
+
+function onVisibilityChange() {
+  if (document.visibilityState === 'visible') {
+    getAppVersion();
   }
 }
 
 async function updateAppVersion() {
-  localStorage.removeItem('versionApp');
   if ('caches' in window) {
     const names = await caches.keys();
     await Promise.all(names.map((name) => caches.delete(name)));
@@ -98,9 +105,11 @@ watch(() => route.fullPath, () => setIsLogged(route), { immediate: true });
 onMounted(() => {
   getAppVersion();
   versionIntervalId = setInterval(getAppVersion, VERSION_CHECK_INTERVAL_MS);
+  document.addEventListener('visibilitychange', onVisibilityChange);
 });
 
 onUnmounted(() => {
+  document.removeEventListener('visibilitychange', onVisibilityChange);
   if (versionIntervalId !== null) {
     clearInterval(versionIntervalId);
   }

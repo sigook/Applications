@@ -41,18 +41,11 @@
         </b-table-column>
         <b-table-column field="companyFullName" label="Company" sortable searchable>
           <template v-slot:searchable>
-            <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
+            <b-input v-model="serverParams.companyFullName" placeholder="Company or Sales Rep..." icon="magnify" size="is-small"></b-input>
           </template>
           <template v-slot="props">
             {{ props.row.companyFullName }}
-          </template>
-        </b-table-column>
-        <b-table-column field="salesRepresentative" label="Sales Rep" sortable searchable>
-          <template v-slot:searchable>
-            <b-input v-model="serverParams.salesRepresentative" placeholder="Search..." icon="magnify" size="is-small"></b-input>
-          </template>
-          <template v-slot="props">
-            {{ props.row.salesRepresentative }}
+            <p v-if="props.row.salesRepresentative" class="is-size-7 has-text-grey">{{ props.row.salesRepresentative }}</p>
           </template>
         </b-table-column>
         <b-table-column field="status" label="Status" sortable searchable>
@@ -174,8 +167,7 @@ const sortMap = {
   invoiceNumber: 0,
   createdAt: 1,
   companyFullName: 2,
-  salesRepresentative: 3,
-  status: 4,
+  status: 3,
 };
 
 const isLoading = ref(true);

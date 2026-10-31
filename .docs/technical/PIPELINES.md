@@ -71,7 +71,7 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 - Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
 **Stage 2 - Deploy** (only on push to dev/main, not PRs; `deployment` job on environment `staging`/`production`):
-- Deploy `sigook.azurecr.io/api:$(Build.BuildId)` with `AzureWebAppContainer@1` to Azure App Service
+- Zero-downtime slot swap (see [Zero-downtime deploys](#zero-downtime-deploys)): start the `warmup` slot → `AzureWebAppContainer@1` deploys `sigook.azurecr.io/api:$(Build.BuildId)` to it → swap into production → stop the slot (`always()`)
 - Staging: `https://sigook-api-staging.azurewebsites.net`
 - Production: `https://sigook-api.azurewebsites.net`
 
@@ -93,9 +93,21 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 - Image: `sigook.azurecr.io/web:<tag>` plus the immutable `$(Build.BuildId)`
 
 **Stage 2 - Deploy** (only on push to dev/main; `deployment` job on environment `staging`/`production`):
-- Deploy `sigook.azurecr.io/web:$(Build.BuildId)` with `AzureWebAppContainer@1`
+- Same slot swap as the API, deploying `sigook.azurecr.io/web:$(Build.BuildId)` to the `warmup` slot
 - Staging: `https://sigook-web-staging.azurewebsites.net`
 - Production: `https://sigook.azurewebsites.net`
+
+### Zero-downtime deploys
+
+All four container apps (`sigook-api`, `sigook`, `sigook-api-staging`, `sigook-web-staging`) live in resource group `Sigook` on the single App Service plan `Sigook` (**P0v3**; slots need Premium/Standard). Each app has a `warmup` slot (`<app>-warmup.azurewebsites.net`):
+
+- The pipeline deploys to the slot, App Service warms it up by pinging `WEBSITE_SWAP_WARMUP_PING_PATH` (`/health`) until it returns `WEBSITE_SWAP_WARMUP_PING_STATUSES` (`200`), and only then swaps. Both are slot settings on both sides
+- App Service Health Check is `/health` on every app and slot. The API maps it in `UseCovenantHealthChecks`; Sigook.Web answers it from `nginx.conf` (`location = /health`), and `sigook-web-staging` (plus its slot) lists `/health` in Easy Auth `globalValidation.excludedPaths` so the probe is not answered with 401
+- The slot is stopped after the swap: the previous version would otherwise keep running `SigookBackgroundService` (Service Bus consumers). The next deploy starts it again
+- Managed identities do **not** swap. Each slot has its own system identity with the same Key Vault roles as its app: API slots get `Key Vault Secrets User` on the vault plus `Key Vault Certificate User` on `sigook-identity-signing` and `sigook-identity-encryption`; `sigook-web-staging/warmup` gets `Key Vault Secrets User` on `staging-web--EasyAuth--ClientSecret`. Easy Auth (`authsettingsV2`) is configured on both `sigook-web-staging` and its slot
+- Rollback: start the slot (it still holds the previous image) and swap again
+- EF migrations run when the new version boots in the slot, so for the warm-up window the live version runs against the migrated schema; keep migrations backward compatible
+- Open Sigook.Web tabs keep the old bundle after a swap. `App.vue` compares the running build (`<meta name="build">` in `index.html`) with `/version.json` (served `no-store`) every 5 minutes and whenever the tab becomes visible, and shows `AppVersionToast` when they differ. Lazy chunks of the old build no longer exist in the new image, so `main.ts` reloads the page on `vite:preloadError` (at most once every 10 s, tracked in `sessionStorage`)
 
 **Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
 - Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `agency-portal`)
@@ -178,7 +190,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Fastlane** (`Sigook.App/fastlane/`): `Appfile` (bundle id, team, package), `Matchfile` (git storage, `appstore` type, `readonly`), `Fastfile`:
 - `android deploy track:` — `upload_to_play_store` with `release_status: completed`, no metadata/screenshots
-- `android screenshots` — `upload_to_play_store` with every upload skipped except screenshots: replaces the phone screenshots of the listing with `fastlane/metadata/android/<locale>/images/phoneScreenshots/*.png` (2-8 files, 1080x1920). Fails when the folder is empty
+- `android screenshots` — `upload_to_play_store` with every upload skipped except screenshots: replaces the phone and tablet screenshots of the listing with `fastlane/metadata/android/<locale>/images/{phone,sevenInch,tenInch}Screenshots/*.png` (2-8 files per folder; phone 1080x1920, tablets 1600x2560). supply clears each image type it uploads, so a folder that exists replaces everything Play had in that slot. Fails when all three folders are empty
 - `ios screenshots version:` — `upload_to_app_store` with `skip_binary_upload`, `skip_metadata`, `overwrite_screenshots`, `submit_for_review: false`: replaces the screenshots of that App Store version (creating it when it does not exist yet) with `fastlane/screenshots/<locale>/*.png`. deliver infers the device from the image size (1320x2868 = iPhone 6.9", 2064x2752 = iPad 13"; both are mandatory because the app targets iPad). The lane first resolves the listing locales (`store_locales`) and fails when a folder names a locale the listing does not have
 - `ios build` — `setup_ci` (temporary keychain) → `match` (`git_basic_authorization` derived from `System.AccessToken`) → `update_code_signing_settings` on `Runner`/`Release` (manual signing, `Apple Distribution`, match profile; edits the checkout only) → `flutter build ios --release --no-codesign` with `--build-name/--build-number` and the nine `--dart-define` values from the environment → `build_app` (`app-store` export, `manageAppVersionAndBuildNumber: false`). The lane reads them from `ENV`, and Azure DevOps never exposes a **secret** variable as an environment variable, so every secret the lane needs is mapped explicitly in the `env:` block of the `Build iOS IPA` step (`APP_STORE_CONNECT_API_KEY`, `MATCH_PASSWORD`, `APP_INSIGHTS_CONNECTION_STRING`, `GOOGLE_MAPS_API_KEY`). `APP_INSIGHTS_CONNECTION_STRING` and `GOOGLE_MAPS_API_KEY` are optional for the lane, so forgetting the mapping does not fail the build: it silently ships an iOS binary that sends no telemetry (the Android step uses `$(VAR)` macros inside the script, which do expand secrets)
 - `ios beta` — `upload_to_testflight` to the internal group `Staging` (`distribute_external: false`; an external group would trigger Beta App Review for every daily version)
@@ -236,7 +248,7 @@ Where the time goes on a cold hosted agent: the iOS simulator takes ~9 min to bo
 
 What runs (`Sigook.App/scripts/store_screenshots.sh`, one call per device): the script builds the debug binary with `integration_test/store_screenshots_test.dart` as entry point against `.env.staging` plus `--dart-define=SCREENSHOT_MODE=true` (hides the environment banner), `SCREENSHOT_USER`, `SCREENSHOT_PASSWORD` and `GOOGLE_MAPS_API_KEY` (from the variable group; without it the job detail capture shows no map); installs it, resets the app data, grants the location permission and sets the device position to `SCREENSHOT_GEO` (`lat,lon`, pipeline parameter `screenshotLocation`); on Android sets the display to `1080x1920` (Play wants 9:16; the Flutter surface follows the window); then runs `flutter drive --use-application-binary`. The install-and-grant step has to happen before the drive: the punch card tab requests location, and the native permission dialog pauses the app, which stalls the test for good; without a position the punch card stays on "Checking your distance...", so the position should be the address of the first job of the screenshot account. The test signs in, waits for real data and takes `binding.takeScreenshot` of: welcome, jobs, job detail, punch card, filter sheet, menu, history, profile (8 = the Play maximum per device type). `test_driver/integration_test.dart` writes `<SCREENSHOT_PREFIX><name>.png` into `SCREENSHOT_DIR`. The captures are the Flutter surface only: the status bar strip is blank (no clock or battery), which is what `frameit`-style store images expect.
 
-Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-CA/` (`captureIos`); Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-CA/images/phoneScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
+Devices (parameters): iPhone 6.9" simulator (`iPhone 17 Pro Max`, 1320x2868) and iPad 13" (`iPad Pro 13-inch (M4)`, 2064x2752, files prefixed `ipad_`) into `fastlane/screenshots/en-CA/` (`captureIos`); Android emulator (`captureAndroid`, system image parameter + host ABI) into `fastlane/metadata/android/en-CA/images/phoneScreenshots/` (1080x1920), then a second pass on the same emulator with the APK reused (`SCREENSHOT_SKIP_BUILD=true`), the display at `1600x2560` and density 320 (800 dp wide, so the app lays out as a tablet) into `tenInchScreenshots/`, copied as is to `sevenInchScreenshots/`. The simulator names must exist on the image; the step lists the available ones when they do not.
 
 Applying the artifacts from the repo root:
 
@@ -246,7 +258,7 @@ cp -r ~/Downloads/store-screenshots-ios/fastlane/. Sigook.App/fastlane/
 cp -r ~/Downloads/store-screenshots-android/fastlane/. Sigook.App/fastlane/
 ```
 
-Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-CA/images/phoneScreenshots` from `Sigook.App/` (Git Bash). Locale folders are `en-CA` (the locale of both store listings); rename them if a listing changes locale (the iOS lane lists the real ones when they differ).
+Review the PNGs (staging data is visible: pick an account with presentable jobs and profile), commit, then run the main pipeline with `uploadStoreScreenshots` on. The Android captures can also be produced locally on an emulator: `SCREENSHOT_USER=... SCREENSHOT_PASSWORD=... SCREENSHOT_GEO=lat,lon GOOGLE_MAPS_API_KEY=... bash scripts/store_screenshots.sh android emulator-5554 fastlane/metadata/android/en-CA/images/phoneScreenshots` from `Sigook.App/` (Git Bash); for the tablet slots add `SCREENSHOT_ANDROID_SIZE=1600x2560 SCREENSHOT_ANDROID_DENSITY=320` and write to `tenInchScreenshots` (copy it to `sevenInchScreenshots`). Locale folders are `en-CA` (the locale of both store listings); rename them if a listing changes locale (the iOS lane lists the real ones when they differ).
 
 ### Sigook.Functions (.NET 10 Azure Functions, isolated worker)
 
@@ -285,7 +297,7 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 - Runs `Sigook.Database/Scripts/database-refresh.sh` once per database. The script parses the Npgsql connection string (Server, Port, User Id, Password, Database), re-registers the extracted password with `##vso[task.setsecret]` so it stays masked in logs, and derives the target name as `<Database>Staging`
 - Inside a `postgres:latest` container on the agent: `pg_dump` (tar) → `DROP DATABASE ... WITH (FORCE)` + `CREATE DATABASE` → `pg_restore --no-owner`
 - `CovenantSecurity` only: post-restore `UPDATE "User"` sets all `PasswordHash` to the shared staging hash (from Key Vault) and `EmailConfirmed = TRUE`
-- Final step restarts `sigook-api-staging` (resource group `SigookStaging`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
+- Final step restarts `sigook-api-staging` (resource group `Sigook`): the restore leaves staging with the production schema, and the Api applies pending EF migrations for both `CovenantContext` and `IdentityContext` on startup (`SigookBackgroundService`)
 
 **Stage RefreshFiles - Refresh Staging Files:**
 - `AzureCLI@2` (`SigookPipelines`) runs `azcopy sync` for each of the containers `files`, `invoices` and `paystubs`, from `https://sigookfiles.blob.core.windows.net/{container}` to `https://sigookfilesstaging.blob.core.windows.net/{container}`, with `--delete-destination=true` (staging ends up identical to production, anything that only existed in staging is removed) and `--s2s-preserve-access-tier=false` (blobs inherit the staging account's Cool tier instead of copying the Hot tier)
