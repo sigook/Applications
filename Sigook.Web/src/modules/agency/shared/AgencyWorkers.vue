@@ -50,12 +50,6 @@
             <div class="worker-cell">
               <span>{{ props.row.name }}</span>
               <span class="fz-1"><copy-link kind="email" :value="props.row.email" /></span>
-              <span v-if="props.row.mobileNumber" class="fz-1">
-                <copy-link kind="phone" :value="props.row.mobileNumber" />
-              </span>
-              <span v-if="props.row.socialInsurance" class="fz-1">
-                SIN/SSN {{ props.row.socialInsurance }}<i v-if="props.row.dueDate"> · {{ dateMonth(props.row.dueDate) }}</i>
-              </span>
             </div>
           </template>
         </b-table-column>
@@ -214,7 +208,7 @@ const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => del
 const serverParams = ref<AgencyRequestWorkerFilter>({
   sortBy: 2,
   requestId: props.request.id,
-  isDescending: true,
+  isDescending: false,
 });
 
 function onCellClick(row: AgencyRequestWorker, column: TableColumnRef) {

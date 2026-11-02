@@ -258,14 +258,14 @@ const kpis = computed<RequestKpi[]>(() => {
   const list: RequestKpi[] = [
     hasRates.value
       ? rateKpi(r.workerRate, r.workerSalary, r.incentive)
-      : { key: 'rate', label: 'Rate', value: 'Rates pending', hint: '· set by an agency admin' },
+      : { key: 'rate', label: 'Rate', value: 'Rates pending', hint: 'Set by an agency admin' },
     datesKpi(r.startAt, r.finishAt, showFinish.value),
     shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid),
     {
       key: 'compliance',
       label: 'Compliance',
       value: items.length ? `${items.length} ${items.length === 1 ? 'item' : 'items'}` : 'None',
-      hint: r.vaccinationRequired ? '· vaccination required' : '· no vaccination',
+      hint: r.vaccinationRequired ? 'Vaccination required' : 'No vaccination',
     },
   ];
   if (r.displayRecruiters) {

@@ -90,8 +90,8 @@ if (props.data != null) {
 
   img {
     border-radius: 50%;
-    width: 100px;
-    height: 100px;
+    width: 72px;
+    height: 72px;
     object-fit: cover;
   }
 

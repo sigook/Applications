@@ -52,7 +52,7 @@ Sigook.Web/
 | Folder | Contents |
 |--------|----------|
 | `ui/` | SigookGrid (the only `b-table` wrapper), PageHeader, Breadcrumbs (+ `breadcrumbs.ts`), PhoneInput, Address, ProvinceSettingsModal, PreviewImage, CropImage, DefaultImage (globally registered in `main.ts`), SearchSelect, Export, FormSkillAdd, EditTextarea, EyebrowPill, MobileFiltersPanel, SheetPanel |
-| `detail-page/` | DetailHeader, DetailLayout, DetailCard, DetailFields + `types.ts` — frame of the request and company detail pages |
+| `detail-page/` | DetailHeader, DetailKpis (also used by WorkerProfileHeader), DetailLayout, DetailCard, DetailFields + `types.ts` — frame of the request and company detail pages |
 | `request-detail/` | RequestHeader, RequestDetailTab, RequestStaffingCard, RequestLocationCard, ShiftDetail, AgencyShiftDetail, ShiftsForm (weekly shift editor), CompanyCancelList, `useRequestStatus`, `requestDetail.ts` (KPI builders, maps helpers), `types.ts` (request detail, `RequestComplianceItem`, `CreateAgencyRequestModel`, `RequestShiftModel`), `requestApplicant.ts` |
 | `worker-profile/` | `cards/` (WorkerProfileHeader, ProfileCard, PersonalCard, ContactCard, DocumentsCard, PreferencesCard, SkillsCard, ExperienceCard, CommentsCard, ProfileIndex, NeedsAttention), `forms/` (the `Work*Form` modals, WorkImageDetail, WorkEmailForm, DialogWorkerComment), `useWorkerProfileStatus`, `api.ts` (profile section endpoints), `types.ts`. Used by the agency worker detail and the worker's own profile |
 | `punch-card/` | CalendarPunchCard, DataEntryTerms, `distributeHours`, `timeSheetApprove`, `directHiring`, `types.ts` (TimeSheetModel, PunchCard*) |

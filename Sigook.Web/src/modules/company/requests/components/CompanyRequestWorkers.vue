@@ -213,7 +213,7 @@ const modalFinish = ref(false);
 const currentWorker = ref<CompanyRequestWorker | null>(null);
 const directHiring = computed(() => isDirectHiring(props.request));
 const serverParams = ref<CompanyRequestWorkerFilter>({
-  sortBy: 1,
+  sortBy: 2,
   requestId: props.request.id,
   pageIndex: 1,
   pageSize: 30,

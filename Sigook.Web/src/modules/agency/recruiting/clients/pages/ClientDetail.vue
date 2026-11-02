@@ -123,17 +123,17 @@ const kpis = computed<DetailKpi[]>(() => {
       key: 'requests',
       label: 'Open requests',
       value: String(counts.openRequestsCount),
-      hint: counts.asapRequestsCount ? `· ${counts.asapRequestsCount} ASAP` : undefined,
+      hint: counts.asapRequestsCount ? `${counts.asapRequestsCount} ASAP` : undefined,
     }]),
-    { key: 'workers', label: 'Workers', value: String(counts.workersWorkingCount), hint: 'assigned' },
+    { key: 'workers', label: 'Workers', value: String(counts.workersWorkingCount), hint: 'Assigned' },
     ...(requiresPayrollPermission.value ? [] : [{ key: 'roles', label: 'Roles', value: String(counts.rolesCount) }]),
     {
       key: 'overtime',
       label: 'Overtime after',
       value: `${current.overtimeStartsAfter} h`,
-      hint: current.paidHolidays ? '· paid holidays' : undefined,
+      hint: current.paidHolidays ? 'Paid holidays' : undefined,
     },
-    { key: 'payment-terms', label: 'Payment terms', value: `Net ${current.paymentTermDays}`, hint: 'days' },
+    { key: 'payment-terms', label: 'Payment terms', value: `Net ${current.paymentTermDays}`, hint: 'Days' },
     ...(counts.salesRepresentativeName
       ? [{ key: 'sales', label: 'Sales owner', value: counts.salesRepresentativeName }]
       : []),
