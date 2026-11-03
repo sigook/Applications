@@ -1,31 +1,38 @@
 <template>
   <section class="worker-header">
-    <image-detail class="worker-header-photo" :data="props.worker" @updateProfile="emit('updateProfile')" />
-    <div class="worker-header-main">
-      <h2 class="worker-header-name">
-        {{ lowercase(props.worker.firstName) }}
-        {{ lowercase(props.worker.middleName) }}
-        {{ lowercase(props.worker.lastName) }}
-        {{ lowercase(props.worker.secondLastName) }}
-        <span class="worker-header-number" :class="props.numberClass">#{{ props.worker.numberId }}</span>
-      </h2>
-      <slot name="chips" />
-      <div class="worker-header-contact">
-        <copy-link kind="phone" :value="props.worker.mobileNumber" icon />
-        <copy-link kind="email" :value="props.worker.email" icon />
-        <span v-if="city"><b-icon icon="map-marker-outline" size="is-small" />{{ city }}</span>
+    <div class="worker-header-top">
+      <image-detail class="worker-header-photo" :data="props.worker" @updateProfile="emit('updateProfile')" />
+      <div class="worker-header-main">
+        <h2 class="worker-header-name">
+          {{ lowercase(props.worker.firstName) }}
+          {{ lowercase(props.worker.middleName) }}
+          {{ lowercase(props.worker.lastName) }}
+          {{ lowercase(props.worker.secondLastName) }}
+          <span class="worker-header-number" :class="props.numberClass">#{{ props.worker.numberId }}</span>
+        </h2>
+        <slot name="chips" />
+      </div>
+      <div v-if="$slots.actions" class="worker-header-actions">
+        <slot name="actions" />
       </div>
     </div>
-    <div v-if="$slots.actions" class="worker-header-actions">
-      <slot name="actions" />
-    </div>
+    <detail-kpis v-if="contactKpis.length" :kpis="contactKpis">
+      <template #kpi-phone>
+        <copy-link kind="phone" :value="props.worker.mobileNumber" />
+      </template>
+      <template #kpi-email>
+        <copy-link kind="email" :value="props.worker.email" />
+      </template>
+    </detail-kpis>
   </section>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue';
 import { lowercase } from '@/shared/format';
+import type { DetailKpi } from '@/shared/detail-page/types';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
+import DetailKpis from '@/shared/detail-page/DetailKpis.vue';
 import ImageDetail from '@/shared/worker-profile/forms/WorkImageDetail.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
@@ -39,19 +46,33 @@ const city = computed(() => {
   }
   return value.province?.code ? `${value.value}, ${value.province.code}` : value.value;
 });
+
+const contactKpis = computed<DetailKpi[]>(() => [
+  ...(props.worker.mobileNumber ? [{ key: 'phone', label: 'Phone', value: props.worker.mobileNumber }] : []),
+  ...(city.value ? [{ key: 'location', label: 'Location', value: city.value }] : []),
+  ...(props.worker.email ? [{ key: 'email', label: 'Email', value: props.worker.email }] : []),
+]);
 </script>
 
 <style lang="scss" scoped>
 @import '@/assets/scss/variables';
 @import '@/assets/scss/breakpoints';
 
-.worker-header {
+.worker-header.worker-card {
+  padding: 0;
+}
+
+.worker-header-top {
   display: flex;
-  align-items: flex-start;
-  gap: 20px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
 
   @include mobile {
     flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
   }
 }
 
@@ -64,44 +85,34 @@ const city = computed(() => {
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
+
+  @include mobile {
+    flex-basis: 0;
+  }
 }
 
 .worker-header-name {
   margin: 0;
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.25;
+  color: $navy;
+
+  @include compact-desktop {
+    font-size: 22px;
+  }
 
   @include mobile {
-    font-size: 1.2rem;
+    font-size: 21px;
   }
 }
 
 .worker-header-number {
   margin-left: 6px;
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 400;
   color: $grey-font;
-}
-
-.worker-header-contact {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px 24px;
-  font-size: 0.9rem;
-  color: $grey-font;
-  overflow-wrap: anywhere;
-
-  > span {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  :deep(a) {
-    color: $blue;
-  }
 }
 
 .worker-header-actions {
@@ -109,8 +120,21 @@ const city = computed(() => {
   gap: 8px;
   flex-shrink: 0;
 
+  :deep(.button) {
+    height: 40px;
+    font-size: 15px;
+  }
+
   @include mobile {
     width: 100%;
+
+    :deep(> .button:first-child) {
+      flex: 1;
+    }
   }
+}
+
+:deep(.copy-link-text) {
+  color: $blue;
 }
 </style>

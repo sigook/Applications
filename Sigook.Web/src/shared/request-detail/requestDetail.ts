@@ -37,7 +37,7 @@ export function shiftKpi(displayShift?: string | null, durationBreak?: string | 
     key: 'shift',
     label: 'Shift',
     value: displayShift || '—',
-    hint: durationBreak ? `· ${formatBreak(durationBreak, breakIsPaid)}` : undefined,
+    hint: durationBreak ? formatBreak(durationBreak, breakIsPaid) : undefined,
   };
 }
 

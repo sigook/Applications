@@ -1,0 +1,22 @@
+parameters:
+  - name: appName
+    type: string
+
+  - name: resourceGroup
+    type: string
+    default: 'Sigook'
+
+  - name: slot
+    type: string
+    default: 'warmup'
+
+steps:
+  - task: AzureAppServiceManage@0
+    displayName: 'Swap ${{ parameters.appName }}/${{ parameters.slot }} into production'
+    inputs:
+      azureSubscription: 'SigookPipelines'
+      Action: 'Swap Slots'
+      WebAppName: ${{ parameters.appName }}
+      ResourceGroupName: ${{ parameters.resourceGroup }}
+      SourceSlot: ${{ parameters.slot }}
+      SwapWithProduction: true

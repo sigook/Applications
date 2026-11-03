@@ -3,8 +3,8 @@ import { datesKpi, formatBreak, rateKpi, shiftKpi } from '@/shared/request-detai
 import type { WorkerRequestDetail } from '@/modules/worker/requests/types';
 import type { RequestFact, RequestKpi } from '@/shared/request-detail/types';
 
-function fact(kpi: RequestKpi): RequestFact {
-  return { label: kpi.label, value: kpi.hint ? `${kpi.value} ${kpi.hint}` : kpi.value };
+function fact(kpi: RequestKpi, separator = ' '): RequestFact {
+  return { label: kpi.label, value: kpi.hint ? `${kpi.value}${separator}${kpi.hint}` : kpi.value };
 }
 
 export function useWorkerRequestSummary(request: Ref<WorkerRequestDetail | null>) {
@@ -16,7 +16,7 @@ export function useWorkerRequestSummary(request: Ref<WorkerRequestDetail | null>
       { label: 'Role (position)', value: r.jobPosition || r.jobTitle || '—' },
       fact(rateKpi(r.workerRate, r.workerSalary, r.incentive)),
       fact(datesKpi(r.startAt, r.finishAt, showFinish)),
-      fact(shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid)),
+      fact(shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid), ' · '),
       { label: 'Term', value: r.durationTerm === 'LongTerm' ? 'Long Term' : 'Short Term' },
       { label: 'Break', value: formatBreak(r.durationBreak, r.breakIsPaid) },
       { label: 'Holiday', value: r.holidayIsPaid ? 'Paid' : 'Not paid' },

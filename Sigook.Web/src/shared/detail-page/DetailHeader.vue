@@ -22,40 +22,30 @@
         <div class="detail-header-main">
           <div class="detail-header-title-row">
             <h1 class="detail-header-title">{{ title }}</h1>
-            <span v-if="numberId !== undefined || meta || orgName" class="detail-header-meta">
-              <template v-if="numberId !== undefined">#{{ numberId }}</template>
-              <template v-if="meta"><template v-if="numberId !== undefined"> · </template>{{ meta }}</template>
-              <template v-if="orgName">
-                ·
-                <router-link v-if="orgLink" :to="orgLink">{{ orgName }}</router-link>
-                <span v-else>{{ orgName }}</span>
-              </template>
-            </span>
             <span v-if="statusLabel" class="detail-chip" :class="statusVariant">{{ statusLabel }}</span>
             <span v-for="chip in chips" :key="chip.label" class="detail-chip" :class="chip.variant">{{ chip.label }}</span>
           </div>
+          <span v-if="numberId !== undefined || meta || orgName" class="detail-header-meta">
+            <template v-if="numberId !== undefined">#{{ numberId }}</template>
+            <template v-if="meta"><template v-if="numberId !== undefined"> · </template>{{ meta }}</template>
+            <template v-if="orgName">
+              ·
+              <router-link v-if="orgLink" :to="orgLink">{{ orgName }}</router-link>
+              <span v-else>{{ orgName }}</span>
+            </template>
+          </span>
 
           <slot name="subtitle" />
-
-          <dl v-if="kpis.length" class="detail-kpis">
-            <div v-for="kpi in kpis" :key="kpi.key" class="detail-kpi">
-              <dt>{{ kpi.label }}</dt>
-              <dd class="detail-kpi-value">
-                <slot :name="`kpi-${kpi.key}`" :kpi="kpi">{{ kpi.value }}</slot>
-                <progress v-if="kpi.progress !== undefined" class="detail-kpi-progress" :value="kpi.progress"
-                  max="100">{{ kpi.progress }}%</progress>
-                <span v-if="$slots[`kpi-${kpi.key}-extra`]" class="detail-kpi-extra">
-                  <slot :name="`kpi-${kpi.key}-extra`" />
-                </span>
-                <span v-if="kpi.hint" class="detail-kpi-hint">{{ kpi.hint }}</span>
-              </dd>
-            </div>
-          </dl>
         </div>
         <div v-if="$slots.actions" class="detail-header-actions">
           <slot name="actions" />
         </div>
       </div>
+      <detail-kpis v-if="kpis.length" :kpis="kpis">
+        <template v-for="(_, name) in $slots" #[name]="scope">
+          <slot :name="name" v-bind="scope ?? {}" />
+        </template>
+      </detail-kpis>
     </section>
 
     <div class="detail-body">
@@ -68,6 +58,7 @@
 import { computed, ref } from 'vue';
 import type { RouteLocationRaw } from 'vue-router';
 import type { DetailChip, DetailChipVariant, DetailKpi } from '@/shared/detail-page/types';
+import DetailKpis from '@/shared/detail-page/DetailKpis.vue';
 
 const props = defineProps<{
   title: string;
@@ -105,25 +96,23 @@ const initials = computed(() =>
 }
 
 .detail-header {
-  padding: 14px 20px 12px;
   background: $white;
   border: 1px solid $gray-border;
   border-bottom: 0;
   border-radius: 12px 12px 0 0;
-
-  @include mobile {
-    padding: 14px 14px 12px;
-  }
 }
 
 .detail-header-top {
   display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
 
   @include mobile {
     flex-wrap: wrap;
+    align-items: flex-start;
     gap: 12px;
+    padding: 14px;
   }
 }
 
@@ -132,15 +121,15 @@ const initials = computed(() =>
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  width: 44px;
-  height: 44px;
+  width: 56px;
+  height: 56px;
   padding: 0;
   overflow: hidden;
   border: 1px solid $gray-border;
   border-radius: 10px;
   background: $gray-bg;
   font-family: inherit;
-  font-size: 0.95rem;
+  font-size: 18px;
   font-weight: 700;
   color: $blue;
 
@@ -172,11 +161,11 @@ const initials = computed(() =>
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 10px;
+  gap: 3px;
   min-width: 0;
 
   @include mobile {
-    flex-basis: calc(100% - 58px);
+    flex-basis: calc(100% - 68px);
   }
 }
 
@@ -189,20 +178,24 @@ const initials = computed(() =>
 
 .detail-header-title {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 24px;
   font-weight: 700;
   line-height: 1.25;
   color: $navy;
   text-transform: capitalize;
 
+  @include compact-desktop {
+    font-size: 22px;
+  }
+
   @include mobile {
     flex-basis: 100%;
-    font-size: 1.1rem;
+    font-size: 21px;
   }
 }
 
 .detail-header-meta {
-  font-size: 0.85rem;
+  font-size: 15px;
   color: $grey-font;
 
   a {
@@ -213,9 +206,9 @@ const initials = computed(() =>
 .detail-chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
+  padding: 3px 12px;
   border-radius: 999px;
-  font-size: 0.75rem;
+  font-size: 13.5px;
   font-weight: 600;
   background: $gray-bg;
   color: $grey-font;
@@ -248,8 +241,8 @@ const initials = computed(() =>
   gap: 8px;
 
   :deep(.button) {
-    height: 36px;
-    font-size: 0.85rem;
+    height: 40px;
+    font-size: 15px;
   }
 
   @include mobile {
@@ -261,107 +254,15 @@ const initials = computed(() =>
   }
 }
 
-.detail-kpis {
-  display: flex;
-  flex-wrap: wrap;
-  row-gap: 8px;
-  margin: 0;
-
-  @include mobile {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px 12px;
-  }
-}
-
-.detail-kpi {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-  min-width: 0;
-  padding: 0 18px;
-  border-left: 1px solid $gray-border;
-
-  &:first-child {
-    padding-left: 0;
-    border-left: 0;
-  }
-
-  dt {
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: $grey-font;
-  }
-
-  dd {
-    margin: 0;
-  }
-
-  @include mobile {
-    padding: 0;
-    border-left: 0;
-  }
-}
-
-.detail-kpi-value {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 4px 8px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: $navy;
-  overflow-wrap: anywhere;
-}
-
-.detail-kpi-hint {
-  font-weight: 400;
-  color: $grey-font;
-}
-
-.detail-kpi-extra {
-  display: inline-flex;
-  gap: 2px;
-
-  :deep(.button) {
-    width: 24px;
-    height: 24px;
-    padding: 0;
-  }
-}
-
-.detail-kpi-progress {
-  appearance: none;
-  width: 56px;
-  height: 5px;
-  border: 0;
-  border-radius: 3px;
-  background: $gray-border;
-  overflow: hidden;
-
-  &::-webkit-progress-bar {
-    background: $gray-border;
-  }
-
-  &::-webkit-progress-value {
-    background: $blue;
-  }
-
-  &::-moz-progress-bar {
-    background: $blue;
-  }
-}
-
 .detail-body {
   :deep(> .b-tabs > .tabs) {
     margin-bottom: 16px;
     padding: 0 20px;
     background: $white;
     border: 1px solid $gray-border;
-    border-top: 1px solid $gray-bg;
+    border-top: 1px solid $gray-border;
     border-radius: 0 0 12px 12px;
+    font-size: 15px;
 
     @include mobile {
       padding: 0 8px;
@@ -377,7 +278,7 @@ const initials = computed(() =>
     padding: 0 7px;
     border-radius: 999px;
     background: $gray-bg;
-    font-size: 0.75rem;
+    font-size: 13px;
     color: $grey-font;
   }
 }

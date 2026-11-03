@@ -1,0 +1,36 @@
+parameters:
+  - name: appName
+    type: string
+
+  - name: image
+    type: string
+
+  - name: resourceGroup
+    type: string
+    default: 'Sigook'
+
+  - name: slot
+    type: string
+    default: 'warmup'
+
+steps:
+  - task: AzureAppServiceManage@0
+    displayName: 'Start ${{ parameters.appName }}/${{ parameters.slot }}'
+    inputs:
+      azureSubscription: 'SigookPipelines'
+      Action: 'Start Azure App Service'
+      WebAppName: ${{ parameters.appName }}
+      SpecifySlotOrASE: true
+      ResourceGroupName: ${{ parameters.resourceGroup }}
+      Slot: ${{ parameters.slot }}
+
+  - task: AzureWebAppContainer@1
+    displayName: 'Deploy ${{ parameters.image }} to ${{ parameters.appName }}/${{ parameters.slot }}'
+    inputs:
+      azureSubscription: 'SigookPipelines'
+      appName: ${{ parameters.appName }}
+      deployToSlotOrASE: true
+      resourceGroupName: ${{ parameters.resourceGroup }}
+      slotName: ${{ parameters.slot }}
+      containers: 'sigook.azurecr.io/${{ parameters.image }}:$(Build.BuildId)'
+      appSettings: '-CVN_VERSION $(Build.BuildId)'

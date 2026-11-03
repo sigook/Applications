@@ -495,8 +495,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var workerRequests = Context.WorkerRequests.WhereSearch(filter.Name,
             wr => wr.WorkerProfile.FirstName, wr => wr.WorkerProfile.MiddleName, wr => wr.WorkerProfile.LastName,
-            wr => wr.WorkerProfile.SecondLastName, wr => wr.WorkerProfile.Worker.Email, wr => wr.WorkerProfile.MobileNumber,
-            wr => wr.WorkerProfile.MobileNumber.Replace(" ", string.Empty).Replace("-", string.Empty).Replace("(", string.Empty).Replace(")", string.Empty));
+            wr => wr.WorkerProfile.SecondLastName);
         var query = from wr in workerRequests
                     select new AgencyWorkerRequestModel
                     {
@@ -570,7 +569,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 query = query.AddOrderBy(filter, wr => wr.Name);
                 break;
             case GetWorkersRequestSortBy.Status:
-                query = query.AddOrderBy(filter, wr => wr.WorkerRequestStatus).ThenBy(wr => wr.Name);
+                query = query.AddOrderBy(filter, wr => wr.WorkerRequestStatus == WorkerRequestStatus.Booked ? 0 : wr.WorkerRequestStatus == WorkerRequestStatus.Finished ? 1 : 2).ThenBy(wr => wr.Name);
                 break;
             case GetWorkersRequestSortBy.StartWorking:
                 query = query.AddOrderBy(filter, wr => wr.StartWorking).ThenBy(wr => wr.Name);

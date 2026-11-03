@@ -1,0 +1,63 @@
+parameters:
+  - name: dockerTag
+    type: string
+
+  - name: publishImage
+    type: boolean
+
+jobs:
+  - job: Build_Test_Solution
+    displayName: 'Build, Test and Publish API Image'
+    variables:
+      dotnetSdkVersion: '10.0.401'
+    steps:
+      - checkout: self
+        displayName: 'Checkout Repository'
+        fetchDepth: 1
+
+      - template: dotnet-setup.yml
+        parameters:
+          sdkVersion: $(dotnetSdkVersion)
+
+      - template: dotnet-build-test.yml
+        parameters:
+          buildProjects: 'Covenant.Api/Covenant.Api.slnx'
+          buildConfiguration: 'Release'
+          runUnitTests: true
+          unitTestProjects: |
+            Covenant.Api/Covenant.Tests/Covenant.Tests.csproj
+            Covenant.Api/Sigook.Functions.Tests/Sigook.Functions.Tests.csproj
+          runIntegrationTests: true
+          integrationTestProjects: 'Covenant.Api/Covenant.Integration.Tests/Covenant.Integration.Tests.csproj'
+          coverageSettings: 'Covenant.Api/coverage.runsettings'
+          coverageWorkingDirectory: 'Covenant.Api'
+          minLineCoverage: 80
+
+      - ${{ if parameters.publishImage }}:
+        - task: DotNetCoreCLI@2
+          displayName: 'Publish API'
+          inputs:
+            command: 'publish'
+            publishWebProjects: false
+            projects: 'Covenant.Api/Covenant.Api/Covenant.Api.csproj'
+            arguments: '--configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/api'
+            zipAfterPublish: false
+            modifyOutputPath: false
+
+        - task: Docker@2
+          displayName: 'Build and Push Docker Image'
+          inputs:
+            containerRegistry: 'acrServiceConnectionSigook'
+            repository: 'api'
+            command: 'buildAndPush'
+            Dockerfile: 'Covenant.Api/Dockerfile'
+            buildContext: '$(Build.ArtifactStagingDirectory)/api'
+            tags: |
+              ${{ parameters.dockerTag }}
+              $(Build.BuildId)
+
+      - template: cleanup.yml
+        parameters:
+          cleanDocker: true
+          cleanDotnet: true
+          workingDirectory: 'Covenant.Api'
