@@ -28,7 +28,6 @@
               <default-image v-else :name="row.name" class="img-30"></default-image>
               <div>
                 <p class="rcard__title">{{ row.name }}</p>
-                <p class="rcard__sub" @click.stop><CopyLink kind="email" :value="row.email" /></p>
                 <p class="rcard__sub" :class="row.isSubcontractor ? 'Blue' : ''">#{{ row.numberId }}</p>
               </div>
             </div>
@@ -75,13 +74,9 @@
       </b-table-column>
       <b-table-column field="name" label="Name" sortable searchable>
         <template v-slot:searchable>
-          <b-input v-model="serverParams.name" placeholder="Name, email or phone" icon="magnify"
-            size="is-small"></b-input>
+          <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"></b-input>
         </template>
-        <template v-slot="props">
-          {{ props.row.name }}
-          <span class="fz-1 block"><CopyLink kind="email" :value="props.row.email" /></span>
-        </template>
+        <template v-slot="props">{{ props.row.name }}</template>
       </b-table-column>
       <b-table-column field="startWorking" label="Start Working" sortable searchable>
         <template v-slot:searchable>
@@ -185,7 +180,6 @@ import TablePunchCard from '@/modules/company/requests/components/CompanyPunchCa
 import DataEntryTerms from '@/shared/punch-card/DataEntryTerms.vue';
 import MobileFiltersPanel from '@/shared/ui/MobileFiltersPanel.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
-import CopyLink from '@/shared/ui/CopyLink.vue';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
 import type { CompanyRequestDetail, CompanyRequestWorker, CompanyRequestWorkerFilter } from '@/modules/company/requests/types';
 import type { GridHandle } from '@/shared/types/common';

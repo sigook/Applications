@@ -43,15 +43,9 @@
         </b-table-column>
         <b-table-column field="name" label="Name" sortable searchable>
           <template v-slot:searchable>
-            <b-input v-model="serverParams.name" placeholder="Name, email or phone" icon="magnify"
-              size="is-small"></b-input>
+            <b-input v-model="serverParams.name" placeholder="Search..." icon="magnify" size="is-small"></b-input>
           </template>
-          <template v-slot="props">
-            <div class="worker-cell">
-              <span>{{ props.row.name }}</span>
-              <span class="fz-1"><copy-link kind="email" :value="props.row.email" /></span>
-            </div>
-          </template>
+          <template v-slot="props">{{ props.row.name }}</template>
         </b-table-column>
         <b-table-column field="startWorking" label="Start Working" sortable searchable>
           <template v-slot:searchable>
@@ -166,7 +160,6 @@ import FinishAssignmentModal from "@/shared/request-detail/FinishAssignmentModal
 import PunchCard from '@/modules/agency/recruiting/requests/components/AgencyPunchCardWorkerContainer.vue';
 import DatepickerModal from "@/modules/agency/recruiting/requests/components/DatepickerModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
-import CopyLink from '@/shared/ui/CopyLink.vue';
 
 const props = defineProps<{ request: AgencyRequestDetail }>();
 
@@ -344,12 +337,3 @@ function onWorkerBooked() {
   emit('refreshRequest');
 }
 </script>
-
-<style scoped>
-.worker-cell {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1.3;
-}
-</style>

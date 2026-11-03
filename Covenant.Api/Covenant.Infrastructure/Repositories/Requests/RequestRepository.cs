@@ -495,8 +495,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
     {
         var workerRequests = Context.WorkerRequests.WhereSearch(filter.Name,
             wr => wr.WorkerProfile.FirstName, wr => wr.WorkerProfile.MiddleName, wr => wr.WorkerProfile.LastName,
-            wr => wr.WorkerProfile.SecondLastName, wr => wr.WorkerProfile.Worker.Email, wr => wr.WorkerProfile.MobileNumber,
-            wr => wr.WorkerProfile.MobileNumber.Replace(" ", string.Empty).Replace("-", string.Empty).Replace("(", string.Empty).Replace(")", string.Empty));
+            wr => wr.WorkerProfile.SecondLastName);
         var query = from wr in workerRequests
                     select new AgencyWorkerRequestModel
                     {
