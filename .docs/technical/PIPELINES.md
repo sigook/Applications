@@ -73,7 +73,7 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 
 Web is prepared first so a failure there happens before the migrations, and the API boots as late as possible because its slot consumes Service Bus messages while it runs. API swaps first because the previous Web bundle keeps working against an API whose changes are backward compatible. If the Web swap fails, the API is already live: re-run the Deploy stage. Between the two swaps new page loads run the previous Web against the new API.
 
-**Stage 3 - Notify** (production only, `Sigook-Notifications`): one email per released app (appType `api` and `agency-portal`).
+**Stage 3 - Notify** (production only, `Sigook-Notifications`): a single email per release: appType `platform` when both apps were released, otherwise `api` or `agency-portal`.
 
 ### Covenant.Api (.NET 10)
 
@@ -403,7 +403,7 @@ Sends a deployment notification email via Microsoft Graph API using Azure AD OAu
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `appType` | string | required | `api`, `agency-portal`, `website`, or `mobile` |
+| `appType` | string | required | `api`, `agency-portal`, `platform`, `website`, or `mobile` |
 | `recipients` | string | required | Semicolon-separated email recipients |
 | `version` | string | `$(Build.BuildId)` | Version identifier for the email |
 | `senderEmail` | string | `it@covenantgroupl.com` | Sender email (must match Azure AD user) |
@@ -414,6 +414,7 @@ Sends a deployment notification email via Microsoft Graph API using Azure AD OAu
 |---------|-------|-------------|
 | `api` | Covenant API | Backend API services — covenant.sigook.ca |
 | `agency-portal` | Sigook Web Portal | Agency web portal — covenant.sigook.ca |
+| `platform` | Sigook Platform | Backend API services and agency web portal — covenant.sigook.ca |
 | `website` | Covenant Group Website | Corporate website — covenantgroup.com |
 | `mobile` | Sigook Mobile App | Mobile app — Google Play Store & App Store links |
 

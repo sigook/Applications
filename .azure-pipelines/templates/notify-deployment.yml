@@ -12,7 +12,7 @@
 # Usage:
 #   - template: templates/notify-deployment.yml
 #     parameters:
-#       appType: 'api'             # api | agency-portal | website | mobile
+#       appType: 'api'             # api | agency-portal | platform | website | mobile
 #       recipients: '$(NotificationRecipients)'
 #       version: '$(Build.BuildId)'
 
@@ -23,6 +23,7 @@ parameters:
     values:
       - api
       - agency-portal
+      - platform
       - website
       - mobile
 
@@ -67,6 +68,10 @@ steps:
         elif [ "${{ parameters.appType }}" = "agency-portal" ]; then
           APP_LABEL="Sigook Web Portal"
           BODY="Hello,\n\nThe Sigook agency web portal has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Agency web portal (covenant.sigook.ca)\n\nThe portal is now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
+
+        elif [ "${{ parameters.appType }}" = "platform" ]; then
+          APP_LABEL="Sigook Platform"
+          BODY="Hello,\n\nThe Sigook platform has been updated to version ${{ parameters.version }}.\n\nWhat was updated:\n- Backend API services (covenant.sigook.ca)\n- Agency web portal (covenant.sigook.ca)\n\nBoth are now running the latest version. If you experience any issues, please contact the development team.\n\nThis is an automated message. Please do not reply to this email.\n\n— IT"
 
         elif [ "${{ parameters.appType }}" = "website" ]; then
           APP_LABEL="Covenant Group Website"

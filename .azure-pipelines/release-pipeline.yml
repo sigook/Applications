@@ -119,26 +119,18 @@ stages:
     dependsOn: Deploy
     condition: and(succeeded(), eq(variables['isMain'], true))
     jobs:
-      - ${{ if parameters.deployApi }}:
-        - job: SendApiEmail
-          displayName: 'Send API Deployment Email'
-          variables:
-            - group: Sigook-Notifications
-          steps:
-            - checkout: none
-            - template: templates/notify-deployment.yml
-              parameters:
+      - job: SendEmail
+        displayName: 'Send Deployment Email'
+        variables:
+          - group: Sigook-Notifications
+        steps:
+          - checkout: none
+          - template: templates/notify-deployment.yml
+            parameters:
+              ${{ if and(parameters.deployApi, parameters.deployWeb) }}:
+                appType: 'platform'
+              ${{ elseif parameters.deployApi }}:
                 appType: 'api'
-                recipients: '$(NotificationRecipients)'
-
-      - ${{ if parameters.deployWeb }}:
-        - job: SendWebEmail
-          displayName: 'Send Web Deployment Email'
-          variables:
-            - group: Sigook-Notifications
-          steps:
-            - checkout: none
-            - template: templates/notify-deployment.yml
-              parameters:
+              ${{ else }}:
                 appType: 'agency-portal'
-                recipients: '$(NotificationRecipients)'
+              recipients: '$(NotificationRecipients)'
