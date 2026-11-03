@@ -4,24 +4,24 @@ Documentation for all Azure DevOps pipelines in `.azure-pipelines/`.
 
 ## Overview
 
-All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers** so each app deploys independently. The only exception is the iOS build/upload of Sigook.App, which runs on **Microsoft-hosted macOS** agents (`vmImage`, free tier: 1 parallel job, 1800 min/month, 60 min per job).
+All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers**. Covenant.Api and Sigook.Web deploy together through `release-pipeline.yml` in both environments; the other apps deploy independently. The only exception is the iOS build/upload of Sigook.App, which runs on **Microsoft-hosted macOS** agents (`vmImage`, free tier: 1 parallel job, 1800 min/month, 60 min per job).
 
 ### Environment Strategy
 
 | Branch | Environment | Deploy |
 |--------|-------------|--------|
-| `dev` | Staging | Auto-deploy after build+test |
-| `main` | Production | Manual trigger only (run from Azure DevOps) |
+| `dev` | Staging | Auto-deploy after build+test (`release-pipeline.yml` for Covenant.Api + Sigook.Web) |
+| `main` | Production | Manual trigger only (run `release-pipeline.yml` from Azure DevOps for Covenant.Api + Sigook.Web) |
 
-Covenant.Api, Sigook.Web and Covenant.Web resolve their targets (environment, Docker tag, App Service / Static Web App, URL) as compile-time variables: `main`/`master` → production values, any other ref (PRs and feature branches included) → staging values. Their deploy runs as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by the three apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The three pipelines are authorized on both environments.
+Covenant.Api and Sigook.Web share `release-pipeline.yml`, which validates their PRs and deploys them. `release-pipeline.yml` and Covenant.Web resolve their targets (environment, Docker tag, App Service / Static Web App, URL) as compile-time variables: `main`/`master` → production values, any other ref → staging values. Deploys run as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by these apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The pipelines must be authorized on the environments they deploy to.
 
 All checkouts are shallow (`fetchDepth: 1`).
 
 ### PR Validation Strategy
 
-- **PRs to `dev`**: Full validation (build, test, lint). Primary quality gate.
+- **PRs to `dev`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Release-CICD` run. The required checks on `dev` (GitHub ruleset `dev-applications`) are `Release-CICD`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge.
 - **PRs to `main`**: Pipeline does NOT run (already validated on dev). Exception: Sigook.Functions and CognitiveServices validate PRs to `main` since they have no staging.
-- **Direct push to `dev`**: Full flow (build, test, deploy).
+- **Direct push to `dev`**: Full flow (build, test, deploy). For Covenant.Api and Sigook.Web a change in either one releases both.
 - **Direct push to `main`**: No automatic trigger. Production deployments must be run manually from Azure DevOps.
 
 ### Shared Azure Resources
@@ -38,8 +38,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Covenant.Api | `covenant-api-pipeline.yml` | `Covenant.Api/**` | Build+Test+Publish+Docker → Deploy → Notify | `sigook-api-staging` / `sigook-api` |
-| Sigook.Web | `sigook-web-pipeline.yml` | `Sigook.Web/**` | Lint+Type-check+Build+Docker → Deploy → Notify | `sigook-web-staging` / `sigook` |
+| Release (`Release-CICD`) | `release-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `dev` and PRs to `dev`; manual on `main` | Build (API and/or Web) → Deploy → Notify | `sigook-api-staging` + `sigook-web-staging` from `dev`; `sigook-api` + `sigook` from `main` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
 | Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
@@ -47,52 +46,70 @@ All checkouts are shallow (`fetchDepth: 1`).
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
 | Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
-**Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of both web pipelines have no exclude, so docs-only PRs still run validation.
+**Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `release-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still run validation.
 
-The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `covenant-api-pipeline.yml` trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline.
+The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `release-pipeline.yml` CI trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline, although a PR touching them still runs the API validation.
 
 ---
 
 ## Pipeline Details
 
+### Release (Covenant.Api + Sigook.Web)
+
+**Build naming:** `Release-YYYYMMDD.r`
+
+**PR runs:** every PR to `dev` touching `Covenant.Api/**` or `Sigook.Web/**` runs both build jobs without publishing images; Deploy and Notify are skipped.
+
+**Trigger:** Automatic on push to `dev` touching `Covenant.Api/**` or `Sigook.Web/**` (`batch: true`, so pushes during a run are grouped into the next one; `*.md` and the Functions folders are excluded). Manual on `main`. Parameters `deployApi` and `deployWeb` are both `true` by default, so an automatic run always releases both apps; in a manual run, clear one to release a single app. Clearing both fails at compile time because the Build stage has no jobs.
+
+**Stage 1 - Build and Test:** the API job (`templates/api-build-job.yml`) and the Web job (`templates/web-build-job.yml`) validate each app and push the images on `main`/`dev`. A failure in either job stops the release before Azure is touched.
+
+**Stage 2 - Deploy** (`main`/`dev` only; one `deployment` job on environment `production`/`staging`), in this order:
+1. Web: start the `warmup` slot and deploy the image
+2. API: start the `warmup` slot and deploy the image; the new version boots and runs the EF migrations
+3. Swap API
+4. Swap Web
+5. Stop both slots (`always()`)
+
+Web is prepared first so a failure there happens before the migrations, and the API boots as late as possible because its slot consumes Service Bus messages while it runs. API swaps first because the previous Web bundle keeps working against an API whose changes are backward compatible. If the Web swap fails, the API is already live: re-run the Deploy stage. Between the two swaps new page loads run the previous Web against the new API.
+
+**Stage 3 - Notify** (production only, `Sigook-Notifications`): one email per released app (appType `api` and `agency-portal`).
+
 ### Covenant.Api (.NET 10)
 
-**Build naming:** `CovenantApi-YYYY.M.D.r`
+Built and deployed by [Release](#release-covenantapi--sigookweb).
 
-**Stage 1 - Build and Test** (one job):
+**Build and Test** (one job, template: `api-build-job.yml`):
 - .NET SDK 10.0.401 (template: `dotnet-setup.yml`)
 - Build `Covenant.Api/Covenant.Api.slnx` (template: `dotnet-build-test.yml`; packages come from nuget.org only, see `Covenant.Api/nuget.config`)
 - Unit tests: `Covenant.Tests`, `Sigook.Functions.Tests`
 - Integration tests: `Covenant.Integration.Tests`
 - Code coverage gate: both test steps run with `--settings Covenant.Api/coverage.runsettings` (Microsoft code coverage, Cobertura). ReportGenerator (local tool in `Covenant.Api/dotnet-tools.json`) merges the reports, `PublishCodeCoverageResults@2` shows them in the run's Code Coverage tab, and `dotnet run coverage-gate.cs` fails the build when **line coverage is below 80%** (`minLineCoverage`), so nothing is published or deployed. Measured over `Covenant.Api`, `Covenant.Common`, `Covenant.Core.BL`, `Covenant.Documents`, `Covenant.Infrastructure` and `Sigook.Functions`; EF migrations, Razor views, `obj/` and source-generated code (`[GeneratedCode]`, `*.g.cs`) and `[ExcludeFromCodeCoverage]` members are excluded
-- dev/main only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
+- Release on `dev`/`main` only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
 - Docker tags: `latest_staging` (dev) or `latest_production` (main), plus the immutable `$(Build.BuildId)`
 - Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:10.0` + the published output); the solution is compiled once, on the agent
 - Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
-**Stage 2 - Deploy** (only on push to dev/main, not PRs; `deployment` job on environment `staging`/`production`):
-- Zero-downtime slot swap (see [Zero-downtime deploys](#zero-downtime-deploys)): start the `warmup` slot → `AzureWebAppContainer@1` deploys `sigook.azurecr.io/api:$(Build.BuildId)` to it → swap into production → stop the slot (`always()`)
+**Deployed by Release:**
+- Zero-downtime slot swap (see [Zero-downtime deploys](#zero-downtime-deploys)) through `slot-prepare.yml`, `slot-swap.yml` and `slot-stop.yml`, deploying `sigook.azurecr.io/api:$(Build.BuildId)`
 - Staging: `https://sigook-api-staging.azurewebsites.net`
 - Production: `https://sigook-api.azurewebsites.net`
 
-**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
-- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `api`)
-
 ### Sigook.Web (Vue.js 3 + Docker + Nginx)
 
-**Build naming:** `SigookWeb-YYYYMMDDr`
+Built and deployed by [Release](#release-covenantapi--sigookweb).
 
-**Stage 1 - Build and Validate** (one job):
+**Build and Validate** (one job, template: `web-build-job.yml`):
 - Node.js 22 via shared template
 - pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Lint with ESLint, TypeScript type-check (the only `vue-tsc` run)
-- dev/main only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
+- Release on `dev`/`main` only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
 - `pnpm exec vite build --mode staging|production` into `wwwroot/` — runs on PRs too (always `staging`) so bundling errors fail the PR
-- dev/main only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`
+- Release on `dev`/`main` only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`
 - Image: `sigook.azurecr.io/web:<tag>` plus the immutable `$(Build.BuildId)`
 
-**Stage 2 - Deploy** (only on push to dev/main; `deployment` job on environment `staging`/`production`):
+**Deployed by Release:**
 - Same slot swap as the API, deploying `sigook.azurecr.io/web:$(Build.BuildId)` to the `warmup` slot
 - Staging: `https://sigook-web-staging.azurewebsites.net`
 - Production: `https://sigook.azurewebsites.net`
@@ -108,9 +125,6 @@ All four container apps (`sigook-api`, `sigook`, `sigook-api-staging`, `sigook-w
 - Rollback: start the slot (it still holds the previous image) and swap again
 - EF migrations run when the new version boots in the slot, so for the warm-up window the live version runs against the migrated schema; keep migrations backward compatible
 - Open Sigook.Web tabs keep the old bundle after a swap. `App.vue` compares the running build (`<meta name="build">` in `index.html`) with `/version.json` (served `no-store`) every 5 minutes and whenever the tab becomes visible, and shows `AppVersionToast` when they differ. Lazy chunks of the old build no longer exist in the new image, so `main.ts` reloads the page on `vite:preloadError` (at most once every 10 s, tracked in `sessionStorage`)
-
-**Stage 3 - Notify** (production only, uses `Sigook-Notifications` variable group):
-- Sends deployment email via Microsoft Graph API (template: `notify-deployment.yml`, appType: `agency-portal`)
 
 ### Covenant.Web (Vue.js 3 + Azure Static Web Apps)
 
@@ -316,6 +330,12 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 
 Located in `.azure-pipelines/templates/`:
 
+### api-build-job.yml / web-build-job.yml
+The build job of each app in Release. Parameters: `dockerTag` and `publishImage` (`false` = validation only, no image), plus `deployEnvironment` on the Web job (Vite mode).
+
+### slot-prepare.yml / slot-swap.yml / slot-stop.yml
+The three parts of a zero-downtime deploy. `slot-prepare.yml` takes `appName` and `image` (`api`, `web`); the other two take `appName`. All accept `resourceGroup` (`Sigook`) and `slot` (`warmup`). `slot-stop.yml` runs with `always()`.
+
 ### dotnet-setup.yml
 Installs .NET SDK via `UseDotNet@2` task.
 
@@ -459,7 +479,7 @@ variables:
 - Verify the change is in the correct path (e.g., `Covenant.Api/**`)
 - Check that the file is not excluded (e.g., `*.md` files are excluded)
 - Sigook.Functions and CognitiveServices are manual-only (no automatic triggers)
-- Large pushes (more than 300 changed files, typically a big PR merge) can skip pipelines: Azure Pipelines evaluates `paths:` against the file list GitHub returns for the commit, GitHub caps it at 300 files sorted alphabetically and Azure Pipelines does not page further. Only the pipelines whose paths fall inside those first 300 entries fire; `Covenant.Api/**` usually does, `Sigook.Web/**` and `Sigook.App/**` usually do not. Check which runs have `reason: individualCI` for the merge commit and run the missing pipelines manually from `dev`
+- Large pushes (more than 300 changed files, typically a big PR merge) can skip pipelines: Azure Pipelines evaluates `paths:` against the file list GitHub returns for the commit, GitHub caps it at 300 files sorted alphabetically and Azure Pipelines does not page further. Only the pipelines whose paths fall inside those first 300 entries fire; `Covenant.Api/**` usually does, `Sigook.Web/**` and `Sigook.App/**` usually do not. Check which runs have `reason: individualCI` for the merge commit and run the missing pipelines manually from `dev`. Release only needs one of its two paths inside that list
 
 ### NuGet restore fails
 - All packages come from nuget.org (`Covenant.Api/nuget.config`); there is no private feed, so no authentication step is needed

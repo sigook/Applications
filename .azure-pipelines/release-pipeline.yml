@@ -1,0 +1,144 @@
+name: Release-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Covenant.Api/**
+      - Sigook.Web/**
+    exclude:
+      - Covenant.Api/**/*.md
+      - Covenant.Api/Sigook.Functions/**
+      - Covenant.Api/Sigook.Functions.Tests/**
+      - Sigook.Web/**/*.md
+
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Covenant.Api/**
+      - Sigook.Web/**
+
+parameters:
+  - name: deployApi
+    displayName: 'Deploy API'
+    type: boolean
+    default: true
+
+  - name: deployWeb
+    displayName: 'Deploy Web'
+    type: boolean
+    default: true
+
+pool:
+  name: 'covenant-build-pool'
+
+variables:
+  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
+  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'production'
+    dockerTag: 'latest_production'
+    apiAppName: 'sigook-api'
+    webAppName: 'sigook'
+  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+    deployEnvironment: 'staging'
+    dockerTag: 'latest_staging'
+    apiAppName: 'sigook-api-staging'
+    webAppName: 'sigook-web-staging'
+
+stages:
+  - stage: Build
+    displayName: 'Build and Test'
+    jobs:
+      - ${{ if parameters.deployApi }}:
+        - template: templates/api-build-job.yml
+          parameters:
+            dockerTag: $(dockerTag)
+            publishImage: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}
+
+      - ${{ if parameters.deployWeb }}:
+        - template: templates/web-build-job.yml
+          parameters:
+            deployEnvironment: $(deployEnvironment)
+            dockerTag: $(dockerTag)
+            publishImage: ${{ in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master', 'refs/heads/dev', 'refs/heads/development') }}
+
+  - stage: Deploy
+    displayName: 'Deploy'
+    dependsOn: Build
+    condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)))
+    jobs:
+      - deployment: Release
+        displayName: 'Release to Azure App Service'
+        environment: ${{ variables.deployEnvironment }}
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - download: none
+
+                - ${{ if parameters.deployWeb }}:
+                  - template: templates/slot-prepare.yml
+                    parameters:
+                      appName: $(webAppName)
+                      image: web
+
+                - ${{ if parameters.deployApi }}:
+                  - template: templates/slot-prepare.yml
+                    parameters:
+                      appName: $(apiAppName)
+                      image: api
+
+                  - template: templates/slot-swap.yml
+                    parameters:
+                      appName: $(apiAppName)
+
+                - ${{ if parameters.deployWeb }}:
+                  - template: templates/slot-swap.yml
+                    parameters:
+                      appName: $(webAppName)
+
+                - ${{ if parameters.deployApi }}:
+                  - template: templates/slot-stop.yml
+                    parameters:
+                      appName: $(apiAppName)
+
+                - ${{ if parameters.deployWeb }}:
+                  - template: templates/slot-stop.yml
+                    parameters:
+                      appName: $(webAppName)
+
+  - stage: Notify
+    displayName: 'Notify Production Deploy'
+    dependsOn: Deploy
+    condition: and(succeeded(), eq(variables['isMain'], true))
+    jobs:
+      - ${{ if parameters.deployApi }}:
+        - job: SendApiEmail
+          displayName: 'Send API Deployment Email'
+          variables:
+            - group: Sigook-Notifications
+          steps:
+            - checkout: none
+            - template: templates/notify-deployment.yml
+              parameters:
+                appType: 'api'
+                recipients: '$(NotificationRecipients)'
+
+      - ${{ if parameters.deployWeb }}:
+        - job: SendWebEmail
+          displayName: 'Send Web Deployment Email'
+          variables:
+            - group: Sigook-Notifications
+          steps:
+            - checkout: none
+            - template: templates/notify-deployment.yml
+              parameters:
+                appType: 'agency-portal'
+                recipients: '$(NotificationRecipients)'

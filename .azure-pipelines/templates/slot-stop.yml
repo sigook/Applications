@@ -1,0 +1,23 @@
+parameters:
+  - name: appName
+    type: string
+
+  - name: resourceGroup
+    type: string
+    default: 'Sigook'
+
+  - name: slot
+    type: string
+    default: 'warmup'
+
+steps:
+  - task: AzureAppServiceManage@0
+    displayName: 'Stop ${{ parameters.appName }}/${{ parameters.slot }}'
+    condition: always()
+    inputs:
+      azureSubscription: 'SigookPipelines'
+      Action: 'Stop Azure App Service'
+      WebAppName: ${{ parameters.appName }}
+      SpecifySlotOrASE: true
+      ResourceGroupName: ${{ parameters.resourceGroup }}
+      Slot: ${{ parameters.slot }}

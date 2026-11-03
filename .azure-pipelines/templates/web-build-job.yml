@@ -1,0 +1,103 @@
+parameters:
+  - name: deployEnvironment
+    type: string
+
+  - name: dockerTag
+    type: string
+
+  - name: publishImage
+    type: boolean
+
+jobs:
+  - job: Validate
+    displayName: 'Lint, Type-check and Build Web Image'
+    variables:
+      workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.Web'
+    steps:
+      - checkout: self
+        displayName: 'Checkout Repository'
+        fetchDepth: 1
+
+      - template: node-setup.yml
+        parameters:
+          nodeVersion: '22'
+
+      - script: |
+          corepack enable || npm i -g "$(node -p "require('./package.json').packageManager")"
+          corepack prepare --activate 2>/dev/null || true
+          pnpm --version
+        displayName: 'Setup pnpm'
+        workingDirectory: $(workingDirectory)
+
+      - script: |
+          echo "##vso[task.setvariable variable=pnpmStorePath]$(pnpm store path --silent)"
+        displayName: 'Resolve pnpm store path'
+        workingDirectory: $(workingDirectory)
+
+      - task: Cache@2
+        displayName: 'Cache pnpm store'
+        inputs:
+          key: 'pnpm | "$(Agent.OS)" | $(workingDirectory)/pnpm-lock.yaml'
+          restoreKeys: |
+            pnpm | "$(Agent.OS)"
+          path: $(pnpmStorePath)
+
+      - script: pnpm install --frozen-lockfile
+        displayName: 'Install Dependencies'
+        workingDirectory: $(workingDirectory)
+
+      - script: pnpm run lint
+        displayName: 'Lint Code'
+        workingDirectory: $(workingDirectory)
+
+      - script: pnpm run type-check
+        displayName: 'TypeScript Type Check'
+        workingDirectory: $(workingDirectory)
+
+      - ${{ if parameters.publishImage }}:
+        - task: qetza.replacetokens.replacetokens-task.replacetokens@6
+          displayName: 'Set Version in index.html and version.json'
+          inputs:
+            root: '$(Build.SourcesDirectory)/Sigook.Web'
+            sources: |
+              index.html
+              public/**/*.html
+              public/**/*.json
+            tokenPattern: 'custom'
+            tokenPrefix: '#{'
+            tokenSuffix: '}#'
+            actionOnMissing: 'warn'
+            writeBOM: true
+            encoding: 'auto'
+
+      - script: pnpm exec vite build --mode ${{ parameters.deployEnvironment }}
+        displayName: 'Vite Build (${{ parameters.deployEnvironment }})'
+        workingDirectory: $(workingDirectory)
+
+      - ${{ if parameters.publishImage }}:
+        - task: Docker@2
+          displayName: 'Build Docker Image'
+          inputs:
+            command: 'build'
+            repository: 'sigook.azurecr.io/web'
+            dockerfile: 'Sigook.Web/Dockerfile'
+            buildContext: 'Sigook.Web'
+            tags: |
+              ${{ parameters.dockerTag }}
+              $(Build.BuildId)
+
+        - task: Docker@2
+          displayName: 'Push Docker Image to ACR'
+          inputs:
+            containerRegistry: 'acrServiceConnectionSigook'
+            repository: 'web'
+            command: 'push'
+            tags: |
+              ${{ parameters.dockerTag }}
+              $(Build.BuildId)
+
+      - template: cleanup.yml
+        parameters:
+          cleanDocker: true
+          cleanNodeModules: true
+          workingDirectory: '$(workingDirectory)'
