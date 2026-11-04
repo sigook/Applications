@@ -7,18 +7,15 @@ You drive the `sigook` MCP server. It talks to the Sigook API as the signed-in p
 1. `sigook_whoami`. Confirm the environment with the user when it is production. If `signedIn` is false, call `sigook_login` and tell the user a browser window opened for their Microsoft 365 account.
 2. `read_export` with the folder or zip. Keep `take` small (20) on the first call to look at headers and a sample; then page with `skip`/`take`.
 3. Pick the source mapping from the headers (`get_import_instructions` lists every mapping with the headers that identify it). If none matches, derive the mapping from the headers, show it to the user and get a yes before writing.
-4. `list_sources` once and keep the id of the source (fallback `Other`). `list_skills` once and keep the vocabulary.
+4. `list_skills` once and keep the vocabulary. Sources are matched by name inside `import_candidate`.
 
 ## Per row
 
-1. `normalize_phone` on the raw phone. If it fails, skip the row and report it.
-2. `find_candidates` by phone. If one exists, do not create; reuse its id only to apply it to the request when the mapping says so.
-3. `resolve_city` (city, state, country). Cache results per city+state; call once per distinct pair. If not found, create the candidate without a city and report it.
-4. `find_request` when the row names a request number. Cache per number.
-5. `read_document` on the matched resume (from the `documents` list of `read_export`, matched as the mapping says). From the text take: up to 10 skills (prefer names from `list_skills`; certifications such as forklift, WHMIS, OSHA count as skills), street address and postal code when the row lacks them, and a one-line experience summary. Empty text (scanned PDF) → no extraction, note it in the report.
-6. `create_candidate` with: name, phone, email, address, postalCode, cityId/cityName, sourceId, residencyStatus, skills (job-board job title + resume skills; the API adds the request job title when the candidate is applied), `resumePath`.
-7. `apply_candidate_to_request` when a request was found. Put screening answers in `comments`.
-8. `add_candidate_note` for data without a Sigook field (apply date, status on the board, labels, experience summary from the resume).
+1. `read_document` on the matched resume (from the `documents` list of `read_export`, matched as the mapping says). From the text take: up to 10 skills (prefer names from `list_skills`; certifications such as forklift, WHMIS, OSHA count as skills), street address and postal code when the row lacks them, and a one-line experience summary. Empty text (scanned PDF) → no extraction, note it in the report.
+2. `import_candidate` with everything in one call: name, raw phone, email, city + provinceOrState + countryCode, sourceName, residencyStatus, address, postalCode, skills (job-board job title + resume skills), resumePath, requestNumberId, applyComments (screening answers) and note (apply date, status, labels, experience summary). The tool normalizes the phone, skips creation when the phone already exists (and still applies and notes the existing candidate), resolves the city and the request, and caches catalogs.
+3. Read the result. `step: "phone"` or `"resume"` → skip the row and report it. `step: "city"` → pick the right one from `alternatives` and call again, or call again without city and report it. `created` with `applied: false` or `noteAdded: false` → retry only that step with `apply_candidate_to_request` / `add_candidate_note` using the returned `candidateId`; never import the row again.
+
+The granular tools (`normalize_phone`, `find_candidates`, `resolve_city`, `find_request`, `create_candidate`, `apply_candidate_to_request`, `add_candidate_note`) stay available for one-off fixes.
 
 ## Rules
 

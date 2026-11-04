@@ -17,6 +17,7 @@ builder.Services.AddSingleton(environment);
 builder.Services.AddSingleton<TokenStore>();
 builder.Services.AddSingleton<SigookSession>();
 builder.Services.AddSingleton<ExportCache>();
+builder.Services.AddSingleton<CatalogCache>();
 builder.Services.AddSingleton<ImportInstructions>();
 builder.Services.AddTransient<BearerHandler>();
 builder.Services.AddHttpClient<PkceLoginFlow>()

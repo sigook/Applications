@@ -14,21 +14,21 @@ The export is two zips in one folder. `read_export` on the folder reads both.
 
 ## CSV columns
 
-| Column | Sigook | How |
+| Column | `import_candidate` parameter | How |
 |---|---|---|
-| `Name` | name | as is |
-| `Email` | email | as is, lowercase |
-| `Phone Number` | phone | `normalize_phone` (`+1 4452510680` → `445 251-0680`) |
-| `City` + `State` | cityId | `resolve_city(city, state, "USA")` |
-| `Job` | request | the number after the last ` - ` is the Sigook request NumberId (`... - 2549` → 2549). `find_request(2549)` |
-| `Job` | skills | the title before ` – ` (e.g. `Warehouse Worker`). The API adds the request job title by itself when the candidate is applied |
-| `Questions and Answers` | residencyStatus + comments | if an answer to "authorized to work" is Yes → residencyStatus `Authorized to work in the U.S.`. Whole Q&A text goes to `comments` of `apply_candidate_to_request` |
-| `Apply Date`, `Status`, `Labels`, `Rating` | note | one `add_candidate_note`: `ZipRecruiter: applied 10/26/26, status Awaiting Review, labels …` (omit empty parts) |
-| `Candidate Overview` | resume match | the `app_contact=<hash>` in the URL is the `<contactHash>` suffix of the PDF file name |
+| `Name` | `name` | as is |
+| `Email` | `email` | as is |
+| `Phone Number` | `phone` | raw (`+1 4452510680`); the tool normalizes it |
+| `City` + `State` | `city`, `provinceOrState`, `countryCode: "USA"` | as is |
+| `Job` | `requestNumberId` | the number after the last ` - ` is the Sigook request NumberId (`... - 2549` → 2549) |
+| `Job` | `skills` | the title before ` – ` (e.g. `Warehouse Worker`), plus the resume skills. The API adds the request job title by itself when the candidate is applied |
+| `Questions and Answers` | `residencyStatus` + `applyComments` | if an answer to "authorized to work" is Yes → residencyStatus `Authorized to work in the U.S.`. Whole Q&A text goes to `applyComments` |
+| `Apply Date`, `Status`, `Labels`, `Rating` | `note` | `ZipRecruiter: applied 10/26/26, status Awaiting Review, labels …` (omit empty parts) |
+| `Candidate Overview` | `resumePath` | the `app_contact=<hash>` in the URL is the `<contactHash>` suffix of the PDF file name |
 | `Resume` | ignore | protected URL, not downloadable |
 | `External Id`, `Notes`, `Deal-Breaker Questions Correct` | ignore | |
 
-Source: `Zip Recruiter` (with a space) from `list_sources`; if missing, `Other`.
+`sourceName`: `Zip Recruiter` (with a space); the tool falls back to `Other` when missing.
 
 ## Resume matching
 

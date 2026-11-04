@@ -21,28 +21,23 @@ public static partial class LookupTools
 
     [McpServerTool(Name = "resolve_city"), Description("Resolves a city name plus province/state into a Sigook city. Country is CA or USA. The state can be a code (PA) or a name (Pennsylvania). Returns the best match and, when ambiguous, the closest alternatives.")]
     public static async Task<object> ResolveCity(
-        ISigookApi api,
+        CatalogCache catalog,
         [Description("City name, e.g. Philadelphia.")] string city,
         [Description("Province or state code or name, e.g. PA, ON, Ontario.")] string provinceOrState,
         [Description("CA or USA. Default USA.")] string countryCode = "USA",
         CancellationToken cancellationToken = default)
     {
-        var code = countryCode.Trim().ToUpperInvariant() switch { "US" => "USA", var c => c };
-        var provinces = await api.GetProvinces(code, cancellationToken).OrThrow();
-        var province = provinces.FirstOrDefault(p => Same(p.Code, provinceOrState) || Same(p.Value, provinceOrState));
-        if (province is null)
-            return new { found = false, reason = $"Province/state '{provinceOrState}' not found in {code}", provinces = provinces.Select(p => new { p.Id, p.Value, p.Code }) };
-        var cities = await api.GetCities(province.Id, cancellationToken).OrThrow();
-        var exact = cities.FirstOrDefault(c => Same(c.Value, city));
-        if (exact is not null)
-            return new { found = true, city = new { exact.Id, exact.Value, province = new { province.Id, province.Value, province.Code } } };
-        var needle = Fold(city);
-        var alternatives = cities
-            .Select(c => new { c.Id, c.Value, score = Similarity(Fold(c.Value), needle) })
-            .OrderByDescending(c => c.score)
-            .Take(5)
-            .ToList();
-        return new { found = false, reason = $"City '{city}' not found in {province.Value}", province = new { province.Id, province.Value, province.Code }, alternatives };
+        var resolution = await catalog.ResolveCity(city, provinceOrState, countryCode);
+        if (resolution.City is not null)
+            return new { found = true, city = new { resolution.City.Id, resolution.City.Value, province = new { resolution.Province!.Id, resolution.Province.Value, resolution.Province.Code } } };
+        return new
+        {
+            found = false,
+            reason = resolution.Error,
+            province = resolution.Province is null ? null : new { resolution.Province.Id, resolution.Province.Value, resolution.Province.Code },
+            provinces = resolution.Provinces?.Select(p => new { p.Id, p.Value, p.Code }),
+            alternatives = resolution.Alternatives
+        };
     }
 
     [McpServerTool(Name = "list_sources"), Description("Lists the candidate sources configured in Sigook (ZipRecruiter, Indeed, Other...). Use the id as sourceId in create_candidate.")]
@@ -87,17 +82,23 @@ public static partial class LookupTools
     [McpServerTool(Name = "normalize_phone"), Description("Converts any North American phone string (e.g. '+1 4452510680', '(445) 251-0680') into the format Sigook requires: ### ###-####. Returns an error when the number does not have 10 digits.")]
     public static object NormalizePhone([Description("Raw phone number.")] string phone)
     {
-        var digits = DigitsOnly().Replace(phone ?? string.Empty, string.Empty);
-        if (digits.Length == 11 && digits[0] == '1') digits = digits[1..];
-        if (digits.Length != 10)
-            return new { ok = false, input = phone, error = $"Expected 10 digits, got {digits.Length}." };
-        return new { ok = true, input = phone, phone = $"{digits[..3]} {digits[3..6]}-{digits[6..]}" };
+        var normalized = TryNormalizePhone(phone);
+        return normalized is null
+            ? new { ok = false, input = phone, error = $"Expected 10 digits, got {DigitsOnly().Replace(phone ?? string.Empty, string.Empty).Length}." }
+            : new { ok = true, input = phone, phone = normalized };
     }
 
-    private static bool Same(string? a, string? b) =>
+    internal static string? TryNormalizePhone(string? phone)
+    {
+        var digits = DigitsOnly().Replace(phone ?? string.Empty, string.Empty);
+        if (digits.Length == 11 && digits[0] == '1') digits = digits[1..];
+        return digits.Length == 10 ? $"{digits[..3]} {digits[3..6]}-{digits[6..]}" : null;
+    }
+
+    internal static bool Same(string? a, string? b) =>
         !string.IsNullOrWhiteSpace(a) && !string.IsNullOrWhiteSpace(b) && Fold(a) == Fold(b);
 
-    private static string Fold(string value)
+    internal static string Fold(string value)
     {
         var normalized = value.Normalize(NormalizationForm.FormD);
         var builder = new StringBuilder(normalized.Length);
@@ -109,7 +110,7 @@ public static partial class LookupTools
         return builder.ToString();
     }
 
-    private static double Similarity(string a, string b)
+    internal static double Similarity(string a, string b)
     {
         if (a.Length == 0 || b.Length == 0) return 0;
         if (a.Contains(b) || b.Contains(a)) return 0.9;

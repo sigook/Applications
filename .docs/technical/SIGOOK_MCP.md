@@ -48,12 +48,13 @@ Each environment keeps its own token file.
 | `resolve_city` | `GET location/province/{CA\|USA}`, `GET location/city/{provinceId}` | City id by name + state; accent/case-insensitive, suggests alternatives |
 | `list_sources` / `list_genders` / `list_skills` | `GET catalog/source`, `GET catalog/gender`, `GET catalog/skills` | Catalog ids and the skill vocabulary |
 | `find_candidates` | `GET agency/recruiting/candidates?Name=&Phone=` | Duplicate check |
+| `import_candidate` | all of the below, in one call | One row = one call: normalizes the phone, duplicate check by phone, city + source + request lookups (cached in `CatalogCache`), create with resume, apply to request, note. Reports each step so the harness retries only what failed |
 | `create_candidate` | `POST agency/recruiting/candidates` (multipart `data` + resume) | Candidate with optional resume |
 | `add_candidate_document` | `POST .../candidates/{id}/documents` | Extra file |
 | `add_candidate_note` | `POST .../candidates/{id}/notes` | Free text |
 | `apply_candidate_to_request` | `POST agency/recruiting/requests/{id}/applicants` | Candidate as applicant, comments included |
 
-Write tools return `{ success, ... }` or `{ success: false, statusCode, error }` with the API body untouched, so the harness can report validation errors (duplicated email/phone, bad format) row by row.
+`import_candidate` writes nothing when the phone is invalid, the city is unknown or the resume path is missing (`step` says which). Write tools return `{ success, ... }` or `{ success: false, statusCode, error }` with the API body untouched, so the harness can report validation errors (duplicated email/phone, bad format) row by row.
 
 ## Import instructions travel with the server
 
