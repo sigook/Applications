@@ -4,76 +4,65 @@ using System.Net.Mime;
 using System.Text.Json;
 using Azure.Messaging.ServiceBus;
 
-namespace Covenant.Infrastructure.Services
+namespace Covenant.Infrastructure.Services;
+
+public class SigookBusClient(string connectionString, SigookBusAdministrationClient administrationClient, ILogger<SigookBusClient> logger) : ServiceBusClient(connectionString), ISigookBusClient, IMessagePublisher
 {
-    public class SigookBusClient : ServiceBusClient, ISigookBusClient, IMessagePublisher
+    public async Task CreateProcessorAsync(string topic, string subscription, Func<ProcessMessageEventArgs, Task> processHandler, Func<ProcessErrorEventArgs, Task> failHandler = null)
     {
-        private readonly SigookBusAdministrationClient administrationClient;
-        private readonly ILogger<SigookBusClient> logger;
-
-        public SigookBusClient(string connectionString, SigookBusAdministrationClient administrationClient, ILogger<SigookBusClient> logger)
-            : base(connectionString)
+        if (!await ExistsSenderAsync(topic))
         {
-            this.administrationClient = administrationClient;
-            this.logger = logger;
+            throw new InvalidOperationException($"Topic {topic} does not exist");
         }
-
-        public async Task CreateProcessorAsync(string topic, string subscription, Func<ProcessMessageEventArgs, Task> processHandler, Func<ProcessErrorEventArgs, Task> failHandler = null)
+        var processor = CreateProcessor(topic, subscription, new ServiceBusProcessorOptions
         {
-            if (!await ExistsSenderAsync(topic))
-            {
-                throw new InvalidOperationException($"Topic {topic} does not exist");
-            }
-            var processor = CreateProcessor(topic, subscription, new ServiceBusProcessorOptions
-            {
-                AutoCompleteMessages = false
-            });
-            processor.ProcessMessageAsync += processHandler;
-            processor.ProcessErrorAsync += failHandler ?? OnFailDefault;
-            await processor.StartProcessingAsync();
-        }
+            AutoCompleteMessages = false
+        });
+        processor.ProcessMessageAsync += processHandler;
+        processor.ProcessErrorAsync += failHandler ?? OnFailDefault;
+        await processor.StartProcessingAsync();
+    }
 
-        public async Task CreateProcessorAsync(string queue, Func<ProcessMessageEventArgs, Task> processHandler, Func<ProcessErrorEventArgs, Task> failHandler = null)
+    public async Task CreateProcessorAsync(string queue, Func<ProcessMessageEventArgs, Task> processHandler, Func<ProcessErrorEventArgs, Task> failHandler = null)
+    {
+        if (!await ExistsSenderAsync(queue))
         {
-            if (!await ExistsSenderAsync(queue))
-            {
-                throw new InvalidOperationException($"Queue {queue} does not exist");
-            }
-            var processor = CreateProcessor(queue, new ServiceBusProcessorOptions
-            {
-                AutoCompleteMessages = false
-            });
-            processor.ProcessMessageAsync += processHandler;
-            processor.ProcessErrorAsync += failHandler ?? OnFailDefault;
-            await processor.StartProcessingAsync();
+            throw new InvalidOperationException($"Queue {queue} does not exist");
         }
+        var processor = CreateProcessor(queue, new ServiceBusProcessorOptions
+        {
+            AutoCompleteMessages = false
+        });
+        processor.ProcessMessageAsync += processHandler;
+        processor.ProcessErrorAsync += failHandler ?? OnFailDefault;
+        await processor.StartProcessingAsync();
+    }
 
-        public async Task SendMessageAsync<T>(T message, string queueOrTopic, IReadOnlyDictionary<string, object> properties = null)
+    public async Task SendMessageAsync<T>(T message, string queueOrTopic, IReadOnlyDictionary<string, object> properties = null)
+    {
+        var busMessage = message is null
+            ? new ServiceBusMessage()
+            : new ServiceBusMessage(JsonSerializer.Serialize(message)) { ContentType = MediaTypeNames.Application.Json };
+        foreach (var (key, value) in properties ?? new Dictionary<string, object>())
         {
-            var busMessage = message is null
-                ? new ServiceBusMessage()
-                : new ServiceBusMessage(JsonSerializer.Serialize(message)) { ContentType = MediaTypeNames.Application.Json };
-            foreach (var (key, value) in properties ?? new Dictionary<string, object>())
-            {
-                busMessage.ApplicationProperties[key] = value;
-            }
-            await using var sender = CreateSender(queueOrTopic);
-            await sender.SendMessageAsync(busMessage);
+            busMessage.ApplicationProperties[key] = value;
         }
+        await using var sender = CreateSender(queueOrTopic);
+        await sender.SendMessageAsync(busMessage);
+    }
 
-        private async Task OnFailDefault(ProcessErrorEventArgs args)
-        {
-            logger.LogInformation(args.Exception.ToString());
-            await Task.CompletedTask;
-        }
+    private async Task OnFailDefault(ProcessErrorEventArgs args)
+    {
+        logger.LogInformation(args.Exception.ToString());
+        await Task.CompletedTask;
+    }
 
-        private async ValueTask<bool> ExistsSenderAsync(string queueOrTopicName)
+    private async ValueTask<bool> ExistsSenderAsync(string queueOrTopicName)
+    {
+        if (await administrationClient.QueueExistsAsync(queueOrTopicName) || await administrationClient.TopicExistsAsync(queueOrTopicName))
         {
-            if (await administrationClient.QueueExistsAsync(queueOrTopicName) || await administrationClient.TopicExistsAsync(queueOrTopicName))
-            {
-                return true;
-            }
-            return false;
+            return true;
         }
+        return false;
     }
 }

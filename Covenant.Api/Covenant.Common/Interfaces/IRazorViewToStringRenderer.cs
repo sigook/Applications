@@ -1,7 +1,6 @@
-namespace Covenant.Common.Interfaces
+namespace Covenant.Common.Interfaces;
+
+public interface IRazorViewToStringRenderer
 {
-    public interface IRazorViewToStringRenderer
-    {
-        Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model);
-    }
+    Task<string> RenderViewToStringAsync<TModel>(string viewName, TModel model);
 }

@@ -24,24 +24,21 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
-public class ClientsControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ClientsControllerEmailTest.Startup>>
+public class ClientsControllerEmailTest(CustomWebApplicationFactory<ClientsControllerEmailTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ClientsControllerEmailTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
     private static string RequestUri() => ClientsController.RouteName;
-
-    public ClientsControllerEmailTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
 
     [Fact]
     public async Task Email()
     {
         CvnEmail newEmail = CvnEmail.Create("newCoEmail@mail.com").Value;
-        HttpClient client = _factory.CreateClient();
+        HttpClient client = factory.CreateClient();
         Guid id = Startup.FakeCompany.Id;
         var url = $"{RequestUri()}/{id}/{nameof(ClientsController.Email)}";
         HttpResponseMessage response = await client.PutAsJsonAsync(url, new UpdateEmailModel { NewEmail = newEmail });
         response.EnsureSuccessStatusCode();
 
-        var context = _factory.Services.GetRequiredService<CovenantContext>();
+        var context = factory.Services.GetRequiredService<CovenantContext>();
         User updatedUser = await context.Users.FirstAsync(f => f.Id == Startup.FakeCompany.CompanyId);
         Assert.Equal(newEmail.Email, updatedUser.Email);
     }

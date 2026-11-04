@@ -20,11 +20,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared.Jobs;
 
-public class ScheduleTasksControllerTest : IClassFixture<CustomWebApplicationFactory<ScheduleTasksControllerTest.Startup>>
+public class ScheduleTasksControllerTest(CustomWebApplicationFactory<ScheduleTasksControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<ScheduleTasksControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public ScheduleTasksControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Theory]
     [InlineData("NotificationSinExpiration")]

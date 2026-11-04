@@ -3,7 +3,7 @@ namespace Covenant.Common.Models.Accounting.Subcontractors;
 public class ReportSubcontractorModel
 {
     public string FullName { get; set; }
-    public List<ReportSubcontractorItemModel> Items { get; set; } = new List<ReportSubcontractorItemModel>();
+    public List<ReportSubcontractorItemModel> Items { get; set; } = [];
     public decimal Deductions { get; set; }
     public decimal PublicHoliday { get; set; }
     public decimal TotalNet { get; set; }
@@ -13,7 +13,7 @@ public class ReportSubcontractorModel
     {
         get
         {
-            return Items.GroupBy(m => m.WorkerRate)
+            return [.. Items.GroupBy(m => m.WorkerRate)
                 .Select(g => new ReportSubcontractorItemModel
                 {
                     WorkerRate = g.Key,
@@ -31,7 +31,7 @@ public class ReportSubcontractorModel
                     MissingOvertime = g.Sum(mo => mo.MissingOvertime),
                     MissingOvertimeHours = g.Sum(moh => moh.MissingOvertimeHours),
                     Others = g.Sum(o => o.Others)
-                }).ToList();
+                })];
         }
     }
 }

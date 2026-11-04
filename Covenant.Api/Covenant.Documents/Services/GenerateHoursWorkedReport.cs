@@ -5,16 +5,10 @@ using ClosedXML.Excel;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateHoursWorkedReport : GenerateAgencyReport<HoursWorkedResponse>
+public class GenerateHoursWorkedReport(IReadOnlyList<HoursWorkedResponse> model) : GenerateAgencyReport<HoursWorkedResponse>(model)
 {
-    public GenerateHoursWorkedReport(IReadOnlyList<HoursWorkedResponse> model)
-        : base(model)
-    {
-
-    }
-
-    public override IEnumerable<string> Columns => new string[]
-    {
+    public override IEnumerable<string> Columns =>
+    [
         "Worker Name",
         "Job Position",
         "Bill Rate",
@@ -28,7 +22,7 @@ public class GenerateHoursWorkedReport : GenerateAgencyReport<HoursWorkedRespons
         "Total Night Bill Rate",
         "Total Hours",
         "Total Bill Rate"
-    };
+    ];
 }
 
 public class GenerateHoursWorkedReportHandler : GenerateAgencyReportHandler<GenerateHoursWorkedReport, HoursWorkedResponse>

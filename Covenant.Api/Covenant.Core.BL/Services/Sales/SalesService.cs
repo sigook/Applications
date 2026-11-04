@@ -198,12 +198,12 @@ public class SalesService(
         if (!validationResult.IsValid) return validationResult.ToResultFailure<DealsByStatusModel>();
         var agencyId = currentUserService.GetAgencyId();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
-        var statuses = (filter.Statuses ?? []).Distinct().OrderBy(s => s).ToList();
+        var statuses = (filter.Statuses ?? []).Distinct().Order().ToList();
         var window = filter.DateFrom.HasValue && filter.DateTo.HasValue
             ? GetDateWindow(filter.DateFrom.Value.Date, filter.DateTo.Value.Date)
             : GetPeriodWindow(SalesPeriod.Month, timeProvider.GetLocalNow());
         var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
-        var items = FillStatuses(rows, statuses.Count > 0 ? statuses : Enum.GetValues<DealStatus>().ToList());
+        var items = FillStatuses(rows, statuses.Count > 0 ? statuses : [.. Enum.GetValues<DealStatus>()]);
         return Result.Ok(new DealsByStatusModel
         {
             Period = window.Range,
@@ -227,7 +227,7 @@ public class SalesService(
             AsOf = now.UtcDateTime,
             Quarter = quarter.Range,
             Week = week.Range,
-            Pipeline = FillStatuses(pipeline, Enum.GetValues<DealStatus>().ToList()),
+            Pipeline = FillStatuses(pipeline, [.. Enum.GetValues<DealStatus>()]),
             Activity = FillTypes(activity)
         };
     }
@@ -303,16 +303,14 @@ public class SalesService(
         : $"{from.ToString("MMM d", CultureInfo.InvariantCulture)} - {to.ToString("MMM d, yyyy", CultureInfo.InvariantCulture)}";
 
     private static List<DealStatusSummaryModel> FillStatuses(List<DealStatusSummaryModel> rows, List<DealStatus> statuses) =>
-        statuses
+        [.. statuses
             .Select(status => rows.FirstOrDefault(r => r.Status == status)
-                ?? new DealStatusSummaryModel { Status = status, Count = 0, TotalValue = 0 })
-            .ToList();
+                ?? new DealStatusSummaryModel { Status = status, Count = 0, TotalValue = 0 })];
 
     private static List<InteractionTypeSummaryModel> FillTypes(List<InteractionTypeSummaryModel> rows) =>
-        Enum.GetValues<InteractionType>()
+        [.. Enum.GetValues<InteractionType>()
             .Select(type => rows.FirstOrDefault(r => r.Type == type)
-                ?? new InteractionTypeSummaryModel { Type = type, Count = 0 })
-            .ToList();
+                ?? new InteractionTypeSummaryModel { Type = type, Count = 0 })];
 
     private void ApplyScope(GetRequestForAgencyFilter filter)
     {

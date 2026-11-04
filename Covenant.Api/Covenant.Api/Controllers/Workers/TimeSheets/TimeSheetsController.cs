@@ -18,17 +18,9 @@ namespace Covenant.Api.Controllers.Workers.TimeSheets;
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Worker)]
 [LogBadRequestFilter]
-public class TimeSheetsController : ControllerBase
+public class TimeSheetsController(ITimesheetService timesheetService, ITimesheetRepository timesheetRepository) : ControllerBase
 {
     public const string RouteName = "api/worker/requests/{requestId}/timesheet";
-    private readonly ITimesheetService timesheetService;
-    private readonly ITimesheetRepository _timesheetRepository;
-
-    public TimeSheetsController(ITimesheetService timesheetService, ITimesheetRepository timesheetRepository)
-    {
-        this.timesheetService = timesheetService;
-        _timesheetRepository = timesheetRepository;
-    }
 
     /// <summary>
     /// Lists the timesheets of a request for the authenticated worker.
@@ -37,7 +29,7 @@ public class TimeSheetsController : ControllerBase
     /// <param name="pagination">Pagination parameters.</param>
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerTimeSheetListModel>), StatusCodes.Status200OK)]
-    public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await _timesheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
+    public async Task<IActionResult> Get(Guid requestId, Pagination pagination) => Ok(await timesheetRepository.GetTimeSheetsForWorker(User.GetUserId(), requestId, pagination));
 
     /// <summary>
     /// Registers a clock-in/clock-out timesheet entry for the authenticated worker.

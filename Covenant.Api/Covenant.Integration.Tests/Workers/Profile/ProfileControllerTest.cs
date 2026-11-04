@@ -32,16 +32,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Workers.Profile;
 
-public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<ProfileControllerTest.Startup>>
+public class ProfileControllerTest(CustomWebApplicationFactory<ProfileControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<ProfileControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public ProfileControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string ProfileUrl(Guid profileId) => ProfileUpdateController.RouteName.Replace("{profileId}", profileId.ToString());
 
@@ -68,16 +62,16 @@ public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<P
             MobileNumber = "647-909-7182",
             Phone = "416-123-4567",
             Lift = new BaseModel<Guid>(Startup.FakeLift.Id),
-            Availabilities = new[] { new BaseModel<Guid>(Startup.FakeAvailability.Id) },
-            AvailabilityTimes = new[] { new BaseModel<Guid>(Startup.FakeAvailabilityTime.Id) },
-            AvailabilityDays = new[] { new BaseModel<Guid>(Startup.FakeDay.Id) },
-            Languages = new[] { new BaseModel<Guid>(Startup.FakeLanguage.Id) },
-            Skills = new[] { new SkillModel { Skill = "Forklift" } },
+            Availabilities = [new BaseModel<Guid>(Startup.FakeAvailability.Id)],
+            AvailabilityTimes = [new BaseModel<Guid>(Startup.FakeAvailabilityTime.Id)],
+            AvailabilityDays = [new BaseModel<Guid>(Startup.FakeDay.Id)],
+            Languages = [new BaseModel<Guid>(Startup.FakeLanguage.Id)],
+            Skills = [new SkillModel { Skill = "Forklift" }],
             ContactEmergencyName = "Melinda",
             ContactEmergencyLastName = "Gates",
             ContactEmergencyPhone = "647-908-7124",
-            JobExperiences = new[]
-            {
+            JobExperiences =
+            [
                 new WorkerProfileJobExperienceModel
                 {
                     Company = "Microsoft",
@@ -85,7 +79,7 @@ public class ProfileControllerTest : IClassFixture<CustomWebApplicationFactory<P
                     StartDate = new DateTime(2019, 01, 01),
                     IsCurrentJobPosition = true
                 }
-            },
+            ],
             Password = "StrongPass1",
             ConfirmPassword = "StrongPass1",
             IdentificationNumber1 = "ABC123456",

@@ -127,7 +127,7 @@ public class GeneratePayStubPdfHandler(IFilesContainer filesContainer) : IReques
         {
             if (hasYtd) row.RelativeItem(48).AlignTop().Element(c => ComposeYtd(c, ytdItems));
             row.RelativeItem(hasYtd ? 4 : 50);
-            row.RelativeItem(hasYtd ? 48 : 50).AlignTop().Element(c => ComposeTotals(c, model.Table2Items.ToList()));
+            row.RelativeItem(hasYtd ? 48 : 50).AlignTop().Element(c => ComposeTotals(c, [.. model.Table2Items]));
         });
     }
 

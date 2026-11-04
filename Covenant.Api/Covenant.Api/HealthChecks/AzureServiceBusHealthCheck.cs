@@ -3,20 +3,13 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace Covenant.Api.HealthChecks;
 
-public class AzureServiceBusHealthCheck : IHealthCheck
+public class AzureServiceBusHealthCheck(string connectionString) : IHealthCheck
 {
-    private readonly string _connectionString;
-
-    public AzureServiceBusHealthCheck(string connectionString)
-    {
-        _connectionString = connectionString;
-    }
-
     public async Task<HealthCheckResult> CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken = default)
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(_connectionString))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
                 return HealthCheckResult.Unhealthy(
                     "Azure Service Bus connection string is not configured",
@@ -27,7 +20,7 @@ public class AzureServiceBusHealthCheck : IHealthCheck
                     });
             }
 
-            await using var client = new ServiceBusClient(_connectionString);
+            await using var client = new ServiceBusClient(connectionString);
             await using var sender = client.CreateSender("test-queue");
 
             return HealthCheckResult.Healthy("Azure Service Bus is accessible");

@@ -7,23 +7,18 @@ using MediatR;
 
 namespace Covenant.Documents.Services;
 
-public class GeneratePayStubsReport : IRequest<ResultGenerateDocument<byte[]>>
+public class GeneratePayStubsReport(IReadOnlyList<PayStubListModel> model) : IRequest<ResultGenerateDocument<byte[]>>
 {
-    public GeneratePayStubsReport(IReadOnlyList<PayStubListModel> model)
-    {
-        Model = model;
-    }
+    public IReadOnlyList<PayStubListModel> Model { get; } = model;
 
-    public IReadOnlyList<PayStubListModel> Model { get; }
-
-    public IEnumerable<string> Columns => new string[]
-    {
+    public IEnumerable<string> Columns =>
+    [
         "N° Pay Stub",
         "Created At",
         "Employee Full Name",
         "Number ID",
         "Total Paid"
-    };
+    ];
 }
 
 public class GeneratePayStubsReportHandler : IRequestHandler<GeneratePayStubsReport, ResultGenerateDocument<byte[]>>
@@ -33,7 +28,7 @@ public class GeneratePayStubsReportHandler : IRequestHandler<GeneratePayStubsRep
         using var memoryStream = new MemoryStream();
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add("Report");
-        sheet.SetupHeaders(request.Columns.ToArray());
+        sheet.SetupHeaders([.. request.Columns]);
         var startAt = 2;
         for (int i = 0; i < request.Model.Count; i++)
         {

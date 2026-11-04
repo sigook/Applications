@@ -67,27 +67,7 @@ public class WorkerService(
     ISkillService skillService) : IWorkerService
 {
     private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
-    private readonly IWorkerRepository workerRepository = workerRepository;
-    private readonly IAgencyRepository agencyRepository = agencyRepository;
-    private readonly INotificationRepository notificationRepository = notificationRepository;
-    private readonly IRequestRepository requestRepository = requestRepository;
-    private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
-    private readonly IUserAccountService userAccountService = userAccountService;
-    private readonly ICurrentUserService currentUserService = currentUserService;
-    private readonly ITeamsService teamsNotification = teamsNotification;
-    private readonly IEmailService emailService = emailService;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
-    private readonly ILogger<WorkerService> logger = logger;
     private readonly TeamsWebhookConfiguration teamsWebhookConfiguration = options.Value;
-    private readonly IWorkerAdapter workerAdapter = workerAdapter;
-    private readonly IValidator<WorkerProfileCreateModel> workerProfileValidator = workerProfileValidator;
-    private readonly IDocumentService documentService = documentService;
-    private readonly ICandidateService candidateService = candidateService;
-    private readonly ICandidateRepository candidateRepository = candidateRepository;
-    private readonly IUploadedFilesService uploadedFilesService = uploadedFilesService;
-    private readonly ICompanyRepository companyRepository = companyRepository;
-    private readonly ICatalogRepository catalogRepository = catalogRepository;
-    private readonly IRequestApplicantNotificationService applicantNotificationService = applicantNotificationService;
 
     public async Task<Result> AddNote(Guid workerProfileId, string note)
     {

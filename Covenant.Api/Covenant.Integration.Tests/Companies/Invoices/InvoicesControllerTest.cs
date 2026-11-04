@@ -20,27 +20,21 @@ using Covenant.Common.Entities.Agencies;
 
 namespace Covenant.Integration.Tests.Companies.Invoices;
 
-public class InvoicesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class InvoicesControllerTest(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
-    private readonly ITestOutputHelper _output;
     private const string ApiCompanyInvoice = InvoicesController.RouteName;
-    private readonly HttpClient _client;
-    public InvoicesControllerTest(CustomWebApplicationFactory<Startup> factory, ITestOutputHelper output)
-    {
-        _output = output;
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()
     {
         HttpResponseMessage response = await _client.GetAsync(ApiCompanyInvoice);
-        _output.WriteLine("*********************Before read the response");
+        output.WriteLine("*********************Before read the response");
         if (!response.IsSuccessStatusCode)
         {
-            _output.WriteLine(await response.Content.ReadAsStringAsync());
+            output.WriteLine(await response.Content.ReadAsStringAsync());
         }
-        _output.WriteLine("*********************After read the response");
+        output.WriteLine("*********************After read the response");
         response.EnsureSuccessStatusCode();
         var list = await response.Content.ReadFromJsonAsync<PaginatedList<InvoiceListModel>>();
         Assert.NotEmpty(list.Items);
@@ -126,14 +120,14 @@ public static class Data
     {
         Company = new User(CvnEmail.Create("comp@a.com").Value),
         Agency = Agency,
-        Locations = new List<CompanyProfileLocation>
-        {
+        Locations =
+        [
             new CompanyProfileLocation
             {
                 IsBilling = true,
                 Location = FakeData.FakeLocation()
             }
-        },
+        ],
         Industry = CompanyProfileIndustry.Create("Test").Value,
         Logo = new CovenantFile("test.png")
     };

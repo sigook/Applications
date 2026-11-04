@@ -16,7 +16,6 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Workers;
 
@@ -386,8 +385,7 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
             predicate = predicate.And(wp => wp.NumberId == filter.NumberId);
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
-            var expression = new Regex(@"\s+");
-            var phoneWithoutBlankSpaces = expression.Replace(filter.Phone, string.Empty);
+            var phoneWithoutBlankSpaces = filter.Phone.RemoveWhitespace();
             predicate = predicate.And(wp =>
                 wp.MobileNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone) ||
                 wp.MobileNumber.Contains(phoneWithoutBlankSpaces));
@@ -481,17 +479,20 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
     public async Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId)
     {
         var previousMonth = DateTime.Now.AddMonths(-1);
-        var query = (from h in Context.Holidays.Where(h => h.Date >= previousMonth)
-                     join wp in Context.WorkerProfileHolidays.Where(w => w.WorkerProfileId == workerProfileId) on h.Id equals wp.HolidayId into tmp
-                     from wp in tmp.DefaultIfEmpty()
-                     where Context.WorkerProfiles.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId)
-                     orderby h.Date descending
-                     select new WorkerProfileHolidayModel
-                     {
-                         HolidayId = h.Id,
-                         Date = h.Date,
-                         StatPaidWorker = wp == null ? 0 : wp.StatPaidWorker
-                     });
+        var query = Context.Holidays
+            .Where(h => h.Date >= previousMonth
+                && Context.WorkerProfiles.Any(w => w.Location.City.Province.Country.Code == h.CountryCode && w.Id == workerProfileId))
+            .LeftJoin(
+                Context.WorkerProfileHolidays.Where(w => w.WorkerProfileId == workerProfileId),
+                h => h.Id,
+                wp => wp.HolidayId,
+                (h, wp) => new WorkerProfileHolidayModel
+                {
+                    HolidayId = h.Id,
+                    Date = h.Date,
+                    StatPaidWorker = wp == null ? 0 : wp.StatPaidWorker
+                })
+            .OrderByDescending(m => m.Date);
         return await query.ToListAsync();
     }
 

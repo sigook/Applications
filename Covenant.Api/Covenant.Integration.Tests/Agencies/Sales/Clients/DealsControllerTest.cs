@@ -19,16 +19,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Sales.Clients;
 
-public class DealsControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<DealsControllerTest.Startup, DealsControllerTest.Data>>
+public class DealsControllerTest(SeededWebApplicationFactory<DealsControllerTest.Startup, DealsControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<DealsControllerTest.Startup, DealsControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-
-    public DealsControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

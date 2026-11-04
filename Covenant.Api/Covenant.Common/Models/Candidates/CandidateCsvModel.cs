@@ -34,7 +34,7 @@ public class BulkCandidate
 {
     public Candidate Candidate { get; set; }
     public CandidatePhone CandidatesPhone { get; set; }
-    public List<CandidateSkill> CandidatesSkills { get; set; } = new List<CandidateSkill>();
+    public List<CandidateSkill> CandidatesSkills { get; set; } = [];
     public CandidateDocument CandidatesDocument { get; set; }
     public RequestApplicant RequestApplicant { get; set; }
 }

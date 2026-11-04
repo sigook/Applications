@@ -18,11 +18,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
-public class NotesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
+public class NotesControllerTest(CustomWebApplicationFactory<NotesControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public NotesControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Post()

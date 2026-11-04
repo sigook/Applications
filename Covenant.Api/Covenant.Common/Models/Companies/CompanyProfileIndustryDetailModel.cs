@@ -1,9 +1,8 @@
-﻿namespace Covenant.Common.Models.Companies
+﻿namespace Covenant.Common.Models.Companies;
+
+public class CompanyProfileIndustryDetailModel
 {
-    public class CompanyProfileIndustryDetailModel
-    {
-        public Guid Id { get; set; }
-        public BaseModel<Guid> Industry { get; set; }
-        public string OtherIndustry { get; set; }
-    }
+    public Guid Id { get; set; }
+    public BaseModel<Guid> Industry { get; set; }
+    public string OtherIndustry { get; set; }
 }

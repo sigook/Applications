@@ -1,129 +1,128 @@
 using System.Text.Json.Serialization;
 
-namespace Covenant.Common.Models.Notifications
+namespace Covenant.Common.Models.Notifications;
+
+public class TeamsAdaptiveMessage
 {
-    public class TeamsAdaptiveMessage
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "message";
+
+    [JsonPropertyName("attachments")]
+    public IEnumerable<TeamsAdaptiveAttachment> Attachments { get; set; } = [];
+
+    public static TeamsAdaptiveMessage FromNotification(TeamsNotificationModel notification)
     {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "message";
-
-        [JsonPropertyName("attachments")]
-        public IEnumerable<TeamsAdaptiveAttachment> Attachments { get; set; } = new List<TeamsAdaptiveAttachment>();
-
-        public static TeamsAdaptiveMessage FromNotification(TeamsNotificationModel notification)
+        var items = new List<object>
         {
-            var items = new List<object>
-            {
-                new AdaptiveTextBlock { Text = notification.Title, Weight = "Bolder", Size = "Large", Wrap = true },
-                new AdaptiveTextBlock { Text = notification.Text, Wrap = true }
-            };
+            new AdaptiveTextBlock { Text = notification.Title, Weight = "Bolder", Size = "Large", Wrap = true },
+            new AdaptiveTextBlock { Text = notification.Text, Wrap = true }
+        };
 
-            var actions = notification.PotentialAction
-                .SelectMany(action => action.Targets.Select(target => new AdaptiveOpenUrlAction
+        var actions = notification.PotentialAction
+            .SelectMany(action => action.Targets.Select(target => new AdaptiveOpenUrlAction
+            {
+                Title = action.Name,
+                Url = target.Uri
+            }))
+            .Cast<object>()
+            .ToList();
+
+        var card = new AdaptiveCard
+        {
+            Body =
+            [
+                new AdaptiveContainer
                 {
-                    Title = action.Name,
-                    Url = target.Uri
-                }))
-                .Cast<object>()
-                .ToList();
+                    Style = MapStyle(notification.ThemeColor),
+                    Bleed = true,
+                    Items = items
+                }
+            ],
+            Actions = actions
+        };
 
-            var card = new AdaptiveCard
-            {
-                Body =
-                [
-                    new AdaptiveContainer
-                    {
-                        Style = MapStyle(notification.ThemeColor),
-                        Bleed = true,
-                        Items = items
-                    }
-                ],
-                Actions = actions
-            };
-
-            return new TeamsAdaptiveMessage
-            {
-                Attachments = [new TeamsAdaptiveAttachment { Content = card }]
-            };
-        }
-
-        private static string MapStyle(string themeColor) => themeColor switch
+        return new TeamsAdaptiveMessage
         {
-            "FF0000" => "attention",
-            "FFC200" => "warning",
-            _ => "good"
+            Attachments = [new TeamsAdaptiveAttachment { Content = card }]
         };
     }
 
-    public class TeamsAdaptiveAttachment
+    private static string MapStyle(string themeColor) => themeColor switch
     {
-        [JsonPropertyName("contentType")]
-        public string ContentType { get; set; } = "application/vnd.microsoft.card.adaptive";
+        "FF0000" => "attention",
+        "FFC200" => "warning",
+        _ => "good"
+    };
+}
 
-        [JsonPropertyName("content")]
-        public AdaptiveCard Content { get; set; }
-    }
+public class TeamsAdaptiveAttachment
+{
+    [JsonPropertyName("contentType")]
+    public string ContentType { get; set; } = "application/vnd.microsoft.card.adaptive";
 
-    public class AdaptiveCard
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "AdaptiveCard";
+    [JsonPropertyName("content")]
+    public AdaptiveCard Content { get; set; }
+}
 
-        [JsonPropertyName("$schema")]
-        public string Schema { get; set; } = "http://adaptivecards.io/schemas/adaptive-card.json";
+public class AdaptiveCard
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "AdaptiveCard";
 
-        [JsonPropertyName("version")]
-        public string Version { get; set; } = "1.4";
+    [JsonPropertyName("$schema")]
+    public string Schema { get; set; } = "http://adaptivecards.io/schemas/adaptive-card.json";
 
-        [JsonPropertyName("body")]
-        public IEnumerable<object> Body { get; set; } = new List<object>();
+    [JsonPropertyName("version")]
+    public string Version { get; set; } = "1.4";
 
-        [JsonPropertyName("actions")]
-        public IEnumerable<object> Actions { get; set; } = new List<object>();
-    }
+    [JsonPropertyName("body")]
+    public IEnumerable<object> Body { get; set; } = [];
 
-    public class AdaptiveContainer
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "Container";
+    [JsonPropertyName("actions")]
+    public IEnumerable<object> Actions { get; set; } = [];
+}
 
-        [JsonPropertyName("style")]
-        public string Style { get; set; }
+public class AdaptiveContainer
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "Container";
 
-        [JsonPropertyName("bleed")]
-        public bool Bleed { get; set; }
+    [JsonPropertyName("style")]
+    public string Style { get; set; }
 
-        [JsonPropertyName("items")]
-        public IEnumerable<object> Items { get; set; } = new List<object>();
-    }
+    [JsonPropertyName("bleed")]
+    public bool Bleed { get; set; }
 
-    public class AdaptiveTextBlock
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "TextBlock";
+    [JsonPropertyName("items")]
+    public IEnumerable<object> Items { get; set; } = [];
+}
 
-        [JsonPropertyName("text")]
-        public string Text { get; set; }
+public class AdaptiveTextBlock
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "TextBlock";
 
-        [JsonPropertyName("weight")]
-        public string Weight { get; set; }
+    [JsonPropertyName("text")]
+    public string Text { get; set; }
 
-        [JsonPropertyName("size")]
-        public string Size { get; set; }
+    [JsonPropertyName("weight")]
+    public string Weight { get; set; }
 
-        [JsonPropertyName("wrap")]
-        public bool Wrap { get; set; }
-    }
+    [JsonPropertyName("size")]
+    public string Size { get; set; }
 
-    public class AdaptiveOpenUrlAction
-    {
-        [JsonPropertyName("type")]
-        public string Type { get; set; } = "Action.OpenUrl";
+    [JsonPropertyName("wrap")]
+    public bool Wrap { get; set; }
+}
 
-        [JsonPropertyName("title")]
-        public string Title { get; set; }
+public class AdaptiveOpenUrlAction
+{
+    [JsonPropertyName("type")]
+    public string Type { get; set; } = "Action.OpenUrl";
 
-        [JsonPropertyName("url")]
-        public string Url { get; set; }
-    }
+    [JsonPropertyName("title")]
+    public string Title { get; set; }
+
+    [JsonPropertyName("url")]
+    public string Url { get; set; }
 }

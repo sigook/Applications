@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Notifications
+namespace Covenant.Common.Models.Notifications;
+
+public class UnsubscribeModel
 {
-    public class UnsubscribeModel
-    {
-        public string Email { get; set; }
-        public string TypeId { get; set; }
-    }
+    public string Email { get; set; }
+    public string TypeId { get; set; }
 }

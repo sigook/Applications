@@ -26,18 +26,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class PayStubsControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<PayStubsControllerTest.Startup, PayStubsControllerTest.Data>>
+public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControllerTest.Startup, PayStubsControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<PayStubsControllerTest.Startup, PayStubsControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public PayStubsControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

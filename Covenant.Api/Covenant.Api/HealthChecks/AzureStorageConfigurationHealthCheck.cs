@@ -5,18 +5,12 @@ namespace Covenant.Api.HealthChecks;
 /// <summary>
 /// Health check that validates the Azure Storage connection string configuration exists
 /// </summary>
-public class AzureStorageConfigurationHealthCheck : IHealthCheck
+public class AzureStorageConfigurationHealthCheck(
+    string fileStorageConnection,
+    ILogger<AzureStorageConfigurationHealthCheck> logger) : IHealthCheck
 {
-    private readonly string _fileStorageConnection;
-    private readonly ILogger<AzureStorageConfigurationHealthCheck> _logger;
-
-    public AzureStorageConfigurationHealthCheck(
-        string fileStorageConnection,
-        ILogger<AzureStorageConfigurationHealthCheck> logger)
-    {
-        _fileStorageConnection = fileStorageConnection;
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly string _fileStorageConnection = fileStorageConnection;
+    private readonly ILogger<AzureStorageConfigurationHealthCheck> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,

@@ -26,7 +26,6 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Requests;
 
@@ -253,11 +252,12 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .ThenInclude(c => c.Province)
             .ThenInclude(p => p.Country)
             .Where(c => c.Id == id);
-        var query = from r in requests
-                    join rcd in Context.RequestCancellationDetails on r.Id equals rcd.RequestId
-                    into tmpRcd
-                    from rcd in tmpRcd.DefaultIfEmpty()
-                    select new AgencyRequestDetailModel
+        var query = requests
+            .LeftJoin(
+                    Context.RequestCancellationDetails,
+                    r => r.Id,
+                    rcd => rcd.RequestId,
+                    (r, rcd) => new AgencyRequestDetailModel
                     {
                         Id = r.Id,
                         NumberId = r.NumberId,
@@ -357,7 +357,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                                 }
                             }
                         },
-                    };
+                    });
         return await query.SingleOrDefaultAsync();
     }
 
@@ -1237,14 +1237,13 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             TotalPages = pageOfRequests.TotalPages,
             TotalItems = pageOfRequests.TotalItems,
             TotalApplicants = await query.CountAsync(),
-            Items = pageOfRequests.Items
+            Items = [.. pageOfRequests.Items
                 .Select(page => requests.Single(r => r.RequestId == page.RequestId))
                 .Select(request =>
                 {
-                    request.Applicants = pagedApplicants.Where(a => a.RequestId == request.RequestId).ToList();
+                    request.Applicants = [.. pagedApplicants.Where(a => a.RequestId == request.RequestId)];
                     return request;
-                })
-                .ToList()
+                })]
         };
     }
 
@@ -1317,8 +1316,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         Expression<Func<RequestApplicantDetailModel, bool>> predicate = PredicateBuilder.New<RequestApplicantDetailModel>(true);
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
-            var expression = new Regex(@"\s+");
-            var phoneWithoutBlankSpaces = expression.Replace(filter.Phone, string.Empty);
+            var phoneWithoutBlankSpaces = filter.Phone.RemoveWhitespace();
             predicate = predicate.And(ra =>
                 ra.PhoneNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone) ||
                 ra.PhoneNumber.Contains(phoneWithoutBlankSpaces));

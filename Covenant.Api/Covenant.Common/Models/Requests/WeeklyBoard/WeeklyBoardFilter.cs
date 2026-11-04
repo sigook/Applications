@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Requests.WeeklyBoard
+namespace Covenant.Common.Models.Requests.WeeklyBoard;
+
+public class WeeklyBoardFilter
 {
-    public class WeeklyBoardFilter
-    {
-        public DateTime From { get; set; }
-        public DateTime To { get; set; }
-    }
+    public DateTime From { get; set; }
+    public DateTime To { get; set; }
 }

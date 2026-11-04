@@ -1,7 +1,7 @@
 using Covenant.Common.Enums;
 
-namespace Covenant.Common.Models.Accounting.PayStubs
-{
+namespace Covenant.Common.Models.Accounting.PayStubs;
+
 	public class WeeklyPayStubItemModel
 	{
 		public WeeklyPayStubItemModel()
@@ -28,4 +28,3 @@ namespace Covenant.Common.Models.Accounting.PayStubs
 		public decimal Total { get; set; }
 		public PayStubItemType Type { get; set; }
 	}
-}

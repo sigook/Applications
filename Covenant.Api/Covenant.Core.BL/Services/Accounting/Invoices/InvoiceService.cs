@@ -399,7 +399,7 @@ public class InvoiceService(
     private async Task<List<DateTime>> GetHolidaysForPeriod(DateTime? from, DateTime? to, string countryCode)
     {
         if (!from.HasValue || !to.HasValue)
-            return new List<DateTime>();
+            return [];
 
         var holidays = new List<DateTime>();
         var currentDate = from.Value;
@@ -491,33 +491,29 @@ public class InvoiceService(
     }
 
     private static List<InvoiceSummaryItemModel> ConsolidatePreviewItems(IEnumerable<InvoiceTotal> items) =>
-        items
+        [.. items
             .GroupBy(i => i.Description)
-            .Select(group => ToPreviewItem(group.Key, group.Sum(i => i.Quantity), group.Sum(i => i.Total)))
-            .ToList();
+            .Select(group => ToPreviewItem(group.Key, group.Sum(i => i.Quantity), group.Sum(i => i.Total)))];
 
     private static List<InvoiceSummaryItemModel> ConsolidatePreviewAdditionalItems(IEnumerable<InvoiceAdditionalItem> additionalItems) =>
-        additionalItems
+        [.. additionalItems
             .Select(item => new InvoiceSummaryItemModel
             {
                 Description = item.Description,
                 Quantity = item.Quantity,
                 UnitPrice = item.UnitPrice,
                 Total = item.Total
-            })
-            .ToList();
+            })];
 
     private static List<InvoiceSummaryItemModel> ConsolidatePreviewDiscounts(IEnumerable<InvoiceDiscount> discounts) =>
-        discounts
+        [.. discounts
             .GroupBy(d => d.Description)
-            .Select(group => ToPreviewItem(group.Key, group.Sum(d => d.Quantity), group.Sum(d => d.Amount)))
-            .ToList();
+            .Select(group => ToPreviewItem(group.Key, group.Sum(d => d.Quantity), group.Sum(d => d.Amount)))];
 
     private static List<InvoiceSummaryItemModel> ConsolidatePreviewHolidays(IEnumerable<InvoiceHoliday> holidays) =>
-        holidays
+        [.. holidays
             .GroupBy(h => h.Holiday.Date)
-            .Select(group => ToPreviewItem($"Charge for Holiday {group.Key:D}", group.Sum(h => h.Hours), group.Sum(h => h.Amount)))
-            .ToList();
+            .Select(group => ToPreviewItem($"Charge for Holiday {group.Key:D}", group.Sum(h => h.Hours), group.Sum(h => h.Amount)))];
 
     private static InvoiceSummaryItemModel ToPreviewItem(string description, double quantity, decimal total) => new()
     {

@@ -1,20 +1,19 @@
-namespace Covenant.Common.Entities.Candidates
+namespace Covenant.Common.Entities.Candidates;
+
+public class CandidatePhone
 {
-    public class CandidatePhone
+    public CandidatePhone()
     {
-        public CandidatePhone()
-        {
-        }
-
-        public CandidatePhone(Guid candidateId, string phoneNumber)
-        {
-            CandidateId = candidateId;
-            PhoneNumber = phoneNumber;
-        }
-
-        public Guid Id { get; internal set; } = Guid.NewGuid();
-        public string PhoneNumber { get; internal set; }
-        public Candidate Candidate { get; private set; }
-        public Guid CandidateId { get; internal set; }
     }
+
+    public CandidatePhone(Guid candidateId, string phoneNumber)
+    {
+        CandidateId = candidateId;
+        PhoneNumber = phoneNumber;
+    }
+
+    public Guid Id { get; internal set; } = Guid.NewGuid();
+    public string PhoneNumber { get; internal set; }
+    public Candidate Candidate { get; private set; }
+    public Guid CandidateId { get; internal set; }
 }

@@ -2,18 +2,17 @@ using Covenant.Common.Entities;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Microsoft.EntityFrameworkCore;
 
-namespace Covenant.Infrastructure.Configurations
+namespace Covenant.Infrastructure.Configurations;
+
+public class SourceConfiguration : IEntityTypeConfiguration<Source>
 {
-    public class SourceConfiguration : IEntityTypeConfiguration<Source>
+    public void Configure(EntityTypeBuilder<Source> builder)
     {
-        public void Configure(EntityTypeBuilder<Source> builder)
-        {
-            builder.ToTable("Sources");
-            builder.HasKey(x => x.Id);
-            builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
-            builder.Property(x => x.Value).IsRequired();
-            builder.Property(x => x.IsAvailableForRequests).HasDefaultValue(false);
-            builder.HasIndex(x => x.Value).IsUnique();
-        }
+        builder.ToTable("Sources");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.Id).HasDefaultValueSql("gen_random_uuid()");
+        builder.Property(x => x.Value).IsRequired();
+        builder.Property(x => x.IsAvailableForRequests).HasDefaultValue(false);
+        builder.HasIndex(x => x.Value).IsUnique();
     }
 }

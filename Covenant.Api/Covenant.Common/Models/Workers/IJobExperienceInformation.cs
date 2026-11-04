@@ -1,7 +1,6 @@
-﻿namespace Covenant.Common.Models.Workers
+﻿namespace Covenant.Common.Models.Workers;
+
+public interface IJobExperienceInformation<TJobExperienceModel> where TJobExperienceModel : IWorkerProfileJobExperience
 {
-    public interface IJobExperienceInformation<TJobExperienceModel> where TJobExperienceModel : IWorkerProfileJobExperience
-    {
-        IEnumerable<TJobExperienceModel> JobExperiences { get; set; }
-    }
+    IEnumerable<TJobExperienceModel> JobExperiences { get; set; }
 }

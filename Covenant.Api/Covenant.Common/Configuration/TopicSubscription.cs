@@ -1,17 +1,16 @@
-﻿namespace Covenant.Common.Configuration
+﻿namespace Covenant.Common.Configuration;
+
+public class TopicSubscription
 {
-    public class TopicSubscription
+    private TopicSubscription(string subscription)
     {
-        private TopicSubscription(string subscription)
-        {
-            Subscription = subscription;
-        }
-
-        public string Subscription { get; }
-
-        public static implicit operator string(TopicSubscription s) => s.Subscription;
-
-        public static TopicSubscription TeamsNotification => new(nameof(TeamsNotification));
-        public static TopicSubscription RequestApplicantNotification => new(nameof(RequestApplicantNotification));
+        Subscription = subscription;
     }
+
+    public string Subscription { get; }
+
+    public static implicit operator string(TopicSubscription s) => s.Subscription;
+
+    public static TopicSubscription TeamsNotification => new(nameof(TeamsNotification));
+    public static TopicSubscription RequestApplicantNotification => new(nameof(RequestApplicantNotification));
 }

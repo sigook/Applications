@@ -26,16 +26,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Workers;
 
-public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
+public class CommentsControllerTest(CustomWebApplicationFactory<CommentsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
     private const string Url = CommentsController.RouteName;
-    private readonly HttpClient _client;
-    public CommentsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Post()

@@ -35,16 +35,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Requests;
 
-public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
+public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
     private const string Url = RequestsController.RouteName;
-    private readonly HttpClient _client;
-    public RequestsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Post()

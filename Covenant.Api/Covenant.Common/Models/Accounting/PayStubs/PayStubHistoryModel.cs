@@ -16,6 +16,6 @@ public class PayStubHistoryModel
     public decimal AccumulatedVacations { get; set; }
     public decimal AccumulatedTotalEarnings { get; set; }
     public decimal AccumulatedTotalPaid { get; set; }
-    public IEnumerable<PayStubItemHistoryModel> Items { get; set; } = new List<PayStubItemHistoryModel>();
-    public IEnumerable<string> Companies { get; set; } = new List<string>();
+    public IEnumerable<PayStubItemHistoryModel> Items { get; set; } = [];
+    public IEnumerable<string> Companies { get; set; } = [];
 }

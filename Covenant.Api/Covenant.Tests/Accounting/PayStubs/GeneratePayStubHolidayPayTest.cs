@@ -46,17 +46,17 @@ public class GeneratePayStubHolidayPayTest
             timeLimits);
 
         _payStubRepository.Setup(r => r.GetNextPayStubNumbers(1))
-            .ReturnsAsync(new List<NextNumberModel> { new() { NextNumber = 1 } });
+            .ReturnsAsync([new() { NextNumber = 1 }]);
         _payStubRepository.Setup(r => r.Create(It.IsAny<PayStub>()))
             .Callback<PayStub>(p => _captured = p)
             .Returns(Task.CompletedTask);
         _payStubRepository.Setup(r => r.SaveChangesAsync()).Returns(Task.CompletedTask);
 
         _timeSheetRepository.Setup(r => r.GetTimeSheetForCreatingPayStubs(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid>()))
-            .ReturnsAsync(new List<TimeSheetApprovedPayrollModel> { WorkedDay(rate: 20, hours: 8) });
+            .ReturnsAsync([WorkedDay(rate: 20, hours: 8)]);
 
         _catalogRepository.Setup(r => r.GetHolidaysInWeek(It.IsAny<DateTime>(), It.IsAny<string>()))
-            .ReturnsAsync(new List<DateTime> { Holiday });
+            .ReturnsAsync([Holiday]);
 
         _sut = new PayStubService(
             _payStubRepository.Object,
@@ -81,7 +81,7 @@ public class GeneratePayStubHolidayPayTest
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true });
         SetupWindow(WorkedDay(rate: 20, hours: 8));
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         var holidayPay = Assert.Single(_captured.Holidays);
@@ -93,11 +93,9 @@ public class GeneratePayStubHolidayPayTest
     {
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true });
         var requestId = Guid.NewGuid();
-        SetupWindow(Enumerable.Range(0, 6)
-            .Select(day => WorkedDay(rate: 20, hours: 8, date: new DateTime(2026, 04, 20).AddDays(day), requestId: requestId))
-            .ToArray());
+        SetupWindow([.. Enumerable.Range(0, 6).Select(day => WorkedDay(rate: 20, hours: 8, date: new DateTime(2026, 04, 20).AddDays(day), requestId: requestId))]);
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         var holidayPay = Assert.Single(_captured.Holidays);
@@ -110,7 +108,7 @@ public class GeneratePayStubHolidayPayTest
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true });
         SetupWindow(WorkedDay(rate: 20, hours: 8, isHoliday: true));
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         var holidayPay = Assert.Single(_captured.Holidays);
@@ -124,7 +122,7 @@ public class GeneratePayStubHolidayPayTest
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true, CustomPublicHolidayValue = customValue });
         SetupWindow();
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         var holidayPay = Assert.Single(_captured.Holidays);
@@ -137,7 +135,7 @@ public class GeneratePayStubHolidayPayTest
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = true, HolidayWasPaid = true });
         SetupWindow(WorkedDay(rate: 20, hours: 8));
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         Assert.Empty(_captured.Holidays);
@@ -149,7 +147,7 @@ public class GeneratePayStubHolidayPayTest
         SetupHoliday(new RegularWageWorker { IsEntitledToReceiveHolidayPay = false });
         SetupWindow(WorkedDay(rate: 20, hours: 8));
 
-        var result = await _sut.Generate(new[] { Guid.NewGuid() }, new[] { WorkerId });
+        var result = await _sut.Generate([Guid.NewGuid()], [WorkerId]);
 
         Assert.True(result);
         Assert.Empty(_captured.Holidays);
@@ -163,7 +161,7 @@ public class GeneratePayStubHolidayPayTest
     private void SetupWindow(params TimeSheetApprovedPayrollModel[] timesheets) =>
         _timeSheetRepository
             .Setup(r => r.GetApprovedTimeSheetsInRange(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync(timesheets.ToList());
+            .ReturnsAsync([.. timesheets]);
 
     private static TimeSheetApprovedPayrollModel WorkedDay(
         decimal rate,

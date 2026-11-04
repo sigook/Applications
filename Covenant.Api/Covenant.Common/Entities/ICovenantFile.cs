@@ -1,8 +1,7 @@
-﻿namespace Covenant.Common.Entities
+﻿namespace Covenant.Common.Entities;
+
+public interface ICovenantFile
 {
-    public interface ICovenantFile
-    {
-        string FileName { get; }
-        string Description { get; }
-    }
+    string FileName { get; }
+    string Description { get; }
 }

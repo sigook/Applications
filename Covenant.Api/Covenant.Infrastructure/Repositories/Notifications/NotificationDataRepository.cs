@@ -9,11 +9,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 {
     public Task<NotificationAgencyModel> GetAgencyData(Guid requestId, Guid workerProfileId, int notificationTypeId)
     {
-        return (from wr in Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on wr.Request.CompanyProfile.Agency.UserId equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationAgencyModel
+        return Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                wr => wr.Request.CompanyProfile.Agency.UserId,
+                unt => unt.UserId,
+                (wr, unt) => new NotificationAgencyModel
                 {
                     JobTitle = wr.Request.JobTitle,
                     AgencyEmail = wr.Request.CompanyProfile.Agency.User.Email,
@@ -25,11 +26,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 
     public Task<NotificationAgencyModel> GetAgencyData(Guid requestId, int notificationTypeId)
     {
-        return (from r in Context.Requests.Where(c => c.Id == requestId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on r.CompanyProfile.Agency.UserId equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationAgencyModel
+        return Context.Requests.Where(c => c.Id == requestId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                r => r.CompanyProfile.Agency.UserId,
+                unt => unt.UserId,
+                (r, unt) => new NotificationAgencyModel
                 {
                     JobTitle = r.JobTitle,
                     AgencyEmail = r.CompanyProfile.Agency.User.Email,
@@ -40,11 +42,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 
     public Task<NotificationCompanyModel> GetCompanyData(Guid companyId, int notificationTypeId)
     {
-        return (from cu in Context.Users.Where(u => u.Id == companyId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on cu.Id equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationCompanyModel
+        return Context.Users.Where(u => u.Id == companyId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                cu => cu.Id,
+                unt => unt.UserId,
+                (cu, unt) => new NotificationCompanyModel
                 {
                     CompanyEmail = cu.Email,
                     EmailNotification = unt != null && unt.EmailNotification
@@ -62,11 +65,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 
     public Task<NotificationCompanyModel> GetCompanyData(Guid requestId, Guid workerProfileId, int notificationTypeId)
     {
-        return (from wr in Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on wr.Request.CompanyProfile.CompanyId equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationCompanyModel
+        return Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                wr => wr.Request.CompanyProfile.CompanyId,
+                unt => unt.UserId,
+                (wr, unt) => new NotificationCompanyModel
                 {
                     JobTitle = wr.Request.JobTitle,
                     CompanyEmail = wr.Request.CompanyProfile.Company.Email,
@@ -78,11 +82,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 
     public Task<NotificationWorkerModel> GetWorkerData(Guid requestId, Guid workerProfileId, int notificationTypeId)
     {
-        return (from wr in Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on wr.WorkerProfile.WorkerId equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationWorkerModel
+        return Context.WorkerRequests.Where(c => c.RequestId == requestId && c.WorkerProfileId == workerProfileId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                wr => wr.WorkerProfile.WorkerId,
+                unt => unt.UserId,
+                (wr, unt) => new NotificationWorkerModel
                 {
                     JobTitle = wr.Request.JobTitle,
                     AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,
@@ -94,11 +99,12 @@ public class NotificationDataRepository(CovenantContext context) : BaseRepositor
 
     public Task<NotificationWorkerModel> GetWorkerData(Guid workerRequestId, int notificationTypeId)
     {
-        return (from wr in Context.WorkerRequests.Where(c => c.Id == workerRequestId)
-                join unt in Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId) on wr.WorkerProfile.WorkerId equals unt.UserId
-                    into tmp1
-                from unt in tmp1.DefaultIfEmpty()
-                select new NotificationWorkerModel
+        return Context.WorkerRequests.Where(c => c.Id == workerRequestId)
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.NotificationTypeId == notificationTypeId),
+                wr => wr.WorkerProfile.WorkerId,
+                unt => unt.UserId,
+                (wr, unt) => new NotificationWorkerModel
                 {
                     JobTitle = wr.Request.JobTitle,
                     AgencyFullName = wr.Request.CompanyProfile.Agency.FullName,

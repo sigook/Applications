@@ -57,12 +57,12 @@ public class SalesServiceDashboardTest
     private void SetupDeals(params DealStatusSummaryModel[] rows) =>
         _companyRepository
             .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .ReturnsAsync(rows.ToList());
+            .ReturnsAsync([.. rows]);
 
     private void SetupInteractions(params InteractionTypeSummaryModel[] rows) =>
         _companyRepository
             .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .ReturnsAsync(rows.ToList());
+            .ReturnsAsync([.. rows]);
 
     [Fact]
     public async Task GetDealsByStatusScopesToOwnerForSalesUser()

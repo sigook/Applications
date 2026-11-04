@@ -22,18 +22,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<CanadaInvoicesControllerTest.Startup, CanadaInvoicesControllerTest.Data>>
+public class CanadaInvoicesControllerTest(SeededWebApplicationFactory<CanadaInvoicesControllerTest.Startup, CanadaInvoicesControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<CanadaInvoicesControllerTest.Startup, CanadaInvoicesControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public CanadaInvoicesControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Preview_UsesHst()
@@ -93,7 +86,7 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
             var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
-            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns([Data.AgencyId]);
             currentUserService.Setup(s => s.GetUserId()).Returns(Data.CurrentUser.Id);
             services.AddSingleton(currentUserService.Object);
         }
@@ -112,13 +105,9 @@ public class CanadaInvoicesControllerTest : BaseTestOrder, IClassFixture<SeededW
             });
         }
 
-        private class InvoiceRepositoryTest : InvoiceRepository
+        private class InvoiceRepositoryTest(CovenantContext context) : InvoiceRepository(context)
         {
             private static long _id = 1;
-
-            public InvoiceRepositoryTest(CovenantContext context) : base(context)
-            {
-            }
 
             public override Task<NextNumberModel> GetNextInvoiceNumber(Guid agencyId) => Task.FromResult(new NextNumberModel { NextNumber = _id++ });
         }

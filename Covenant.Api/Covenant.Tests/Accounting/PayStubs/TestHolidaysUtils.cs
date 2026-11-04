@@ -32,11 +32,11 @@ public class TestHolidaysUtils
     {
         var holiday = new DateTime(2019, 01, 01);
         IEnumerable<DateTime> range = holiday.GetRangeOfDaysWorkerMustWorkToReceiveHolidayPay();
-        Assert.Equal(new[]
-        {
+        Assert.Equal(
+        [
             holiday,
             new DateTime(2019,01,02),
             new DateTime(2018,12,31)
-        }, range);
+        ], range);
     }
 }

@@ -91,7 +91,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
             .Where(ps => ps.WorkerProfile.WorkerId == workerId)
             .Select(ps => ps.DateWorkEnd.Year)
             .Distinct()
-            .OrderByDescending(year => year)
+            .OrderDescending()
             .ToListAsync();
 
     public Task<bool> IsPayStubOfWorker(Guid payStubId, Guid workerId) =>

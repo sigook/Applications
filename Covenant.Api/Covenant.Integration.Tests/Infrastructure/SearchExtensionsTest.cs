@@ -47,7 +47,7 @@ public class SearchExtensionsTest
     {
         var repository = new WorkerRepository(context, Options.Create(new FilesConfiguration()));
         var result = await repository.GetWorkerProfilesDropdown([agencyId], term);
-        return result.Select(r => r.WorkerProfileId).ToList();
+        return [.. result.Select(r => r.WorkerProfileId)];
     }
 
     [Theory]

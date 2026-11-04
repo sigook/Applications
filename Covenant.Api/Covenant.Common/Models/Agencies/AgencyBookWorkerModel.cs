@@ -1,7 +1,6 @@
-namespace Covenant.Common.Models.Agencies
+namespace Covenant.Common.Models.Agencies;
+
+public class AgencyBookWorkerModel
 {
-    public class AgencyBookWorkerModel
-    {
-        public DateTime? StartWorking { get; set; }
-    }
+    public DateTime? StartWorking { get; set; }
 }

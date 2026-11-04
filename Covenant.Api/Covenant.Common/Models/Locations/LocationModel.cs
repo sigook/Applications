@@ -1,13 +1,12 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Locations
+namespace Covenant.Common.Models.Locations;
+
+public class LocationModel : ILocation<CityModel>
 {
-    public class LocationModel : ILocation<CityModel>
-    {
-        public Guid? Id { get; set; }
-        public string Address { get; set; }
-        public CityModel City { get; set; }
-        public string PostalCode { get; set; }
-        public bool IsBilling { get; set; }
-    }
+    public Guid? Id { get; set; }
+    public string Address { get; set; }
+    public CityModel City { get; set; }
+    public string PostalCode { get; set; }
+    public bool IsBilling { get; set; }
 }

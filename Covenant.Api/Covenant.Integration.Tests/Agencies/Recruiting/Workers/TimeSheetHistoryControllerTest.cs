@@ -17,11 +17,9 @@ using static Covenant.Api.Controllers.Agencies.Recruiting.Workers.TimeSheetHisto
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
-public class TimeSheetHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<TimeSheetHistoryControllerTest.Startup>>
+public class TimeSheetHistoryControllerTest(CustomWebApplicationFactory<TimeSheetHistoryControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<TimeSheetHistoryControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public TimeSheetHistoryControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri(string query = "") =>
         RouteName.Replace("{workerProfileId:guid}", Data.WorkerProfile.Id.ToString()) + query;

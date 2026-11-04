@@ -30,7 +30,7 @@ public class CandidateCsvModelValidator : AbstractValidator<CandidateCsvModel>
             .NotEmpty()
             .Matches(@"^\d{3} \d{3}-\d{4}$")
             .WithMessage("The correct format for phone number is: ### ###-####")
-            .MustAsync(async (c, cancellationToken) => !await candidateRepository.CandidatePhonesExists(new string[] { c }))
+            .MustAsync(async (c, cancellationToken) => !await candidateRepository.CandidatePhonesExists([c]))
             .WithMessage("Phone number already exists");
         RuleFor(c => c.Address)
             .NotEmpty()

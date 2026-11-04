@@ -12,11 +12,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared;
 
-public class WebsiteControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WebsiteControllerTest.Startup>>
+public class WebsiteControllerTest(CustomWebApplicationFactory<WebsiteControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WebsiteControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public WebsiteControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task GetJobsReturnsEmploymentTypeAsDisplayName()

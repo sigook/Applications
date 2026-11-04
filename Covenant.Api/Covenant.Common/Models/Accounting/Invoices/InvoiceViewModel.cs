@@ -28,7 +28,7 @@ public class InvoiceViewModel
     public string InvoiceNumber { get; set; }
     public Guid CompanyProfileId { get; set; }
     public Guid Id { get; set; }
-    public IReadOnlyList<DescriptionTableViewModel> Items { get; set; } = new List<DescriptionTableViewModel>();
+    public IReadOnlyList<DescriptionTableViewModel> Items { get; set; } = [];
     public InvoiceColor InvoiceColor { get; set; }
     public string ClientSiteAddress { get; set; }
 }

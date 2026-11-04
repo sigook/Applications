@@ -1,32 +1,31 @@
-namespace Covenant.Common.Entities
+namespace Covenant.Common.Entities;
+
+public class User
 {
-    public class User
+    private User() 
+    { 
+    }
+
+    public User(CvnEmail email, Guid id = default)
     {
-        private User() 
-        { 
-        }
+        Email = email;
+        Id = id == default ? Guid.NewGuid() : id;
+    }
 
-        public User(CvnEmail email, Guid id = default)
-        {
-            Email = email;
-            Id = id == default ? Guid.NewGuid() : id;
-        }
+    public Guid Id { get; private set; } = Guid.NewGuid();
+    public string Email { get; private set; }
+    public bool Enabled { get; private set; } = true;
+    public DateTime LastModified { get; private set; }
 
-        public Guid Id { get; private set; } = Guid.NewGuid();
-        public string Email { get; private set; }
-        public bool Enabled { get; private set; } = true;
-        public DateTime LastModified { get; private set; }
+    public void UpdateEmail(CvnEmail email)
+    {
+        Email = email;
+        LastModified = DateTime.Now;
+    }
 
-        public void UpdateEmail(CvnEmail email)
-        {
-            Email = email;
-            LastModified = DateTime.Now;
-        }
-
-        public void InactiveUser()
-        {
-            Enabled = false;
-            LastModified = DateTime.Now;
-        }
+    public void InactiveUser()
+    {
+        Enabled = false;
+        LastModified = DateTime.Now;
     }
 }

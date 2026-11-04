@@ -16,11 +16,9 @@ using static Covenant.Api.Controllers.Agencies.Recruiting.Workers.WageHistoryCon
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
-public class WageHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<WageHistoryControllerTest.Startup>>
+public class WageHistoryControllerTest(CustomWebApplicationFactory<WageHistoryControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<WageHistoryControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public WageHistoryControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri(string query = "") =>
         RouteName.Replace("{workerProfileId:guid}", Data.WorkerProfile.Id.ToString()) + query;
@@ -32,7 +30,7 @@ public class WageHistoryControllerTest : IClassFixture<CustomWebApplicationFacto
         response.EnsureSuccessStatusCode();
         var list = await response.Content.ReadFromJsonAsync<PaginatedList<PayStubHistoryModel>>();
         Assert.Equal(3, list.TotalItems);
-        Assert.Equal(new long[] { 3, 2, 1 }, list.Items.Select(i => i.NumberId).ToArray());
+        Assert.Equal([3, 2, 1], list.Items.Select(i => i.NumberId).ToArray());
         PayStubHistoryModel newest = list.Items[0];
         PayStubHistoryModel oldest = list.Items[2];
         Assert.Equal(Data.PayStubs.Sum(p => p.TotalPaid), newest.AccumulatedTotalPaid);

@@ -1,8 +1,7 @@
-﻿namespace Covenant.Common.Models
+﻿namespace Covenant.Common.Models;
+
+public interface ISkillModel
 {
-    public interface ISkillModel
-    {
-        Guid? Id { get; set; }
-        string Skill { get; set; }
-    }
+    Guid? Id { get; set; }
+    string Skill { get; set; }
 }

@@ -25,9 +25,6 @@ public class ReportsController(
 {
     public const string RouteName = "api/agency/accounting/reports";
 
-    private readonly IAccountingService accountingService = accountingService;
-    private readonly ITimesheetService timeSheetService = timeSheetService;
-    private readonly IPayStubService payStubService = payStubService;
 
     /// <summary>Gets the hours-worked report summary for the given filter.</summary>
     /// <param name="filter">Filter criteria for the report.</param>

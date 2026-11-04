@@ -19,17 +19,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
-public class DocumentsControllerTest :
+public class DocumentsControllerTest(CustomWebApplicationFactory<DocumentsControllerTest.Startup> factory) :
     IClassFixture<CustomWebApplicationFactory<DocumentsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public DocumentsControllerTest(CustomWebApplicationFactory<DocumentsControllerTest.Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => DocumentsController.RouteName.Replace("{candidateId}",
         Startup.FakeCandidate.Id.ToString());

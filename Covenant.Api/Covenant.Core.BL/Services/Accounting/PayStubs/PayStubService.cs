@@ -23,57 +23,25 @@ using System.Net.Mime;
 
 namespace Covenant.Core.BL.Services.Accounting.PayStubs;
 
-public class PayStubService : IPayStubService
+public class PayStubService(
+    IPayStubRepository payStubRepository,
+    ITimesheetCalculatorService calculatorService,
+    ITimesheetRepository timeSheetRepository,
+    ICatalogRepository catalogRepository,
+    IPayStubsContainer payStubsContainer,
+    IRazorViewToStringRenderer renderer,
+    IEmailService emailService,
+    ICurrentUserService currentUserService,
+    ISkipPayrollNumberRepository skipPayrollNumberRepository,
+    IMediator mediator,
+    Rates rates,
+    TimeLimits timeLimits,
+    IPayrollDocumentAdapter payrollDocumentAdapter,
+    TimeProvider timeProvider) : IPayStubService
 {
     private const string PayStubEmailTemplatePath = "/Views/Billing/Payroll/PayrollEmail.cshtml";
     private static readonly TimeSpan PdfUrlLifetime = TimeSpan.FromHours(1);
 
-    private readonly IPayStubRepository payStubRepository;
-    private readonly ITimesheetCalculatorService calculatorService;
-    private readonly ITimesheetRepository timeSheetRepository;
-    private readonly ICatalogRepository catalogRepository;
-    private readonly IPayStubsContainer payStubsContainer;
-    private readonly IRazorViewToStringRenderer renderer;
-    private readonly IEmailService emailService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository;
-    private readonly IMediator mediator;
-    private readonly Rates rates;
-    private readonly TimeLimits timeLimits;
-    private readonly IPayrollDocumentAdapter payrollDocumentAdapter;
-    private readonly TimeProvider timeProvider;
-
-    public PayStubService(
-        IPayStubRepository payStubRepository,
-        ITimesheetCalculatorService calculatorService,
-        ITimesheetRepository timeSheetRepository,
-        ICatalogRepository catalogRepository,
-        IPayStubsContainer payStubsContainer,
-        IRazorViewToStringRenderer renderer,
-        IEmailService emailService,
-        ICurrentUserService currentUserService,
-        ISkipPayrollNumberRepository skipPayrollNumberRepository,
-        IMediator mediator,
-        Rates rates,
-        TimeLimits timeLimits,
-        IPayrollDocumentAdapter payrollDocumentAdapter,
-        TimeProvider timeProvider)
-    {
-        this.payStubRepository = payStubRepository;
-        this.calculatorService = calculatorService;
-        this.timeSheetRepository = timeSheetRepository;
-        this.catalogRepository = catalogRepository;
-        this.payStubsContainer = payStubsContainer;
-        this.renderer = renderer;
-        this.emailService = emailService;
-        this.currentUserService = currentUserService;
-        this.skipPayrollNumberRepository = skipPayrollNumberRepository;
-        this.mediator = mediator;
-        this.rates = rates;
-        this.timeLimits = timeLimits;
-        this.payrollDocumentAdapter = payrollDocumentAdapter;
-        this.timeProvider = timeProvider;
-    }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> GenerateT4(DateTime from, DateTime to)
     {

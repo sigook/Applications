@@ -38,67 +38,28 @@ using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Companies;
 
-public class CompanyService : ICompanyService
+public class CompanyService(
+    ICompanyRepository companyRepository,
+    IUserRepository userRepository,
+    IAgencyRepository agencyRepository,
+    INotificationDataRepository notificationDataRepository,
+    ICatalogRepository catalogRepository,
+    IRequestRepository requestRepository,
+    IInvoiceRepository invoiceRepository,
+    IInvoiceCountryStrategyResolver invoiceStrategies,
+    IUserAccountService userAccountService,
+    ICurrentUserService currentUserService,
+    IEmailService emailService,
+    IGeocodeService geocodeService,
+    IRazorViewToStringRenderer razorViewToStringRenderer,
+    IValidator<CompanyCsvModel> bulkCompanyValidator,
+    ICompanyAdapter companyAdapter,
+    IUploadedFilesService uploadedFilesService,
+    IDocumentService documentService,
+    IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator) : ICompanyService
 {
     private const string CompanyProfileNotFound = "Company profile not found";
     private const string NoteNotFound = "Note not found";
-    private readonly ICompanyRepository companyRepository;
-    private readonly IUserRepository userRepository;
-    private readonly IAgencyRepository agencyRepository;
-    private readonly INotificationDataRepository notificationDataRepository;
-    private readonly ICatalogRepository catalogRepository;
-    private readonly IRequestRepository requestRepository;
-    private readonly IInvoiceRepository invoiceRepository;
-    private readonly IInvoiceCountryStrategyResolver invoiceStrategies;
-    private readonly IUserAccountService userAccountService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IEmailService emailService;
-    private readonly IGeocodeService geocodeService;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
-    private readonly IValidator<CompanyCsvModel> bulkCompanyValidator;
-    private readonly ICompanyAdapter companyAdapter;
-    private readonly IUploadedFilesService uploadedFilesService;
-    private readonly IDocumentService documentService;
-    private readonly IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator;
-    public CompanyService(
-        ICompanyRepository companyRepository,
-        IUserRepository userRepository,
-        IAgencyRepository agencyRepository,
-        INotificationDataRepository notificationDataRepository,
-        ICatalogRepository catalogRepository,
-        IRequestRepository requestRepository,
-        IInvoiceRepository invoiceRepository,
-        IInvoiceCountryStrategyResolver invoiceStrategies,
-        IUserAccountService userAccountService,
-        ICurrentUserService currentUserService,
-        IEmailService emailService,
-        IGeocodeService geocodeService,
-        IRazorViewToStringRenderer razorViewToStringRenderer,
-        IValidator<CompanyCsvModel> bulkCompanyValidator,
-        ICompanyAdapter companyAdapter,
-        IUploadedFilesService uploadedFilesService,
-        IDocumentService documentService,
-        IValidator<CompanyProfilePaymentTermsUpdateModel> paymentTermsValidator)
-    {
-        this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
-        this.agencyRepository = agencyRepository;
-        this.notificationDataRepository = notificationDataRepository;
-        this.catalogRepository = catalogRepository;
-        this.requestRepository = requestRepository;
-        this.invoiceRepository = invoiceRepository;
-        this.invoiceStrategies = invoiceStrategies;
-        this.userAccountService = userAccountService;
-        this.currentUserService = currentUserService;
-        this.emailService = emailService;
-        this.geocodeService = geocodeService;
-        this.razorViewToStringRenderer = razorViewToStringRenderer;
-        this.bulkCompanyValidator = bulkCompanyValidator;
-        this.companyAdapter = companyAdapter;
-        this.uploadedFilesService = uploadedFilesService;
-        this.documentService = documentService;
-        this.paymentTermsValidator = paymentTermsValidator;
-    }
 
     public async Task<Result> UpdateContactInformation(Guid profileId, CompanyProfileDetailModel model)
     {
@@ -327,7 +288,7 @@ public class CompanyService : ICompanyService
             model.PhoneExt,
             rLocation.Value,
             location.IsBilling,
-            model.JobPositionRates.Select(j => j.JobPosition).ToList(),
+            [.. model.JobPositionRates.Select(j => j.JobPosition)],
             model.Logo?.FileName);
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
@@ -437,7 +398,7 @@ public class CompanyService : ICompanyService
             });
         await emailService.SendEmail(new EmailParams(companyProfile.Agency.User.Email, "A new worker was requested", message)
         {
-            Cc = new List<string> { companyProfile.Agency.RecruitmentEmail }
+            Cc = [companyProfile.Agency.RecruitmentEmail]
         });
         return Result.Ok();
     }
@@ -549,7 +510,7 @@ public class CompanyService : ICompanyService
             using var stream = new MemoryStream();
             using var workbook = new XLWorkbook();
             var sheet = workbook.Worksheets.Add("Report");
-            sheet.SetupHeaders(new string[] { "Company Name" });
+            sheet.SetupHeaders(["Company Name"]);
             var startAt = 2;
             var bulkCompanies = new List<BulkCompany>();
             var industries = await catalogRepository.GetIndustries();

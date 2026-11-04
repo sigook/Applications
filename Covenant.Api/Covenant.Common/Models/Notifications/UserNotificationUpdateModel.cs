@@ -1,5 +1,5 @@
-namespace Covenant.Common.Models.Notifications
-{
+namespace Covenant.Common.Models.Notifications;
+
 	public class UserNotificationUpdateModel
 	{
 		public int Id { get; set; }
@@ -7,4 +7,3 @@ namespace Covenant.Common.Models.Notifications
 		public bool PushNotification { get; set; }
 		public bool SMSNotification { get; set; }
 	}
-}

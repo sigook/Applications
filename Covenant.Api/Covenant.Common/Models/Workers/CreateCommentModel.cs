@@ -1,13 +1,11 @@
-﻿namespace Covenant.Common.Models.Workers
+﻿namespace Covenant.Common.Models.Workers;
+
+public class CreateCommentModel
 {
-    public class CreateCommentModel
+    public string Comment { get; set; }
+    public int Rate
     {
-        public string Comment { get; set; }
-        private int _rate;
-        public int Rate
-        {
-            get => _rate;
-            set => _rate =  value < 0  ? 0 : value;
-        }
+        get;
+        set => field = value < 0 ? 0 : value;
     }
 }

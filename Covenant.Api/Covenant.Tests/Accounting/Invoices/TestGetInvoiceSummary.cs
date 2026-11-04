@@ -23,7 +23,7 @@ public class TestGetInvoiceSummary
             a.UpdateProfile(null, null, "TS123", null, null, null);
             a.ChangeLogo(new CovenantFile("logo.png"));
         }),
-        Locations = new List<CompanyProfileLocation> { new CompanyProfileLocation { IsBilling = true, Location = new Location { Address = "4917", City = new City { Province = new Province { Country = new Country() } } } } }
+        Locations = [new CompanyProfileLocation { IsBilling = true, Location = new Location { Address = "4917", City = new City { Province = new Province { Country = new Country() } } } }]
     }.With(p => p.UpdatePhones("6478888888", null, null, null));
 
     private static readonly CompanyProfileInvoiceNotes InvoiceNotes = new CompanyProfileInvoiceNotes(FakeProfile.Id, "Pay before Saturday");
@@ -161,12 +161,12 @@ public class TestGetInvoiceSummary
             WeekEnding = new DateTime(2019, 01, 07)
         };
 
-        invoice.AddDiscounts(new[] { new InvoiceDiscount(1, 1, "One"), new InvoiceDiscount(1, 2, "Two") });
-        invoice.AddHolidays(new[]{
+        invoice.AddDiscounts([new InvoiceDiscount(1, 1, "One"), new InvoiceDiscount(1, 2, "Two")]);
+        invoice.AddHolidays([
              InvoiceHoliday.Create(new DateTime(2019,01,02),8,80).Value,
-             InvoiceHoliday.Create(new DateTime(2019,01,03),9,90).Value});
-        invoice.AddAdditionalItems(new[]{new InvoiceAdditionalItem(1,2,"One"),
-            new InvoiceAdditionalItem(2,4,"Two") });
+             InvoiceHoliday.Create(new DateTime(2019,01,03),9,90).Value]);
+        invoice.AddAdditionalItems([new InvoiceAdditionalItem(1,2,"One"),
+            new InvoiceAdditionalItem(2,4,"Two") ]);
 
         var invoiceTotals = new List<InvoiceTotal>
         {
@@ -310,7 +310,7 @@ public class TestGetInvoiceSummary
         context.TimeSheetTotals.AddRange(tstRegular, tstOtherRegular, tstOvertime, tstHoliday, tstMissing,
             tstMissingOvertime, tstMissingDifferentRate, tstMissingOvertimeDifferentRate, tstNightShift);
         context.SaveChanges();
-        return context.TimeSheetTotals.Include(ts => ts.TimeSheet).ToList();
+        return [.. context.TimeSheetTotals.Include(ts => ts.TimeSheet)];
     }
 
     private static TimeSheet FakeTimeSheet(Guid workerRequestId) =>

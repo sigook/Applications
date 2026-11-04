@@ -30,13 +30,13 @@ public class ReportSubcontractor
 
     public void AddWageDetail(IEnumerable<ReportSubcontractorWageDetail> wageDetails)
     {
-        WageDetails = new List<ReportSubcontractorWageDetail>(wageDetails);
+        WageDetails = wageDetails.ToList();
         foreach (ReportSubcontractorWageDetail detail in WageDetails) detail.AssignTo(this);
     }
 
     public void AddHolidays(IEnumerable<ReportSubcontractorPublicHoliday> holidays)
     {
-        Holidays = new List<ReportSubcontractorPublicHoliday>(holidays);
+        Holidays = holidays.ToList();
         foreach (ReportSubcontractorPublicHoliday item in Holidays) item.AssignTo(this);
     }
 
@@ -51,7 +51,7 @@ public class ReportSubcontractor
             totalOtherDeductions += deduction.Total;
             list.Add(deduction);
         }
-        OtherDeductionsDetail = new List<ReportSubContractorOtherDeduction>(list);
+        OtherDeductionsDetail = list.ToList();
         DeductionOthers = totalOtherDeductions;
     }
 

@@ -3,7 +3,7 @@ using PhoneNumbers;
 
 namespace Covenant.Common.Utils;
 
-public static class CommonValidators
+public static partial class CommonValidators
 {
     private const string PhonePattern = @"\s*(?:\+?(\d{1,3}))?([-. (]*(\d{3})[-. )]*)?((\d{3})[-. ]*(\d{2,4})(?:[-.x ]*(\d+))?)\s*";
     private const string CanadaCode = "CA";
@@ -11,7 +11,7 @@ public static class CommonValidators
     public static bool IsValidPhoneNumber(string phoneNumber, bool nullIsValid = true)
     {
         if (string.IsNullOrEmpty(phoneNumber)) return nullIsValid;
-        var match = Regex.Match(phoneNumber, PhonePattern);
+        var match = PhoneRegex().Match(phoneNumber);
         if (!(match.Success && match.Value == phoneNumber)) return false;
         try
         {
@@ -24,4 +24,7 @@ public static class CommonValidators
             return false;
         }
     }
+
+    [GeneratedRegex(PhonePattern)]
+    private static partial Regex PhoneRegex();
 }

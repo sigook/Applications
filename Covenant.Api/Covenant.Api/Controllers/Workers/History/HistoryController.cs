@@ -16,7 +16,6 @@ public class HistoryController(IRequestRepository requestRepository) : Controlle
 {
     public const string RouteName = "api/worker/history";
 
-    private readonly IRequestRepository _requestRepository = requestRepository;
 
     /// <summary>
     /// Lists every assignment of the authenticated worker, newest first, with the worker-facing status Active, Completed or Ended.
@@ -25,7 +24,7 @@ public class HistoryController(IRequestRepository requestRepository) : Controlle
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerRequestListModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult> Get([FromQuery] GetWorkerHistoryFilter filter) =>
-        Ok(await _requestRepository.GetRequestsHistoryForWorker(User.GetUserId(), filter));
+        Ok(await requestRepository.GetRequestsHistoryForWorker(User.GetUserId(), filter));
 
     /// <summary>
     /// Gets the detail of a historic request for the authenticated worker.
@@ -36,7 +35,7 @@ public class HistoryController(IRequestRepository requestRepository) : Controlle
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById(Guid id)
     {
-        var model = await _requestRepository.GetRequestDetailForWorker(User.GetUserId(), id);
+        var model = await requestRepository.GetRequestDetailForWorker(User.GetUserId(), id);
         if (model is null) return NotFound();
         return Ok(model);
     }

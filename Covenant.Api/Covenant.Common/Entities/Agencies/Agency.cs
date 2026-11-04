@@ -33,9 +33,9 @@ public class Agency
     public AgencyType AgencyType { get; internal set; }
     public Guid? AgencyParentId { get; internal set; }
     public Agency AgencyParent { get; private set; }
-    public ICollection<AgencyWsibGroup> WsibGroup { get; private set; } = new List<AgencyWsibGroup>();
-    public ICollection<AgencyLocation> Locations { get; private set; } = new List<AgencyLocation>();
-    public ICollection<AgencyContactInformation> ContactInformation { get; private set; } = new List<AgencyContactInformation>();
+    public ICollection<AgencyWsibGroup> WsibGroup { get; private set; } = [];
+    public ICollection<AgencyLocation> Locations { get; private set; } = [];
+    public ICollection<AgencyContactInformation> ContactInformation { get; private set; } = [];
     public DateTime CreatedAt { get; private set; } = DateTime.Now;
     public Location BillingAddress => Locations.FirstOrDefault(l => l.IsBilling)?.Location ?? Locations.FirstOrDefault()?.Location;
     public string FormattedPhone => $"{PhonePrincipal} {(PhonePrincipalExt.HasValue ? $"Ext:{PhonePrincipalExt.Value}" : string.Empty)}";

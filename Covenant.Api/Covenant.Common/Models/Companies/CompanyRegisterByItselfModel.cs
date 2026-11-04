@@ -9,8 +9,8 @@ public class CompanyRegisterByItselfModel : IEmailInformation, IPasswordInformat
     public CovenantFileModel Logo { get; set; }
     public string Phone { get; set; }
     public int? PhoneExt { get; set; }
-    public ICollection<CompanyProfileJobPositionRateModel> JobPositionRates { get; set; } = new List<CompanyProfileJobPositionRateModel>();
-    public ICollection<LocationModel> Locations { get; set; } = new List<LocationModel>();
+    public ICollection<CompanyProfileJobPositionRateModel> JobPositionRates { get; set; } = [];
+    public ICollection<LocationModel> Locations { get; set; } = [];
     public string Email { get; set; }
     public string Password { get; set; }
     public string ConfirmPassword { get; set; }

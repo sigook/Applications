@@ -17,17 +17,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
-public class PhoneNumbersControllerTest :
+public class PhoneNumbersControllerTest(CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup> factory) :
     IClassFixture<CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public PhoneNumbersControllerTest(CustomWebApplicationFactory<PhoneNumbersControllerTest.Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => PhoneNumbersController.RouteName.Replace("{candidateId}",
         Startup.FakeCandidate.Id.ToString());

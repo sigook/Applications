@@ -1,62 +1,56 @@
 ﻿using Azure.Messaging.ServiceBus.Administration;
 
-namespace Covenant.Infrastructure.Services
+namespace Covenant.Infrastructure.Services;
+
+public class SigookBusAdministrationClient(string connectionString) : ServiceBusAdministrationClient(connectionString)
 {
-    public class SigookBusAdministrationClient : ServiceBusAdministrationClient
+    public async Task CreateQueueIfNotExistsAsync(string queueName)
     {
-        public SigookBusAdministrationClient(string connectionString)
-            : base(connectionString)
+        if (!await QueueExistsAsync(queueName))
         {
+            await CreateQueueAsync(queueName);
         }
+    }
 
-        public async Task CreateQueueIfNotExistsAsync(string queueName)
+    public async Task CreateTopicIfNotExistsAsync(string topicName)
+    {
+        if (!await TopicExistsAsync(topicName))
         {
-            if (!await QueueExistsAsync(queueName))
-            {
-                await CreateQueueAsync(queueName);
-            }
+            await CreateTopicAsync(topicName);
         }
+    }
 
-        public async Task CreateTopicIfNotExistsAsync(string topicName)
+    public async Task CreateSubscriptionIfNotExistsAsync(string topic, string subscription)
+    {
+        if (!await SubscriptionExistsAsync(topic, subscription))
         {
-            if (!await TopicExistsAsync(topicName))
-            {
-                await CreateTopicAsync(topicName);
-            }
+            await CreateSubscriptionAsync(topic, subscription);
         }
+    }
 
-        public async Task CreateSubscriptionIfNotExistsAsync(string topic, string subscription)
+    public async Task CreateRuleIfNotExistsAsync(string topic, string subscription, string ruleName, CorrelationRuleFilter rule)
+    {
+        await DeleteDefaultRuleIfExistsAsync(topic, subscription);
+        if (!await RuleExistsAsync(topic, subscription, ruleName))
         {
-            if (!await SubscriptionExistsAsync(topic, subscription))
-            {
-                await CreateSubscriptionAsync(topic, subscription);
-            }
+            await CreateRuleAsync(topic, subscription, new CreateRuleOptions(ruleName, rule));
         }
+    }
 
-        public async Task CreateRuleIfNotExistsAsync(string topic, string subscription, string ruleName, CorrelationRuleFilter rule)
+    public async Task CreateRuleIfNotExistsAsync(string topic, string subscription, string ruleName, SqlRuleFilter rule)
+    {
+        await DeleteDefaultRuleIfExistsAsync(topic, subscription);
+        if (!await RuleExistsAsync(topic, subscription, ruleName))
         {
-            await DeleteDefaultRuleIfExistsAsync(topic, subscription);
-            if (!await RuleExistsAsync(topic, subscription, ruleName))
-            {
-                await CreateRuleAsync(topic, subscription, new CreateRuleOptions(ruleName, rule));
-            }
+            await CreateRuleAsync(topic, subscription, new CreateRuleOptions(ruleName, rule));
         }
+    }
 
-        public async Task CreateRuleIfNotExistsAsync(string topic, string subscription, string ruleName, SqlRuleFilter rule)
+    private async Task DeleteDefaultRuleIfExistsAsync(string topic, string subscription)
+    {
+        if (await RuleExistsAsync(topic, subscription, "$Default"))
         {
-            await DeleteDefaultRuleIfExistsAsync(topic, subscription);
-            if (!await RuleExistsAsync(topic, subscription, ruleName))
-            {
-                await CreateRuleAsync(topic, subscription, new CreateRuleOptions(ruleName, rule));
-            }
-        }
-
-        private async Task DeleteDefaultRuleIfExistsAsync(string topic, string subscription)
-        {
-            if (await RuleExistsAsync(topic, subscription, "$Default"))
-            {
-                await DeleteRuleAsync(topic, subscription, "$Default");
-            }
+            await DeleteRuleAsync(topic, subscription, "$Default");
         }
     }
 }

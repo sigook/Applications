@@ -1,14 +1,7 @@
-﻿namespace Covenant.Common.Models
-{
-    public class AccessKey
-    {
-        public AccessKey(string containerName, string connectionString)
-        {
-            ContainerName = containerName;
-            ConnectionString = connectionString;
-        }
+﻿namespace Covenant.Common.Models;
 
-        public string ContainerName { get; set; }
-        public string ConnectionString { get; set; }
-    }
+public class AccessKey(string containerName, string connectionString)
+{
+    public string ContainerName { get; set; } = containerName;
+    public string ConnectionString { get; set; } = connectionString;
 }

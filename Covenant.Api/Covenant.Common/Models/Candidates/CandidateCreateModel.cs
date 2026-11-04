@@ -14,7 +14,7 @@ public class CandidateCreateModel
     public string ResidencyStatus { get; set; }
     public Guid? SourceId { get; set; }
     public bool Dnu { get; set; }
-    public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = new List<PhoneNumberModel>();
-    public IEnumerable<SkillModel> Skills { get; set; } = new List<SkillModel>();
+    public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = [];
+    public IEnumerable<SkillModel> Skills { get; set; } = [];
     public string FileName { get; set; }
 }

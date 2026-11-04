@@ -135,10 +135,10 @@ public class EmailService : IEmailService
                         Name = settings.DisplayName
                     }
                 },
-                ToRecipients = new List<Recipient>(),
-                CcRecipients = new List<Recipient>(),
-                BccRecipients = new List<Recipient>(),
-                Attachments = new List<Attachment>()
+                ToRecipients = [],
+                CcRecipients = [],
+                BccRecipients = [],
+                Attachments = []
             };
             if (settings.Test)
             {

@@ -79,10 +79,14 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus]">{{ props.row.status }}</b-tag>
-            <span v-if="props.row.finishReason" class="fz-1 block">{{ WorkerRequestFinishReasonLabels[props.row.finishReason] }}</span>
-            <i v-if="props.row.finishComments" class="fz-1 block">{{ props.row.finishComments }}</i>
-            <i class="fz-1 block" v-html="props.row.rejectComments"></i>
+            <div class="worker-status">
+              <div class="worker-status__head">
+                <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus]">{{ props.row.status }}</b-tag>
+                <span v-if="props.row.finishReason" class="fz-1">{{ WorkerRequestFinishReasonLabels[props.row.finishReason] }}</span>
+              </div>
+              <i v-if="props.row.finishComments" class="worker-status__note fz-1">{{ props.row.finishComments }}</i>
+              <i v-if="props.row.rejectComments" class="worker-status__note fz-1" v-html="props.row.rejectComments"></i>
+            </div>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
@@ -337,3 +341,24 @@ function onWorkerBooked() {
   emit('refreshRequest');
 }
 </script>
+
+<style scoped lang="scss">
+@import '@/assets/scss/variables';
+
+.worker-status {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.worker-status__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.worker-status__note {
+  color: $grey-font;
+}
+</style>

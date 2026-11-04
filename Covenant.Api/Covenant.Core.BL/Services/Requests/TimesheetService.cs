@@ -35,14 +35,6 @@ public class TimesheetService(
     IOptions<PunchConfiguration> punchOptions) : ITimesheetService
 {
     private readonly PunchConfiguration punchConfiguration = punchOptions.Value;
-    private readonly TimeProvider timeProvider = timeProvider;
-    private readonly IWorkerRequestRepository workerRequestRepository = workerRequestRepository;
-    private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
-    private readonly IRequestRepository requestRepository = requestRepository;
-    private readonly ICatalogRepository catalogRepository = catalogRepository;
-    private readonly ICurrentUserService currentUserService = currentUserService;
-    private readonly IMediator mediator = mediator;
-    private readonly TelemetryClient telemetryClient = telemetryClient;
 
     public async Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn)
     {

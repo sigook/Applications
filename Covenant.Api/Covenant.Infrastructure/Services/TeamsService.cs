@@ -94,7 +94,7 @@ public class TeamsService : ITeamsService
     {
         var decodedUrl = Uri.UnescapeDataString(url);
         var index = decodedUrl.IndexOf("General", StringComparison.OrdinalIgnoreCase);
-        var result = decodedUrl.Substring(index);
+        var result = decodedUrl[index..];
         return result;
     }
 

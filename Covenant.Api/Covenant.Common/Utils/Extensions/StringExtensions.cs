@@ -1,9 +1,10 @@
 using System.Text;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Covenant.Common.Utils.Extensions;
 
-public static class StringExtensions
+public static partial class StringExtensions
 {
     public static string ToInvoiceBlobName(this Guid id) => ToAccountingFileBlobName("Invoice", id);
 
@@ -18,9 +19,11 @@ public static class StringExtensions
     public static string MaskSIN(this string sin)
     {
         if (string.IsNullOrEmpty(sin)) return string.Empty;
-        var lastFour = sin.Length <= 4 ? sin : sin.Substring(sin.Length - 4);
+        var lastFour = sin.Length <= 4 ? sin : sin[^4..];
         return "******" + lastFour;
     }
+
+    public static string RemoveWhitespace(this string value) => WhitespaceRegex().Replace(value, string.Empty);
 
     public static string RemoveDiacritics(this string value)
     {
@@ -50,10 +53,9 @@ public static class StringExtensions
     public static string[] ToSearchTokens(this string term) =>
         string.IsNullOrWhiteSpace(term)
             ? []
-            : term.RemoveDiacritics().ToLowerInvariant()
+            : [.. term.RemoveDiacritics().ToLowerInvariant()
                 .Split((char[])null, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-                .Distinct()
-                .ToArray();
+                .Distinct()];
 
     public static bool MatchesSearch(this string term, params string[] fields)
     {
@@ -67,4 +69,7 @@ public static class StringExtensions
     }
 
     private static string ToAccountingFileBlobName(string accountingFileType, Guid id) => $"{accountingFileType}_{id:N}.pdf";
+
+    [GeneratedRegex(@"\s+")]
+    private static partial Regex WhitespaceRegex();
 }

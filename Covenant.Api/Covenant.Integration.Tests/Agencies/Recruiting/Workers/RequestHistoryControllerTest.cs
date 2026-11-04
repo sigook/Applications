@@ -17,11 +17,9 @@ using static Covenant.Api.Controllers.Agencies.Recruiting.Workers.RequestHistory
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
-public class RequestHistoryControllerTest : IClassFixture<CustomWebApplicationFactory<RequestHistoryControllerTest.Startup>>
+public class RequestHistoryControllerTest(CustomWebApplicationFactory<RequestHistoryControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<RequestHistoryControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public RequestHistoryControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri(string query = "") =>
         RouteName.Replace("{workerProfileId}", Data.WorkerProfile.Id.ToString()) + query;

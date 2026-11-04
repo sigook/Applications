@@ -30,17 +30,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
-public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CandidatesControllerTest.Startup>>
+public class CandidatesControllerTest(CustomWebApplicationFactory<CandidatesControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CandidatesControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
     private const string RequestUri = CandidatesController.RouteName;
-
-    public CandidatesControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
 
     [Theory]
     [InlineData("Full")]
@@ -61,8 +55,8 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
                 Gender = new BaseModel<Guid>(Startup.Male.Id),
                 HasVehicle = true,
                 SourceId = Startup.WebPageSource.Id,
-                PhoneNumbers = new[] { new PhoneNumberModel("234 5677") },
-                Skills = new[] { new SkillModel("Cleaning"), new SkillModel("Packing") },
+                PhoneNumbers = [new PhoneNumberModel("234 5677")],
+                Skills = [new SkillModel("Cleaning"), new SkillModel("Packing")],
                 ResidencyStatus = "Student"
             };
         }
@@ -271,11 +265,11 @@ public class CandidatesControllerTest : BaseTestOrder, IClassFixture<CustomWebAp
         {
             FakeCandidate.AddEmail(CvnEmail.Create("g@m.com").Value);
             FakeCandidate.AddPostalCode(CvnPostalCode.Create("M1M2M1").Value);
-            FakeCandidate.Documents = new List<CandidateDocument>()
-            {
+            FakeCandidate.Documents =
+            [
                 new CandidateDocument(FakeCandidate.Id, new CovenantFile("resume.png", "resume")),
                 new CandidateDocument(FakeCandidate.Id, new CovenantFile("resume2.png", "resume2"))
-            };
+            ];
             FakeCandidate.AddSkill("Computer");
             FakeCandidate.AddSkill("Cleaning");
             FakeCandidate.AddPhone("23456774567");

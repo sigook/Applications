@@ -20,20 +20,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Candidates;
 
-public class NotesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<NotesControllerTest.Startup, NotesControllerTest.Data>>
+public class NotesControllerTest(SeededWebApplicationFactory<NotesControllerTest.Startup, NotesControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<NotesControllerTest.Startup, NotesControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly ITestOutputHelper _output;
-    private readonly HttpClient _client;
-    private readonly Data _data;
-
-    public NotesControllerTest(SeededWebApplicationFactory<Startup, Data> factory, ITestOutputHelper output)
-    {
-        _factory = factory;
-        _output = output;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
+    private readonly Data _data = factory.Data;
 
     private string RequestUri() => NotesController.RouteName.Replace("{candidateId}",
         _data.Candidate.Id.ToString());

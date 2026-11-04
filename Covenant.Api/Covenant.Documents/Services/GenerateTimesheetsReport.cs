@@ -5,16 +5,10 @@ using Covenant.Common.Utils.Extensions;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateTimesheetsReport : GenerateAgencyReport<TimesheetsReportResponse>
+public class GenerateTimesheetsReport(IReadOnlyList<TimesheetsReportResponse> model) : GenerateAgencyReport<TimesheetsReportResponse>(model)
 {
-    public GenerateTimesheetsReport(IReadOnlyList<TimesheetsReportResponse> model)
-        : base(model)
-    {
-
-    }
-
-    public override IEnumerable<string> Columns => new string[]
-    {
+    public override IEnumerable<string> Columns =>
+    [
         "#",
         "Employee ID",
         "Full Name Employee",
@@ -25,7 +19,7 @@ public class GenerateTimesheetsReport : GenerateAgencyReport<TimesheetsReportRes
         "Pay Rate",
         "Reg. Hours",
         "Overtime"
-    };
+    ];
 }
 
 public class GenerateTimesheetsReportHandler : GenerateAgencyReportHandler<GenerateTimesheetsReport, TimesheetsReportResponse>

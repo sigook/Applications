@@ -18,20 +18,13 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data>>
+public class DeleteSubcontractorReportControllerTest(SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data>>
 {
     private const string Url = ReportsController.RouteName + "/subcontractors";
 
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public DeleteSubcontractorReportControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
@@ -107,7 +100,7 @@ public class DeleteSubcontractorReportControllerTest : BaseTestOrder, IClassFixt
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
             var currentUserService = new Mock<ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
-            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns([Data.AgencyId]);
             services.AddSingleton(currentUserService.Object);
         }
 

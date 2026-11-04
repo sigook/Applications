@@ -253,7 +253,7 @@ public class RequestApplicantService(
         var items = (await requestRepository.GetComplianceItems(requestId)).ToList();
         var item = items.FirstOrDefault(i => i.Id == itemId);
         var linkedTargets = item is null
-            ? new List<ComplianceDocumentTarget>()
+            ? []
             : await GetSinLinkedTargets(entity, item.DocumentTarget);
         if (linkedTargets.Count > 0)
         {

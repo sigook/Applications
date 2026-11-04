@@ -11,33 +11,18 @@ using Covenant.Core.BL.Interfaces.Accounting;
 
 namespace Covenant.Core.BL.Services.Accounting;
 
-public class TimesheetCalculatorService : ITimesheetCalculatorService
+public class TimesheetCalculatorService(
+    IDeductionsRepository deductionsRepository,
+    IWorkerRepository workerRepository,
+    ITimesheetRepository timeSheetRepository,
+    Rates rates,
+    TimeLimits timeLimits) : ITimesheetCalculatorService
 {
-    private readonly IDeductionsRepository _deductionsRepository;
-    private readonly IWorkerRepository _workerRepository;
-    private readonly ITimesheetRepository _timeSheetRepository;
-    private readonly Rates _rates;
-    private readonly TimeLimits _timeLimits;
-
-    public TimesheetCalculatorService(
-        IDeductionsRepository deductionsRepository,
-        IWorkerRepository workerRepository,
-        ITimesheetRepository timeSheetRepository,
-        Rates rates,
-        TimeLimits timeLimits)
-    {
-        _deductionsRepository = deductionsRepository;
-        _workerRepository = workerRepository;
-        _timeSheetRepository = timeSheetRepository;
-        _rates = rates;
-        _timeLimits = timeLimits;
-    }
-
     #region Deductions
 
     public async Task<DeductionsResult> CalculateDeductions(decimal totalEarnings, int numberOfWeeks, int year, Guid workerProfileId)
     {
-        var workerProfileTaxCategory = await _workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
+        var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);
         var federalCategory = workerProfileTaxCategory?.FederalCategory ?? TaxCategory.Cc1;
         var provincialCategory = workerProfileTaxCategory?.ProvincialCategory ?? TaxCategory.Cc1;
 
@@ -49,14 +34,14 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
             _ => PayPeriod.Monthly,
         };
 
-        var cpp = await _deductionsRepository.GetCpp(totalEarnings, year, payPeriod);
+        var cpp = await deductionsRepository.GetCpp(totalEarnings, year, payPeriod);
         cpp = workerProfileTaxCategory?.Cpp ?? cpp;
 
-        var ei = workerProfileTaxCategory?.Ei ?? decimal.Multiply(totalEarnings, _rates.EmploymentInsurance).DefaultMoneyRound();
+        var ei = workerProfileTaxCategory?.Ei ?? decimal.Multiply(totalEarnings, rates.EmploymentInsurance).DefaultMoneyRound();
 
-        var federalTax = await _deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Federal, federalCategory);
+        var federalTax = await deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Federal, federalCategory);
 
-        var provincialTax = await _deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Provincial, provincialCategory);
+        var provincialTax = await deductionsRepository.GetTax(totalEarnings, year, payPeriod, TaxType.Provincial, provincialCategory);
 
         return new DeductionsResult
         {
@@ -198,7 +183,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
 
     public async Task<decimal> CalculateHolidayPayBase(Guid workerProfileId, DateTime lookbackStart, DateTime holidayWeekEnd)
     {
-        var timesheets = await _timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
+        var timesheets = await timeSheetRepository.GetApprovedTimeSheetsInRange(workerProfileId, lookbackStart, holidayWeekEnd);
         var regularWages = decimal.Zero;
         var totalWages = decimal.Zero;
         foreach (var week in timesheets.GroupBy(t => t.Week))
@@ -219,7 +204,7 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
                         ts.HolidayIsPaid,
                         ref accumulatedHours,
                         ts.OvertimeStartsAfter,
-                        _timeLimits.MaxHoursWeek);
+                        timeLimits.MaxHoursWeek);
 
                     var missingRate = ts.MissingRateWorker <= decimal.Zero ? ts.WorkerRate : ts.MissingRateWorker;
 
@@ -229,15 +214,15 @@ public class TimesheetCalculatorService : ITimesheetCalculatorService
                         .Add(CalculateMissingAmount(missingRate, ts.MissingHours.TotalHours));
 
                     totalWages = totalWages
-                        .Add(CalculateOvertimeAmount(ts.WorkerRate, _rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours))
-                        .Add(CalculateHolidayAmount(ts.WorkerRate, _rates.Holiday, hoursBreakdown.HolidayHours.TotalHours))
-                        .Add(CalculateOvertimeAmount(missingRate, _rates.OverTime, ts.MissingHoursOvertime.TotalHours));
+                        .Add(CalculateOvertimeAmount(ts.WorkerRate, rates.OverTime, hoursBreakdown.OvertimeHours.TotalHours))
+                        .Add(CalculateHolidayAmount(ts.WorkerRate, rates.Holiday, hoursBreakdown.HolidayHours.TotalHours))
+                        .Add(CalculateOvertimeAmount(missingRate, rates.OverTime, ts.MissingHoursOvertime.TotalHours));
                 }
             }
         }
         totalWages = totalWages.Add(regularWages).DefaultMoneyRound();
         regularWages = regularWages.DefaultMoneyRound();
-        var vacations = CalculateVacationsAmount(totalWages, _rates.Vacations);
+        var vacations = CalculateVacationsAmount(totalWages, rates.Vacations);
         return regularWages.Add(vacations).DefaultMoneyRound();
     }
 

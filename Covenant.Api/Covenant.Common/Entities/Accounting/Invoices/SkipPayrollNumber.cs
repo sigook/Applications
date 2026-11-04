@@ -1,13 +1,7 @@
 namespace Covenant.Common.Entities.Accounting.Invoices;
 
-public class SkipPayrollNumber
+public class SkipPayrollNumber(Guid id, string payrollNumber)
 {
-    public SkipPayrollNumber(Guid id, string payrollNumber)
-    {
-        Id = id;
-        PayrollNumber = payrollNumber;
-    }
-
-    public Guid Id { get; private set; }
-    public string PayrollNumber { get; private set; }
+    public Guid Id { get; private set; } = id;
+    public string PayrollNumber { get; private set; } = payrollNumber;
 }

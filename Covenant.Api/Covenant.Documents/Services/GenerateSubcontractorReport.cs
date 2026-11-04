@@ -7,14 +7,9 @@ using MediatR;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateSubcontractorReport : IRequest<ResultGenerateDocument<byte[]>>
+public class GenerateSubcontractorReport(IReadOnlyList<ReportSubcontractorModel> model) : IRequest<ResultGenerateDocument<byte[]>>
 {
-    public GenerateSubcontractorReport(IReadOnlyList<ReportSubcontractorModel> model)
-    {
-        Model = model;
-    }
-
-    public IReadOnlyList<ReportSubcontractorModel> Model { get; }
+    public IReadOnlyList<ReportSubcontractorModel> Model { get; } = model;
 }
 
 public class GenerateSubcontractorReportHandler : IRequestHandler<GenerateSubcontractorReport, ResultGenerateDocument<byte[]>>
@@ -33,8 +28,8 @@ public class GenerateSubcontractorReportHandler : IRequestHandler<GenerateSubcon
 
     private const int HeadRow = 11;
 
-    private readonly IEnumerable<string> _columns = new[]
-    {
+    private readonly IEnumerable<string> _columns =
+    [
         No,
         FullName,
         Company,
@@ -46,7 +41,7 @@ public class GenerateSubcontractorReportHandler : IRequestHandler<GenerateSubcon
         PublicHoliday,
         TotalNet,
         Signature
-    };
+    ];
 
     private readonly XLColor CustomGreen = XLColor.FromArgb(236, 240, 223);
 

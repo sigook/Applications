@@ -16,5 +16,5 @@ public class CandidateDetailModel
     public string ResidencyStatus { get; set; }
     public Guid? SourceId { get; set; }
     public bool Dnu { get; set; }
-    public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = new List<PhoneNumberModel>();
+    public IEnumerable<PhoneNumberModel> PhoneNumbers { get; set; } = [];
 }

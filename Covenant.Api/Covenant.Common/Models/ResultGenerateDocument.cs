@@ -1,16 +1,8 @@
-﻿namespace Covenant.Common.Models
-{
-    public class ResultGenerateDocument<T>
-    {
-        public ResultGenerateDocument(T document, string documentName, string documentPath)
-        {
-            Document = document;
-            DocumentName = documentName;
-            DocumentPath = documentPath;
-        }
+﻿namespace Covenant.Common.Models;
 
-        public string DocumentName { get; }
-        public string DocumentPath { get; }
-        public T Document { get; }
-    }
+public class ResultGenerateDocument<T>(T document, string documentName, string documentPath)
+{
+    public string DocumentName { get; } = documentName;
+    public string DocumentPath { get; } = documentPath;
+    public T Document { get; } = document;
 }

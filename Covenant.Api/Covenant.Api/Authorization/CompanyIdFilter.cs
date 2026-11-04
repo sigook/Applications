@@ -5,38 +5,33 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace Covenant.Api.Authorization
+namespace Covenant.Api.Authorization;
+
+/// <summary>
+/// Add the claim companyId to users that belong to a specific company
+/// </summary>
+public class CompanyIdFilter(ICompanyRepository repository) : IAsyncActionFilter
 {
-    /// <summary>
-    /// Add the claim companyId to users that belong to a specific company
-    /// </summary>
-    public class CompanyIdFilter : IAsyncActionFilter
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        private readonly ICompanyRepository _repository;
+        await AddCompanyId(context);
+        await next();
+    }
 
-        public CompanyIdFilter(ICompanyRepository repository) => _repository = repository;
-
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    private async Task AddCompanyId(ActionExecutingContext context)
+    {
+        if (context.Controller is ControllerBase controller)
         {
-            await AddCompanyId(context);
-            await next();
-        }
-
-        private async Task AddCompanyId(ActionExecutingContext context)
-        {
-            if (context.Controller is ControllerBase controller)
+            if (controller.User.IsInRole(CovenantConstants.Role.CompanyUser))
             {
-                if (controller.User.IsInRole(CovenantConstants.Role.CompanyUser))
+                string sub = controller.User.GetSubject();
+                if (Guid.TryParse(sub, out Guid userId))
                 {
-                    string sub = controller.User.GetSubject();
-                    if (Guid.TryParse(sub, out Guid userId))
-                    {
-                        Guid companyId = await _repository.GetCompanyIdForUser(userId);
-                        controller.User.AddIdentity(new ClaimsIdentity(new List<Claim>
-                        {
-                            new Claim(CovenantConstants.CompanyId, companyId.ToString())
-                        }));
-                    }
+                    Guid companyId = await repository.GetCompanyIdForUser(userId);
+                    controller.User.AddIdentity(new ClaimsIdentity(
+                    [
+                        new Claim(CovenantConstants.CompanyId, companyId.ToString())
+                    ]));
                 }
             }
         }

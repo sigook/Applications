@@ -40,7 +40,6 @@ public class AgencyBookWorkerServiceTest
 
     public AgencyBookWorkerServiceTest()
     {
-
         _worker = new WorkerProfile(new User(CvnEmail.Create("w@mail.com").Value), Guid.NewGuid()) { ApprovedToWork = true };
         var sinInfo = new Mock<ISinInformation<CovenantFile>>();
         sinInfo.SetupGet(g => g.SocialInsurance).Returns("980-897-987");
@@ -130,7 +129,7 @@ public class AgencyBookWorkerServiceTest
         request.UpdateShift(shift);
         var workerRequest = WorkerRequest.AgencyBook(_worker.Id, _worker.AgencyId);
         workerRequest.Request = request;
-        _workerRequestRepository.Setup(r => r.GetWorkerRequestsByWorkerProfileId(_worker.Id)).ReturnsAsync(new List<WorkerRequest> { workerRequest });
+        _workerRequestRepository.Setup(r => r.GetWorkerRequestsByWorkerProfileId(_worker.Id)).ReturnsAsync([workerRequest]);
         Result result = await _sut.BookWorker(request.Id, _worker.Id, new AgencyBookWorkerModel { StartWorking = DateTime.Now });
         Assert.False(result);
         Assert.Equal("The worker is associated in other request with the same schedule", result.Errors.Single().Message);

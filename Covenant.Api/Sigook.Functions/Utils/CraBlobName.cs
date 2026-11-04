@@ -55,7 +55,7 @@ public static partial class CraBlobName
         value.ToUpperInvariant() == "CPP" ? CraTableKind.Cpp : CraTableKind.Tax;
 
     private static PayPeriod ToPayPeriod(string value) =>
-        new string(value.Where(char.IsLetter).ToArray()).ToUpperInvariant() switch
+        new string([.. value.Where(char.IsLetter)]).ToUpperInvariant() switch
         {
             "WEEKLY" => PayPeriod.Weekly,
             "BIWEEKLY" => PayPeriod.BiWeekly,

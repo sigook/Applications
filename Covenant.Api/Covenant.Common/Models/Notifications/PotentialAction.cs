@@ -11,5 +11,5 @@ public class PotentialAction
     public string Name { get; set; } = "Go To sigook.com";
 
     [JsonPropertyName("targets")]
-    public IEnumerable<Target> Targets { get; set; } = new List<Target>();
+    public IEnumerable<Target> Targets { get; set; } = [];
 }

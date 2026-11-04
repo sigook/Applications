@@ -7,14 +7,9 @@ using MediatR;
 
 namespace Covenant.Documents.Services;
 
-public class GeneratePaymentReport : IRequest<ResultGenerateDocument<byte[]>>
+public class GeneratePaymentReport(IReadOnlyList<WeeklyPayStubModel> model) : IRequest<ResultGenerateDocument<byte[]>>
 {
-    public GeneratePaymentReport(IReadOnlyList<WeeklyPayStubModel> model)
-    {
-        Model = model;
-    }
-
-    public IReadOnlyList<WeeklyPayStubModel> Model { get; set; }
+    public IReadOnlyList<WeeklyPayStubModel> Model { get; set; } = model;
 }
 
 public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentReport, ResultGenerateDocument<byte[]>>
@@ -44,8 +39,8 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
 
     private const int HeadRow = 2;
 
-    private static readonly IEnumerable<string> _columns = new[]
-    {
+    private static readonly IEnumerable<string> _columns =
+    [
         NumberId,
         FullName,
         PayStubNumber,
@@ -66,7 +61,7 @@ public class GeneratePaymentReportHandler : IRequestHandler<GeneratePaymentRepor
         TotalPaid,
         PaymentDate,
         Companies
-    };
+    ];
 
     private static readonly XLColor CustomGreen = XLColor.FromArgb(236, 240, 223);
 

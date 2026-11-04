@@ -18,7 +18,7 @@ public class WorkerRequest
     public Request Request { get; internal set; }
 
     public WorkerRequestStatus WorkerRequestStatus { get; private set; }
-    public ICollection<TimeSheet> TimeSheets { get; private set; } = new List<TimeSheet>();
+    public ICollection<TimeSheet> TimeSheets { get; private set; } = [];
     public IEnumerable<WorkerRequestNote> Notes { get; private set; } = new List<WorkerRequestNote>();
 
     public DateTime? StartWorking { get; private set; }
@@ -91,7 +91,7 @@ public class WorkerRequest
 
     public Result AddTimeSheet(TimeSheet timeSheet)
     {
-        if (timeSheet is null) throw new ArgumentNullException(nameof(timeSheet));
+        ArgumentNullException.ThrowIfNull(timeSheet);
         if (ContainsTimeSheet(timeSheet)) return Result.Fail($"TimeSheet for the date {timeSheet.Date:D} was already created");
         TimeSheets.Add(timeSheet);
         return Result.Ok();

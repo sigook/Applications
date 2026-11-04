@@ -31,7 +31,7 @@ public class AgencyRequestListModel
     public bool VaccinationRequired { get; set; }
     public bool PunchCardOptionEnabled { get; set; }
     public bool HasPermissionToSeeInternalRequests { get; set; }
-    public IEnumerable<RequestSourceDetailModel> JobBoards { get; set; } = new List<RequestSourceDetailModel>();
+    public IEnumerable<RequestSourceDetailModel> JobBoards { get; set; } = [];
 
     public string Location => $"{Address} {City} {ProvinceName} {PostalCode}";
     public string LocationAddress => $"{Address} {City} {PostalCode}";
