@@ -7,19 +7,13 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class SubcontractorReportsControllerTest : BaseTestOrder,
+public class SubcontractorReportsControllerTest(SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data> factory) : BaseTestOrder,
     IClassFixture<SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data>>
 {
     private const string Uri = ReportsController.RouteName + "/subcontractors";
 
-    private readonly DeleteSubcontractorReportControllerTest.Data _data;
-    private readonly HttpClient _client;
-
-    public SubcontractorReportsControllerTest(SeededWebApplicationFactory<DeleteSubcontractorReportControllerTest.Startup, DeleteSubcontractorReportControllerTest.Data> factory)
-    {
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly DeleteSubcontractorReportControllerTest.Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task List_GroupsTheAgencyReportsByWeekEnding_NewestFirst()

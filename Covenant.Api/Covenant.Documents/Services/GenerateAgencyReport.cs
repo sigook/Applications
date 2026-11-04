@@ -6,14 +6,9 @@ using ClosedXML.Excel;
 
 namespace Covenant.Documents.Services;
 
-public abstract class GenerateAgencyReport<T> : IRequest<ResultGenerateDocument<MemoryStream>>
+public abstract class GenerateAgencyReport<T>(IReadOnlyList<T> model) : IRequest<ResultGenerateDocument<MemoryStream>>
 {
-    public GenerateAgencyReport(IReadOnlyList<T> model)
-    {
-        Model = model;
-    }
-
-    public IReadOnlyList<T> Model { get; }
+    public IReadOnlyList<T> Model { get; } = model;
     public abstract IEnumerable<string> Columns { get; }
 }
 
@@ -25,7 +20,7 @@ public abstract class GenerateAgencyReportHandler<T, TModel> : IRequestHandler<T
         using var memoryStream = new MemoryStream();
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add("Report");
-        sheet.SetupHeaders(request.Columns.ToArray());
+        sheet.SetupHeaders([.. request.Columns]);
         var startAt = 2;
         for (int i = 0; i < request.Model.Count; i++)
         {

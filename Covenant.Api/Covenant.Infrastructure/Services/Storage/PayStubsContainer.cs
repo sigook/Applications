@@ -1,15 +1,9 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces.Storage;
 
-namespace Covenant.Infrastructure.Services.Storage
-{
-    public class PayStubsContainer : BaseAzureStorage, IPayStubsContainer
-    {
-        public const string ContainerName = "paystubs";
+namespace Covenant.Infrastructure.Services.Storage;
 
-        public PayStubsContainer(AzureStorageConfiguration configuration)
-            : base(configuration, ContainerName)
-        {
-        }
-    }
+public class PayStubsContainer(AzureStorageConfiguration configuration) : BaseAzureStorage(configuration, ContainerName), IPayStubsContainer
+{
+    public const string ContainerName = "paystubs";
 }

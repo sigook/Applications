@@ -1,32 +1,31 @@
-namespace Covenant.Common.Entities.Notifications
+namespace Covenant.Common.Entities.Notifications;
+
+public class UserNotificationType
 {
-    public class UserNotificationType
+    private UserNotificationType() 
+    { 
+    }
+
+    public UserNotificationType(Guid userId, int notificationTypeId, Guid id = default)
     {
-        private UserNotificationType() 
-        { 
-        }
+        Id = id == default ? Guid.NewGuid() : id;
+        UserId = userId;
+        NotificationTypeId = notificationTypeId;
+    }
 
-        public UserNotificationType(Guid userId, int notificationTypeId, Guid id = default)
-        {
-            Id = id == default ? Guid.NewGuid() : id;
-            UserId = userId;
-            NotificationTypeId = notificationTypeId;
-        }
+    public Guid Id { get; private set; }
+    public User User { get; private set; }
+    public Guid UserId { get; private set; }
+    public NotificationType NotificationType { get; private set; }
+    public int NotificationTypeId { get; private set; }
+    public bool EmailNotification { get; internal set; }
+    public bool PushNotification { get; private set; }
+    public bool SMSNotification { get; private set; }
 
-        public Guid Id { get; private set; }
-        public User User { get; private set; }
-        public Guid UserId { get; private set; }
-        public NotificationType NotificationType { get; private set; }
-        public int NotificationTypeId { get; private set; }
-        public bool EmailNotification { get; internal set; }
-        public bool PushNotification { get; private set; }
-        public bool SMSNotification { get; private set; }
-
-        public void UpdateChannels(bool emailNotification, bool pushNotification, bool smsNotification)
-        {
-            EmailNotification = emailNotification;
-            PushNotification = pushNotification;
-            SMSNotification = smsNotification;
-        }
+    public void UpdateChannels(bool emailNotification, bool pushNotification, bool smsNotification)
+    {
+        EmailNotification = emailNotification;
+        PushNotification = pushNotification;
+        SMSNotification = smsNotification;
     }
 }

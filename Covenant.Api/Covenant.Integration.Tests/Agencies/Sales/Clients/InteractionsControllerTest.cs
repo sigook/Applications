@@ -16,16 +16,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Sales.Clients;
 
-public class InteractionsControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<InteractionsControllerTest.Startup, InteractionsControllerTest.Data>>
+public class InteractionsControllerTest(SeededWebApplicationFactory<InteractionsControllerTest.Startup, InteractionsControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<InteractionsControllerTest.Startup, InteractionsControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-
-    public InteractionsControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

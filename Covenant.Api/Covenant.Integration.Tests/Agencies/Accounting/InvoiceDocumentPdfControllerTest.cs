@@ -17,16 +17,10 @@ using Covenant.Common.Entities.Agencies;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class InvoiceDocumentPdfControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class InvoiceDocumentPdfControllerTest(CustomWebApplicationFactory<Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public InvoiceDocumentPdfControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
@@ -77,7 +71,7 @@ public class Startup
         services.AddSingleton(Mock.Of<IPayStubsContainer>());
         var currentUserService = new Mock<ICurrentUserService>();
         currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.Agency.Id);
-        currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.Agency.Id });
+        currentUserService.Setup(s => s.GetAgencyIds()).Returns([Data.Agency.Id]);
         services.AddSingleton(currentUserService.Object);
 
     }

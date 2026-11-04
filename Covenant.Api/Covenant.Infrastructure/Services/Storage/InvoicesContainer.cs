@@ -1,14 +1,9 @@
 using Covenant.Common.Configuration;
 using Covenant.Common.Interfaces.Storage;
 
-namespace Covenant.Infrastructure.Services.Storage
+namespace Covenant.Infrastructure.Services.Storage;
+
+public class InvoicesContainer(AzureStorageConfiguration configuration) : BaseAzureStorage(configuration, ContainerName), IInvoicesContainer
 {
-    public class InvoicesContainer : BaseAzureStorage, IInvoicesContainer
-    {
-        public const string ContainerName = "invoices";
-        public InvoicesContainer(AzureStorageConfiguration configuration)
-            : base(configuration, ContainerName)
-        {
-        }
-    }
+    public const string ContainerName = "invoices";
 }

@@ -35,7 +35,7 @@ public class GenerateInvoicesPaymentsReportHandler : IRequestHandler<GenerateInv
         using var memoryStream = new MemoryStream();
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add("Payments");
-        sheet.SetupHeaders(request.Columns.ToArray());
+        sheet.SetupHeaders([.. request.Columns]);
         var startAt = 2;
         for (int i = 0; i < request.Model.Count; i++)
         {

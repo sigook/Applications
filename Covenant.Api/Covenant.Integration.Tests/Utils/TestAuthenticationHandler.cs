@@ -5,15 +5,10 @@ using System.Text.Encodings.Web;
 
 namespace Covenant.Integration.Tests.Utils;
 
-public class TestAuthenticationHandler : AuthenticationHandler<TestAuthenticationOptions>
+public class TestAuthenticationHandler(IOptionsMonitor<TestAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder) : AuthenticationHandler<TestAuthenticationOptions>(options, logger, encoder)
 {
     public const string RoleHeader = "X-Test-Role";
     public const string SubHeader = "X-Test-Sub";
-
-    public TestAuthenticationHandler(IOptionsMonitor<TestAuthenticationOptions> options, ILoggerFactory logger, UrlEncoder encoder)
-        : base(options, logger, encoder)
-    {
-    }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {

@@ -1,9 +1,8 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Workers
+namespace Covenant.Common.Models.Workers;
+
+public interface IWorkerProfileOtherInformation<out TLift> where TLift : ICatalog<Guid>
 {
-    public interface IWorkerProfileOtherInformation<out TLift> where TLift : ICatalog<Guid>
-    {
-        TLift Lift { get; }
-    }
+    TLift Lift { get; }
 }

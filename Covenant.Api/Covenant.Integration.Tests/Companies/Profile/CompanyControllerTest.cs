@@ -27,11 +27,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Profile;
 
-public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyControllerTest.Startup>>
+public class CompanyControllerTest(CustomWebApplicationFactory<CompanyControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CompanyControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public CompanyControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Post()
@@ -42,7 +40,7 @@ public class CompanyControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
             Email = "company@company.com",
             Password = "P@ssw0rd",
             ConfirmPassword = "P@ssw0rd",
-            Locations = new List<LocationModel> { new LocationModel { Address = "Address", PostalCode = "A1A1A1", City = new CityModel { Id = Startup.FakeCity.Id } } }
+            Locations = [new LocationModel { Address = "Address", PostalCode = "A1A1A1", City = new CityModel { Id = Startup.FakeCity.Id } }]
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync(CompanyController.RouteName, model);
         response.EnsureSuccessStatusCode();

@@ -15,16 +15,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Profile;
 
-public class PersonnelAgenciesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<PersonnelAgenciesControllerTest.Startup>>
+public class PersonnelAgenciesControllerTest(CustomWebApplicationFactory<PersonnelAgenciesControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<PersonnelAgenciesControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public PersonnelAgenciesControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => PersonnelAgenciesController.RouteName;
 

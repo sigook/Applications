@@ -3,12 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Covenant.Infrastructure.Contexts;
 
-public class MyKeysContext : DbContext, IDataProtectionKeyContext
+public class MyKeysContext(DbContextOptions<MyKeysContext> options) : DbContext(options), IDataProtectionKeyContext
 {
-	public MyKeysContext(DbContextOptions<MyKeysContext> options) 
-		: base(options) 
-	{ 
-	}
-
-	public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
+    public DbSet<DataProtectionKey> DataProtectionKeys { get; set; }
 }

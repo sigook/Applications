@@ -25,59 +25,27 @@ using CsvHelper.Configuration;
 using CsvHelper;
 using FluentValidation.Results;
 using FluentValidation;
-using Microsoft.Extensions.Logging;
 using System.Globalization;
 
 namespace Covenant.Core.BL.Services.Candidates;
 
-public class CandidateService : ICandidateService
+public class CandidateService(
+    IUserRepository userRepository,
+    ICandidateRepository candidateRepository,
+    IRequestRepository requestRepository,
+    IAgencyRepository agencyRepository,
+    IWorkerRepository workerRepository,
+    ICandidateAdapter candidateAdapter,
+    IUserAccountService userAccountService,
+    ICurrentUserService currentUserService,
+    IDocumentService documentService,
+    IValidator<CandidateCsvModel> bulkCandidateValidator,
+    IUploadedFilesService uploadedFilesService,
+    ISkillService skillService) : ICandidateService
 {
     private const string CandidateNotFound = "Candidate not found";
     private const string NoteNotFound = "Note not found";
     private const string DocumentNotFound = "Document not found";
-    private readonly IUserRepository userRepository;
-    private readonly ICandidateRepository candidateRepository;
-    private readonly IRequestRepository requestRepository;
-    private readonly IAgencyRepository agencyRepository;
-    private readonly IWorkerRepository workerRepository;
-    private readonly ICandidateAdapter candidateAdapter;
-    private readonly IUserAccountService userAccountService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IDocumentService documentService;
-    private readonly IValidator<CandidateCsvModel> bulkCandidateValidator;
-    private readonly IUploadedFilesService uploadedFilesService;
-    private readonly ILogger<CandidateService> logger;
-    private readonly ISkillService skillService;
-
-    public CandidateService(
-        IUserRepository userRepository,
-        ICandidateRepository candidateRepository,
-        IRequestRepository requestRepository,
-        IAgencyRepository agencyRepository,
-        IWorkerRepository workerRepository,
-        ICandidateAdapter candidateAdapter,
-        IUserAccountService userAccountService,
-        ICurrentUserService currentUserService,
-        IDocumentService documentService,
-        IValidator<CandidateCsvModel> bulkCandidateValidator,
-        IUploadedFilesService uploadedFilesService,
-        ILogger<CandidateService> logger,
-        ISkillService skillService)
-    {
-        this.userRepository = userRepository;
-        this.candidateRepository = candidateRepository;
-        this.requestRepository = requestRepository;
-        this.agencyRepository = agencyRepository;
-        this.workerRepository = workerRepository;
-        this.candidateAdapter = candidateAdapter;
-        this.userAccountService = userAccountService;
-        this.currentUserService = currentUserService;
-        this.documentService = documentService;
-        this.bulkCandidateValidator = bulkCandidateValidator;
-        this.uploadedFilesService = uploadedFilesService;
-        this.logger = logger;
-        this.skillService = skillService;
-    }
 
     public async Task<Result<ResultGenerateDocument<byte[]>>> BulkCandidates(Guid agencyId, Stream file)
     {

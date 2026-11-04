@@ -13,14 +13,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
-public class WorkersReportControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
+public class WorkersReportControllerTest(CustomWebApplicationFactory<Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<Startup>>
 {
-    private readonly HttpClient client;
-
-    public WorkersReportControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        client = factory.CreateClient();
-    }
+    private readonly HttpClient client = factory.CreateClient();
 
     [Fact]
     public async Task Should_Get_ExcelFile_Of_Workers()

@@ -16,7 +16,6 @@ namespace Covenant.Api.Controllers.Shared;
 public class CatalogController(ICatalogRepository repository) : ControllerBase
 {
     public const string RouteName = "api/catalog";
-    private readonly ICatalogRepository _repository = repository;
 
     /// <summary>Gets the list of WSIB groups.</summary>
     [HttpGet("wsibgroup")]
@@ -24,7 +23,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetWsibGroup()
     {
-        var wsibGroups = await _repository.GetWsibGroups();
+        var wsibGroups = await repository.GetWsibGroups();
         return Ok(wsibGroups);
     }
 
@@ -34,7 +33,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvailability()
     {
-        var availabilities = await _repository.GetAvailability();
+        var availabilities = await repository.GetAvailability();
         return Ok(availabilities);
     }
 
@@ -44,7 +43,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAvailabilityTime()
     {
-        var availabilityTimes = await _repository.GetAvailabilityTime();
+        var availabilityTimes = await repository.GetAvailabilityTime();
         return Ok(availabilityTimes);
     }
 
@@ -54,7 +53,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetDay()
     {
-        var days = await _repository.GetDay();
+        var days = await repository.GetDay();
         return Ok(days);
     }
 
@@ -64,7 +63,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetGender()
     {
-        var genders = await _repository.GetGender();
+        var genders = await repository.GetGender();
         return Ok(genders);
     }
 
@@ -74,7 +73,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<IdentificationTypeModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIdentificationType()
     {
-        var identificationTypes = await _repository.GetIdentificationType();
+        var identificationTypes = await repository.GetIdentificationType();
         return Ok(identificationTypes);
     }
 
@@ -84,7 +83,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLanguage()
     {
-        var languages = await _repository.GetLanguage();
+        var languages = await repository.GetLanguage();
         return Ok(languages);
     }
 
@@ -94,7 +93,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLif()
     {
-        var lifts = await _repository.GetLift();
+        var lifts = await repository.GetLift();
         return Ok(lifts);
     }
 
@@ -103,7 +102,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetIndustry()
     {
-        var industries = await _repository.GetIndustries();
+        var industries = await repository.GetIndustries();
         return Ok(industries);
     }
 
@@ -113,7 +112,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(IEnumerable<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> ReasonCancellationRequest()
     {
-        var reasons = await _repository.GetReasonCancellationRequest();
+        var reasons = await repository.GetReasonCancellationRequest();
         return Ok(reasons.Select(c => new BaseModel<Guid>
         {
             Id = c.Id,
@@ -141,7 +140,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> Skills()
     {
-        var skills = await _repository.GetSkillCatalog();
+        var skills = await repository.GetSkillCatalog();
         return Ok(skills.Select(s => new SkillModel(s.Value)));
     }
 
@@ -151,7 +150,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSources()
     {
-        var sources = await _repository.GetSources();
+        var sources = await repository.GetSources();
         return Ok(sources);
     }
 
@@ -161,7 +160,7 @@ public class CatalogController(ICatalogRepository repository) : ControllerBase
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetSourcesForRequests()
     {
-        var sources = await _repository.GetSourcesForRequests();
+        var sources = await repository.GetSourcesForRequests();
         return Ok(sources);
     }
 

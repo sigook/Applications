@@ -1,6 +1,5 @@
-﻿namespace Covenant.Documents
+﻿namespace Covenant.Documents;
+
+public static class ServicesConfiguration
 {
-    public static class ServicesConfiguration
-    {
-    }
 }

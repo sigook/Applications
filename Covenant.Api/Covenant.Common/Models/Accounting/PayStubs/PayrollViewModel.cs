@@ -19,9 +19,9 @@ public class PayrollViewModel
     public string Position { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime PaymentDate { get; set; }
-    public IEnumerable<PayrollTable1Item> Table1Items { get; set; } = new List<PayrollTable1Item>();
-    public IEnumerable<PayrollTable2Item> Table2Items { get; set; } = new List<PayrollTable2Item>();
-    public IEnumerable<PayrollTable2Item> YtdItems { get; set; } = new List<PayrollTable2Item>();
+    public IEnumerable<PayrollTable1Item> Table1Items { get; set; } = [];
+    public IEnumerable<PayrollTable2Item> Table2Items { get; set; } = [];
+    public IEnumerable<PayrollTable2Item> YtdItems { get; set; } = [];
 
     public (string left, string right) GetBorderRadiosTable2(int i)
     {

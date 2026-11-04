@@ -12,7 +12,6 @@ using LinqKit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System.Linq.Expressions;
-using System.Text.RegularExpressions;
 
 namespace Covenant.Infrastructure.Repositories.Candidates;
 
@@ -94,8 +93,7 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
         Expression<Func<CandidateListModel, bool>> predicate = c => c.AgencyId == agencyId;
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
-            var expression = new Regex(@"\s+");
-            var phoneWithoutBlankSpaces = expression.Replace(filter.Phone, string.Empty);
+            var phoneWithoutBlankSpaces = filter.Phone.RemoveWhitespace();
             predicate = predicate.And(c =>
                 c.PhoneNumbers.Any(pn => pn.PhoneNumber.Replace("(", string.Empty).Replace(")", string.Empty).Contains(filter.Phone)) ||
                 c.PhoneNumbers.Any(pn => pn.PhoneNumber.Contains(phoneWithoutBlankSpaces)));

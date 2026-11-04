@@ -7,14 +7,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared;
 
-public class MobileAppControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<MobileAppControllerTest.Startup>>
+public class MobileAppControllerTest(CustomWebApplicationFactory<MobileAppControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<MobileAppControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public MobileAppControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task GetVersionReturnsConfiguredValues()

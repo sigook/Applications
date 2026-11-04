@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Locations
+namespace Covenant.Common.Models.Locations;
+
+public class GeocodeGeometryLocation
 {
-    public class GeocodeGeometryLocation
-    {
-        public double Lat { get; set; }
-        public double Lng { get; set; }
-    }
+    public double Lat { get; set; }
+    public double Lng { get; set; }
 }

@@ -17,16 +17,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Profile;
 
-public class JobPositionsControllerTest : IClassFixture<CustomWebApplicationFactory<JobPositionsControllerTest.Startup>>
+public class JobPositionsControllerTest(CustomWebApplicationFactory<JobPositionsControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<JobPositionsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public JobPositionsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => JobPositionsController.RouteName;
 

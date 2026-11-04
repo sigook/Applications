@@ -13,16 +13,10 @@ namespace Covenant.Api.Controllers.Workers.Profile;
 [Authorize(Policy = PolicyConfiguration.Worker)]
 [ApiController]
 [Produces("application/json")]
-public class ProfileController : ControllerBase
+public class ProfileController(IWorkerService workerService) : ControllerBase
 {
     public const string RouteName = "api/worker/profile";
 
-    private readonly IWorkerService workerService;
-
-    public ProfileController(IWorkerService workerService)
-    {
-        this.workerService = workerService;
-    }
 
     /// <summary>
     /// Registers a new worker profile from a multipart/form-data payload.

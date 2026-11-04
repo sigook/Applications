@@ -9,5 +9,5 @@ public class CreatePayStubModel
     public decimal OtherDeductions { get; set; }
     public string OtherDeductionsDescription { get; set; }
     public bool PayVacations { get; set; }
-    public List<CreatePayStubItemModel> Items { get; set; } = new();
+    public List<CreatePayStubItemModel> Items { get; set; } = [];
 }

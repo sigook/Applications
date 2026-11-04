@@ -22,6 +22,7 @@
 | [ENTITIES_RELATIONSHIPS.md](./technical/ENTITIES_RELATIONSHIPS.md) | Main entities, relationships, and data model diagrams |
 | [DEVELOPMENT_COMMANDS.md](./technical/DEVELOPMENT_COMMANDS.md) | Build, run, and test commands for each project |
 | [PIPELINES.md](./technical/PIPELINES.md) | Azure DevOps CI/CD pipelines, triggers, templates, deployment URLs |
+| [SIGOOK_MCP.md](./technical/SIGOOK_MCP.md) | Sigook.Mcp — MCP server for AI harnesses: tools, PKCE login with Microsoft 365, environments, embedded import instructions (prompt + resources) |
 | [SIGOOK_WEB_API_MAP.md](./technical/SIGOOK_WEB_API_MAP.md) | Sigook.Web (Vue 3 agency portal) — every feature `api.ts` mapped to backend endpoints, types, and Pinia stores; live sales dashboard aggregates (§18) |
 | [SIGOOK_WEB_STRUCTURE.md](./technical/SIGOOK_WEB_STRUCTURE.md) | Sigook.Web — folder layout, routes, views grouped by feature (incl. sales dashboard layout), Pinia stores, global plumbing |
 | [SIGOOK_APP_STRUCTURE.md](./technical/SIGOOK_APP_STRUCTURE.md) | Sigook.App (Flutter worker app) — folder layout, feature anatomy, error-handling flow, core widget/service catalogue, environments, new-feature walkthrough |

@@ -1,11 +1,10 @@
-namespace Covenant.Common.Models.Requests
+namespace Covenant.Common.Models.Requests;
+
+public class RequestContactPersonModel
 {
-    public class RequestContactPersonModel
-    {
-        public Guid Id { get; set; }
-        public string Title { get; set; }
-        public string FirstName { get; set; }
-        public string MiddleName { get; set; }
-        public string LastName { get; set; }
-    }
+    public Guid Id { get; set; }
+    public string Title { get; set; }
+    public string FirstName { get; set; }
+    public string MiddleName { get; set; }
+    public string LastName { get; set; }
 }

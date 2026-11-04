@@ -6,40 +6,30 @@ using System.Net.Mime;
 using System.Text.Json;
 using System.Text;
 
-namespace Covenant.Api.Authorization
+namespace Covenant.Api.Authorization;
+
+public class CaptchaFilter(IHttpClientFactory httpClientFactory, IConfiguration configuration) : IAsyncActionFilter
 {
-    public class CaptchaFilter : IAsyncActionFilter
+    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
-        private readonly IHttpClientFactory httpClientFactory;
-        private readonly IConfiguration configuration;
-
-        public CaptchaFilter(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+        if (await ValidCaptcha(context))
         {
-            this.httpClientFactory = httpClientFactory;
-            this.configuration = configuration;
+            await next();
+            return;
         }
+        context.Result = new BadRequestObjectResult("Captcha not valid");
+    }
 
-        public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
-        {
-            if (await ValidCaptcha(context))
-            {
-                await next();
-                return;
-            }
-            context.Result = new BadRequestObjectResult("Captcha not valid");
-        }
-
-        private async Task<bool> ValidCaptcha(ActionExecutingContext context)
-        {
-            var client = httpClientFactory.CreateClient();
-            var secret = configuration.GetValue<string>("ReCAPTCHASecretKey");
-            var payload = context.ActionArguments["contact"] as ContactDto;
-            var serializeObject = JsonSerializer.Serialize(new { secret, response = payload.CaptchaResponse });
-            var content = new StringContent(serializeObject, Encoding.UTF8, MediaTypeNames.Application.Json);
-            var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secret}&response={payload.CaptchaResponse}", content);
-            var stringResponse = await response.Content.ReadAsStringAsync() ?? "";
-            bool isValid = stringResponse.Contains("true");
-            return isValid;
-        }
+    private async Task<bool> ValidCaptcha(ActionExecutingContext context)
+    {
+        var client = httpClientFactory.CreateClient();
+        var secret = configuration.GetValue<string>("ReCAPTCHASecretKey");
+        var payload = context.ActionArguments["contact"] as ContactDto;
+        var serializeObject = JsonSerializer.Serialize(new { secret, response = payload.CaptchaResponse });
+        var content = new StringContent(serializeObject, Encoding.UTF8, MediaTypeNames.Application.Json);
+        var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={secret}&response={payload.CaptchaResponse}", content);
+        var stringResponse = await response.Content.ReadAsStringAsync() ?? "";
+        bool isValid = stringResponse.Contains("true");
+        return isValid;
     }
 }

@@ -34,15 +34,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Requests;
 
-public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerTest.Startup>>
+public class WorkersControllerTest(CustomWebApplicationFactory<WorkersControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-    public WorkersControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => WorkersController.RouteName.Replace("{requestId}", Data.FakeRequest.Id.ToString());
 
@@ -150,10 +145,10 @@ public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
         {
             Company = new User(CvnEmail.Create("com_profile@mail.com").Value),
             Agency = Agency,
-            Locations = new List<CompanyProfileLocation>
-            {
+            Locations =
+            [
                 new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = FakeData.FakeCountry("CA")}}}},
-            },
+            ],
             Industry = new CompanyProfileIndustry("Company Industry")
         };
         public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
@@ -172,7 +167,7 @@ public class WorkersControllerTest : BaseTestOrder, IClassFixture<CustomWebAppli
                 var basicInfo = new Mock<IWorkerBasicInformation<ICatalog<Guid>>>();
                 basicInfo.SetupGet(i => i.FirstName).Returns("Pepe");
                 _workerProfile.PatchBasicInformation(basicInfo.Object);
-                _workerProfile.PatchAvailabilities(new[] { new BaseModel<Guid>(FakeAvailability.Id) });
+                _workerProfile.PatchAvailabilities([new BaseModel<Guid>(FakeAvailability.Id)]);
                 _workerProfile.PatchProfileImage(new CovenantFile("profile.png"));
                 return _workerProfile;
             }

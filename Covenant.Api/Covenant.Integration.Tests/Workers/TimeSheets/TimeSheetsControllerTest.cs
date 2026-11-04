@@ -29,17 +29,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Workers.TimeSheets;
 
-public class TimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TimeSheetsControllerTest.Startup>>
+public class TimeSheetsControllerTest(CustomWebApplicationFactory<TimeSheetsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<TimeSheetsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
     private readonly string _url = TimeSheetsController.RouteName.Replace("{requestId}", Data.Request.Id.ToString());
-
-    public TimeSheetsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
 
     [Fact]
     public async Task Post_ClockIn()

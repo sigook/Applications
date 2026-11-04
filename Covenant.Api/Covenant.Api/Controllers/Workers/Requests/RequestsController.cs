@@ -17,17 +17,9 @@ namespace Covenant.Api.Controllers.Workers.Requests;
 [ApiController]
 [Produces("application/json")]
 [Authorize(Policy = PolicyConfiguration.Worker)]
-public class RequestsController : ControllerBase
+public class RequestsController(IRequestRepository requestRepository, IWorkerService workerService) : ControllerBase
 {
     public const string RouteName = "api/worker/requests";
-    private readonly IRequestRepository _requestRepository;
-    private readonly IWorkerService workerService;
-
-    public RequestsController(IRequestRepository requestRepository, IWorkerService workerService)
-    {
-        _requestRepository = requestRepository;
-        this.workerService = workerService;
-    }
 
     /// <summary>
     /// Lists all requests the authenticated worker can apply to.
@@ -37,7 +29,7 @@ public class RequestsController : ControllerBase
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerRequestListModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult> Get([FromQuery] GetWorkerRequestsFilter filter) =>
-        Ok(await _requestRepository.GetRequestsForWorker(User.GetUserId(), filter));
+        Ok(await requestRepository.GetRequestsForWorker(User.GetUserId(), filter));
 
     /// <summary>
     /// Gets the detail of a specific request for the authenticated worker.

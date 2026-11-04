@@ -5,14 +5,9 @@ using MediatR;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateRequestTimeSheetReport : IRequest<ResultGenerateDocument<MemoryStream>>
+public class GenerateRequestTimeSheetReport(IReadOnlyList<RequestTimeSheetModel> model) : IRequest<ResultGenerateDocument<MemoryStream>>
 {
-    public GenerateRequestTimeSheetReport(IReadOnlyList<RequestTimeSheetModel> model)
-    {
-        Model = model;
-    }
-
-    public IReadOnlyList<RequestTimeSheetModel> Model { get; }
+    public IReadOnlyList<RequestTimeSheetModel> Model { get; } = model;
 }
 
 public class GenerateRequestTimeSheetDocumentHandler : IRequestHandler<GenerateRequestTimeSheetReport, ResultGenerateDocument<MemoryStream>>
@@ -25,7 +20,7 @@ public class GenerateRequestTimeSheetDocumentHandler : IRequestHandler<GenerateR
         TotalHoursApproved = "Total Hours",
         Comments = "Comments";
 
-    private static readonly string[] Columns = { Worker, Date, ClockIn, ClockOut, TotalHoursApproved, Comments };
+    private static readonly string[] Columns = [Worker, Date, ClockIn, ClockOut, TotalHoursApproved, Comments];
 
     public string StartName { get; set; } = "TimeSheet";
     public uint StartSheetDataIndex { get; set; } = 3;

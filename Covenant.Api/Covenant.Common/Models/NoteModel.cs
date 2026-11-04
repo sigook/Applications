@@ -1,5 +1,5 @@
-namespace Covenant.Common.Models
-{
+namespace Covenant.Common.Models;
+
 	public class NoteModel
 	{
 		public NoteModel()
@@ -11,10 +11,9 @@ namespace Covenant.Common.Models
 			Color = color;
 		}
 
-        public Guid Id { get; set; }
-        public string CreatedBy { get; set; }
-        public DateTime CreatedAt { get; set; }
-        public string Note { get; set; }
+    public Guid Id { get; set; }
+    public string CreatedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string Note { get; set; }
 		public string Color { get; set; }
 	}
-}

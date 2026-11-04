@@ -31,10 +31,6 @@ public class PayStubsController(
 {
     public const string RouteName = "api/agency/accounting/paystubs";
 
-    private readonly ITimesheetRepository timeSheetRepository = timeSheetRepository;
-    private readonly ISkipPayrollNumberRepository skipPayrollNumberRepository = skipPayrollNumberRepository;
-    private readonly IPayStubService payStubService = payStubService;
-    private readonly IMessagePublisher busClient = busClient;
     private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
 
     /// <summary>Gets a paginated list of pay stubs matching the given filter.</summary>

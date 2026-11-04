@@ -1,5 +1,5 @@
-namespace Covenant.Common.Models.Notifications
-{
+namespace Covenant.Common.Models.Notifications;
+
 	public class NotificationAgencyModel
 	{
 		public string JobTitle { get; set; }
@@ -8,4 +8,3 @@ namespace Covenant.Common.Models.Notifications
 		public string AgencyEmail { get; set; }
 		public bool EmailNotification { get; set; }
 	}
-}

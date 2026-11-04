@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Accounting.PayStubs
+namespace Covenant.Common.Models.Accounting.PayStubs;
+
+public class PayStubDeleteWarningListModel
 {
-    public class PayStubDeleteWarningListModel
-    {
-        public Guid PayStubId { get; set; }
-        public string PayStubNumber { get; set; }
-    }
+    public Guid PayStubId { get; set; }
+    public string PayStubNumber { get; set; }
 }

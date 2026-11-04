@@ -1,8 +1,7 @@
-namespace Covenant.Common.Configuration
+namespace Covenant.Common.Configuration;
+
+public class GeocodeGoogleConfiguration
 {
-    public class GeocodeGoogleConfiguration
-    {
-        public string Key { get; set; }
-        public string Url { get; set; }
-    }
+    public string Key { get; set; }
+    public string Url { get; set; }
 }

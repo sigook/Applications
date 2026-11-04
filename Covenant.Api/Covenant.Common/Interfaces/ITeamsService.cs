@@ -1,14 +1,13 @@
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Notifications;
 
-namespace Covenant.Common.Interfaces
+namespace Covenant.Common.Interfaces;
+
+public interface ITeamsService
 {
-    public interface ITeamsService
-    {
-        Task<Result> SendNotification(string webhook, TeamsNotificationModel notification);
+    Task<Result> SendNotification(string webhook, TeamsNotificationModel notification);
 
-        Task<Stream> GetTeamsFile(string url);
+    Task<Stream> GetTeamsFile(string url);
 
-        Task<Result> ExistsTeamsFile(string url);
-    }
+    Task<Result> ExistsTeamsFile(string url);
 }

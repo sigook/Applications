@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Workers
+namespace Covenant.Common.Models.Workers;
+
+public class OnNewWorkerAgencyTemplateViewModel
 {
-    public class OnNewWorkerAgencyTemplateViewModel
-    {
-        public bool ApprovedToWork { get; set; }
-        public string WorkerFullName { get; set; }
-    }
+    public bool ApprovedToWork { get; set; }
+    public string WorkerFullName { get; set; }
 }

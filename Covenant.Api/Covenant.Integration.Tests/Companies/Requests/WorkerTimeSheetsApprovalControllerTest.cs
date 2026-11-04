@@ -22,12 +22,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Requests;
 
-public class WorkerTimeSheetsApprovalControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsApprovalControllerTest.Startup>>
+public class WorkerTimeSheetsApprovalControllerTest(CustomWebApplicationFactory<WorkerTimeSheetsApprovalControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsApprovalControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
+    private readonly HttpClient _client = factory.CreateClient();
     private readonly string _requestUri = WorkerTimeSheetsController.RouteName.Replace("{requestId}", Data.Request.Id.ToString()).Replace("{workerProfileId}", Data.WorkerProfile.Id.ToString());
-
-    public WorkerTimeSheetsApprovalControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()

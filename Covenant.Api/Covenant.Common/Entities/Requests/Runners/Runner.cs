@@ -34,10 +34,10 @@ public class Runner
     public Guid? UpdatedBy { get; private set; }
     public User UpdatedByUser { get; private set; }
 
-    private readonly List<RunnerStatusHistory> _statusHistory = new();
+    private readonly List<RunnerStatusHistory> _statusHistory = [];
     public IEnumerable<RunnerStatusHistory> StatusHistory => _statusHistory;
 
-    private readonly List<RunnerInterview> _interviews = new();
+    private readonly List<RunnerInterview> _interviews = [];
     public IEnumerable<RunnerInterview> Interviews => _interviews;
 
     public static Result<Runner> CreateFromWorker(Guid requestId, Guid workerProfileId, RunnerType type, Guid createdBy, Guid? requestRecruiterId = null)

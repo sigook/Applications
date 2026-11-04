@@ -11,7 +11,6 @@ namespace Covenant.Api.Controllers.Shared;
 public class LocationController(ILocationService locationService) : ControllerBase
 {
     public const string RouteName = "api/location";
-    private readonly ILocationService _locationService = locationService;
 
     /// <summary>Gets the list of available countries.</summary>
     [HttpGet("country")]
@@ -19,7 +18,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
     [ProducesResponseType(typeof(List<CountryModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCountry()
     {
-        var countries = await _locationService.GetCountries();
+        var countries = await locationService.GetCountries();
         return Ok(countries);
     }
 
@@ -30,7 +29,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
     [ProducesResponseType(typeof(List<ProvinceModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetProvinces([FromRoute] Guid countryId)
     {
-        var provinces = await _locationService.GetProvinces(countryId);
+        var provinces = await locationService.GetProvinces(countryId);
         return Ok(provinces);
     }
 
@@ -53,7 +52,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
             });
         }
 
-        var provinces = await _locationService.GetProvinces(code);
+        var provinces = await locationService.GetProvinces(code);
         return Ok(provinces);
     }
 
@@ -63,7 +62,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
     [ProducesResponseType(typeof(List<CityModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCities([FromRoute] Guid provinceId)
     {
-        var cities = await _locationService.GetCities(provinceId);
+        var cities = await locationService.GetCities(provinceId);
         return Ok(cities);
     }
 
@@ -76,7 +75,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpsertProvinceSettings([FromRoute] Guid provinceId, [FromBody] ProvinceSettingsModel model)
     {
-        var result = await _locationService.UpsertProvinceSettings(provinceId, model);
+        var result = await locationService.UpsertProvinceSettings(provinceId, model);
         if (!result)
         {
             return BadRequest(result.Errors);
@@ -92,7 +91,7 @@ public class LocationController(ILocationService locationService) : ControllerBa
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> AddCity([FromBody] CityModel model)
     {
-        var result = await _locationService.AddCity(model);
+        var result = await locationService.AddCity(model);
         if (!result)
         {
             return BadRequest(result.Errors);

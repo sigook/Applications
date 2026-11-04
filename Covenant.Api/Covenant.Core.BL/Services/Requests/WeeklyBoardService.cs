@@ -57,7 +57,7 @@ public class WeeklyBoardService(
 
         var assignments = (await requestRepository.GetWeeklyBoardAssignmentsForRecruiter(agencyId, recruiter.Id, filter.From, filter.To)).ToList();
 
-        model.Assignments = assignments.OrderBy(a => a.WorkDate).ThenBy(a => a.NumberId).ToList();
+        model.Assignments = [.. assignments.OrderBy(a => a.WorkDate).ThenBy(a => a.NumberId)];
         model.OrdersCount = assignments.Select(a => a.RequestId).Distinct().Count();
         model.WorkersSent = assignments.Sum(a => a.RunnersSent);
         return model;

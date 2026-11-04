@@ -11,25 +11,12 @@ using MediatR;
 
 namespace Covenant.Core.BL.Services.Accounting;
 
-public class AccountingService : IAccountingService
+public class AccountingService(
+    ICurrentUserService currentUserService,
+    IPayStubRepository payStubRepository,
+    ISubcontractorRepository subcontractorRepository,
+    IMediator mediator) : IAccountingService
 {
-    private readonly ICurrentUserService currentUserService;
-    private readonly IPayStubRepository payStubRepository;
-    private readonly ISubcontractorRepository subcontractorRepository;
-    private readonly IMediator mediator;
-
-    public AccountingService(
-        ICurrentUserService currentUserService,
-        IPayStubRepository payStubRepository,
-        ISubcontractorRepository subcontractorRepository,
-        IMediator mediator)
-    {
-        this.currentUserService = currentUserService;
-        this.payStubRepository = payStubRepository;
-        this.subcontractorRepository = subcontractorRepository;
-        this.mediator = mediator;
-    }
-
     public async Task<PaginatedList<WeeklyPayrollModel>> GetWeeklyPayrollGroupByPaymentDate(Pagination pagination)
     {
         var agencyIds = currentUserService.GetAgencyIds();

@@ -1,7 +1,6 @@
-﻿namespace Covenant.Common.Models.Workers
+﻿namespace Covenant.Common.Models.Workers;
+
+public interface IWorkerProfileStatusInformation
 {
-    public interface IWorkerProfileStatusInformation
-    {
-        bool ApprovedToWork { get; set; }
-    }
+    bool ApprovedToWork { get; set; }
 }

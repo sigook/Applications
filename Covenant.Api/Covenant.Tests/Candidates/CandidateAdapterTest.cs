@@ -32,7 +32,7 @@ public class CandidateAdapterTest
         _catalogRepository.Setup(c => c.GetGender()).ReturnsAsync([new BaseModel<Guid>(Female, "Female")]);
         _catalogRepository.Setup(c => c.GetSources()).ReturnsAsync([new BaseModel<Guid>(Referral, "Referral"), new BaseModel<Guid>(Other, "Other")]);
         _skillService.Setup(s => s.Canonicalize(It.IsAny<IEnumerable<string>>()))
-            .ReturnsAsync((IEnumerable<string> skills) => skills.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).Distinct().ToList());
+            .ReturnsAsync((IEnumerable<string> skills) => [.. skills.Where(s => !string.IsNullOrWhiteSpace(s)).Select(s => s.Trim()).Distinct()]);
         _sut = new CandidateAdapter(_catalogRepository.Object, _currentUserService.Object, _teamsService.Object, _filesContainer.Object, _skillService.Object);
     }
 

@@ -8,36 +8,36 @@ public class InvoiceDocumentAdapter : IInvoiceDocumentAdapter
 {
     public InvoiceViewModel MapToInvoiceViewModel(InvoiceSummaryModel model)
     {
-        List<DescriptionTableViewModel> items = model.Items.Select(i => new DescriptionTableViewModel
+        List<DescriptionTableViewModel> items = [.. model.Items.Select(i => new DescriptionTableViewModel
         {
             Description = i.Description,
             Total = i.Total,
             Quantity = i.Quantity,
             UnitPrice = i.UnitPrice
-        }).ToList();
-        List<DescriptionTableViewModel> discounts = model.Discounts.Select(d => new DescriptionTableViewModel
+        })];
+        List<DescriptionTableViewModel> discounts = [.. model.Discounts.Select(d => new DescriptionTableViewModel
         {
             Quantity = d.Quantity,
             UnitPrice = d.UnitPrice,
             Total = d.Amount * -1,
             Description = d.Description
-        }).ToList();
+        })];
 
-        List<DescriptionTableViewModel> holidays = model.Holidays.GroupBy(h => h.UnitPrice).Select(m => new DescriptionTableViewModel
+        List<DescriptionTableViewModel> holidays = [.. model.Holidays.GroupBy(h => h.UnitPrice).Select(m => new DescriptionTableViewModel
         {
             UnitPrice = m.Key,
             Total = m.Sum(t => t.Amount),
             Quantity = m.Sum(q => q.Hours),
             Description = string.Join(", ", m.GroupBy(d => d.Description).Select(h => h.Key))
-        }).ToList();
+        })];
 
-        List<DescriptionTableViewModel> additionalItems = model.AdditionalItems.Select(h => new DescriptionTableViewModel
+        List<DescriptionTableViewModel> additionalItems = [.. model.AdditionalItems.Select(h => new DescriptionTableViewModel
         {
             Total = h.Total,
             Quantity = h.Quantity,
             Description = h.Description,
             UnitPrice = h.UnitPrice
-        }).ToList();
+        })];
 
         return new InvoiceViewModel
         {

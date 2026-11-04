@@ -27,16 +27,10 @@ using RecruitingRunnersController = Covenant.Api.Controllers.Agencies.Recruiting
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Runners;
 
-public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
+public class RunnersControllerTest(CustomWebApplicationFactory<RunnersControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public RunnersControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private async Task<AgencyRunnersPagedResponse> Get(string query = "")
     {
@@ -96,7 +90,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
     public async Task GetReturnsRunnerDetails()
     {
         AgencyRunnersPagedResponse page = await Get();
-        List<AgencyRunnerListModel> runners = page.Items.SelectMany(r => r.Runners).ToList();
+        List<AgencyRunnerListModel> runners = [.. page.Items.SelectMany(r => r.Runners)];
 
         AgencyRunnerListModel interviewed = runners.Single(r => r.Id == Startup.FakeRunnerInterviewed.Id);
         Assert.Equal("Ivy Interviewed", interviewed.Name);
@@ -117,7 +111,7 @@ public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<R
     public async Task GetFiltersByStatusAndType()
     {
         AgencyRunnersPagedResponse page = await Get($"?statuses={(int)RunnerStatus.SentToClient}&type={(int)RunnerType.Passive}");
-        List<AgencyRunnerListModel> runners = page.Items.SelectMany(r => r.Runners).ToList();
+        List<AgencyRunnerListModel> runners = [.. page.Items.SelectMany(r => r.Runners)];
         Assert.NotEmpty(runners);
         Assert.All(runners, r =>
         {

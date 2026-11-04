@@ -14,12 +14,10 @@ using System.Net.Http.Json;
 using Xunit;
 namespace Covenant.Integration.Tests.Shared.Account;
 
-public class UserNotificationControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<UserNotificationControllerTest.Startup>>
+public class UserNotificationControllerTest(CustomWebApplicationFactory<UserNotificationControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<UserNotificationControllerTest.Startup>>
 {
     private const string Url = UserNotificationController.RouteName;
-    private readonly HttpClient _client;
-
-    public UserNotificationControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()

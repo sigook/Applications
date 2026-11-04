@@ -23,9 +23,8 @@ public class SkillService(ICatalogRepository catalogRepository) : ISkillService
             .DistinctBy(e => e.Key)
             .ToDictionary(e => e.Key, e => e.Value);
 
-        return values
+        return [.. values
             .Select(s => canonicalByKey.GetValueOrDefault(s.ToComparisonKey()) ?? s)
-            .DistinctBy(s => s.ToComparisonKey())
-            .ToList();
+            .DistinctBy(s => s.ToComparisonKey())];
     }
 }

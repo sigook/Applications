@@ -3,45 +3,44 @@ using Covenant.Common.Entities;
 using Covenant.Common.Enums;
 using System.Text;
 
-namespace Covenant.Tests.Utils
+namespace Covenant.Tests.Utils;
+
+public static class FakeData
 {
-    public static class FakeData
+    public static string GenerateString(int length)
     {
-        public static string GenerateString(int length)
+        var builder = new StringBuilder();
+        for (int i = 0; i < length; i++)
         {
-            var builder = new StringBuilder();
-            for (int i = 0; i < length; i++)
-            {
-                builder.Append("A");
-            }
-            return builder.ToString();
+            builder.Append("A");
         }
-        public static string GenerateStringNumber(int length)
+        return builder.ToString();
+    }
+    public static string GenerateStringNumber(int length)
+    {
+        var builder = new StringBuilder();
+        for (int i = 0; i < length; i++)
         {
-            var builder = new StringBuilder();
-            for (int i = 0; i < length; i++)
-            {
-                builder.Append(i);
-            }
-            return builder.ToString();
+            builder.Append(i);
         }
+        return builder.ToString();
+    }
 
-        public static Location FakeLocation() => new Location { City = new City { Province = new Province { Country = new Country() } } };
+    public static Location FakeLocation() => new Location { City = new City { Province = new Province { Country = new Country() } } };
 
-        public static Request FakeRequest(Guid agencyId = default,
-            Guid companyProfileId = default, Guid jobPositionRateId = default,
-            Location location = default, DateTime startAt = default,
-            DateTime? finishAt = null, int workersQuantity = 1,
-            DurationTerm durationTerm = DurationTerm.LongTerm,
-            decimal? workerRate = 15M, decimal? agencyRate = 20M)
-        {
-            agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
-            companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
-            jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
-            location = location ?? FakeLocation();
-            startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-            return Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
-                workerRate, agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
-        }
+    public static Request FakeRequest(Guid agencyId = default,
+        Guid companyProfileId = default, Guid jobPositionRateId = default,
+        Location location = default, DateTime startAt = default,
+        DateTime? finishAt = null, int workersQuantity = 1,
+        DurationTerm durationTerm = DurationTerm.LongTerm,
+        decimal? workerRate = 15M, decimal? agencyRate = 20M)
+    {
+        agencyId = agencyId == default ? Guid.NewGuid() : agencyId;
+        companyProfileId = companyProfileId == default ? Guid.NewGuid() : companyProfileId;
+        jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
+        location = location ?? FakeLocation();
+        startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
+        return Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
+            workerRate, agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
     }
 }

@@ -1,18 +1,17 @@
-﻿namespace Covenant.Common.Entities
+﻿namespace Covenant.Common.Entities;
+
+public class AvailabilityTime : ICatalog<Guid>
 {
-    public class AvailabilityTime : ICatalog<Guid>
+    public AvailabilityTime()
     {
-        public AvailabilityTime()
-        {
-        }
-
-        public AvailabilityTime(string value, Guid id = default)
-        {
-            Id = id == default ? Guid.NewGuid() : id;
-            Value = value;
-        }
-
-        public Guid Id { get; private set; }
-        public string Value { get; internal set; }
     }
+
+    public AvailabilityTime(string value, Guid id = default)
+    {
+        Id = id == default ? Guid.NewGuid() : id;
+        Value = value;
+    }
+
+    public Guid Id { get; private set; }
+    public string Value { get; internal set; }
 }

@@ -99,3 +99,12 @@ pnpm run lint                    # ESLint
 ```
 
 Note: `build:staging`/`build:production` do NOT run vue-tsc (only plain `build` does) — type safety depends on the separate `type-check` step.
+
+## Sigook.Mcp (.NET 10, MCP server)
+
+```bash
+cd Sigook.Mcp
+dotnet build Sigook.Mcp.slnx
+```
+
+Claude Code starts it from `.mcp.json` (server `sigook`, `SIGOOK_ENV=staging` by default). Override with `SIGOOK_ENV=local|staging|production`. The first `sigook_login` opens the browser for Microsoft 365 sign-in. People without the repo install it from the Azure Artifacts feed `sigook-tools` (`dotnet tool install -g Sigook.Mcp`); see `.docs/technical/SIGOOK_MCP.md`.

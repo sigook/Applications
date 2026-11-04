@@ -42,73 +42,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Covenant.Core.BL.Services.Agencies;
 
-public class AgencyService : IAgencyService
+public class AgencyService(
+    IAgencyRepository agencyRepository,
+    ICompanyRepository companyRepository,
+    IUserRepository userRepository,
+    IShiftRepository shiftRepository,
+    IWorkerRepository workerRepository,
+    IRequestRepository requestRepository,
+    IWorkerRequestRepository workerRequestRepository,
+    INotificationDataRepository notificationDataRepository,
+    ICatalogRepository catalogRepository,
+    TimeProvider timeProvider,
+    IUserAccountService userAccountService,
+    ICurrentUserService currentUserService,
+    IDocumentService documentService,
+    IRazorViewToStringRenderer razorViewToStringRenderer,
+    IEmailService emailService,
+    IUploadedFilesService uploadedFilesService,
+    ILogger<AgencyService> logger,
+    IServiceProvider serviceProvider,
+    IValidator<AgencyPersonnelModel> agencyPersonnelValidator,
+    IWorkerRequirementService workerRequirementService) : IAgencyService
 {
     private const string UnknownTimeZone = "The time zone of your device could not be recognized.";
-    private readonly IAgencyRepository agencyRepository;
-    private readonly ICompanyRepository companyRepository;
-    private readonly IUserRepository userRepository;
-    private readonly IShiftRepository shiftRepository;
-    private readonly IWorkerRepository workerRepository;
-    private readonly IRequestRepository requestRepository;
-    private readonly IWorkerRequestRepository workerRequestRepository;
-    private readonly INotificationDataRepository notificationDataRepository;
-    private readonly ICatalogRepository catalogRepository;
-    private readonly TimeProvider timeProvider;
-    private readonly IUserAccountService userAccountService;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IDocumentService documentService;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
-    private readonly IEmailService emailService;
-    private readonly IUploadedFilesService uploadedFilesService;
-    private readonly ILogger<AgencyService> logger;
-    private readonly IServiceProvider serviceProvider;
-    private readonly IValidator<AgencyPersonnelModel> agencyPersonnelValidator;
-    private readonly IWorkerRequirementService workerRequirementService;
-
-    public AgencyService(
-        IAgencyRepository agencyRepository,
-        ICompanyRepository companyRepository,
-        IUserRepository userRepository,
-        IShiftRepository shiftRepository,
-        IWorkerRepository workerRepository,
-        IRequestRepository requestRepository,
-        IWorkerRequestRepository workerRequestRepository,
-        INotificationDataRepository notificationDataRepository,
-        ICatalogRepository catalogRepository,
-        TimeProvider timeProvider,
-        IUserAccountService userAccountService,
-        ICurrentUserService currentUserService,
-        IDocumentService documentService,
-        IRazorViewToStringRenderer razorViewToStringRenderer,
-        IEmailService emailService,
-        IUploadedFilesService uploadedFilesService,
-        ILogger<AgencyService> logger,
-        IServiceProvider serviceProvider,
-        IValidator<AgencyPersonnelModel> agencyPersonnelValidator,
-        IWorkerRequirementService workerRequirementService)
-    {
-        this.timeProvider = timeProvider;
-        this.workerRequirementService = workerRequirementService;
-        this.agencyRepository = agencyRepository;
-        this.companyRepository = companyRepository;
-        this.userRepository = userRepository;
-        this.shiftRepository = shiftRepository;
-        this.workerRepository = workerRepository;
-        this.requestRepository = requestRepository;
-        this.workerRequestRepository = workerRequestRepository;
-        this.notificationDataRepository = notificationDataRepository;
-        this.catalogRepository = catalogRepository;
-        this.userAccountService = userAccountService;
-        this.currentUserService = currentUserService;
-        this.documentService = documentService;
-        this.razorViewToStringRenderer = razorViewToStringRenderer;
-        this.emailService = emailService;
-        this.uploadedFilesService = uploadedFilesService;
-        this.logger = logger;
-        this.serviceProvider = serviceProvider;
-        this.agencyPersonnelValidator = agencyPersonnelValidator;
-    }
 
     public async Task<Result<Guid>> CreateCompany(CompanyProfileDetailModel model)
     {
@@ -308,7 +264,7 @@ public class AgencyService : IAgencyService
                 await emailService.SendEmail(new EmailParams(worker.Key, "Please update SIN", message)
                 {
                     EmailSettingName = EmailSettingName.Notification,
-                    Cc = new List<string> { worker.FirstOrDefault().RecruitmentEmail }
+                    Cc = [worker.FirstOrDefault().RecruitmentEmail]
                 });
             }
             catch (Exception e)
@@ -331,7 +287,7 @@ public class AgencyService : IAgencyService
                 await emailService.SendEmail(new EmailParams(worker.Key, "Expired Licenses", message)
                 {
                     EmailSettingName = EmailSettingName.Notification,
-                    Cc = new List<string> { worker.FirstOrDefault().RecruitmentEmail }
+                    Cc = [worker.FirstOrDefault().RecruitmentEmail]
                 });
             }
             catch (Exception e)
@@ -442,7 +398,6 @@ public class AgencyService : IAgencyService
 
     public async Task UpdateWorkerProfileTaxCategory(Guid workerProfileId, WorkerProfileDetailModel model)
     {
-
         if (model.FederalTaxCategory.HasValue || model.ProvincialTaxCategory.HasValue)
         {
             var workerProfileTaxCategory = await workerRepository.GetWorkerProfileTaxCategory(workerProfileId);

@@ -28,13 +28,7 @@ public class WebsiteController(
 {
     public const string RouteName = "api/website";
 
-    private readonly IMessagePublisher client = client;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer = razorViewToStringRenderer;
-    private readonly IEmailService emailService = emailService;
-    private readonly IRequestRepository requestRepository = requestRepository;
-    private readonly IMemoryCache memoryCache = memoryCache;
     private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
-    private readonly IFilesContainer filesContainer = filesContainer;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>

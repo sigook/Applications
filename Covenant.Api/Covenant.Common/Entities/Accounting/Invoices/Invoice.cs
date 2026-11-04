@@ -54,25 +54,25 @@ public class Invoice
 
     public void AddInvoiceTotals(IEnumerable<InvoiceTotal> invoiceTotals)
     {
-        InvoiceTotals = new List<InvoiceTotal>(invoiceTotals);
+        InvoiceTotals = invoiceTotals.ToList();
         foreach (InvoiceTotal item in InvoiceTotals) item.AssignTo(this);
     }
 
     public void AddAdditionalItems(IEnumerable<InvoiceAdditionalItem> additionalItems)
     {
-        AdditionalItems = new List<InvoiceAdditionalItem>(additionalItems);
+        AdditionalItems = additionalItems.ToList();
         foreach (InvoiceAdditionalItem item in AdditionalItems) item.AssignTo(this);
     }
 
     public void AddHolidays(IEnumerable<InvoiceHoliday> invoiceHolidays)
     {
-        Holidays = new List<InvoiceHoliday>(invoiceHolidays);
+        Holidays = invoiceHolidays.ToList();
         foreach (InvoiceHoliday item in Holidays) item.AssignTo(this);
     }
 
     public void AddDiscounts(IEnumerable<InvoiceDiscount> discounts)
     {
-        Discounts = new List<InvoiceDiscount>(discounts);
+        Discounts = discounts.ToList();
         foreach (InvoiceDiscount item in Discounts) item.AssignTo(this);
     }
 

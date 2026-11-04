@@ -1,27 +1,24 @@
-﻿namespace Covenant.Common.Models
+﻿namespace Covenant.Common.Models;
+
+public class Pagination
 {
-    public class Pagination
+    public static readonly Pagination Default = new Pagination();
+
+    public virtual bool IsDescending { get; set; }
+
+    public int PageIndex
     {
-        private int _pageSize = 50;
-        private int _pageIndex = 1;
-        public static readonly Pagination Default = new Pagination();
+        get => field <= 0 ? 1 : field;
+        set;
+    } = 1;
 
-        public virtual bool IsDescending { get; set; }
-
-        public int PageIndex
+    public int PageSize
+    {
+        get
         {
-            get => _pageIndex <= 0 ? 1 : _pageIndex;
-            set => _pageIndex = value;
+            if (field > 100) return 50;
+            return field <= 0 ? 50 : field;
         }
-
-        public int PageSize
-        {
-            get
-            {
-                if (_pageSize > 100) return 50;
-                return _pageSize <= 0 ? 50 : _pageSize;
-            }
-            set => _pageSize = value;
-        }
-    }
+        set;
+    } = 50;
 }

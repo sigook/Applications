@@ -22,24 +22,20 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
-public class LogoControllerTest : IClassFixture<CustomWebApplicationFactory<LogoControllerTest.Startup>>
+public class LogoControllerTest(CustomWebApplicationFactory<LogoControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<LogoControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public LogoControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => LogoController.RouteName.Replace("{profileId}",
         Startup.FakeCompanyProfile.Id.ToString());
 
     private static MultipartFormDataContent LogoContent(string fileName)
     {
-        var content = new MultipartFormDataContent();
-        content.Add(new ByteArrayContent([1, 2, 3]), fileName, fileName);
+        var content = new MultipartFormDataContent
+        {
+            { new ByteArrayContent([1, 2, 3]), fileName, fileName }
+        };
         return content;
     }
 

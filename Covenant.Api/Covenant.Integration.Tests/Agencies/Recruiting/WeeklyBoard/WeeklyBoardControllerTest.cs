@@ -18,20 +18,13 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.WeeklyBoard;
 
-public class WeeklyBoardControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<WeeklyBoardControllerTest.Startup, WeeklyBoardControllerTest.Data>>
+public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardControllerTest.Startup, WeeklyBoardControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<WeeklyBoardControllerTest.Startup, WeeklyBoardControllerTest.Data>>
 {
     private static readonly DateTime Monday = new(2026, 10, 19);
 
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public WeeklyBoardControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

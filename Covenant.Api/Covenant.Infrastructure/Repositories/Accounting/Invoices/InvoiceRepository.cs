@@ -123,11 +123,12 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
 
     private async Task<InvoiceSummaryModel> GetInvoiceSummary(Expression<Func<Invoice, bool>> predicate)
     {
-        var q = from i in Context.Invoices.Where(predicate)
-                join cn in Context.CompanyProfileInvoiceNotes on i.CompanyProfileId equals cn.CompanyProfileId
-                    into cn1
-                from cn in cn1.DefaultIfEmpty()
-                select new InvoiceSummaryModel
+        var q = Context.Invoices.Where(predicate)
+            .LeftJoin(
+                Context.CompanyProfileInvoiceNotes,
+                i => i.CompanyProfileId,
+                cn => cn.CompanyProfileId,
+                (i, cn) => new InvoiceSummaryModel
                 {
                     Id = i.Id,
                     AgencyId = i.CompanyProfile.AgencyId,
@@ -166,7 +167,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                     Holidays = i.Holidays.Select(h => new InvoiceSummaryHolidayModel(h.Amount, h.Hours, $"Charge for Holiday {h.Holiday:D}")).ToList(),
                     AdditionalItems = i.AdditionalItems.Select(h => new InvoiceSummaryAdditionalItemModel(h.Quantity, h.UnitPrice, h.Total, h.Description)).ToList(),
                     ClientSiteAddress = i.AdditionalDetail != null ? i.AdditionalDetail.ClientSiteAddress : null
-                };
+                });
         var invoice = await q.SingleOrDefaultAsync();
         if (invoice is null) return null;
         invoice.Items = await Context.InvoiceTotals

@@ -17,17 +17,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
-public class NotesControllerTest :
+public class NotesControllerTest(CustomWebApplicationFactory<NotesControllerTest.Startup> factory) :
     IClassFixture<CustomWebApplicationFactory<NotesControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public NotesControllerTest(CustomWebApplicationFactory<NotesControllerTest.Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => NotesController.RouteName.Replace("{requestId}",
         Startup.FakeRequest.Id.ToString());

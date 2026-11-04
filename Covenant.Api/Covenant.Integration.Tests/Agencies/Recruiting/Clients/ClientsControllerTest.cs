@@ -25,16 +25,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
-public class ClientsControllerTest : IClassFixture<CustomWebApplicationFactory<ClientsControllerTest.Startup>>
+public class ClientsControllerTest(CustomWebApplicationFactory<ClientsControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<ClientsControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-
-    public ClientsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
 
     private static string RequestUri(Guid? id = null) => ClientsController.RouteName + (id is null ? "" : $"/{id}");
 

@@ -721,9 +721,7 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
             ["Interactions"] = await Context.CompanyInteractions.CountAsync(i => i.CompanyProfileId == companyProfileId),
             ["Worker comments"] = await Context.WorkerComments.CountAsync(c => c.CompanyProfileId == companyProfileId)
         };
-        model.Blockers = counts.Where(c => c.Value > 0)
-            .Select(c => new CompanyDeletionBlockerModel { Entity = c.Key, Count = c.Value })
-            .ToList();
+        model.Blockers = [.. counts.Where(c => c.Value > 0).Select(c => new CompanyDeletionBlockerModel { Entity = c.Key, Count = c.Value })];
         return model;
     }
 

@@ -22,11 +22,6 @@ public class CandidateAdapter(
     IFilesContainer filesContainer,
     ISkillService skillService) : ICandidateAdapter
 {
-    private readonly ICatalogRepository catalogRepository = catalogRepository;
-    private readonly ICurrentUserService currentUserService = currentUserService;
-    private readonly ITeamsService teamsService = teamsService;
-    private readonly IFilesContainer filesContainer = filesContainer;
-
     public async Task<BulkCandidate> ConvertCandidateCsvToCandidateBulk(CandidateCsvModel model, Guid agencyId, Request request)
     {
         var genders = await catalogRepository.GetGender();

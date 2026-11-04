@@ -1,24 +1,23 @@
 ﻿using Covenant.Common.Entities;
 
-namespace Covenant.Common.Models.Locations
+namespace Covenant.Common.Models.Locations;
+
+public class ProvinceModel : ICatalog<Guid>
 {
-    public class ProvinceModel : ICatalog<Guid>
+    public ProvinceModel()
     {
-        public ProvinceModel()
-        {
-        }
-
-        public ProvinceModel(Guid id, string value, string code)
-        {
-            Id = id;
-            Value = value;
-            Code = code;
-        }
-
-        public Guid Id { get; set; }
-        public string Value { get; set; }
-        public string Code { get; set; }
-        public ProvinceSettingsModel Settings { get; set; }
-        public CountryModel Country { get; set; }
     }
+
+    public ProvinceModel(Guid id, string value, string code)
+    {
+        Id = id;
+        Value = value;
+        Code = code;
+    }
+
+    public Guid Id { get; set; }
+    public string Value { get; set; }
+    public string Code { get; set; }
+    public ProvinceSettingsModel Settings { get; set; }
+    public CountryModel Country { get; set; }
 }

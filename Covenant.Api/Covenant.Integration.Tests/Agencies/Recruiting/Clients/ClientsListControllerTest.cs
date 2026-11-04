@@ -10,16 +10,10 @@ using SalesClientsController = Covenant.Api.Controllers.Agencies.Sales.ClientsCo
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Clients;
 
-public class ClientsListControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData>>
+public class ClientsListControllerTest(SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData>>
 {
-    private readonly SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData> _factory;
-    private readonly ClientsTestData _data;
-
-    public ClientsListControllerTest(SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData> factory)
-    {
-        _factory = factory;
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<ClientsTestStartup, ClientsTestData> _factory = factory;
+    private readonly ClientsTestData _data = factory.Data;
 
     private HttpClient AsRecruiter() => _data.AsRecruiter(_factory.CreateClient);
 

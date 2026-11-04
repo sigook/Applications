@@ -15,7 +15,6 @@ public class LocationTaxController(ILocationService locationService) : Controlle
 {
     public const string RouteName = "api/agency/accounting/locations";
 
-    private readonly ILocationService _locationService = locationService;
 
     /// <summary>Gets the tax configured for a location.</summary>
     /// <param name="locationId">Location identifier.</param>
@@ -23,7 +22,7 @@ public class LocationTaxController(ILocationService locationService) : Controlle
     [ProducesResponseType(typeof(LocationTaxModel), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetLocationTax([FromRoute] Guid locationId)
     {
-        var tax = await _locationService.GetLocationTax(locationId);
+        var tax = await locationService.GetLocationTax(locationId);
         return Ok(tax);
     }
 
@@ -45,7 +44,7 @@ public class LocationTaxController(ILocationService locationService) : Controlle
             return BadRequest(ModelState);
         }
 
-        var result = await _locationService.UpsertLocationTax(locationId, model);
+        var result = await locationService.UpsertLocationTax(locationId, model);
         if (!result)
         {
             return BadRequest(result.Errors);

@@ -1,0 +1,95 @@
+# Azure Pipeline for Sigook.Mcp (.NET 10 global tool, MCP server)
+# Builds on PRs; publishes the tool to the Azure Artifacts feed `sigook-tools`:
+#   dev  -> prerelease  <VersionPrefix>-dev.<BuildId>
+#   main -> stable      <VersionPrefix> (manual run)
+
+name: Sigook.Mcp-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Sigook.Mcp/**
+    exclude:
+      - Sigook.Mcp/**/*.md
+
+pr:
+  branches:
+    include:
+      - dev
+  paths:
+    include:
+      - Sigook.Mcp/**
+
+pool:
+  name: 'covenant-build-pool'
+
+variables:
+  dotnetSdkVersion: '10.0.401'
+  feedUrl: 'https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/nuget/v3/index.json'
+  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+    versionSuffix: ''
+  ${{ else }}:
+    versionSuffix: 'dev.$(Build.BuildId)'
+
+stages:
+  - stage: Build_and_Publish
+    displayName: 'Build and Publish Tool'
+    jobs:
+      - job: Build_Tool
+        displayName: 'Build, Pack and Push Sigook.Mcp'
+        steps:
+          - checkout: self
+            displayName: 'Checkout Repository'
+            fetchDepth: 1
+
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: $(dotnetSdkVersion)
+
+          - template: templates/dotnet-build-test.yml
+            parameters:
+              buildProjects: 'Sigook.Mcp/Sigook.Mcp.slnx'
+              buildConfiguration: 'Release'
+              runUnitTests: false
+
+          - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
+            - task: DotNetCoreCLI@2
+              displayName: 'Pack Tool'
+              inputs:
+                command: 'custom'
+                custom: 'pack'
+                arguments: 'Sigook.Mcp/Sigook.Mcp/Sigook.Mcp.csproj --configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/nupkg --version-suffix "$(versionSuffix)"'
+
+            - task: NuGetAuthenticate@1
+              displayName: 'Authenticate to Azure Artifacts'
+
+            - task: DotNetCoreCLI@2
+              displayName: 'Push to sigook-tools'
+              inputs:
+                command: 'custom'
+                custom: 'nuget'
+                arguments: 'push "$(Build.ArtifactStagingDirectory)/nupkg/*.nupkg" --source "$(feedUrl)" --api-key az --skip-duplicate'
+
+            - task: Bash@3
+              displayName: 'Publish Summary'
+              inputs:
+                targetType: 'inline'
+                script: |
+                  echo ""
+                  echo "============================================"
+                  echo "📦 Sigook.Mcp published to sigook-tools"
+                  echo "============================================"
+                  ls -1 "$(Build.ArtifactStagingDirectory)/nupkg"
+                  echo ""
+                  echo "Install / update:"
+                  echo "dotnet tool install -g Sigook.Mcp --add-source $(feedUrl) --interactive --prerelease"
+                  echo "dotnet tool update  -g Sigook.Mcp --add-source $(feedUrl) --interactive --prerelease"
+                  echo ""
+
+          - template: templates/cleanup.yml
+            parameters:
+              cleanDotnet: true
+              workingDirectory: 'Sigook.Mcp'

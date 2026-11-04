@@ -16,18 +16,15 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Sales;
 
-public class DashboardControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<DashboardControllerTest.Startup>>
+public class DashboardControllerTest(CustomWebApplicationFactory<DashboardControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<DashboardControllerTest.Startup>>
 {
     private const string DealsByStatusUri = DashboardController.RouteName + "/deals-by-status";
     private const string SummaryUri = DashboardController.RouteName + "/summary";
 
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-
-    public DashboardControllerTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
 
     private HttpClient ClientAs(string role, Guid sub)
     {
-        HttpClient client = _factory.CreateClient();
+        HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, role);
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, sub.ToString());
         return client;

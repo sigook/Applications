@@ -47,7 +47,7 @@ public static class DatabaseScriptRunner
     }
 
     private static IEnumerable<string> GetScripts(string folder) =>
-        Directory.Exists(folder) ? Directory.GetFiles(folder, "*.sql").OrderBy(f => f) : [];
+        Directory.Exists(folder) ? Directory.GetFiles(folder, "*.sql").Order() : [];
 
     private static async Task RunOnceAsync(DbConnection connection)
     {

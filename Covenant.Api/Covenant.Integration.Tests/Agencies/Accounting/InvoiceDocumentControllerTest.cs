@@ -145,7 +145,7 @@ public class InvoiceDocumentControllerTest : BaseTestOrder, IClassFixture<Custom
             services.AddSingleton(Mock.Of<IPayStubsContainer>());
             var currentUserService = new Mock<ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(FakeAgency.Id);
-            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { FakeAgency.Id });
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns([FakeAgency.Id]);
             services.AddSingleton(currentUserService.Object);
             services.AddSingleton<AgencyIdFilter>();
             var emailService = new Mock<IEmailService>();

@@ -1,12 +1,11 @@
-﻿namespace Covenant.Common.Models.Workers
+﻿namespace Covenant.Common.Models.Workers;
+
+public interface IEmergencyInformation
 {
-    public interface IEmergencyInformation
-    {
-        bool HaveAnyHealthProblem { get; }
-        string HealthProblem { get; }
-        string ContactEmergencyPhone { get; }
-        string OtherHealthProblem { get; }
-        string ContactEmergencyName { get; }
-        string ContactEmergencyLastName { get; }
-    }
+    bool HaveAnyHealthProblem { get; }
+    string HealthProblem { get; }
+    string ContactEmergencyPhone { get; }
+    string OtherHealthProblem { get; }
+    string ContactEmergencyName { get; }
+    string ContactEmergencyLastName { get; }
 }

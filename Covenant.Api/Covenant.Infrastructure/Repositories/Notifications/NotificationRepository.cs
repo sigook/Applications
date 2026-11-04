@@ -15,11 +15,12 @@ public class NotificationRepository(CovenantContext context) : BaseRepository<Co
 
     public Task<List<UserNotificationListModel>> Get(Guid userId, IEnumerable<NotificationTarget> targetAllow)
     {
-        return (from n in Context.NotificationTypes.Where(t => targetAllow.Contains(t.Target))
-                join ust in Context.UserNotificationTypes.Where(t => t.UserId == userId) on n.Id equals ust.NotificationTypeId
-                    into tmp
-                from ust in tmp.DefaultIfEmpty()
-                select new UserNotificationListModel
+        return Context.NotificationTypes.Where(t => targetAllow.Contains(t.Target))
+            .LeftJoin(
+                Context.UserNotificationTypes.Where(t => t.UserId == userId),
+                n => n.Id,
+                ust => ust.NotificationTypeId,
+                (n, ust) => new UserNotificationListModel
                 {
                     Id = n.Id,
                     Title = n.Title,

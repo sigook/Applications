@@ -17,7 +17,6 @@ namespace Covenant.Api.Controllers.Workers.Profile;
 public class ProfileUpdateController(IWorkerService workerService, IWorkerProfileUpdateService workerProfileUpdateService) : ControllerBase
 {
     public const string RouteName = "api/worker/profile/{profileId}";
-    private readonly IWorkerService _workerService = workerService;
 
     private async Task<IActionResult> Update<T>(T model, Func<Task<Result>> update) where T : class
     {
@@ -89,7 +88,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateCertificates(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Certificates);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Certificates);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -152,7 +151,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateLicenses(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Licenses);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Licenses);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -203,7 +202,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> ProfileImage([FromRoute] Guid profileId)
     {
-        var result = await _workerService.UpdateProfileImage(profileId);
+        var result = await workerService.UpdateProfileImage(profileId);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -219,7 +218,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> SinInformation(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.SocialInsurance);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.SocialInsurance);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -247,7 +246,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Documents(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Identification);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Identification);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -263,7 +262,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Resume(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Resume);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.Resume);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -279,7 +278,7 @@ public class ProfileUpdateController(IWorkerService workerService, IWorkerProfil
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateOtherDocument(Guid profileId)
     {
-        var result = await _workerService.UpdateDocumentSection(profileId, WorkerDocumentType.OtherDocument);
+        var result = await workerService.UpdateDocumentSection(profileId, WorkerDocumentType.OtherDocument);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

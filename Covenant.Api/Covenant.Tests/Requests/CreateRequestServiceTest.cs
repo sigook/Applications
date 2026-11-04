@@ -21,7 +21,6 @@ using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
 using Covenant.Tests.Utils;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
@@ -84,7 +83,6 @@ public class CreateRequestServiceTest
             Mock.Of<IEmailService>(),
             Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
-            Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
@@ -116,11 +114,11 @@ public class CreateRequestServiceTest
     [Fact]
     public async Task CreateRequestWithComplianceItems()
     {
-        _model.ComplianceItems = new[]
-        {
+        _model.ComplianceItems =
+        [
             new RequestComplianceItemModel { Name = "ID", IsMandatory = true, DocumentTarget = ComplianceDocumentTarget.Identification1 },
             new RequestComplianceItemModel { Name = "WP", IsMandatory = false, DocumentTarget = ComplianceDocumentTarget.OtherDocument }
-        };
+        ];
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
         _requestRepository.Verify(r => r.CreateRange(It.Is<List<RequestComplianceItem>>(items =>
@@ -132,7 +130,7 @@ public class CreateRequestServiceTest
     [Fact]
     public async Task ErrorWhenComplianceItemHasNoName()
     {
-        _model.ComplianceItems = new[] { new RequestComplianceItemModel { Name = " ", IsMandatory = true } };
+        _model.ComplianceItems = [new RequestComplianceItemModel { Name = " ", IsMandatory = true }];
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.False(result);
     }
@@ -140,11 +138,11 @@ public class CreateRequestServiceTest
     [Fact]
     public async Task ErrorWhenComplianceItemsAreDuplicated()
     {
-        _model.ComplianceItems = new[]
-        {
+        _model.ComplianceItems =
+        [
             new RequestComplianceItemModel { Name = "ID", IsMandatory = true },
             new RequestComplianceItemModel { Name = "id", IsMandatory = false }
-        };
+        ];
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.False(result);
     }

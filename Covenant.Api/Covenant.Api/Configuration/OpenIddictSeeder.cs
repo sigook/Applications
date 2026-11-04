@@ -14,13 +14,16 @@ public class OpenIddictSeeder(
 {
     private const string WebClientId = "sigook.com";
     private const string AndroidClientId = "android";
+    private const string McpClientId = "sigook.mcp";
     private const string DevelopmentWebClientUrl = "http://localhost:3001";
+    private const string McpRedirectUri = "http://localhost:53421/callback";
 
     public async Task Seed()
     {
         await EnsureScope(OpenIddictConfiguration.ApiScope, "Sigook API", [OpenIddictConfiguration.ApiScope]);
         await EnsureScope(Scopes.Roles, "Your role(s)", []);
         await EnsureFunctionsClient();
+        await EnsureMcpClient();
         if (environment.IsDevelopment())
         {
             await EnsureDevelopmentClients();
@@ -60,6 +63,31 @@ public class OpenIddictSeeder(
         };
         await CreateOrUpdate(descriptor);
     }
+
+    private async Task EnsureMcpClient() =>
+        await CreateOrUpdate(new OpenIddictApplicationDescriptor
+        {
+            ClientId = McpClientId,
+            ClientType = ClientTypes.Public,
+            ApplicationType = ApplicationTypes.Native,
+            ConsentType = ConsentTypes.Implicit,
+            DisplayName = "Sigook MCP",
+            RedirectUris = { new Uri(McpRedirectUri) },
+            Permissions =
+            {
+                Permissions.Endpoints.Authorization,
+                Permissions.Endpoints.Token,
+                Permissions.Endpoints.Revocation,
+                Permissions.GrantTypes.AuthorizationCode,
+                Permissions.GrantTypes.RefreshToken,
+                Permissions.ResponseTypes.Code,
+                Permissions.Prefixes.Scope + Scopes.Profile,
+                Permissions.Prefixes.Scope + Scopes.Email,
+                Permissions.Prefixes.Scope + Scopes.Roles,
+                Permissions.Prefixes.Scope + OpenIddictConfiguration.ApiScope
+            },
+            Requirements = { Requirements.Features.ProofKeyForCodeExchange }
+        });
 
     private async Task EnsureDevelopmentClients()
     {

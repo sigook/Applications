@@ -32,20 +32,14 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Requests;
 
-public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup>>
+public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
     private static string _requestUri() =>
         WorkerTimeSheetsController.RouteName
             .Replace("{requestId}", Data.Request.Id.ToString())
             .Replace("{workerProfileId}", Data.WorkerProfile.Id.ToString());
-
-    public WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
 
     [Fact]
     public async Task Get()
@@ -223,7 +217,7 @@ public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<Custo
         public static readonly TimeSheet TimeSheetForDelete = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(2), TimeSpan.FromHours(8), now: FakeNow).Value;
         public static readonly TimeSheet TimeSheetReportedByWorker = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, FakeNow.AddDays(3), false, FakeNow.AddDays(3)).Value;
 
-        public static readonly TimeSheet[] TimeSheets = { FakeTimeSheet, TimeSheetReportedByWorker };
+        public static readonly TimeSheet[] TimeSheets = [FakeTimeSheet, TimeSheetReportedByWorker];
 
         public static void Seed(CovenantContext context)
         {

@@ -17,17 +17,11 @@ using Xunit;
 using Covenant.Common.Entities.Agencies;
 
 namespace Covenant.Integration.Tests.Workers.Requests;
-public class RequestsControllerApplyTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerApplyTest.Startup>>
+public class RequestsControllerApplyTest(CustomWebApplicationFactory<RequestsControllerApplyTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerApplyTest.Startup>>
 {
     private static string RequestUri => $"{RequestsController.RouteName}/Apply";
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public RequestsControllerApplyTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private Task<HttpResponseMessage> Apply(int numberId, string email) =>
         _client.PostAsJsonAsync(RequestUri, new WorkerRequestApplyModel { NumberId = numberId, Email = email });

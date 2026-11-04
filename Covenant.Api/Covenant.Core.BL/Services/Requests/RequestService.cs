@@ -24,66 +24,29 @@ using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
 using FluentValidation;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text;
 
 namespace Covenant.Core.BL.Services.Requests;
 
-public class RequestService : IRequestService
+public class RequestService(
+    ICompanyRepository companyRepository,
+    IAgencyRepository agencyRepository,
+    ILocationRepository locationRepository,
+    TimeProvider timeProvider,
+    IRequestRepository requestRepository,
+    INotificationDataRepository notificationDataRepository,
+    ICurrentUserService currentUserService,
+    IRazorViewToStringRenderer razorViewToStringRenderer,
+    IEmailService emailService,
+    IMessagePublisher busClient,
+    IOptions<ServiceBusConfiguration> serviceBusOptions,
+    IValidator<RequestCreateModel> requestCreateValidator,
+    IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
+    IRequestAdapter requestAdapter,
+    IMediator mediator) : IRequestService
 {
-    private readonly ICompanyRepository companyRepository;
-    private readonly IAgencyRepository agencyRepository;
-    private readonly ILocationRepository locationRepository;
-    private readonly TimeProvider timeProvider;
-    private readonly IRequestRepository requestRepository;
-    private readonly INotificationDataRepository notificationDataRepository;
-    private readonly ICurrentUserService currentUserService;
-    private readonly IRazorViewToStringRenderer razorViewToStringRenderer;
-    private readonly IEmailService emailService;
-    private readonly IMessagePublisher busClient;
-    private readonly ServiceBusConfiguration serviceBusConfiguration;
-    private readonly ILogger<RequestService> logger;
-    private readonly IValidator<RequestCreateModel> requestCreateValidator;
-    private readonly IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator;
-    private readonly IRequestAdapter requestAdapter;
-    private readonly IMediator mediator;
-
-    public RequestService(
-        ICompanyRepository companyRepository,
-        IAgencyRepository agencyRepository,
-        ILocationRepository locationRepository,
-        TimeProvider timeProvider,
-        IRequestRepository requestRepository,
-        INotificationDataRepository notificationDataRepository,
-        ICurrentUserService currentUserService,
-        IRazorViewToStringRenderer razorViewToStringRenderer,
-        IEmailService emailService,
-        IMessagePublisher busClient,
-        IOptions<ServiceBusConfiguration> serviceBusOptions,
-        ILogger<RequestService> logger,
-        IValidator<RequestCreateModel> requestCreateValidator,
-        IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
-        IRequestAdapter requestAdapter,
-        IMediator mediator)
-    {
-        this.requestAdapter = requestAdapter;
-        this.mediator = mediator;
-        this.requestCreateValidator = requestCreateValidator;
-        this.requestUpdateRequirementsValidator = requestUpdateRequirementsValidator;
-        this.companyRepository = companyRepository;
-        this.agencyRepository = agencyRepository;
-        this.locationRepository = locationRepository;
-        this.timeProvider = timeProvider;
-        this.requestRepository = requestRepository;
-        this.notificationDataRepository = notificationDataRepository;
-        this.currentUserService = currentUserService;
-        this.razorViewToStringRenderer = razorViewToStringRenderer;
-        this.emailService = emailService;
-        this.busClient = busClient;
-        serviceBusConfiguration = serviceBusOptions.Value;
-        this.logger = logger;
-    }
+    private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
 
     public Task<Result<Guid>> CreateRequest(RequestCreateModel model) => CreateRequest(model, submitForReview: false);
 

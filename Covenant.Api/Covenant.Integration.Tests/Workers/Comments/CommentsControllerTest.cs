@@ -13,14 +13,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Workers.Comments;
 
-public class CommentsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
+public class CommentsControllerTest(CustomWebApplicationFactory<CommentsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<CommentsControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public CommentsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task GetList()

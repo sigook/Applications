@@ -12,15 +12,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared;
 
-public class EmailPreferencesControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<EmailPreferencesControllerTest.Startup>>
+public class EmailPreferencesControllerTest(CustomWebApplicationFactory<EmailPreferencesControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<EmailPreferencesControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-    public EmailPreferencesControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Post()

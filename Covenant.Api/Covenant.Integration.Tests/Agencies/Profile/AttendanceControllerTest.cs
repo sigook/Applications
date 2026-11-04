@@ -13,19 +13,16 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Profile;
 
-public class AttendanceControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AttendanceControllerTest.Startup>>
+public class AttendanceControllerTest(CustomWebApplicationFactory<AttendanceControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<AttendanceControllerTest.Startup>>
 {
     private const string RouteName = AttendanceController.RouteName;
     private const string TimeZone = "America/Bogota";
     private const string ReportUri = $"{RouteName}/report?from=2026-09-28&to=2026-10-04";
 
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-
-    public AttendanceControllerTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
 
     private HttpClient ClientAs(string role, Guid sub)
     {
-        HttpClient client = _factory.CreateClient();
+        HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, role);
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, sub.ToString());
         return client;

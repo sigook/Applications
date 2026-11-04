@@ -3,33 +3,17 @@ using Covenant.Common.Interfaces.Storage;
 using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
 
-namespace Covenant.Infrastructure.Services
+namespace Covenant.Infrastructure.Services;
+
+public class DocumentService(
+    CovenantContext context,
+    IFilesContainer filesContainer) : IDocumentService
 {
-    public class DocumentService : IDocumentService
+    public async Task DeleteFile(Guid documentId)
     {
-        private readonly CovenantContext context;
-        private readonly IFilesContainer filesContainer;
-        private readonly IPayStubsContainer payStubsContainer;
-        private readonly IInvoicesContainer invoicesContainer;
-
-        public DocumentService(
-            CovenantContext context, 
-            IFilesContainer filesContainer, 
-            IPayStubsContainer payStubsContainer, 
-            IInvoicesContainer invoicesContainer)
-        {
-            this.context = context;
-            this.filesContainer = filesContainer;
-            this.payStubsContainer = payStubsContainer;
-            this.invoicesContainer = invoicesContainer;
-        }
-
-        public async Task DeleteFile(Guid documentId)
-        {
-            var document = await context.CovenantFiles.FirstOrDefaultAsync(cf => cf.Id == documentId);
-            await filesContainer.DeleteFileIfExists(document.FileName);
-            context.CovenantFiles.Remove(document);
-            await context.SaveChangesAsync();
-        }
+        var document = await context.CovenantFiles.FirstOrDefaultAsync(cf => cf.Id == documentId);
+        await filesContainer.DeleteFileIfExists(document.FileName);
+        context.CovenantFiles.Remove(document);
+        await context.SaveChangesAsync();
     }
 }

@@ -107,14 +107,13 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
             TotalPages = pageOfRequests.TotalPages,
             TotalItems = pageOfRequests.TotalItems,
             TotalRunners = await query.CountAsync(),
-            Items = pageOfRequests.Items
+            Items = [.. pageOfRequests.Items
                 .Select(page => requests.Single(r => r.RequestId == page.RequestId))
                 .Select(request =>
                 {
-                    request.Runners = pagedRunners.Where(r => r.RequestId == request.RequestId).ToList();
+                    request.Runners = [.. pagedRunners.Where(r => r.RequestId == request.RequestId)];
                     return request;
-                })
-                .ToList()
+                })]
         };
     }
 

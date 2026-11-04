@@ -34,9 +34,9 @@ public class InvoiceSummaryModel
     public InvoicePayroll InvoicePayroll { get; set; }
     public string ClientSiteAddress { get; set; }
 
-    public List<InvoiceSummaryDiscountModel> Discounts { get; set; } = new List<InvoiceSummaryDiscountModel>();
-    public List<InvoiceSummaryHolidayModel> Holidays { get; set; } = new List<InvoiceSummaryHolidayModel>();
-    public List<InvoiceSummaryAdditionalItemModel> AdditionalItems { get; set; } = new List<InvoiceSummaryAdditionalItemModel>();
+    public List<InvoiceSummaryDiscountModel> Discounts { get; set; } = [];
+    public List<InvoiceSummaryHolidayModel> Holidays { get; set; } = [];
+    public List<InvoiceSummaryAdditionalItemModel> AdditionalItems { get; set; } = [];
 
-    public List<InvoiceSummaryItemModel> Items { get; set; } = new List<InvoiceSummaryItemModel>();
+    public List<InvoiceSummaryItemModel> Items { get; set; } = [];
 }

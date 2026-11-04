@@ -148,9 +148,9 @@ public class AuthorizationControllerTest
         Assert.Equal(Email, principal.GetClaim(Claims.Email));
         Assert.Equal(Email, principal.GetClaim(IdentityClaims.Nickname));
         Assert.Equal(IdentityClaims.LocalIdentityProvider, principal.GetClaim(IdentityClaims.IdentityProvider));
-        Assert.Equal([CovenantConstants.Role.Worker], principal.GetClaims(Claims.Role).ToArray());
+        Assert.Equal([CovenantConstants.Role.Worker], [.. principal.GetClaims(Claims.Role)]);
         Assert.Contains(Scopes.OfflineAccess, principal.GetScopes());
-        Assert.Equal(["covenant-api"], principal.GetResources().ToArray());
+        Assert.Equal(["covenant-api"], [.. principal.GetResources()]);
     }
 
     [Fact]
@@ -160,7 +160,7 @@ public class AuthorizationControllerTest
         var withoutRoles = Assert.IsType<SignInResult>(await Controller(PasswordGrant()).Exchange()).Principal;
 
         Assert.Contains(Destinations.IdentityToken, withRoles.Claims.Single(c => c.Type == Claims.Role).GetDestinations());
-        Assert.Equal([Destinations.AccessToken], withoutRoles.Claims.Single(c => c.Type == Claims.Role).GetDestinations().ToArray());
+        Assert.Equal([Destinations.AccessToken], [.. withoutRoles.Claims.Single(c => c.Type == Claims.Role).GetDestinations()]);
         Assert.Contains(Destinations.IdentityToken, withoutRoles.Claims.Single(c => c.Type == Claims.Subject).GetDestinations());
     }
 
@@ -210,8 +210,8 @@ public class AuthorizationControllerTest
         ClaimsPrincipal principal = Assert.IsType<SignInResult>(result).Principal;
         Assert.Equal("functions", principal.GetClaim(Claims.Subject));
         Assert.Equal("Sigook Functions", principal.GetClaim(Claims.Name));
-        Assert.Equal(["api1"], principal.GetScopes().ToArray());
-        Assert.All(principal.Claims, c => Assert.Equal([Destinations.AccessToken], c.GetDestinations().ToArray()));
+        Assert.Equal(["api1"], [.. principal.GetScopes()]);
+        Assert.All(principal.Claims, c => Assert.Equal([Destinations.AccessToken], [.. c.GetDestinations()]));
     }
 
     [Fact]

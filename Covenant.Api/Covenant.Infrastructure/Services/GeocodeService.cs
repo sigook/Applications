@@ -9,21 +9,12 @@ using System.Text.Json;
 
 namespace Covenant.Infrastructure.Services;
 
-public class GeocodeService : IGeocodeService
+public class GeocodeService(
+    IOptions<GeocodeGoogleConfiguration> options,
+    IHttpClientFactory httpClientFactory,
+    ILogger<GeocodeService> logger) : IGeocodeService
 {
-    private readonly IHttpClientFactory httpClientFactory;
-    private readonly ILogger<GeocodeService> logger;
-    private readonly GeocodeGoogleConfiguration configuration;
-
-    public GeocodeService(
-        IOptions<GeocodeGoogleConfiguration> options,
-        IHttpClientFactory httpClientFactory,
-        ILogger<GeocodeService> logger)
-    {
-        this.httpClientFactory = httpClientFactory;
-        this.logger = logger;
-        configuration = options.Value;
-    }
+    private readonly GeocodeGoogleConfiguration configuration = options.Value;
 
     public async Task<GeocodeGeometryLocation> GetLocationGeocode(string address)
     {

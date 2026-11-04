@@ -29,18 +29,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<InvoicesControllerTest.Startup, InvoicesControllerTest.Data>>
+public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControllerTest.Startup, InvoicesControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<InvoicesControllerTest.Startup, InvoicesControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public InvoicesControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
@@ -66,8 +59,8 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     {
         var model = new CreateInvoiceModel
         {
-            AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
-            Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
+            AdditionalItems = [new CreateInvoiceItemModel(1, 100, "Item")],
+            Discounts = [new CreateInvoiceItemModel(1, 50, "Discount")],
             CompanyProfileId = _data.ForPreview.CompanyProfile.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{InvoicesController.RouteName}/Preview", model);
@@ -84,8 +77,8 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
     {
         var model = new CreateInvoiceModel
         {
-            AdditionalItems = new[] { new CreateInvoiceItemModel(1, 100, "Item") },
-            Discounts = new[] { new CreateInvoiceItemModel(1, 50, "Discount") },
+            AdditionalItems = [new CreateInvoiceItemModel(1, 100, "Item")],
+            Discounts = [new CreateInvoiceItemModel(1, 50, "Discount")],
             CompanyProfileId = _data.ForPost.CompanyProfile.Id
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync(InvoicesController.RouteName, model);
@@ -320,7 +313,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             services.AddSingleton(Teams.Object);
             var currentUserService = new Mock<Covenant.Common.Interfaces.ICurrentUserService>();
             currentUserService.Setup(s => s.GetAgencyId()).Returns(Data.AgencyId);
-            currentUserService.Setup(s => s.GetAgencyIds()).Returns(new List<Guid> { Data.AgencyId });
+            currentUserService.Setup(s => s.GetAgencyIds()).Returns([Data.AgencyId]);
             currentUserService.Setup(s => s.GetUserId()).Returns(Data.CurrentUser.Id);
             services.AddSingleton(currentUserService.Object);
         }
@@ -339,13 +332,9 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             });
         }
 
-        private class InvoiceRepositoryTest : InvoiceRepository
+        private class InvoiceRepositoryTest(CovenantContext context) : InvoiceRepository(context)
         {
             private static long _id = 1;
-
-            public InvoiceRepositoryTest(CovenantContext context) : base(context)
-            {
-            }
 
             public override Task<NextNumberModel> GetNextInvoiceNumber(Guid agencyId) => Task.FromResult(new NextNumberModel { NextNumber = _id++ });
         }
@@ -413,7 +402,7 @@ public class InvoicesControllerTest : BaseTestOrder, IClassFixture<SeededWebAppl
             private readonly TimeSheet[] timeSheets;
 
             public CompanyProfile CompanyProfile { get; }
-            public Guid[] TimeSheetIds => timeSheets.Select(t => t.Id).ToArray();
+            public Guid[] TimeSheetIds => [.. timeSheets.Select(t => t.Id)];
 
             public BillableCompany(Agency agency, City city, string key)
             {

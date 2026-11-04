@@ -16,6 +16,6 @@ public class RunnerDetailModel
     public DateTime CreatedAt { get; set; }
     public Guid CreatedBy { get; set; }
     public DateTime? UpdatedAt { get; set; }
-    public IEnumerable<RunnerStatusHistoryModel> StatusHistory { get; set; } = new List<RunnerStatusHistoryModel>();
-    public IEnumerable<RunnerInterviewModel> Interviews { get; set; } = new List<RunnerInterviewModel>();
+    public IEnumerable<RunnerStatusHistoryModel> StatusHistory { get; set; } = [];
+    public IEnumerable<RunnerInterviewModel> Interviews { get; set; } = [];
 }

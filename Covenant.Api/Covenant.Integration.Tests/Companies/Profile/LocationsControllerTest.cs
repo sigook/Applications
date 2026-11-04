@@ -17,10 +17,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Profile;
 
-public class LocationsControllerTest : ControllerBase, IClassFixture<CustomWebApplicationFactory<LocationsControllerTest.Startup>>
+public class LocationsControllerTest(CustomWebApplicationFactory<LocationsControllerTest.Startup> factory) : ControllerBase, IClassFixture<CustomWebApplicationFactory<LocationsControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-    public LocationsControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()
@@ -152,11 +151,11 @@ public class LocationsControllerTest : ControllerBase, IClassFixture<CustomWebAp
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile
         {
             Company = new User(CvnEmail.Create("company@company.com").Value),
-            Locations = new List<CompanyProfileLocation>
-            {
+            Locations =
+            [
                 new CompanyProfileLocation {Location = new Location {Address = "ABC",City = new City {Province = new Province{Country = FakeData.FakeCountry("CA")}}}},
                 new CompanyProfileLocation {Location = new Location {Address = "DFG",City = new City {Province = new Province{Country =FakeData.FakeCountry("CA")}}}}
-            }
+            ]
         , Industry = new CompanyProfileIndustry("Test") , Agency = FakeData.FakeAgency() };
     }
 }

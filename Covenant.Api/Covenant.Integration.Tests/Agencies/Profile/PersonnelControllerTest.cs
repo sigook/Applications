@@ -21,18 +21,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Profile;
 
-public class PersonnelControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<PersonnelControllerTest.Startup, PersonnelControllerTest.Data>>
+public class PersonnelControllerTest(SeededWebApplicationFactory<PersonnelControllerTest.Startup, PersonnelControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<PersonnelControllerTest.Startup, PersonnelControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public PersonnelControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => PersonnelController.RouteName;
 
@@ -274,7 +267,6 @@ public class PersonnelControllerTest : BaseTestOrder, IClassFixture<SeededWebApp
 
     public class Startup
     {
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();

@@ -1,7 +1,6 @@
-﻿namespace Covenant.Common.Interfaces
+﻿namespace Covenant.Common.Interfaces;
+
+public interface IDocumentService
 {
-    public interface IDocumentService
-    {
-        Task DeleteFile(Guid documentId);
-    }
+    Task DeleteFile(Guid documentId);
 }

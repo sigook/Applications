@@ -22,15 +22,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Workers.Requests;
 
-public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
+public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-    public RequestsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => RequestsController.RouteName;
 

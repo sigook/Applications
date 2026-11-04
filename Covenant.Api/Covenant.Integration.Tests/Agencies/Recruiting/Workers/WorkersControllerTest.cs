@@ -95,8 +95,8 @@ public partial class WorkersControllerTest : BaseTestOrder
         FakeAgency = new Agency { Id = FakeAgencyUser.Id, User = FakeAgencyUser };
         FakeWorkerProfileToFilter = new WorkerProfile(new User(CvnEmail.Create("some@e.com").Value))
         {
-            AvailabilityTimes = new List<WorkerProfileAvailabilityTime> { new WorkerProfileAvailabilityTime { AvailabilityTime = new AvailabilityTime { Value = "Morning" } } },
-            AvailabilityDays = new List<WorkerProfileAvailabilityDay> { new WorkerProfileAvailabilityDay { Day = new Day { Value = "Monday" } } },
+            AvailabilityTimes = [new WorkerProfileAvailabilityTime { AvailabilityTime = new AvailabilityTime { Value = "Morning" } }],
+            AvailabilityDays = [new WorkerProfileAvailabilityDay { Day = new Day { Value = "Monday" } }],
             Location = new Location { City = new City { Province = FakeData.FakeProvince(), Value = "Toronto" } },
             ApprovedToWork = true,
             HavePoliceCheckBackground = true,
@@ -106,24 +106,24 @@ public partial class WorkersControllerTest : BaseTestOrder
             IdentificationType1File = new CovenantFile("type.pdf"),
             IdentificationType2File = new CovenantFile("type.pdf"),
             PoliceCheckBackGround = new CovenantFile("type.pdf"),
-            Certificates = new List<WorkerProfileCertificate>(), //Requires SQL
-            Skills = new List<WorkerProfileSkill>(), //Requires SQL
-            Licenses = new List<WorkerProfileLicense>(), //Requires SQL
-            Languages = new List<WorkerProfileLanguage>
-            {
+            Certificates = [], //Requires SQL
+            Skills = [], //Requires SQL
+            Licenses = [], //Requires SQL
+            Languages =
+            [
                 new WorkerProfileLanguage {Language = new Language {Value = "English"}},
                 new WorkerProfileLanguage {Language = new Language {Value = "Spanish"}}
-            },
+            ],
             Resume = new CovenantFile("resume.pdf"),
-            JobExperiences = new List<WorkerProfileJobExperience>
-            {
+            JobExperiences =
+            [
                 new WorkerProfileJobExperience {Duties = "Some duty one"},
                 new WorkerProfileJobExperience {Duties = "Some duty two"}
-            },
-            LocationPreferences = new List<WorkerProfileLocationPreference>
-            {
+            ],
+            LocationPreferences =
+            [
                 new WorkerProfileLocationPreference {City = new City {Value = "Toronto", Province = FakeData.FakeProvince()}}
-            },
+            ],
             Agency = FakeAgency,
             CreatedBy = FakeAgency.User.Email,
             PunchCardId = "SIGOOK-0987654321"
@@ -161,8 +161,8 @@ public partial class WorkersControllerTest : BaseTestOrder
         basicInformation.SetupGet(i => i.Gender).Returns(FakeGender);
         FakeWorkerProfileToFilter.PatchOtherInformation(new WorkerProfileOtherInformationModel { Lift = new BaseModel<Guid>(FakeLift.Id) });
         FakeWorkerProfileToFilter.PatchBasicInformation(basicInformation.Object);
-        FakeWorkerProfileToFilter.PatchAvailabilities(new[] { new BaseModel<Guid>(FakeAvailabilityPartTime.Id) });
-        FakeWorkerProfileToFilter.PatchAvailabilities(new[] { new BaseModel<Guid>(FakeAvailabilityPartTime.Id) });
+        FakeWorkerProfileToFilter.PatchAvailabilities([new BaseModel<Guid>(FakeAvailabilityPartTime.Id)]);
+        FakeWorkerProfileToFilter.PatchAvailabilities([new BaseModel<Guid>(FakeAvailabilityPartTime.Id)]);
         FakeWorkerProfileToFilter.AddOtherDocuments(new List<CovenantFile> { new CovenantFile("contract.pdf", "contract doc") });
         _client = _factory.CreateClient();
         Seed(_factory.Services.GetService<CovenantContext>());

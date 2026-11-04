@@ -21,17 +21,14 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Sales;
 
-public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
+public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<RequestsControllerTest.Startup>>
 {
     private const string SalesRequestsUri = SalesRequestsController.RouteName;
 
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-
-    public RequestsControllerTest(CustomWebApplicationFactory<Startup> factory) => _factory = factory;
 
     private HttpClient ClientAs(string role, Guid sub)
     {
-        HttpClient client = _factory.CreateClient();
+        HttpClient client = factory.CreateClient();
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, role);
         client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, sub.ToString());
         return client;
@@ -47,7 +44,7 @@ public class RequestsControllerTest : BaseTestOrder, IClassFixture<CustomWebAppl
     {
         response.EnsureSuccessStatusCode();
         var list = await response.Content.ReadFromJsonAsync<AgencyRequestsPagedResponse>();
-        return list.Items.Select(i => i.Id).ToList();
+        return [.. list.Items.Select(i => i.Id)];
     }
 
     [Fact]

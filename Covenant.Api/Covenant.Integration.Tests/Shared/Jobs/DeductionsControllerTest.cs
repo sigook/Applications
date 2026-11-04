@@ -12,19 +12,13 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared.Jobs;
 
-public class DeductionsControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<DeductionsControllerTest.Startup>>
+public class DeductionsControllerTest(CustomWebApplicationFactory<DeductionsControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<DeductionsControllerTest.Startup>>
 {
     private const string CppBlob = "CPP WEEKLY 2026.pdf";
     private const string TaxBlob = "TAX MONTHLY 2026.pdf";
 
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public DeductionsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

@@ -5,18 +5,11 @@ namespace Covenant.Api.HealthChecks;
 /// <summary>
 /// Health check that validates Azure Service Bus connection string configuration exists
 /// </summary>
-public class ServiceBusConfigurationHealthCheck : IHealthCheck
+public class ServiceBusConfigurationHealthCheck(
+    string connectionString,
+    ILogger<ServiceBusConfigurationHealthCheck> logger) : IHealthCheck
 {
-    private readonly string _connectionString;
-    private readonly ILogger<ServiceBusConfigurationHealthCheck> _logger;
-
-    public ServiceBusConfigurationHealthCheck(
-        string connectionString,
-        ILogger<ServiceBusConfigurationHealthCheck> logger)
-    {
-        _connectionString = connectionString;
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    }
+    private readonly ILogger<ServiceBusConfigurationHealthCheck> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
 
     public Task<HealthCheckResult> CheckHealthAsync(
         HealthCheckContext context,
@@ -24,7 +17,7 @@ public class ServiceBusConfigurationHealthCheck : IHealthCheck
     {
         try
         {
-            if (string.IsNullOrWhiteSpace(_connectionString))
+            if (string.IsNullOrWhiteSpace(connectionString))
             {
                 _logger.LogWarning("Service Bus connection string is missing or empty");
 

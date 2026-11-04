@@ -7,23 +7,18 @@ using MediatR;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateInvoicesReport : IRequest<ResultGenerateDocument<byte[]>>
+public class GenerateInvoicesReport(IReadOnlyList<InvoiceListModel> model) : IRequest<ResultGenerateDocument<byte[]>>
 {
-    public GenerateInvoicesReport(IReadOnlyList<InvoiceListModel> model)
-    {
-        Model = model;
-    }
+    public IReadOnlyList<InvoiceListModel> Model { get; } = model;
 
-    public IReadOnlyList<InvoiceListModel> Model { get; }
-
-    public IEnumerable<string> Columns => new string[]
-    {
+    public IEnumerable<string> Columns =>
+    [
         "N° Invoice",
         "Created At",
         "Company",
         "Total",
         "Status"
-    };
+    ];
 }
 
 public class GenerateInvoicesReportHandler : IRequestHandler<GenerateInvoicesReport, ResultGenerateDocument<byte[]>>
@@ -33,7 +28,7 @@ public class GenerateInvoicesReportHandler : IRequestHandler<GenerateInvoicesRep
         using var memoryStream = new MemoryStream();
         using var workbook = new XLWorkbook();
         var sheet = workbook.Worksheets.Add("Report");
-        sheet.SetupHeaders(request.Columns.ToArray());
+        sheet.SetupHeaders([.. request.Columns]);
         var startAt = 2;
         for (int i = 0; i < request.Model.Count; i++)
         {

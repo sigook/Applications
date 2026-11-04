@@ -26,7 +26,7 @@ public class PayrollDocumentAdapter : IPayrollDocumentAdapter
             EndDate = model.EndDate,
             CreatedAt = model.CreatedAt,
             PaymentDate = model.PaymentDate,
-            Table1Items = model.Items.Select((c, i) => new PayrollTable1Item
+            Table1Items = model.Items.Select(c => new PayrollTable1Item
             {
                 Description = c.Description,
                 Quantity = c.Quantity,
@@ -72,9 +72,9 @@ public class PayrollDocumentAdapter : IPayrollDocumentAdapter
             var result = new List<PayrollTable2Item>(4)
             {
                 new PayrollTable2Item("Gross Payment (+)", model.Gross.ToCaMoney()),
-                new PayrollTable2Item("Vacations (+)", model.Vacations.ToCaMoney())
+                new PayrollTable2Item("Vacations (+)", model.Vacations.ToCaMoney()),
+                new PayrollTable2Item("Total Earnings (+)", model.Earnings.ToCaMoney())
             };
-            result.Add(new PayrollTable2Item("Total Earnings (+)", model.Earnings.ToCaMoney()));
             return result;
         }
 

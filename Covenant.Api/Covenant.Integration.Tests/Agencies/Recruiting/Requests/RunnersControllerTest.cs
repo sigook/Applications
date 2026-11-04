@@ -28,16 +28,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
-public class RunnersControllerTest : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
+public class RunnersControllerTest(CustomWebApplicationFactory<RunnersControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<RunnersControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public RunnersControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri(Guid requestId = default) =>
         RunnersController.RouteName.Replace("{requestId}", (requestId == default ? Startup.FakeRequest.Id : requestId).ToString());

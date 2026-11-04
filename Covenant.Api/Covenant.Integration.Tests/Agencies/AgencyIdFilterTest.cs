@@ -20,14 +20,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies;
 
-public class AgencyIdFilterTest : ControllerBase, IClassFixture<CustomWebApplicationFactory<AgencyIdFilterTest.Startup>>
+public class AgencyIdFilterTest(CustomWebApplicationFactory<AgencyIdFilterTest.Startup> factory) : ControllerBase, IClassFixture<CustomWebApplicationFactory<AgencyIdFilterTest.Startup>>
 {
-    private readonly HttpClient _client;
-
-    public AgencyIdFilterTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _client = factory.CreateClient();
-    }
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()

@@ -18,17 +18,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Workers;
 
-public class WorkersControllerEmailTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerEmailTest.Startup>>
+public class WorkersControllerEmailTest(CustomWebApplicationFactory<WorkersControllerEmailTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<WorkersControllerEmailTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
     private static string RequestUri() => WorkersController.RouteName;
-
-    public WorkersControllerEmailTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
 
     [Fact]
     public async Task Email()

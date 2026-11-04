@@ -8,40 +8,29 @@ using Microsoft.Extensions.Logging;
 
 namespace Covenant.Core.BL.Services.Locations;
 
-public class LocationService : ILocationService
+public class LocationService(
+    ICatalogRepository catalogRepository,
+    ILocationRepository locationRepository,
+    ILogger<LocationService> logger) : ILocationService
 {
-    private readonly ICatalogRepository _catalogRepository;
-    private readonly ILocationRepository _locationRepository;
-    private readonly ILogger<LocationService> _logger;
-
-    public LocationService(
-        ICatalogRepository catalogRepository,
-        ILocationRepository locationRepository,
-        ILogger<LocationService> logger)
-    {
-        _catalogRepository = catalogRepository;
-        _locationRepository = locationRepository;
-        _logger = logger;
-    }
-
     public async Task<List<CountryModel>> GetCountries()
     {
-        return await _catalogRepository.GetCountries();
+        return await catalogRepository.GetCountries();
     }
 
     public async Task<List<ProvinceModel>> GetProvinces(Guid countryId)
     {
-        return await _catalogRepository.GetProvinces(countryId);
+        return await catalogRepository.GetProvinces(countryId);
     }
 
     public async Task<List<ProvinceModel>> GetProvinces(string countryCode)
     {
-        return await _catalogRepository.GetProvinces(countryCode);
+        return await catalogRepository.GetProvinces(countryCode);
     }
 
     public async Task<List<CityModel>> GetCities(Guid provinceId)
     {
-        return await _catalogRepository.GetCities(provinceId);
+        return await catalogRepository.GetCities(provinceId);
     }
 
     public async Task<Result<Guid>> AddCity(CityModel model)
@@ -65,14 +54,14 @@ public class LocationService : ILocationService
 
             var city = new City(model.Value.ToUpper(), model.Province.Id);
 
-            await _catalogRepository.Create(city);
-            await _catalogRepository.SaveChangesAsync();
+            await catalogRepository.Create(city);
+            await catalogRepository.SaveChangesAsync();
 
             return Result.Ok(city.Id);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating city: {CityName}", model?.Value);
+            logger.LogError(ex, "Error creating city: {CityName}", model?.Value);
             return Result.Fail<Guid>("An error occurred while creating the city");
         }
     }
@@ -96,21 +85,21 @@ public class LocationService : ILocationService
                 model.PaidHolidays,
                 model.OvertimeStartsAfter.HasValue ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value) : null);
 
-            await _catalogRepository.UpsertProvinceSettings(settings);
-            await _catalogRepository.SaveChangesAsync();
+            await catalogRepository.UpsertProvinceSettings(settings);
+            await catalogRepository.SaveChangesAsync();
 
             return Result.Ok();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error upserting province settings for province: {ProvinceId}", provinceId);
+            logger.LogError(ex, "Error upserting province settings for province: {ProvinceId}", provinceId);
             return Result.Fail("An error occurred while saving province settings");
         }
     }
 
     public async Task<LocationTaxModel> GetLocationTax(Guid locationId)
     {
-        var tax = await _locationRepository.GetLocationTax(locationId);
+        var tax = await locationRepository.GetLocationTax(locationId);
         if (tax is null)
         {
             return null;
@@ -122,8 +111,8 @@ public class LocationService : ILocationService
 
     public async Task<Result> UpsertLocationTax(Guid locationId, LocationTaxModel model)
     {
-        await _locationRepository.UpsertLocationTax(locationId, model.Tax1 / 100m);
-        await _locationRepository.SaveChangesAsync();
+        await locationRepository.UpsertLocationTax(locationId, model.Tax1 / 100m);
+        await locationRepository.SaveChangesAsync();
 
         return Result.Ok();
     }

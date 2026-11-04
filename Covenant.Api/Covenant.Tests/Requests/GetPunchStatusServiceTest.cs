@@ -130,5 +130,5 @@ public class GetPunchStatusServiceTest
 
     private void SetWeek(params TimeSheet[] timeSheets) =>
         _timeSheetRepository.Setup(r => r.GetTimesheetsSince(_workerId, _requestId, It.IsAny<DateTime>()))
-            .ReturnsAsync(timeSheets.ToList());
+            .ReturnsAsync([.. timeSheets]);
 }

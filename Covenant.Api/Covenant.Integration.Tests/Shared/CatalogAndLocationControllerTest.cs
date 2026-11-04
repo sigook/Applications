@@ -12,16 +12,10 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Shared;
 
-public class CatalogAndLocationControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<CatalogAndLocationControllerTest.Startup, CatalogAndLocationControllerTest.Data>>
+public class CatalogAndLocationControllerTest(SeededWebApplicationFactory<CatalogAndLocationControllerTest.Startup, CatalogAndLocationControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<CatalogAndLocationControllerTest.Startup, CatalogAndLocationControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-
-    public CatalogAndLocationControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

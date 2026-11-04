@@ -1,8 +1,7 @@
-namespace Covenant.Common.Models.Locations
+namespace Covenant.Common.Models.Locations;
+
+public class GeocodeResponse
 {
-    public class GeocodeResponse
-    {
-        public string Status { get; set; }
-        public List<GeocodeResult> Results { get; set; } = new List<GeocodeResult>();
-    }
+    public string Status { get; set; }
+    public List<GeocodeResult> Results { get; set; } = [];
 }

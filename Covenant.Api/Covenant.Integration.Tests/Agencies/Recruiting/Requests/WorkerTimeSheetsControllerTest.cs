@@ -23,20 +23,13 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
-public class WorkerTimeSheetsControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup, WorkerTimeSheetsControllerTest.Data>>
+public class WorkerTimeSheetsControllerTest(SeededWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup, WorkerTimeSheetsControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<WorkerTimeSheetsControllerTest.Startup, WorkerTimeSheetsControllerTest.Data>>
 {
     private const string Nickname = "recruiter";
 
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public WorkerTimeSheetsControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 

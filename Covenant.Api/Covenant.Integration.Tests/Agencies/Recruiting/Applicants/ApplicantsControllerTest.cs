@@ -22,16 +22,10 @@ using RecruitingApplicantsController = Covenant.Api.Controllers.Agencies.Recruit
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Applicants;
 
-public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactory<ApplicantsControllerTest.Startup>>
+public class ApplicantsControllerTest(CustomWebApplicationFactory<ApplicantsControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<ApplicantsControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public ApplicantsControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private async Task<AgencyApplicantsPagedResponse> Get(string query = "")
     {
@@ -86,7 +80,7 @@ public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactor
     public async Task GetReturnsComplianceProgress()
     {
         AgencyApplicantsPagedResponse page = await Get();
-        List<AgencyApplicantListModel> applicants = page.Items.SelectMany(r => r.Applicants).ToList();
+        List<AgencyApplicantListModel> applicants = [.. page.Items.SelectMany(r => r.Applicants)];
 
         AgencyApplicantListModel confirmed = applicants.Single(i => i.Id == Startup.FakeApplicantConfirmed.Id);
         Assert.Equal(2, confirmed.ComplianceTotal);
@@ -157,7 +151,7 @@ public class ApplicantsControllerTest : IClassFixture<CustomWebApplicationFactor
     public async Task GetFiltersByStatus()
     {
         AgencyApplicantsPagedResponse page = await Get($"?statuses={(int)RequestApplicantStatus.InProgress}");
-        List<AgencyApplicantListModel> applicants = page.Items.SelectMany(r => r.Applicants).ToList();
+        List<AgencyApplicantListModel> applicants = [.. page.Items.SelectMany(r => r.Applicants)];
         Assert.All(applicants, i => Assert.Equal(RequestApplicantStatus.InProgress, i.Status));
         Assert.Contains(applicants, i => i.Id == Startup.FakeApplicantInProgress.Id);
         Assert.DoesNotContain(page.Items, r => r.RequestId == Startup.FakeSoonRequest.Id);

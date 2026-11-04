@@ -14,7 +14,6 @@ using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Services.Requests;
 using Covenant.Core.BL.Services;
 using MediatR;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
@@ -46,7 +45,6 @@ public class AgencyRejectWorkerServiceTest
             Mock.Of<IEmailService>(),
             Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
-            Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
@@ -78,7 +76,6 @@ public class AgencyRejectWorkerServiceTest
             Mock.Of<IEmailService>(),
             Mock.Of<IMessagePublisher>(),
             Options.Create(new ServiceBusConfiguration()),
-            Mock.Of<ILogger<RequestService>>(),
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),

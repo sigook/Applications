@@ -29,18 +29,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
 
-public class ReportsControllerTest : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<ReportsControllerTest.Startup, ReportsControllerTest.Data>>
+public class ReportsControllerTest(SeededWebApplicationFactory<ReportsControllerTest.Startup, ReportsControllerTest.Data> factory) : BaseTestOrder, IClassFixture<SeededWebApplicationFactory<ReportsControllerTest.Startup, ReportsControllerTest.Data>>
 {
-    private readonly SeededWebApplicationFactory<Startup, Data> _factory;
-    private readonly Data _data;
-    private readonly HttpClient _client;
-
-    public ReportsControllerTest(SeededWebApplicationFactory<Startup, Data> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-        _data = factory.Data;
-    }
+    private readonly SeededWebApplicationFactory<Startup, Data> _factory = factory;
+    private readonly Data _data = factory.Data;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string Range(DateTime from, DateTime to) => $"startDate={from:yyyy-MM-dd}&endDate={to:yyyy-MM-dd}";
 

@@ -15,10 +15,9 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Companies.Requests;
 
-public class ShiftControllerTest : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ShiftControllerTest.Startup>>
+public class ShiftControllerTest(CustomWebApplicationFactory<ShiftControllerTest.Startup> factory) : BaseTestOrder, IClassFixture<CustomWebApplicationFactory<ShiftControllerTest.Startup>>
 {
-    private readonly HttpClient _client;
-    public ShiftControllerTest(CustomWebApplicationFactory<Startup> factory) => _client = factory.CreateClient();
+    private readonly HttpClient _client = factory.CreateClient();
 
     [Fact]
     public async Task Get()

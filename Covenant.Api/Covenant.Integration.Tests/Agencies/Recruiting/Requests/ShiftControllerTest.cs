@@ -20,17 +20,11 @@ using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Recruiting.Requests;
 
-public class ShiftControllerTest :
+public class ShiftControllerTest(CustomWebApplicationFactory<ShiftControllerTest.Startup> factory) :
     IClassFixture<CustomWebApplicationFactory<ShiftControllerTest.Startup>>
 {
-    private readonly CustomWebApplicationFactory<Startup> _factory;
-    private readonly HttpClient _client;
-
-    public ShiftControllerTest(CustomWebApplicationFactory<Startup> factory)
-    {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
+    private readonly HttpClient _client = factory.CreateClient();
 
     private static string RequestUri() => ShiftController.RouteName.Replace("{requestId}",
         Data.FakeRequest.Id.ToString());

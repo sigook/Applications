@@ -57,7 +57,7 @@ public static class PrincipalExtensions
     {
         if (!user.IsAgencyStaff())
         {
-            return new List<Guid>();
+            return [];
         }
 
         string agencyIdsString = user.FindFirst(CovenantConstants.AgencyIds)?.Value;
@@ -66,7 +66,7 @@ public static class PrincipalExtensions
         {
             // Fallback to single agency ID if AgencyIds claim is not present
             var agencyId = user.GetAgencyId();
-            return agencyId != Guid.Empty ? new List<Guid> { agencyId } : new List<Guid>();
+            return agencyId != Guid.Empty ? [agencyId] : [];
         }
 
         var agencyIds = agencyIdsString

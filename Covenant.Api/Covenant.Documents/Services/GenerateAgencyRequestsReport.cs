@@ -5,15 +5,10 @@ using Covenant.Common.Models.Requests;
 
 namespace Covenant.Documents.Services;
 
-public class GenerateAgencyRequestsReport : GenerateAgencyReport<AgencyRequestListModel>
+public class GenerateAgencyRequestsReport(IReadOnlyList<AgencyRequestListModel> model) : GenerateAgencyReport<AgencyRequestListModel>(model)
 {
-    public GenerateAgencyRequestsReport(IReadOnlyList<AgencyRequestListModel> model)
-        : base(model)
-    {
-    }
-
-    public override IEnumerable<string> Columns => new string[]
-    {
+    public override IEnumerable<string> Columns =>
+    [
         "Request ID",
         "Client",
         "Location",
@@ -24,7 +19,7 @@ public class GenerateAgencyRequestsReport : GenerateAgencyReport<AgencyRequestLi
         "Rate / Salary",
         "Workers",
         "Status"
-    };
+    ];
 }
 
 public class GenerateAgencyRequestReportHandler : GenerateAgencyReportHandler<GenerateAgencyRequestsReport, AgencyRequestListModel>
