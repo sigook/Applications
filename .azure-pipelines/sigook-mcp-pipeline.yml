@@ -1,7 +1,7 @@
-# Azure Pipeline for Sigook.Mcp (.NET 10 global tool, MCP server)
-# Builds on PRs; publishes the tool to the Azure Artifacts feed `sigook-tools`:
-#   dev  -> prerelease  <VersionPrefix>-dev.<BuildId>
-#   main -> stable      <VersionPrefix> (manual run)
+# Azure Pipeline for Sigook.Mcp (Node MCP server, npm package @sigook/mcp)
+# Builds and tests on PRs; publishes the package to the Azure Artifacts feed `sigook-tools`:
+#   dev  -> prerelease  <package.json version>-dev.<BuildId>, dist-tag `dev`
+#   main -> stable      <package.json version>, dist-tag `latest` (manual run)
 
 name: Sigook.Mcp-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
@@ -12,8 +12,6 @@ trigger:
   paths:
     include:
       - Sigook.Mcp/**
-    exclude:
-      - Sigook.Mcp/**/*.md
 
 pr:
   branches:
@@ -27,69 +25,61 @@ pool:
   name: 'covenant-build-pool'
 
 variables:
-  dotnetSdkVersion: '10.0.401'
-  feedUrl: 'https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/nuget/v3/index.json'
+  nodeVersion: '22.x'
   ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
     versionSuffix: ''
+    distTag: 'latest'
   ${{ else }}:
-    versionSuffix: 'dev.$(Build.BuildId)'
+    versionSuffix: '-dev.$(Build.BuildId)'
+    distTag: 'dev'
 
 stages:
   - stage: Build_and_Publish
-    displayName: 'Build and Publish Tool'
+    displayName: 'Build and Publish Package'
     jobs:
-      - job: Build_Tool
-        displayName: 'Build, Pack and Push Sigook.Mcp'
+      - job: Build_Package
+        displayName: 'Build, Test and Publish @sigook/mcp'
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
             fetchDepth: 1
 
-          - template: templates/dotnet-setup.yml
+          - template: templates/node-setup.yml
             parameters:
-              sdkVersion: $(dotnetSdkVersion)
+              nodeVersion: $(nodeVersion)
 
-          - template: templates/dotnet-build-test.yml
-            parameters:
-              buildProjects: 'Sigook.Mcp/Sigook.Mcp.slnx'
-              buildConfiguration: 'Release'
-              runUnitTests: false
+          - script: npm ci
+            displayName: 'Install Dependencies'
+            workingDirectory: Sigook.Mcp
+
+          - script: npm test
+            displayName: 'Build and Test'
+            workingDirectory: Sigook.Mcp
 
           - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
-            - task: DotNetCoreCLI@2
-              displayName: 'Pack Tool'
-              inputs:
-                command: 'custom'
-                custom: 'pack'
-                arguments: 'Sigook.Mcp/Sigook.Mcp/Sigook.Mcp.csproj --configuration Release --no-build --output $(Build.ArtifactStagingDirectory)/nupkg --version-suffix "$(versionSuffix)"'
-
-            - task: NuGetAuthenticate@1
+            - task: npmAuthenticate@0
               displayName: 'Authenticate to Azure Artifacts'
-
-            - task: DotNetCoreCLI@2
-              displayName: 'Push to sigook-tools'
               inputs:
-                command: 'custom'
-                custom: 'nuget'
-                arguments: 'push "$(Build.ArtifactStagingDirectory)/nupkg/*.nupkg" --source "$(feedUrl)" --api-key az --skip-duplicate'
+                workingFile: Sigook.Mcp/.npmrc
 
             - task: Bash@3
-              displayName: 'Publish Summary'
+              displayName: 'Publish to sigook-tools'
               inputs:
                 targetType: 'inline'
+                workingDirectory: Sigook.Mcp
                 script: |
-                  echo ""
-                  echo "============================================"
-                  echo "📦 Sigook.Mcp published to sigook-tools"
-                  echo "============================================"
-                  ls -1 "$(Build.ArtifactStagingDirectory)/nupkg"
-                  echo ""
-                  echo "Install / update:"
-                  echo "dotnet tool install -g Sigook.Mcp --add-source $(feedUrl) --interactive --prerelease"
-                  echo "dotnet tool update  -g Sigook.Mcp --add-source $(feedUrl) --interactive --prerelease"
-                  echo ""
+                  set -euo pipefail
+                  base=$(node -p "require('./package.json').version")
+                  version="${base}$(versionSuffix)"
+                  npm version "$version" --no-git-tag-version --allow-same-version
+                  if npm view "@sigook/mcp@$version" version >/dev/null 2>&1; then
+                    echo "@sigook/mcp@$version already published; skipping."
+                    exit 0
+                  fi
+                  npm publish --tag "$(distTag)"
+                  echo "Published @sigook/mcp@$version (dist-tag $(distTag))"
 
           - template: templates/cleanup.yml
             parameters:
-              cleanDotnet: true
+              cleanNodeModules: true
               workingDirectory: 'Sigook.Mcp'

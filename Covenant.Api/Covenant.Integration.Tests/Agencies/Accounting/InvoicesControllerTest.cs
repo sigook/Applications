@@ -180,7 +180,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
             It.IsAny<string>(),
             It.Is<TeamsNotificationModel>(n => n.Text.Contains(overdue.InvoiceNumber) && !n.Text.Contains(current.InvoiceNumber))), Times.AtLeastOnce);
 
-        var due = await GetInvoices($"?status={(int)InvoiceStatus.Due}");
+        var due = await GetInvoices($"?statuses={(int)InvoiceStatus.Due}");
         InvoiceListModel row = due.Detail.Items.Single(i => i.Id == overdue.Id);
         Assert.Equal(overdue.CreatedAt.Date.AddDays(paymentTermDays), row.DueDate);
         Assert.Equal(5, row.DueDays);
@@ -210,7 +210,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         Invoice invoice = await PostInvoice(_data.ForList);
         (await ChangeStatus(invoice.Id, InvoiceStatus.Paid)).EnsureSuccessStatusCode();
 
-        var paid = await GetInvoices($"?status={(int)InvoiceStatus.Paid}");
+        var paid = await GetInvoices($"?statuses={(int)InvoiceStatus.Paid}");
         Assert.NotNull(paid);
         Assert.All(paid.Detail.Items, row => Assert.Equal(InvoiceStatus.Paid, row.Status));
         InvoiceListModel row = paid.Detail.Items.Single(i => i.Id == invoice.Id);
@@ -219,10 +219,27 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         Assert.Equal(DateTime.Today, row.PaidAt?.Date);
         Assert.Equal(0, row.DueDays);
 
-        var pending = await GetInvoices($"?status={(int)InvoiceStatus.Pending}");
+        var pending = await GetInvoices($"?statuses={(int)InvoiceStatus.Pending}");
         Assert.NotNull(pending);
         Assert.All(pending.Detail.Items, item => Assert.Equal(InvoiceStatus.Pending, item.Status));
         Assert.DoesNotContain(pending.Detail.Items, i => i.Id == invoice.Id);
+    }
+
+    [Fact]
+    public async Task GetInvoices_FiltersBySeveralStatuses()
+    {
+        Invoice paid = await PostInvoice(_data.ForStatusesPaid);
+        (await ChangeStatus(paid.Id, InvoiceStatus.Paid)).EnsureSuccessStatusCode();
+        Invoice pending = await PostInvoice(_data.ForStatusesPending);
+
+        var both = await GetInvoices($"?statuses[0]={(int)InvoiceStatus.Paid}&statuses[1]={(int)InvoiceStatus.Pending}");
+        Assert.Contains(both.Detail.Items, i => i.Id == paid.Id);
+        Assert.Contains(both.Detail.Items, i => i.Id == pending.Id);
+
+        var dueOrPaid = await GetInvoices($"?statuses[0]={(int)InvoiceStatus.Due}&statuses[1]={(int)InvoiceStatus.Paid}");
+        Assert.Contains(dueOrPaid.Detail.Items, i => i.Id == paid.Id);
+        Assert.DoesNotContain(dueOrPaid.Detail.Items, i => i.Id == pending.Id);
+        Assert.All(dueOrPaid.Detail.Items, row => Assert.Contains(row.Status, new[] { InvoiceStatus.Due, InvoiceStatus.Paid }));
     }
 
     [Fact]
@@ -357,6 +374,8 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         public BillableCompany ForUpdatePaidAt { get; }
         public BillableCompany ForSameStatus { get; }
         public BillableCompany ForList { get; }
+        public BillableCompany ForStatusesPaid { get; }
+        public BillableCompany ForStatusesPending { get; }
         public BillableCompany ForDelete { get; }
         public BillableCompany ForOverdue { get; }
         public BillableCompany ForNotOverdue { get; }
@@ -364,7 +383,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         public BillableCompany ForPaymentsReport { get; }
         public BillableCompany ForDateFilters { get; }
 
-        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForUpdatePaidAt, ForSameStatus, ForList, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport, ForDateFilters];
+        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForUpdatePaidAt, ForSameStatus, ForList, ForStatusesPaid, ForStatusesPending, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport, ForDateFilters];
 
         public Data()
         {
@@ -377,6 +396,8 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
             ForUpdatePaidAt = new BillableCompany(Agency, toronto, "update-paid-at");
             ForSameStatus = new BillableCompany(Agency, toronto, "same-status");
             ForList = new BillableCompany(Agency, toronto, "list");
+            ForStatusesPaid = new BillableCompany(Agency, toronto, "statuses-paid");
+            ForStatusesPending = new BillableCompany(Agency, toronto, "statuses-pending");
             ForDelete = new BillableCompany(Agency, toronto, "delete");
             ForOverdue = new BillableCompany(Agency, toronto, "overdue");
             ForNotOverdue = new BillableCompany(Agency, toronto, "not-overdue");

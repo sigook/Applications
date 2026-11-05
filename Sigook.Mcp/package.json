@@ -1,0 +1,40 @@
+{
+  "name": "@sigook/mcp",
+  "version": "1.0.0",
+  "description": "MCP server that lets an AI harness operate Sigook through its public API.",
+  "type": "module",
+  "private": false,
+  "license": "UNLICENSED",
+  "bin": {
+    "sigook-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "instructions"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "publishConfig": {
+    "registry": "https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/registry/"
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "tsc && node --test \"dist/**/*.test.js\""
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "@napi-rs/keyring": "^2.1.2",
+    "adm-zip": "^0.6.1",
+    "csv-parse": "^7.0.3",
+    "mammoth": "^1.13.0",
+    "unpdf": "^1.9.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/adm-zip": "^0.5.8",
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2"
+  }
+}

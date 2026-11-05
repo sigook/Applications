@@ -50,10 +50,9 @@
         </b-table-column>
         <b-table-column field="status" label="Status" sortable searchable>
           <template v-slot:searchable>
-            <b-select v-model="serverParams.status" size="is-small" expanded @update:modelValue="onStatusChange">
-              <option :value="null">All</option>
-              <option v-for="s in INVOICE_STATUSES" :key="s" :value="s">{{ INVOICE_STATUS_LABELS[s] }}</option>
-            </b-select>
+            <b-taginput size="is-small" v-model="statusesSelected" autocomplete :data="statusOptions" open-on-focus
+              field="value" icon="label" placeholder="Select Status" append-to-body>
+            </b-taginput>
           </template>
           <template v-slot="props">
             <b-tooltip :label="statusTooltip(props.row)" :active="!!props.row.updatedByName" type="is-dark" position="is-top"
@@ -144,7 +143,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { computed, ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { downloadFile, downloadPDF, openFileUrl } from '@/shared/utils/downloadFile';
@@ -158,7 +157,7 @@ import MarkInvoicePaidModal from '@/modules/agency/accounting/invoices/component
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { accountingCrumbs } from '@/shared/ui/breadcrumbs';
 import type { AgencyInvoiceFilter, AgencyInvoiceListItem } from '@/modules/agency/accounting/invoices/types';
-import type { GridHandle, PaginatedList } from '@/shared/types/common';
+import type { CatalogItem, GridHandle, PaginatedList } from '@/shared/types/common';
 
 const agencyStore = useAgencyStore();
 const grid = useTemplateRef<GridHandle>('grid');
@@ -216,9 +215,18 @@ function onDateRangeCleared(key: DateRangeKey) {
   onDateRangeSelected(key);
 }
 
-function onStatusChange() {
-  grid.value?.search();
-}
+const statusOptions: CatalogItem<InvoiceStatus>[] = INVOICE_STATUSES.map((status) => ({
+  id: status,
+  value: INVOICE_STATUS_LABELS[status],
+}));
+
+const statusesSelected = computed<CatalogItem<InvoiceStatus>[]>({
+  get: () => statusOptions.filter((option) => serverParams.value.statuses?.includes(option.id)),
+  set: (options) => {
+    serverParams.value.statuses = options.length ? options.map((option) => option.id) : undefined;
+    grid.value?.search();
+  },
+});
 
 function statusTooltip(invoice: AgencyInvoiceListItem): string {
   return `Updated: ${invoice.updatedByName} · ${dateMonth(invoice.updatedAt ?? null)}`;

@@ -50,7 +50,7 @@ export interface AgencyInvoiceFilter {
   paidAtFrom?: string | null;
   paidAtTo?: string | null;
   companyFullName?: string;
-  status?: InvoiceStatus | null;
+  statuses?: InvoiceStatus[];
 }
 
 // Item returned inside the list response. Mirrors backend InvoiceListModel.

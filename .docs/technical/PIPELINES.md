@@ -44,7 +44,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Sigook.Mcp (`SigookMcp-CICD`) | `sigook-mcp-pipeline.yml` | `Sigook.Mcp/**` on `dev` and PRs to `dev`; manual on `main` | Build+Pack+Push (single job) | Azure Artifacts feed `sigook-tools` (prerelease from `dev`, stable from `main`) |
+| Sigook.Mcp (`SigookMcp-CICD`) | `sigook-mcp-pipeline.yml` | `Sigook.Mcp/**` on `dev` and PRs to `dev`; manual on `main` | Build+Test+Publish (single job) | Azure Artifacts feed `sigook-tools` (prerelease from `dev`, stable from `main`) |
 | Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
 **Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `release-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still run validation.
@@ -288,18 +288,18 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 - Deploy: `AzureFunctionApp@2` to `sigook-functions` (runtime stack `DOTNET-ISOLATED|10.0`, configured on the Function App, not in the repo)
 - Production: `https://sigook-functions.azurewebsites.net`
 
-### Sigook.Mcp (.NET 10 global tool, MCP server)
+### Sigook.Mcp (Node npm package, MCP server)
 
 **Build naming:** `Sigook.Mcp-YYYY.M.D.r`
 
-**Trigger:** pushes to `dev` touching `Sigook.Mcp/**` (docs excluded) and PRs to `dev`; manual run from `main` for a stable version.
+**Trigger:** pushes to `dev` touching `Sigook.Mcp/**` and PRs to `dev`; manual run from `main` for a stable version.
 
-**Single stage and job - Build, Pack and Push:**
-- .NET SDK 10.0.401
-- Build `Sigook.Mcp/Sigook.Mcp.slnx` (Release, no tests yet)
-- Not on PRs (left out at compile time): `dotnet pack --version-suffix` → `NuGetAuthenticate@1` → `dotnet nuget push --skip-duplicate` to `https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/nuget/v3/index.json`
-- Version = `<VersionPrefix>` of the csproj; `dev` builds get the suffix `dev.<BuildId>` (prerelease), `main` runs publish the bare prefix (stable). Bump `VersionPrefix` before a stable release; `--skip-duplicate` keeps re-runs green.
-- Feed `sigook-tools` (project `sigook`, id `32651ba0-bb2e-4877-9fdf-d6ac5d0fc44a`): both build services are Contributor, `Project Collection Valid Users` are Reader, so anyone in the Azure DevOps org can `dotnet tool install` it. No upstreams.
+**Single stage and job - Build, Test and Publish:**
+- Node 22
+- `npm ci` + `npm test` in `Sigook.Mcp/` (compiles and runs the unit tests)
+- Not on PRs (left out at compile time): `npmAuthenticate@0` → `npm publish` to `https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/registry/`
+- Version = `version` of `package.json`; `dev` builds get the suffix `-dev.<BuildId>` and the dist-tag `dev` (prerelease), `main` runs publish the bare version with the dist-tag `latest` (stable). Bump `version` before a stable release; an already published version is skipped so re-runs stay green.
+- Feed `sigook-tools` (project `sigook`, id `32651ba0-bb2e-4877-9fdf-d6ac5d0fc44a`): both build services are Contributor, `Project Collection Valid Users` are Reader, so anyone in the Azure DevOps org can install from it. No upstreams: `Sigook.Mcp/.npmrc` routes only the `@sigook` scope to the feed.
 
 ### Sigook.CognitiveServices (.NET 8 Web App)
 

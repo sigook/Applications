@@ -23916,10 +23916,10 @@
             }
           },
           {
-            "name": "Status",
+            "name": "Statuses",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -24109,10 +24109,10 @@
             }
           },
           {
-            "name": "Status",
+            "name": "Statuses",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -24236,10 +24236,10 @@
             }
           },
           {
-            "name": "Status",
+            "name": "Statuses",
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+              "$ref": "#/components/schemas/System.Collections.Generic.List`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
             }
           },
           {
@@ -34256,6 +34256,12 @@
           "$ref": "#/components/schemas/Covenant.Common.Enums.InteractionStatus"
         }
       },
+      "System.Collections.Generic.List`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Enums.InvoiceStatus"
+        }
+      },
       "System.Collections.Generic.List`1[[Covenant.Common.Enums.RequestApplicantStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
@@ -34722,9 +34728,6 @@
         "type": "integer"
       },
       "System.Nullable`1[[Covenant.Common.Enums.InteractionType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "integer"
-      },
-      "System.Nullable`1[[Covenant.Common.Enums.InvoiceStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "integer"
       },
       "System.Nullable`1[[Covenant.Common.Enums.RunnerStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
