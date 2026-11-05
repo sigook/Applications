@@ -267,8 +267,8 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
         predicate = predicate
             .AndSearch(filter.InvoiceNumber, i => i.InvoiceNumber)
             .AndSearch(filter.CompanyFullName, i => i.CompanyFullName, i => i.SalesRepresentative);
-        if (filter.Status.HasValue)
-            predicate = predicate.And(i => i.Status == filter.Status.Value);
+        if (filter.Statuses is { Count: > 0 })
+            predicate = predicate.And(i => filter.Statuses.Contains(i.Status));
         return predicate;
     }
 

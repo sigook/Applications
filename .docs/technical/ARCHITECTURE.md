@@ -10,7 +10,7 @@ Monorepo with six applications. Each has its own `CLAUDE.md` with app-specific c
 | `Covenant.Web/` | Vue 3 + Vuetify | Public marketing website |
 | `Sigook.App/` | Flutter | Worker mobile app |
 | `Sigook.CognitiveServices/` | .NET 8 | AI/speech services (Azure Cognitive) |
-| `Sigook.Mcp/` | .NET 10 + `ModelContextProtocol` 2.3.1 | MCP server (stdio) for AI harnesses; calls the API as the signed-in person (`Sigook.Mcp.slnx`) |
+| `Sigook.Mcp/` | Node 22 + TypeScript + `@modelcontextprotocol/sdk` | MCP server (stdio) for AI harnesses; calls the API as the signed-in person (npm package `@sigook/mcp`) |
 
 ---
 

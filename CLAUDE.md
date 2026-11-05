@@ -57,7 +57,7 @@ If you change business rules, update the corresponding `.docs/` file.
 | `Sigook.Web/` | Vue 3 | Agency web portal (main platform) — see `Sigook.Web/CLAUDE.md` |
 | `Covenant.Web/` | Vue 3 | Marketing website (public-facing) — see `Covenant.Web/CLAUDE.md` |
 | `Sigook.CognitiveServices/` | .NET | AI/ML services (Azure Cognitive) — see `Sigook.CognitiveServices/CLAUDE.md` |
-| `Sigook.Mcp/` | .NET 10 | MCP server (stdio) that lets Claude Code operate Sigook through the API as the signed-in person — see `.docs/technical/SIGOOK_MCP.md` |
+| `Sigook.Mcp/` | Node 22 / TypeScript | MCP server (stdio) that lets Claude Code operate Sigook through the API as the signed-in person — see `.docs/technical/SIGOOK_MCP.md` |
 
 ## User Preferences
 

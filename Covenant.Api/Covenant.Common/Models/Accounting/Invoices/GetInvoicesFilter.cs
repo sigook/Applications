@@ -20,7 +20,7 @@ public class GetInvoicesFilter : Pagination
     public DateTime? PaidAtFrom { get; set; }
     public DateTime? PaidAtTo { get; set; }
     public string CompanyFullName { get; set; }
-    public InvoiceStatus? Status { get; set; }
+    public List<InvoiceStatus> Statuses { get; set; }
 
     public GetInvoicesFilterSortBy? SortBy { get; set; }
 }

@@ -39,9 +39,9 @@
     },
     "sigook": {
       "type": "stdio",
-      "command": "dotnet",
+      "command": "node",
       "args": [
-        "Sigook.Mcp/Sigook.Mcp/bin/Debug/net10.0/Sigook.Mcp.dll"
+        "Sigook.Mcp/dist/index.js"
       ],
       "env": {
         "SIGOOK_ENV": "staging"
