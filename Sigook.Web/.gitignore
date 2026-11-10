@@ -9,6 +9,10 @@ wwwroot/
 out/
 dist/
 
+# Test output
+coverage/
+test-results/
+
 # pnpm is the package manager; never commit an npm lockfile
 package-lock.json
 

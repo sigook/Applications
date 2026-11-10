@@ -77,6 +77,9 @@ pnpm run staging                 # Build staging (Vite)
 pnpm run production              # Build production (Vite)
 pnpm run type-check              # TypeScript check
 pnpm run lint                    # ESLint
+pnpm test                        # Unit tests (Vitest)
+pnpm run test:watch              # Unit tests in watch mode
+pnpm run test:ci                 # Unit tests + coverage + JUnit (what CI runs)
 pnpm run format                  # Prettier
 pnpm run preview                 # Preview production build
 ```

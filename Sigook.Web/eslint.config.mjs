@@ -11,6 +11,8 @@ export default [
       'dist/**',
       'node_modules/**',
       'wwwroot/**',
+      'coverage/**',
+      'test-results/**',
       'public/**',
       '*.config.js',
       '*.config.mjs'

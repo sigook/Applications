@@ -12,14 +12,3 @@ ClockType clockTypeFromInt(int type) {
       return ClockType.none;
   }
 }
-
-int clockTypeToInt(ClockType type) {
-  switch (type) {
-    case ClockType.none:
-      return 0;
-    case ClockType.clockIn:
-      return 1;
-    case ClockType.clockOut:
-      return 2;
-  }
-}

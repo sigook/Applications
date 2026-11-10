@@ -6,7 +6,7 @@ import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
 import '../../../../../../core/widgets/inputs/date_picker_field.dart';
-import '../../../../../../core/widgets/navigation/document_preview_page.dart';
+import '../../../../../../core/pages/document_preview_page.dart';
 import '../../../../domain/validators/profile_validators.dart';
 import '../../../../sin/presentation/viewmodels/sin_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';

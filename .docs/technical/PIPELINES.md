@@ -105,6 +105,7 @@ Built and deployed by [Release](#release-covenantapi--sigookweb).
 - pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Lint with ESLint, TypeScript type-check (the only `vue-tsc` run)
+- Unit tests with Vitest (`pnpm run test:ci`); a failing test fails the PR. JUnit results (`test-results/junit.xml`) go to the run's Tests tab and Cobertura coverage (`coverage/cobertura-coverage.xml`) to its Code Coverage tab, both published even when tests fail
 - Release on `dev`/`main` only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
 - `pnpm exec vite build --mode staging|production` into `wwwroot/` — runs on PRs too (always `staging`) so bundling errors fail the PR
 - Release on `dev`/`main` only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`

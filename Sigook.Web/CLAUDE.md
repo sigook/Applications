@@ -55,4 +55,5 @@ Rules enforced by ESLint (`no-restricted-imports` in `eslint.config.mjs`):
 - `<script setup>` + Composition API for new/modernized components
 - API layer = plain TS functions in each feature's `api.ts` (and `src/shared/api/*.ts`), no dispatch strings
 - Forms: VeeValidate 4 + Yup schemas
+- Unit tests: Vitest + `@vue/test-utils` on `happy-dom` (`vitest.config.ts` merges `vite.config.ts`, so the `@` alias works). Specs live next to the file they test as `<name>.spec.ts`, import `describe/it/expect/vi` explicitly (no globals), and are type-checked by `vue-tsc` and linted like any source file. Composables run inside `effectScope()`; time-based code uses `vi.useFakeTimers()`. CI runs `pnpm run test:ci` and blocks the PR on failure
 - Fully typed — `any` is an ESLint error (`@typescript-eslint/no-explicit-any`); missing types go in the feature's `types.ts` (or `src/shared/*/types.ts`), form shapes for `useStickyForm<…>` may live in the `.vue`

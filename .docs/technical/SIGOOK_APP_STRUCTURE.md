@@ -1,6 +1,6 @@
 # Sigook.App Codebase Structure
 
-Flutter app for workers (Android + iOS). Stack: Dart ^3.9.2, Flutter 3.47.4, Riverpod (`@riverpod` notifiers), Freezed + json_serializable, dartz (`Either<Failure, T>`), Equatable, Dio, go_router, flutter_appauth / native password grant against the Covenant.Api OpenIddict server, flutter_secure_storage.
+Flutter app for workers (Android + iOS). Stack: Dart ^3.9.2, Flutter 3.47.4, Riverpod (`@riverpod` notifiers), Freezed + json_serializable, dartz (`Either<Failure, T>`), Equatable, Dio, go_router, native password grant (ROPC) against the Covenant.Api OpenIddict server, flutter_secure_storage, sqflite (jobs cache).
 
 The source tree follows **Clean Architecture per feature**: every feature owns a `domain/`, `data/` and `presentation/` layer, and `core/` holds the infrastructure shared by all of them. `Sigook.App/CLAUDE.md` is the normative rulebook (layer rules, viewmodel/providers patterns, import depths, naming, checklist); this document is the map.
 
@@ -37,17 +37,17 @@ lib/
 ├── main_production.dart
 │
 ├── core/
-│   ├── config/                # EnvironmentConfig (String.fromEnvironment), FeatureFlags
-│   ├── constants/             # ErrorMessages (loaded at startup), app constants
+│   ├── config/                # EnvironmentConfig (String.fromEnvironment)
+│   ├── constants/             # ErrorMessages (error_messages_en.json, loaded at startup), AuthErrorCodes, ClockType
 │   ├── error/                 # Exceptions (thrown by datasources) and Failures (returned by repositories)
-│   ├── l10n/                  # Localization
 │   ├── network/               # ApiClient (Dio) + AuthInterceptor, DioErrorInterceptor, CrashReportingInterceptor, NetworkInfo
+│   ├── pages/                 # Full-screen pages shared across features: DocumentPreviewPage
 │   ├── providers/             # core_providers (sharedPreferences, secureStorage, networkInfo, apiClient), analytics_providers
 │   ├── routing/               # AppRouter (go_router), AppRoutes constants, session redirect. Jobs · Activity · Profile are the three branches of a StatefulShellRoute (AppShell bottom bar, each branch keeps its state); job details, About, Privacy and Terms are pushed over it without the bar
 │   ├── services/              # FilePicker, FileNaming, Location, Analytics, CrashReporting (Azure App Insights)
 │   ├── theme/                 # AppTheme (colors, typography)
 │   ├── usecases/              # UseCase<T, Params> base class, NoParams
-│   ├── utils/                 # Extensions (date, number, string)
+│   ├── utils/                 # String extensions (splitPascalCase, htmlToPlainText), geo, map links, phone formatter, enum converters
 │   └── widgets/               # Shared UI, grouped by kind (see table below)
 │
 └── features/
@@ -61,7 +61,6 @@ lib/
     ├── comments/              # Comments the agency left on the worker (read-only section)
     ├── catalog/               # Read-only catalogs (availabilities, languages, ...)
     ├── app_update/            # Forced-update gate: GET api/mobileapp/version vs. build number, re-checked on resume
-    ├── settings/              # Language settings
     ├── legal/                 # Terms and privacy policy pages
     └── about/                 # Static info page
 ```
@@ -100,8 +99,8 @@ Page / Section  ──ref.watch──▶  ViewModel  ──ref.read──▶  Us
 
 | Layer | Throws / returns | Types |
 |-------|------------------|-------|
-| Datasource | throws | `ServerException`, `NetworkException`, `CacheException` |
-| Repository | catches, returns `Either` | `Left(ServerFailure)`, `Left(NetworkFailure)`, `Left(CacheFailure)`, `Right(value)` |
+| Datasource | throws | `ServerException`, `NetworkException`, `ParseException` |
+| Repository | catches, returns `Either` | `Left(ServerFailure)`, `Left(NetworkFailure)`, `Left(CacheFailure)` (local storage errors in auth/registration), `Right(value)` |
 | Use case / ViewModel | receives `Either` | `fold` into state fields |
 | Page | reacts to state | snackbar on `error`, success snackbar on `justSaved` |
 
@@ -109,17 +108,14 @@ The repository is the exception-to-failure boundary. Nothing above it sees an ex
 
 ## Core Widgets (`lib/core/widgets/`)
 
-Check here before writing a new widget. Everything is re-exported from `core/widgets/widgets.dart`.
+Check here before writing a new widget. There is no barrel file: import each widget by its path.
 
 | Folder | Widget | Purpose |
 |--------|--------|---------|
-| `buttons/` | `ActionButton` | Primary/secondary button with loading state |
-| | `FilePickerButton` | Opens `FilePickerService` with the allowed extensions |
+| `buttons/` | `OpenPunchCardButton` | OPEN PUNCH CARD action on active assignment cards |
 | `cards/` | `CustomCard` | Base card container |
-| | `InfoCard` | Card with icon, title and body |
 | | `ProfileSectionCard` | Profile section container: icon, title, gradient, trailing action, children |
-| `display/` | `InfoRow` | Label + value row |
-| | `ProfileInfoRow` | Label + value row with icon, switches to a text field in edit mode |
+| `display/` | `ProfileInfoRow` | Label + value row with icon, switches to a text field in edit mode |
 | | `ChipDisplayRow` | Row of chips for list values (languages, availabilities) |
 | | `StatusBadge` | Colored status pill |
 | | `GradientIconContainer` | Rounded gradient box around an icon |
@@ -127,13 +123,13 @@ Check here before writing a new widget. Everything is re-exported from `core/wid
 | | `ErrorStateWidget` | Error message with retry button |
 | | `EmptyStateWidget` | Empty list placeholder |
 | | `EnvironmentBanner` | Orange "Local"/"Staging" banner above every screen; hidden in production |
-| | `NetworkStatusBanner` | Offline banner driven by `NetworkInfo` |
 | | `ProfileSnackBar` | Success/error snackbar helpers |
-| `inputs/` | `CustomTextField`, `CustomDropdown`, `DatePickerField` | Themed form controls |
-| `layout/` | `PageScaffold` | Standard page scaffold (app bar, drawer, padding) |
-| | `SectionDivider` | Titled divider between sections |
+| `inputs/` | `CustomTextField`, `DatePickerField` | Themed form controls |
 | `navigation/` | `NavbarLogo`, `AppTabBar`, `AppShell` | App logo for app bars; white icon + label tab bar used as `AppBar.bottom` (Job, Activity, Profile); bottom `NavigationBar` (Jobs · Activity · Profile) wrapping the shell route. There is no side menu: About and Logout live in Profile › Account. The Profile destination shows a red badge with the number of missing approval requirements (`ProfileNavIcon`; "not approved to work" does not count and stays only on Jobs) |
-| | `DocumentPreviewPage` | In-app viewer for uploaded documents (PDF via `pdfx`, images via `Image.memory`) with a Share action; files are fetched into memory from the public blob URL, written to `tmp/preview/` only when shared, and that folder is cleared on app start |
+
+## Core Pages (`lib/core/pages/`)
+
+`DocumentPreviewPage`: In-app viewer for uploaded documents (PDF via `pdfx`, images via `Image.memory`) with a Share action; files are fetched into memory from the public blob URL, written to `tmp/preview/` only when shared, and that folder is cleared on app start
 
 ## Core Services (`lib/core/`)
 
