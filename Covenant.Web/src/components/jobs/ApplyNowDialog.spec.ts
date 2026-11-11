@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { flushPromises, type VueWrapper } from '@vue/test-utils'
+import type { VueWrapper } from '@vue/test-utils'
 import { VFileInput } from 'vuetify/components'
+import { settle } from '@/testing/settle'
 import { mountWithPlugins } from '@/testing/mountWithPlugins'
 import { applicationService } from '@/services/applicationService'
 import { locationService } from '@/services/locationService'
@@ -46,13 +47,6 @@ const sources = [
 function form() {
   if (!captured.form) throw new Error('form not created')
   return captured.form
-}
-
-async function settle() {
-  for (let i = 0; i < 3; i++) {
-    await flushPromises()
-    await new Promise((resolve) => setTimeout(resolve, 0))
-  }
 }
 
 async function mountDialog(selectedJob: Job | null = null) {

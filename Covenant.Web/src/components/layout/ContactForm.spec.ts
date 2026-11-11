@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
+import { settle } from '@/testing/settle'
 import { mountWithPlugins } from '@/testing/mountWithPlugins'
 import { contactService } from '@/services/contactService'
 import { locationService } from '@/services/locationService'
@@ -31,13 +32,6 @@ async function fill(wrapper: VueWrapper) {
 
 function verifyCaptcha(wrapper: VueWrapper) {
   wrapper.findComponent({ name: 'Vue3Recaptcha2' }).vm.$emit('verify', 'captcha-token')
-}
-
-async function settle() {
-  for (let i = 0; i < 3; i++) {
-    await flushPromises()
-    await new Promise((resolve) => setTimeout(resolve, 0))
-  }
 }
 
 async function submit(wrapper: VueWrapper) {

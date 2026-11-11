@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { flushPromises, type VueWrapper } from '@vue/test-utils'
+import { settle } from '@/testing/settle'
 import { mountAt } from '@/testing/mountWithPlugins'
 import { jobService } from '@/services/jobService'
 import { useJobs } from '@/composables/useJobs'
@@ -47,13 +48,6 @@ function mockMobile(matches: boolean) {
       matches = next
       listeners.forEach((l) => l({ matches: next }))
     },
-  }
-}
-
-async function settle() {
-  for (let i = 0; i < 3; i++) {
-    await flushPromises()
-    await new Promise((resolve) => setTimeout(resolve, 0))
   }
 }
 
