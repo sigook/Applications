@@ -35,8 +35,8 @@ import { createWorkerOther } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CatalogItem } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   liftId: yup.mixed().required('Lift is required'),
@@ -54,34 +54,33 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const lifts = ref<CatalogItem[]>([]);
 
-function saveWorkerOther(values: { liftId: string | null }) {
+async function saveWorkerOther(values: { liftId: string | null }) {
   isLoading.value = true;
-  const payload = { lift: { id: values.liftId } };
-  createWorkerOther(props.data.id, payload)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  const payload = { lift: values.liftId ? { id: values.liftId } : null };
+  try {
+    await createWorkerOther(data.id, payload);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    saveWorkerOther(values);
+  void form.handleSubmit(async (values) => {
+    await saveWorkerOther(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-(async () => {
+void (async () => {
   lifts.value = await fetchLifts();
-  if (props.data != null && props.data.lift) {
+  if (data.lift) {
     form.hydrate({
-      liftId: props.data.lift.id || null,
+      liftId: data.lift.id || null,
     });
   }
 })();

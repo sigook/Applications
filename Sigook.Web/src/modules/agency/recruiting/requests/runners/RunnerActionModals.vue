@@ -23,8 +23,8 @@ import RunnerInterviewModal from '@/modules/agency/recruiting/requests/runners/R
 import RunnerHistoryModal from '@/modules/agency/recruiting/requests/runners/RunnerHistoryModal.vue';
 import type { RunnerActionTarget } from '@/modules/agency/recruiting/requests/runners/useRunnerActions';
 
-defineProps<{ target: RunnerActionTarget | null }>();
-const emit = defineEmits<{ (e: 'updated'): void }>();
+const { target } = defineProps<{ target: RunnerActionTarget | null }>();
+const emit = defineEmits<(e: 'updated') => void>();
 
 const statusOpen = defineModel<boolean>('statusOpen', { required: true });
 const interviewOpen = defineModel<boolean>('interviewOpen', { required: true });

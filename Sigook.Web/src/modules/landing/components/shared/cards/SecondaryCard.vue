@@ -47,18 +47,14 @@ export type SecondaryCardVariant = 'blue' | 'cyan' | 'red'
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/modules/landing/composables/useRevealOnScroll'
 
-withDefaults(defineProps<{
+const { variant = 'cyan', eyebrow, title, list, delay = 0, expanded = false } = defineProps<{
   variant?: SecondaryCardVariant
   eyebrow?: string
   title?: string
   list?: readonly string[]
   delay?: number
   expanded?: boolean
-}>(), {
-  variant: 'cyan',
-  delay: 0,
-  expanded: false,
-})
+}>()
 
 const { el: cardRef, visible } = useRevealOnScroll()
 </script>

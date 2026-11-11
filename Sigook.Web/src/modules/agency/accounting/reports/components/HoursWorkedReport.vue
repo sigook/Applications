@@ -144,7 +144,7 @@ async function loadCompanies() {
 }
 
 async function onDatesSelected() {
-  if (dates.value && dates.value.length === 2) {
+  if (dates.value.length === 2) {
     serverParams.value.startDate = dayjs(dates.value[0]).format('YYYY-MM-DD');
     serverParams.value.endDate = dayjs(dates.value[1]).format('YYYY-MM-DD');
     await loadJobPositions();
@@ -163,7 +163,7 @@ async function selectCompany(company: CompanyProfileListItem | null) {
 
 async function loadJobPositions() {
   const companyProfileId = serverParams.value.companyProfileId;
-  if (companyProfileId && dates.value && dates.value.length === 2) {
+  if (companyProfileId && dates.value.length === 2) {
     isLoadingJobPositions.value = true;
     jobPositions.value = await getJobPositionsHoursWorked({ ...serverParams.value, companyProfileId });
     isLoadingJobPositions.value = false;
@@ -184,27 +184,31 @@ async function getReport() {
   if (!valid) return;
   isLoadingReport.value = true;
   isLoading.value = true;
-  getHoursWorkedReport(serverParams.value)
-    .then((response) => {
-      report.value = {
-        ...response,
-        rows: response.detail
-      };
-      reportGenerated.value = true;
-    }).catch(error => {
-      showAlertError(error);
-    }).finally(() => {
-      isLoadingReport.value = false;
-      isLoading.value = false;
-    });
+  try {
+    const response = await getHoursWorkedReport(serverParams.value);
+    report.value = {
+      ...response,
+      rows: response.detail
+    };
+    reportGenerated.value = true;
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoadingReport.value = false;
+    isLoading.value = false;
+  }
 }
 
-function onExport() {
+async function onExport() {
   isLoading.value = true;
-  downloadAgencyReport('/api/agency/accounting/reports/hours-worked/file', serverParams.value)
-    .then((file) => downloadFile(file, `Hours Worked Report_${new Date().toLocaleDateString()}`))
-    .catch((error) => showAlertError(error))
-    .finally(() => isLoading.value = false);
+  try {
+    const file = await downloadAgencyReport('/api/agency/accounting/reports/hours-worked/file', serverParams.value);
+    downloadFile(file, `Hours Worked Report_${new Date().toLocaleDateString()}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const filteredCompanies = computed(() =>
@@ -214,7 +218,7 @@ const filteredJobPositions = computed(() =>
   jobPositions.value.filter((jp) => (jp.jobPosition || '').toLowerCase().includes(jobPositionSelected.value.toLowerCase()))
 );
 
-(async () => {
+void (async () => {
   await loadCompanies();
 })();
 </script>

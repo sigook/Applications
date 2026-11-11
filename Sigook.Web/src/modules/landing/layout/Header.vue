@@ -98,7 +98,7 @@
 <script setup lang="ts">
 import '@/assets/scss/tokens.scss';
 import LandingIcon from '@/modules/landing/components/shared/icons/LandingIcon.vue';
-import { ref, computed, onMounted, onUnmounted, watch, nextTick } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch, nextTick, useTemplateRef } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useSecurityStore } from '@/app/stores/security';
 import menu from '@/app/security/menu';
@@ -116,7 +116,7 @@ const securityStore = useSecurityStore();
 
 const isScrolled = ref(false);
 const mobileOpen = ref(false);
-const drawerRef = ref<HTMLElement | null>(null);
+const drawerRef = useTemplateRef<HTMLElement>('drawerRef');
 const { lock, unlock } = useBodyScrollLock();
 useFocusTrap(mobileOpen, drawerRef);
 
@@ -136,7 +136,7 @@ function observeHeroLogo(): void {
   heroLogoObserver?.disconnect();
   heroLogoObserver = null;
   heroLogoVisible.value = false;
-  nextTick(() => {
+  void nextTick(() => {
     const el = document.querySelector('.hero__logo');
     if (!el) return;
     heroLogoObserver = new IntersectionObserver(
@@ -155,9 +155,9 @@ function onSignIn(): void {
   mobileOpen.value = false;
   if (securityStore.user) {
     const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
-    router.push(homePageUrl);
+    void router.push(homePageUrl);
   } else {
-    router.push('/login');
+    void router.push('/login');
   }
 }
 

@@ -75,10 +75,10 @@ const { fetchJobs } = useJobs()
 
 const handleSearch = () => {
   // Limpiar el querystring (especialmente jobId)
-  router.replace({ query: {} })
+  void router.replace({ query: {} })
 
   // Llamamos al composable con los filtros
-  fetchJobs({
+  void fetchJobs({
     jobTitle: filters.jobTitle || undefined,
     location: filters.location || undefined
   })

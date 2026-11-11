@@ -55,23 +55,22 @@ const isLoading = ref(false);
 const getNotes = ({ userId, pagination }: NotesFetchPayload) => getWorkerProfileNotes(userId, pagination);
 const createNote = ({ userId, model }: NotesCreatePayload) => createWorkerProfileNote(userId, model);
 
-function loadNotes(index: number) {
+async function loadNotes(index: number) {
     isLoading.value = true;
-    getWorkerProfileNotes(workerId, { page: index, size: pageSize })
-        .then(response => {
-            isLoading.value = false;
-            notesList.value = response;
-        })
-        .catch(error => {
-            isLoading.value = false;
-            showAlertError(error);
-        });
+    try {
+        const response = await getWorkerProfileNotes(workerId, { page: index, size: pageSize });
+        isLoading.value = false;
+        notesList.value = response;
+    } catch (error) {
+        isLoading.value = false;
+        showAlertError(error);
+    }
 }
 
 function onCloseModalNotes() {
     showModalNotes.value = false;
-    loadNotes(pageIndex.value);
+    void loadNotes(pageIndex.value);
 }
 
-loadNotes(pageIndex.value);
+void loadNotes(pageIndex.value);
 </script>

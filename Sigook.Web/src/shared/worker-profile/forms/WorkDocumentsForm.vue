@@ -116,8 +116,8 @@ interface DocsForm {
   identificationNumber2: string;
 }
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   identificationType1: yup.mixed().required('Identification type is required'),
@@ -143,7 +143,7 @@ const { identificationType1, identificationNumber1, identificationType2, identif
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const worker = ref<Partial<WorkerProfileDetail>>({});
+const worker = ref<WorkerProfileDetail>({ ...data });
 const identificationTypes = ref<IdentificationType[]>([]);
 
 function catalogType(type: IdentificationType | null | undefined): IdentificationType | null {
@@ -207,13 +207,13 @@ async function saveDocuments(values: DocsForm) {
     };
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
-    if (fileObjects.identificationType1) {
-      const fn = worker.value.identificationType1File.fileName;
-      formData.append(fn, fileObjects.identificationType1, fn);
+    const fn1 = worker.value.identificationType1File?.fileName;
+    if (fileObjects.identificationType1 && fn1) {
+      formData.append(fn1, fileObjects.identificationType1, fn1);
     }
-    if (fileObjects.identificationType2) {
-      const fn = worker.value.identificationType2File.fileName;
-      formData.append(fn, fileObjects.identificationType2, fn);
+    const fn2 = worker.value.identificationType2File?.fileName;
+    if (fileObjects.identificationType2 && fn2) {
+      formData.append(fn2, fileObjects.identificationType2, fn2);
     }
     await createWorkerDocuments(worker.value.id, formData);
     emit('closeModal', true);
@@ -226,24 +226,22 @@ async function saveDocuments(values: DocsForm) {
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    saveDocuments(values);
+  void form.handleSubmit(async (values) => {
+    await saveDocuments(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-(async () => {
+void (async () => {
   identificationTypes.value = await getIdentificationTypes();
-  if (props.data != null) {
-    worker.value = { ...props.data };
-    form.hydrate({
-      identificationType1: catalogType(props.data.identificationType1),
-      identificationNumber1: props.data.identificationNumber1 || '',
-      identificationType2: catalogType(props.data.identificationType2),
-      identificationNumber2: props.data.identificationNumber2 || '',
-    });
-  }
+  worker.value = { ...data };
+  form.hydrate({
+    identificationType1: catalogType(data.identificationType1),
+    identificationNumber1: data.identificationNumber1 || '',
+    identificationType2: catalogType(data.identificationType2),
+    identificationNumber2: data.identificationNumber2 || '',
+  });
 })();
 </script>
 

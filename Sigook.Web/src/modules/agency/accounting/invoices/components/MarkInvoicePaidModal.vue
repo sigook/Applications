@@ -29,12 +29,12 @@ import { InvoiceStatus } from '@/modules/agency/accounting/invoices/types';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import type { AgencyInvoiceListItem } from '@/modules/agency/accounting/invoices/types';
 
-const props = defineProps<{ invoice: AgencyInvoiceListItem }>();
+const { invoice } = defineProps<{ invoice: AgencyInvoiceListItem }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
 
 const today = new Date();
 const isLoading = ref(false);
-const isEdit = props.invoice.status === InvoiceStatus.Paid;
+const isEdit = invoice.status === InvoiceStatus.Paid;
 
 const schema = yup.object({
   paidAt: yup.date().required('Payment date is required'),
@@ -42,33 +42,32 @@ const schema = yup.object({
 
 const form = useStickyForm<{ paidAt: Date | null }>({
   schema,
-  initialValues: { paidAt: isEdit ? (props.invoice.paidAt ? new Date(props.invoice.paidAt) : null) : today },
+  initialValues: { paidAt: isEdit ? (invoice.paidAt ? new Date(invoice.paidAt) : null) : today },
 });
 const { paidAt } = form.fields;
 const errors = form.errors;
 
 function save(paidAtIso: string): Promise<void> {
   return isEdit
-    ? updateInvoicePaidAt(props.invoice.id, { paidAt: paidAtIso })
-    : changeInvoiceStatus(props.invoice.id, { status: InvoiceStatus.Paid, paidAt: paidAtIso });
+    ? updateInvoicePaidAt(invoice.id, { paidAt: paidAtIso })
+    : changeInvoiceStatus(invoice.id, { status: InvoiceStatus.Paid, paidAt: paidAtIso });
 }
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(
-    values => {
+  void form.handleSubmit(
+    async values => {
       if (!values.paidAt) return;
       isLoading.value = true;
-      save(values.paidAt.toISOString())
-        .then(() => {
-          showAlertSuccess(isEdit ? 'Payment date updated' : 'Invoice marked as Paid');
-          emit('updated');
-          emit('close');
-        })
-        .catch(err => {
-          isLoading.value = false;
-          showAlertError(err);
-        });
+      try {
+        await save(values.paidAt.toISOString());
+        showAlertSuccess(isEdit ? 'Payment date updated' : 'Invoice marked as Paid');
+        emit('updated');
+        emit('close');
+      } catch (err) {
+        isLoading.value = false;
+        showAlertError(err);
+      }
     },
     () => showAlertError('Please select the payment date'),
   )();

@@ -13,21 +13,21 @@ const router = useRouter();
 const securityStore = useSecurityStore();
 const isLoading = ref(true);
 
-(async () => {
+void (async () => {
   try {
     if (!securityStore.user) {
       const params = new URLSearchParams(window.location.search);
       if (!params.has('code')) {
-        router.push('/');
+        void router.push('/');
         return;
       }
       await mgr.signinRedirectCallback();
       await securityStore.getUser();
     }
     const homePageUrl = menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
-    router.push(homePageUrl);
+    void router.push(homePageUrl);
   } catch {
-    router.push('/');
+    void router.push('/');
   } finally {
     isLoading.value = false;
   }

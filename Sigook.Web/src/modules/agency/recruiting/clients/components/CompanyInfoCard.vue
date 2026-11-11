@@ -35,8 +35,8 @@ import ContactInformationForm from '@/modules/agency/recruiting/clients/componen
 import DialogCompanyUpdateEmail from '@/modules/agency/recruiting/clients/components/DialogCompanyUpdateEmail.vue';
 import EditVaccinationRequired from '@/modules/agency/recruiting/clients/components/EditVaccinationRequired.vue';
 
-const props = defineProps<{ company: T }>();
-const emit = defineEmits<{ (e: 'update:company', value: T): void }>();
+const { company } = defineProps<{ company: T }>();
+const emit = defineEmits<(e: 'update:company', value: T) => void>();
 
 const showContactModal = ref(false);
 const showEmailModal = ref(false);
@@ -50,33 +50,33 @@ function withExt(value?: string | null, ext?: number | null) {
 const fields = computed<DetailFact[]>(() => [
   {
     label: 'Phone',
-    value: withExt(props.company.phone, props.company.phoneExt),
-    copy: { kind: 'phone', value: props.company.phone, ext: props.company.phoneExt },
+    value: withExt(company.phone, company.phoneExt),
+    copy: { kind: 'phone', value: company.phone, ext: company.phoneExt },
   },
-  { label: 'Fax', value: withExt(props.company.fax, props.company.faxExt) },
-  { label: 'Website', value: props.company.website || '—', href: companyWebsiteUrl(props.company.website) || undefined },
+  { label: 'Fax', value: withExt(company.fax, company.faxExt) },
+  { label: 'Website', value: company.website || '—', href: companyWebsiteUrl(company.website) || undefined },
   {
     label: 'Email',
-    value: props.company.email || '—',
-    copy: { kind: 'email', value: props.company.email },
+    value: company.email || '—',
+    copy: { kind: 'email', value: company.email },
     linkLabel: 'Change', onAction: () => { showEmailModal.value = true; } },
-  { label: 'Industry', value: companyIndustryLabel(props.company) || '—' },
+  { label: 'Industry', value: companyIndustryLabel(company) || '—' },
   {
     label: 'Vaccination',
-    value: props.company.vaccinationRequired ? 'Required' : 'Not required',
+    value: company.vaccinationRequired ? 'Required' : 'Not required',
     onAction: () => { showVaccinationModal.value = true; },
   },
 ]);
 
 function onEmailUpdated(_changed: boolean, newEmail: string) {
   showEmailModal.value = false;
-  if (newEmail) emit('update:company', { ...props.company, email: newEmail });
+  if (newEmail) emit('update:company', { ...company, email: newEmail });
 }
 
 function onVaccinationUpdated(model: { required: boolean; comments: string | null }) {
   showVaccinationModal.value = false;
   emit('update:company', {
-    ...props.company,
+    ...company,
     vaccinationRequired: model.required,
     vaccinationRequiredComments: model.comments ?? '',
   });

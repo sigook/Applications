@@ -39,21 +39,20 @@ import SigookGrid from '@/shared/ui/SigookGrid.vue';
 const isLoading = ref(false);
 const serverParams = ref<AgencyReportFilter>({});
 
-function loadReport(params: AgencyReportFilter): Promise<PaginatedList<WeeklyPayrollRow>> {
-  return getPaymentReport(params)
-    .then((response) => ({ ...response, items: response.items.map((i) => ({ ...i, reportDownloading: false })) }));
+async function loadReport(params: AgencyReportFilter): Promise<PaginatedList<WeeklyPayrollRow>> {
+  const response = await getPaymentReport(params);
+  return { ...response, items: response.items.map((i) => ({ ...i, reportDownloading: false })) };
 }
 
-function onDownloadWeeklyPayrollReport(row: WeeklyPayrollRow) {
+async function onDownloadWeeklyPayrollReport(row: WeeklyPayrollRow) {
   row.reportDownloading = true;
-  downloadWeeklyPayrollReport(row.displayWeekEnding)
-    .then(response => {
-      row.reportDownloading = false;
-      downloadFile(response, `Payment_${row.displayWeekEnding}`);
-    })
-    .catch(error => {
-      row.reportDownloading = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await downloadWeeklyPayrollReport(row.displayWeekEnding);
+    row.reportDownloading = false;
+    downloadFile(response, `Payment_${row.displayWeekEnding}`);
+  } catch (error) {
+    row.reportDownloading = false;
+    showAlertError(error);
+  }
 }
 </script>

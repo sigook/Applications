@@ -21,13 +21,14 @@
     <!-- Contenido centrado -->
     <div class="hero__content">
       <!-- Logo -->
-      <div class="hero__logo-wrapper">
+      <h1 class="hero__logo-wrapper">
         <img
           class="hero__logo"
           src="@/assets/images/logo-covenant-white.png"
-          alt="Covenant Group Ltd."
+          alt=""
         />
-      </div>
+        <span class="hero__sr-only">Covenant Group - Certified Temporary Help &amp; Recruitment Agency in Ontario</span>
+      </h1>
 
       <!-- Botón principal -->
       <div class="hero__cta-wrapper">
@@ -217,6 +218,17 @@ onBeforeUnmount(() => {
 
 .hero__logo-wrapper {
   margin-bottom: 40px;
+  font-size: inherit;
+  line-height: normal;
+}
+
+.hero__sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
 /* Botón */

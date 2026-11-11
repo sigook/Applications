@@ -26,14 +26,15 @@ import { max as d3max } from 'd3-array';
 import type { SalesBarPoint } from '@/modules/agency/sales/dashboard/types';
 import { useElementSize } from '@/shared/composables/useElementSize';
 
-const props = withDefaults(
-  defineProps<{
-    points: readonly SalesBarPoint[];
-    title: string;
-    formatValue?: (value: number) => string;
-  }>(),
-  { formatValue: (value: number) => String(value) }
-);
+const {
+  points,
+  title,
+  formatValue = (value: number) => String(value),
+} = defineProps<{
+  points: readonly SalesBarPoint[];
+  title: string;
+  formatValue?: (value: number) => string;
+}>();
 
 const PAD_X = 20;
 const PAD_TOP = 16;
@@ -94,12 +95,12 @@ function wrapLabel(label: string): string[] {
  */
 const layout = computed(() => {
   const w = width.value;
-  if (w <= 0 || props.points.length === 0) {
+  if (w <= 0 || points.length === 0) {
     return { band: 0, bandX: () => 0, lines: new Map<string, string[]>(), rotated: false, labelReserve: LABEL_RESERVE };
   }
 
-  const x = scaleBand<string>()
-    .domain(props.points.map((point) => point.key))
+  const x = scaleBand()
+    .domain(points.map((point) => point.key))
     .range([PAD_X, w - PAD_X])
     .paddingInner(0.3)
     .paddingOuter(0.05);
@@ -107,7 +108,7 @@ const layout = computed(() => {
 
   // Wrap only the labels that do not fit on one line.
   const wrapped = new Map(
-    props.points.map((point) => [point.key, textWidth(point.label) <= band ? [point.label] : wrapLabel(point.label)])
+    points.map((point) => [point.key, textWidth(point.label) <= band ? [point.label] : wrapLabel(point.label)])
   );
   const widestLine = d3max([...wrapped.values()].flat(), (line) => textWidth(line)) ?? 0;
   if (widestLine <= band) {
@@ -116,18 +117,18 @@ const layout = computed(() => {
 
   // Rotated text runs down-left from the tick, so it needs both extra bottom room
   // and a wider left margin to stay inside the SVG.
-  const widest = d3max(props.points, (point) => textWidth(point.label)) ?? 0;
+  const widest = d3max(points, (point) => textWidth(point.label)) ?? 0;
   const diagonal = Math.ceil(widest * ROTATED_RATIO) + 10;
   const rotatedReserve = Math.min(diagonal, Math.max(LABEL_RESERVE, height.value * 0.45));
-  const rotatedX = scaleBand<string>()
-    .domain(props.points.map((point) => point.key))
+  const rotatedX = scaleBand()
+    .domain(points.map((point) => point.key))
     .range([Math.min(rotatedReserve, w / 3), w - PAD_X])
     .paddingInner(0.3)
     .paddingOuter(0.05);
   return {
     band: rotatedX.bandwidth(),
     bandX: (key: string) => rotatedX(key) ?? 0,
-    lines: new Map(props.points.map((point) => [point.key, [point.label]])),
+    lines: new Map(points.map((point) => [point.key, [point.label]])),
     rotated: true,
     labelReserve: rotatedReserve,
   };
@@ -138,7 +139,7 @@ const isRotated = computed<boolean>(() => layout.value.rotated);
 const bars = computed<BarGeom[]>(() => {
   const w = width.value;
   const h = height.value;
-  if (w <= 0 || h <= 0 || props.points.length === 0) {
+  if (w <= 0 || h <= 0 || points.length === 0) {
     return [];
   }
 
@@ -149,16 +150,16 @@ const bars = computed<BarGeom[]>(() => {
     return [];
   }
 
-  const highest = d3max(props.points, (point) => point.value) ?? 0;
+  const highest = d3max(points, (point) => point.value) ?? 0;
   const domainMax = highest > 0 ? highest : 1;
   const y = scaleLinear().domain([0, domainMax]).range([baselineY, topY]).clamp(true);
 
   const barW = Math.min(band, BAR_MAX_WIDTH);
 
-  return props.points.map((point) => {
+  return points.map((point) => {
     const x0 = bandX(point.key);
     const yTop = y(point.value);
-    const amount = props.formatValue(point.value);
+    const amount = formatValue(point.value);
     return {
       key: point.key,
       amount,
@@ -174,11 +175,11 @@ const bars = computed<BarGeom[]>(() => {
 });
 
 const ariaLabel = computed<string>(() => {
-  if (props.points.length === 0) {
-    return `${props.title}: no data`;
+  if (points.length === 0) {
+    return `${title}: no data`;
   }
-  const parts = props.points.map((point) => `${point.label} ${props.formatValue(point.value)}`);
-  return `${props.title}: ${parts.join(', ')}`;
+  const parts = points.map((point) => `${point.label} ${formatValue(point.value)}`);
+  return `${title}: ${parts.join(', ')}`;
 });
 </script>
 

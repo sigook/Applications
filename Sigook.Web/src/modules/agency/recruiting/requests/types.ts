@@ -1,4 +1,4 @@
-import type { RequestStatus, WorkerRequestFinishReason } from '@/shared/constants/enums';
+import type { DurationTerm, EmploymentType, RequestStatus, WorkerRequestFinishReason, WorkerRequestStatus } from '@/shared/constants/enums';
 import type { ComplianceDocumentTarget, RequestApplicantStatus } from '@/shared/request-detail/requestApplicant';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 import type { LocationDetailModel, PaginatedList } from '@/shared/types/common';
@@ -133,8 +133,8 @@ export interface AgencyRequestDetail {
   agencyRate?: number | null;
   workerRate?: number | null;
   workerSalary?: number | null;
-  durationTerm: number;
-  employmentType: number;
+  durationTerm: DurationTerm;
+  employmentType: EmploymentType;
   displayRecruiters?: string;
   displayShift?: string;
   isAsap: boolean;
@@ -235,7 +235,7 @@ export interface AgencyRequestWorker {
   workerProfileId: string;
   name: string;
   email?: string;
-  workerRequestStatus: number;
+  workerRequestStatus: WorkerRequestStatus;
   rejectComments?: string;
   rejectedBy?: string;
   rejectedAt?: string | null;
@@ -291,7 +291,7 @@ export interface AgencyRequestApplicantFilter {
 export interface CreateRequestApplicantModel {
   workerProfileId?: string | null;
   candidateId?: string | null;
-  comments?: string;
+  comments?: string | null;
 }
 
 // Result of GET /api/AgencyRequest/{id}/Applicant/Search. Mirrors backend ApplicantSearchResultModel.
@@ -358,8 +358,8 @@ export interface AgencyRequestFormState {
   internalRequirements?: string;
   durationBreak: Date;
   breakIsPaid: boolean;
-  durationTerm: number;
-  employmentType: number;
+  durationTerm: DurationTerm;
+  employmentType: EmploymentType;
   isAsap: boolean;
   usesRunners: boolean;
   punchCardOptionEnabled: boolean;

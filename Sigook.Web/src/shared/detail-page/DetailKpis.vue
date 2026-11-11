@@ -24,13 +24,13 @@ import type { DetailKpi } from '@/shared/detail-page/types';
 
 const MIN_COLUMN_WIDTH = 190;
 
-const props = defineProps<{ kpis: DetailKpi[] }>();
+const { kpis } = defineProps<{ kpis: DetailKpi[] }>();
 
 const { isMobile } = useBreakpoint();
 const { el, width } = useElementSize();
 
 const columns = computed(() => {
-  const count = props.kpis.length;
+  const count = kpis.length;
   if (isMobile.value) return 2;
   return count * MIN_COLUMN_WIDTH <= width.value ? count : Math.ceil(count / 2);
 });

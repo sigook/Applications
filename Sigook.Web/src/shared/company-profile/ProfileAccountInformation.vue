@@ -48,24 +48,26 @@ async function onChangeEmail() {
   const { valid } = await form.validate();
   if (!valid) return;
   isLoading.value = true;
-  changeEmail({ newEmail: email.value, confirmNewEmail: confirmNewEmail.value })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess("Updated");
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await changeEmail({ newEmail: email.value, confirmNewEmail: confirmNewEmail.value });
+    isLoading.value = false;
+    showAlertSuccess("Updated");
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-getEmail()
-  .then(response => {
+async function loadEmail() {
+  try {
+    const response = await getEmail();
     form.setFieldValue('email', response.email);
     isLoading.value = false;
-  })
-  .catch(error => {
+  } catch (error) {
     showAlertError(error);
     isLoading.value = false;
-  });
+  }
+}
+
+void loadEmail();
 </script>

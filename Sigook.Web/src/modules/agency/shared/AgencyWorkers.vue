@@ -81,8 +81,8 @@
           <template v-slot="props">
             <div class="worker-status">
               <div class="worker-status__head">
-                <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus]">{{ props.row.status }}</b-tag>
-                <span v-if="props.row.finishReason" class="fz-1">{{ WorkerRequestFinishReasonLabels[props.row.finishReason] }}</span>
+                <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus as WorkerRequestStatus]">{{ props.row.status }}</b-tag>
+                <span v-if="props.row.finishReason" class="fz-1">{{ WorkerRequestFinishReasonLabels[props.row.finishReason as WorkerRequestFinishReason] }}</span>
               </div>
               <i v-if="props.row.finishComments" class="worker-status__note fz-1">{{ props.row.finishComments }}</i>
               <i v-if="props.row.rejectComments" class="worker-status__note fz-1" v-html="props.row.rejectComments"></i>
@@ -144,7 +144,7 @@ import {
   rejectAgencyRequestWorker,
   updateAgencyRequestWorkerStartDate
 } from "@/modules/agency/recruiting/requests/api";
-import { WorkerRequestFinishReasonLabels, WorkerRequestStatus, WorkerRequestStatusLabels, WorkerRequestStatusTagTypes } from "@/shared/constants/enums";
+import { type WorkerRequestFinishReason, WorkerRequestFinishReasonLabels, WorkerRequestStatus, WorkerRequestStatusLabels, WorkerRequestStatusTagTypes } from "@/shared/constants/enums";
 import { getWorkersReportDocument } from '@/modules/agency/recruiting/requests/api';
 import { dateMonth, hour } from '@/shared/format';
 import {
@@ -165,9 +165,9 @@ import PunchCard from '@/modules/agency/recruiting/requests/components/AgencyPun
 import DatepickerModal from "@/modules/agency/recruiting/requests/components/DatepickerModal.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = defineProps<{ request: AgencyRequestDetail }>();
+const { request } = defineProps<{ request: AgencyRequestDetail }>();
 
-const emit = defineEmits<{ (e: 'refreshRequest'): void }>();
+const emit = defineEmits<(e: 'refreshRequest') => void>();
 
 const router = useRouter();
 const grid = useTemplateRef<GridHandle>('grid');
@@ -195,7 +195,7 @@ const modalStartWorking = ref(false);
 const modalFinish = ref(false);
 const finishAll = ref(false);
 const finishSubject = ref('');
-const directHiring = computed(() => isDirectHiring(props.request));
+const directHiring = computed(() => isDirectHiring(request));
 
 const getNotes = ({ requestId, userId, pagination }: RequestNotesFetchPayload) => getAgencyRequestWorkerNotes(requestId, userId, pagination);
 const createNote = ({ requestId, userId, model }: RequestNotesCreatePayload) => createAgencyRequestWorkerNote(requestId, userId, model);
@@ -204,7 +204,7 @@ const deleteNote = ({ requestId, userId, id }: RequestNotesDeletePayload) => del
 
 const serverParams = ref<AgencyRequestWorkerFilter>({
   sortBy: 2,
-  requestId: props.request.id,
+  requestId: request.id,
   isDescending: false,
 });
 
@@ -216,7 +216,7 @@ function onCellClick(row: AgencyRequestWorker, column: TableColumnRef) {
     case 'actions':
       break;
     default:
-      router.push(`/recruiting/workers/${row.workerProfileId}`);
+      void router.push(`/recruiting/workers/${row.workerProfileId}`);
       break;
   }
 }
@@ -237,16 +237,16 @@ function onStartWorkingCleared() {
   onStartWorkingSelected();
 }
 
-function loadRequestWorkers(params: AgencyRequestWorkerFilter): Promise<PaginatedList<AgencyRequestWorker>> {
-  return getAgencyRequestsWorkers(params)
-    .then((response) => ({
-      ...response,
-      items: response.items.map(i => ({
-        ...i,
-        status: WorkerRequestStatusLabels[i.workerRequestStatus],
-        actions: null,
-      })),
-    }));
+async function loadRequestWorkers(params: AgencyRequestWorkerFilter): Promise<PaginatedList<AgencyRequestWorker>> {
+  const response = await getAgencyRequestsWorkers(params);
+  return {
+    ...response,
+    items: response.items.map(i => ({
+      ...i,
+      status: WorkerRequestStatusLabels[i.workerRequestStatus],
+      actions: null,
+    })),
+  };
 }
 
 function confirmDelete(worker: AgencyRequestWorker) {
@@ -254,17 +254,20 @@ function confirmDelete(worker: AgencyRequestWorker) {
   modalRejectWorker.value = true;
 }
 
-function rejectWorker(comments: string) {
+async function rejectWorker(comments: string) {
+  const worker = currentWorker.value;
+  if (!worker) return;
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectAgencyRequestWorker(serverParams.value.requestId, currentWorker.value.workerProfileId, { comments }).then(() => {
+  try {
+    await rejectAgencyRequestWorker(serverParams.value.requestId, worker.workerProfileId, { comments });
     isLoading.value = false;
     grid.value?.reload();
     emit('refreshRequest');
-  }).catch((error) => {
+  } catch (error) {
     isLoading.value = false;
-    showAlertError(error.data);
-  });
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 function onShowModalFinish(worker: AgencyRequestWorker) {
@@ -280,21 +283,22 @@ function onShowModalFinishAll() {
   modalFinish.value = true;
 }
 
-function finishAssignment(model: FinishAssignmentModel) {
+async function finishAssignment(model: FinishAssignmentModel) {
   modalFinish.value = false;
   isLoading.value = true;
   const requestId = serverParams.value.requestId;
   const call = finishAll.value
     ? finishAllAgencyRequestWorkers(requestId, model)
     : finishAgencyRequestWorker(requestId, currentWorker.value?.workerProfileId ?? '', model);
-  call.then(() => {
+  try {
+    await call;
     isLoading.value = false;
     grid.value?.reload();
     emit('refreshRequest');
-  }).catch((error) => {
+  } catch (error) {
     isLoading.value = false;
-    showAlertError(error.data);
-  });
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 function onShowModalStartWorking(worker: AgencyRequestWorker) {
@@ -302,37 +306,41 @@ function onShowModalStartWorking(worker: AgencyRequestWorker) {
   modalStartWorking.value = true;
 }
 
-function onUpdateRequestWorkerStartDate(date: Date) {
+async function onUpdateRequestWorkerStartDate(date: Date) {
   modalStartWorking.value = false;
   isLoading.value = true;
-  updateAgencyRequestWorkerStartDate(serverParams.value.requestId, currentWorker.value?.id ?? '', { startWorking: date.toISOString() }).then(() => {
+  try {
+    await updateAgencyRequestWorkerStartDate(serverParams.value.requestId, currentWorker.value?.id ?? '', { startWorking: date.toISOString() });
     isLoading.value = false;
     grid.value?.reload();
-  }).catch((error) => {
+  } catch (error) {
     isLoading.value = false;
-    showAlertError(error.data);
-  });
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function downloadWorkersReportDocument() {
+async function downloadWorkersReportDocument() {
   isLoading.value = true;
-  getWorkersReportDocument(serverParams.value.requestId)
-    .then((response) => {
-      isLoading.value = false;
-      downloadFile(response, `WorkersReport_${serverParams.value.requestId}`);
-    })
-    .catch((err) => {
-      isLoading.value = false;
-      showAlertError(err);
-    });
+  try {
+    const response = await getWorkersReportDocument(serverParams.value.requestId);
+    isLoading.value = false;
+    downloadFile(response, `WorkersReport_${serverParams.value.requestId}`);
+  } catch (err) {
+    isLoading.value = false;
+    showAlertError(err);
+  }
 }
 
-function downloadPunchCardDocument() {
+async function downloadPunchCardDocument() {
   isLoading.value = true;
-  downloadAgencyReport(`/api/agency/recruiting/requests/${serverParams.value.requestId}/TimeSheets/File`, { ...serverParams.value })
-    .then((response) => downloadFile(response, `Timesheet_${new Date().toLocaleDateString()}`))
-    .catch((err) => showAlertError(err))
-    .finally(() => isLoading.value = false);
+  try {
+    const response = await downloadAgencyReport(`/api/agency/recruiting/requests/${serverParams.value.requestId}/TimeSheets/File`, { ...serverParams.value });
+    downloadFile(response, `Timesheet_${new Date().toLocaleDateString()}`);
+  } catch (err) {
+    showAlertError(err);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function onWorkerBooked() {

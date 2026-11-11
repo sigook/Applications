@@ -37,13 +37,13 @@ import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { updateProvinceSettings } from '@/shared/api/locationApi';
 import type { ProvinceSettings } from '@/shared/types/common';
 
-const props = defineProps<{
+const { currentSettings, provinceId } = defineProps<{
   provinceId: string;
   provinceName?: string;
   currentSettings?: ProvinceSettings | null;
 }>();
 
-const emit = defineEmits<{ (e: 'saved', settings: ProvinceSettings): void }>();
+const emit = defineEmits<(e: 'saved', settings: ProvinceSettings) => void>();
 
 const schema = yup.object({
   overtimeStartsAfter: yup
@@ -63,9 +63,9 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const paidHolidays = ref(false);
 
-if (props.currentSettings) {
-  paidHolidays.value = !!props.currentSettings.paidHolidays;
-  form.setFieldValue('overtimeStartsAfter', props.currentSettings.overtimeStartsAfter ?? null);
+if (currentSettings) {
+  paidHolidays.value = !!currentSettings.paidHolidays;
+  form.setFieldValue('overtimeStartsAfter', currentSettings.overtimeStartsAfter ?? null);
 }
 
 async function saveSettings() {
@@ -84,7 +84,7 @@ async function saveSettings() {
   };
   isLoading.value = true;
   try {
-    await updateProvinceSettings(props.provinceId, settings);
+    await updateProvinceSettings(provinceId, settings);
     emit('saved', settings);
   } catch (error) {
     showAlertError(error);

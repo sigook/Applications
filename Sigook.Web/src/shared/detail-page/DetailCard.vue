@@ -12,7 +12,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ title?: string; internal?: boolean }>();
+const { title, internal } = defineProps<{ title?: string; internal?: boolean }>();
 </script>
 
 <style lang="scss" scoped>

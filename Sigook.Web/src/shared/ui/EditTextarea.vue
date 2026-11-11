@@ -19,15 +19,15 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError } from "@/shared/utils/toast";
 
-const props = defineProps<{ data?: string; title: string; minLength: number }>();
-const emit = defineEmits<{ (e: 'updateContent', value: string): void }>();
+const { title, minLength, data } = defineProps<{ data?: string; title: string; minLength: number }>();
+const emit = defineEmits<(e: 'updateContent', value: string) => void>();
 
 const schema = computed(() =>
   yup.object({
     dataModel: yup
       .string()
-      .required(`${props.title} is required`)
-      .min(props.minLength, `Min ${props.minLength} characters`)
+      .required(`${title} is required`)
+      .min(minLength, `Min ${minLength} characters`)
       .max(50000, 'Max 50000 characters'),
   })
 );
@@ -35,18 +35,18 @@ const schema = computed(() =>
 const form = useStickyForm<{ dataModel: string }>({
   schema,
   initialValues: {
-    dataModel: (props.data as string) || '',
+    dataModel: (data as string) || '',
   },
 });
 
 const { dataModel } = form.fields;
 const formErrors = form.errors;
 
-form.hydrate({ dataModel: props.data || '' });
+form.hydrate({ dataModel: data || '' });
 
 function onSave() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit((values) => {
     emit('updateContent', values.dataModel);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');

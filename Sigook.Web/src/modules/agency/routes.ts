@@ -100,7 +100,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: recruitingAccess,
     },
   },
-  { path: "/agency-request/:id", redirect: (to) => `/recruiting/requests/${to.params.id}` },
+  { path: "/agency-request/:id", redirect: (to) => `/recruiting/requests/${String(to.params.id)}` },
   {
     path: "/sales/requests",
     component: AgencyRequests,
@@ -175,7 +175,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: agencyStaff,
     },
   },
-  { path: "/agency-workers/worker/:id", redirect: (to) => `/recruiting/workers/${to.params.id}` },
+  { path: "/agency-workers/worker/:id", redirect: (to) => `/recruiting/workers/${String(to.params.id)}` },
   {
     path: "/recruiting/companies",
     name: "recruiting-companies",
@@ -252,7 +252,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: salesAccess,
     },
   },
-  { path: "/agency-companies/company/:id", redirect: (to) => `/recruiting/companies/${to.params.id}` },
+  { path: "/agency-companies/company/:id", redirect: (to) => `/recruiting/companies/${String(to.params.id)}` },
   { path: "/create-company", redirect: "/recruiting/companies/create" },
   {
     path: "/agency-profile",
@@ -296,7 +296,7 @@ const routesAgency: RouteRecordRaw[] = [
       role: agencyStaff,
     },
   },
-  { path: "/agency-detail/:id", redirect: (to) => `/sales/agencies/${to.params.id}` },
+  { path: "/agency-detail/:id", redirect: (to) => `/sales/agencies/${String(to.params.id)}` },
   { path: "/create-agency", redirect: "/sales/agencies/create" },
   {
     path: "/accounting/invoices",

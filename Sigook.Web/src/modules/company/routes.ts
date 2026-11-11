@@ -37,7 +37,7 @@ const routesCompany: RouteRecordRaw[] = [
       role: [company, companyUser],
     },
   },
-  { path: "/request/:id", redirect: (to) => `/company-requests/${to.params.id}` },
+  { path: "/request/:id", redirect: (to) => `/company-requests/${String(to.params.id)}` },
   { path: "/create-request", redirect: "/company-requests/create" },
   {
     path: "/company-invoices",

@@ -48,7 +48,7 @@
         </b-table-column>
         <b-table-column field="mobileNumber" label="Phone" searchable>
           <template v-slot:searchable>
-            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small" @update:modelValue="(v: string) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
           <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
         </b-table-column>
@@ -193,7 +193,7 @@ function onCellClick(row: AgencyWorkerListItem, column: TableColumnRef) {
     case 'requests':
       break;
     default:
-      router.push(`/recruiting/workers/${row.id}`);
+      void router.push(`/recruiting/workers/${row.id}`);
   }
 }
 
@@ -214,38 +214,32 @@ function onFeatureChange() {
 }
 
 function goToApplicants(item: { id: string }) {
-  router.push({
+  void router.push({
     path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
   });
 }
 
-function deleteWorker(worker: AgencyWorkerListItem) {
+async function deleteWorker(worker: AgencyWorkerListItem) {
   isLoading.value = true;
-  updateApprovedToWork(worker.id)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-      grid.value?.reload();
-    });
+  try {
+    await updateApprovedToWork(worker.id);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    grid.value?.reload();
+  }
 }
 
-function confirmDelete(worker: AgencyWorkerListItem) {
-  showAlertConfirm(
+async function confirmDelete(worker: AgencyWorkerListItem) {
+  if (!(await showAlertConfirm(
     'Are you sure?',
     'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
-  ).then((response) => {
-    if (response) {
-      deleteWorker(worker);
-    }
-  }).catch((error) => {
-    showAlertError(error);
-  });
+  ))) return;
+  await deleteWorker(worker);
 }
 </script>
 <style lang="scss" scoped>

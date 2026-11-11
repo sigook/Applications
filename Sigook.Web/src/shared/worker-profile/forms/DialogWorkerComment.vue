@@ -30,7 +30,7 @@ const schema = yup.object({
     comment: yup.string().required('Comment is required').min(2, 'Min 2 characters').max(500, 'Max 500 characters'),
 });
 
-const emit = defineEmits<{ (e: 'createComment', v: { comment: string; rating: number }): void }>();
+const emit = defineEmits<(e: 'createComment', v: { comment: string; rating: number }) => void>();
 
 const form = useStickyForm<{ comment: string }>({
     schema,
@@ -43,7 +43,7 @@ const rating = ref(1);
 
 function onComment() {
     form.markInteracted();
-    form.handleSubmit((values) => {
+    void form.handleSubmit((values) => {
         emit('createComment', { comment: values.comment, rating: rating.value });
     }, () => {
         showAlertError('Please make sure all required fields are filled out correctly');

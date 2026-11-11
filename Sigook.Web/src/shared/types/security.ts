@@ -30,7 +30,7 @@ export interface TokenResponse {
 }
 
 export interface TokenErrorResponse {
-  error: string;
+  error?: string;
   error_description?: string;
 }
 
@@ -58,7 +58,7 @@ export interface CreatePasswordPayload {
 }
 
 export interface PasswordResetErrorResponse {
-  error: string;
+  error?: string;
   messages?: string[];
 }
 

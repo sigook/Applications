@@ -123,7 +123,7 @@ const serverParams = ref<AgencyRunnersFilter>({
 
 const statusOptions: CatalogItem<RunnerStatus>[] = RUNNER_STATUSES.map((s) => ({ id: s, value: RUNNER_STATUS_LABELS[s] }));
 
-loadRunners();
+void loadRunners();
 
 function countLabel(group: AgencyRequestRunners): string {
   return group.runners.length === group.totalRunners
@@ -143,22 +143,21 @@ function clearSelection() {
   selection.value = {};
 }
 
-function bulkChangeStatus(value: BulkRunnerStatus) {
+async function bulkChangeStatus(value: BulkRunnerStatus) {
   const runners = selectedRunners.value;
   if (!runners.length) return;
   isBulkUpdating.value = true;
-  changeAgencyRunnersStatus({ runnerIds: runners.map((runner) => runner.id), ...value })
-    .then((result) => {
-      isBulkUpdating.value = false;
-      modalBulkStatus.value = false;
-      const names = new Map(runners.map((runner) => [runner.id, runner.name]));
-      reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.runnerId, reason: s.reason })), names, 'runners');
-      loadRunners();
-    })
-    .catch((error) => {
-      isBulkUpdating.value = false;
-      showAlertError(error);
-    });
+  try {
+    const result = await changeAgencyRunnersStatus({ runnerIds: runners.map((runner) => runner.id), ...value });
+    isBulkUpdating.value = false;
+    modalBulkStatus.value = false;
+    const names = new Map(runners.map((runner) => [runner.id, runner.name]));
+    reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.runnerId, reason: s.reason })), names, 'runners');
+    await loadRunners();
+  } catch (error) {
+    isBulkUpdating.value = false;
+    showAlertError(error);
+  }
 }
 
 function isRequestOpen(requestId: string): boolean {
@@ -179,33 +178,32 @@ function collapseAll() {
 
 function onTypeChange(type: RunnerType | null) {
   serverParams.value = { ...serverParams.value, type, pageIndex: 1 };
-  loadRunners();
+  void loadRunners();
 }
 
 function onPageChange(page: number) {
   serverParams.value.pageIndex = page;
-  loadRunners();
+  void loadRunners();
 }
 
-function loadRunners() {
+async function loadRunners() {
   isLoading.value = true;
   clearSelection();
   agencyStore.updateAgencyRunnersFilter({ ...serverParams.value });
-  getAgencyRunners(serverParams.value)
-    .then((response) => {
-      groups.value = response.items;
-      totalRequests.value = response.totalItems;
-      totalRunners.value = response.totalRunners;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyRunners(serverParams.value);
+    groups.value = response.items;
+    totalRequests.value = response.totalItems;
+    totalRunners.value = response.totalRunners;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openRequest(requestId: string) {
-  router.push(`/recruiting/requests/${requestId}`);
+  void router.push(`/recruiting/requests/${requestId}`);
 }
 
 function showAddRunner(requestId: string) {
@@ -213,17 +211,17 @@ function showAddRunner(requestId: string) {
   modalAddRunner.value = true;
 }
 
-function addRunner(model: CreateRunnerModel) {
+async function addRunner(model: CreateRunnerModel) {
   if (!addRunnerRequestId.value) return;
   isCreating.value = true;
-  createAgencyRunner(addRunnerRequestId.value, model)
-    .then(() => {
-      modalAddRunner.value = false;
-      loadRunners();
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isCreating.value = false;
-    });
+  try {
+    await createAgencyRunner(addRunnerRequestId.value, model);
+    modalAddRunner.value = false;
+    void loadRunners();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isCreating.value = false;
+  }
 }
 </script>

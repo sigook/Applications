@@ -71,7 +71,7 @@
     <div class="mt-4">
       <b-button @click="emit('cancel')">Cancel</b-button>
       <b-button type="is-primary" class="ml-2" @click="validateForm">
-        {{ props.currentContact ? 'Save' : 'Create' }}
+        {{ currentContact ? 'Save' : 'Create' }}
       </b-button>
     </div>
   </div>
@@ -102,7 +102,7 @@ const schema = yup.object({
   email: yup.string().nullable().transform((v) => (v === '' ? null : v)).email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-const props = defineProps<{ currentContact?: AgencyCompanyContactPerson | null; profileId: string }>();
+const { currentContact, profileId } = defineProps<{ currentContact?: AgencyCompanyContactPerson | null; profileId: string }>();
 const emit = defineEmits<{
   (e: 'updateContent', contact: AgencyCompanyContactPerson): void;
   (e: 'cancel'): void;
@@ -141,7 +141,7 @@ const contactPerson = ref<Partial<AgencyCompanyContactPerson>>({
 
 function validateForm() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     const payload = {
       ...contactPerson.value,
       title: values.title,
@@ -153,53 +153,51 @@ function validateForm() {
       email: values.email || null,
     };
     if (payload.id) {
-      updateContactPerson(payload, payload.id);
+      await updateContactPerson(payload, payload.id);
     } else {
-      createContactPerson(payload);
+      await createContactPerson(payload);
     }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function createContactPerson(payload: AgencyCompanyContactPerson) {
+async function createContactPerson(payload: AgencyCompanyContactPerson) {
   isLoading.value = true;
-  createAgencyCompanyContactPerson(props.profileId, payload)
-    .then(({ id }) => {
-      isLoading.value = false;
-      showAlertSuccess('Created');
-      emit('updateContent', { ...payload, id });
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const { id } = await createAgencyCompanyContactPerson(profileId, payload);
+    isLoading.value = false;
+    showAlertSuccess('Created');
+    emit('updateContent', { ...payload, id });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateContactPerson(payload: AgencyCompanyContactPerson, id: string) {
+async function updateContactPerson(payload: AgencyCompanyContactPerson, id: string) {
   isLoading.value = true;
-  updateAgencyCompanyContactPerson(props.profileId, id, payload)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      emit('updateContent', payload);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyCompanyContactPerson(profileId, id, payload);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    emit('updateContent', payload);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-if (props.currentContact && props.currentContact.id) {
-  contactPerson.value = Object.assign({}, props.currentContact);
+if (currentContact?.id) {
+  contactPerson.value = Object.assign({}, currentContact);
   form.hydrate({
-    title: props.currentContact.title || '',
-    firstName: props.currentContact.firstName || '',
-    middleName: props.currentContact.middleName || '',
-    lastName: props.currentContact.lastName || '',
-    position: props.currentContact.position || '',
-    officeNumberExt: props.currentContact.officeNumberExt != null ? String(props.currentContact.officeNumberExt) : '',
-    email: props.currentContact.email || '',
+    title: currentContact.title || '',
+    firstName: currentContact.firstName || '',
+    middleName: currentContact.middleName || '',
+    lastName: currentContact.lastName || '',
+    position: currentContact.position || '',
+    officeNumberExt: currentContact.officeNumberExt != null ? String(currentContact.officeNumberExt) : '',
+    email: currentContact.email || '',
   });
 }
 </script>

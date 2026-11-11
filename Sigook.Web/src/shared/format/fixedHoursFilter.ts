@@ -3,7 +3,7 @@ import duration from "dayjs/plugin/duration";
 
 dayjs.extend(duration);
 
-export default function (hours: string | number | null): string | number {
+export default function (hours: string | number | null | undefined): string | number {
   if (!hours || hours === 0 || hours === "0") {
     return 0;
   }

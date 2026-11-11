@@ -30,8 +30,8 @@ import type { AgencyRequestDetail } from '@/modules/agency/recruiting/requests/t
 import CreateRunner from '@/modules/agency/recruiting/requests/runners/CreateRunner.vue';
 import RunnersGrid from '@/modules/agency/recruiting/runners/components/RunnersGrid.vue';
 
-const props = defineProps<{ request?: AgencyRequestDetail | null }>();
-const emit = defineEmits<{ (e: 'changed'): void }>();
+const { request } = defineProps<{ request?: AgencyRequestDetail | null }>();
+const emit = defineEmits<(e: 'changed') => void>();
 
 const route = useRoute();
 const requestId = route.params.id as string;
@@ -44,7 +44,7 @@ const sortMap = {
   createdAt: RunnerSortBy.CreatedAt,
 };
 
-const canEdit = computed(() => !!props.request?.usesRunners);
+const canEdit = computed(() => !!request?.usesRunners);
 
 const isLoading = ref(false);
 const showCreate = ref(false);
@@ -60,17 +60,17 @@ function loadRunners(params: AgencyRunnerFilter) {
   return getAgencyRunners(requestId, params);
 }
 
-function onCreate(model: CreateRunnerModel) {
+async function onCreate(model: CreateRunnerModel) {
   isCreating.value = true;
-  createAgencyRunner(requestId, model)
-    .then(() => {
-      showCreate.value = false;
-      grid.value?.reload();
-      emit('changed');
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isCreating.value = false;
-    });
+  try {
+    await createAgencyRunner(requestId, model);
+    showCreate.value = false;
+    grid.value?.reload();
+    emit('changed');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isCreating.value = false;
+  }
 }
 </script>

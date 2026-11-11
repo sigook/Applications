@@ -43,11 +43,9 @@ import LandingIcon from '@/modules/landing/components/shared/icons/LandingIcon.v
 
 const SESSION_DISMISS_KEY = 'app-version-toast-dismissed'
 
-const props = withDefaults(defineProps<{
+const { modelValue = false } = defineProps<{
   modelValue?: boolean
-}>(), {
-  modelValue: false,
-})
+}>()
 
 const emit = defineEmits<{
   (e: 'update'): void
@@ -57,7 +55,7 @@ const emit = defineEmits<{
 const visible = ref(false)
 
 watch(
-  () => props.modelValue,
+  () => modelValue,
   (isAvailable) => {
     if (!isAvailable) {
       visible.value = false

@@ -30,41 +30,39 @@ import ContactList from '@/modules/agency/recruiting/requests/components/Contact
 import type { AgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/types';
 import type { AgencyRequestPersonItem } from '@/modules/agency/recruiting/requests/types';
 
-const props = defineProps<{ requestId: string; companyProfileId: string; canEdit?: boolean }>();
+const { requestId, companyProfileId, canEdit } = defineProps<{ requestId: string; companyProfileId: string; canEdit?: boolean }>();
 const contacts = defineModel<AgencyRequestPersonItem[]>({ required: true });
 
 const showModal = ref(false);
 const isLoading = ref(false);
 
-function addRequestedBy(item: AgencyCompanyContactPerson) {
+async function addRequestedBy(item: AgencyCompanyContactPerson) {
   const id = item.id;
   if (!id) return;
   isLoading.value = true;
-  postAgencyRequestRequestedBy(props.requestId, id)
-    .then(() => {
-      isLoading.value = false;
-      contacts.value = [...contacts.value, { ...item, id }];
-      showModal.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyRequestRequestedBy(requestId, id);
+    isLoading.value = false;
+    contacts.value = [...contacts.value, { ...item, id }];
+    showModal.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function removeRequestedBy(item: { id?: string }) {
+async function removeRequestedBy(item: { id?: string }) {
   if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestRequestedBy(props.requestId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      contacts.value = contacts.value.filter(x => x.id !== item.id);
-      showModal.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteAgencyRequestRequestedBy(requestId, item.id);
+    isLoading.value = false;
+    contacts.value = contacts.value.filter(x => x.id !== item.id);
+    showModal.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>
 

@@ -45,14 +45,14 @@ export function useFocusTrap(active: Readonly<Ref<boolean>>, container: Ref<HTML
       previouslyFocused = document.activeElement as HTMLElement | null
       await nextTick()
       const items = focusable()
-      ;(items[0] ?? container.value)?.focus?.()
+      ;(items.at(0) ?? container.value)?.focus()
       document.addEventListener('keydown', onKeydown, true)
     } else {
       document.removeEventListener('keydown', onKeydown, true)
-      previouslyFocused?.focus?.()
+      previouslyFocused?.focus()
       previouslyFocused = null
     }
   })
 
-  onScopeDispose(() => document.removeEventListener('keydown', onKeydown, true))
+  onScopeDispose(() => { document.removeEventListener('keydown', onKeydown, true); })
 }

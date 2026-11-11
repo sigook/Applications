@@ -174,7 +174,7 @@
         </template>
         <template v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
+            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]" type="is-dark" append-to-body>
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
@@ -258,7 +258,7 @@ import { getAgencyRequestShift } from '@/modules/agency/recruiting/requests/api'
 import CancelList from '@/shared/request-detail/CompanyCancelList.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = defineProps<{ totalItems?: number; companyProfileId?: string; agencyId?: string; config?: Partial<TableRequestsConfig> }>();
+const { companyProfileId, agencyId, config } = defineProps<{ totalItems?: number; companyProfileId?: string; agencyId?: string; config?: Partial<TableRequestsConfig> }>();
 const emit = defineEmits<{
   (e: 'onDataLoading', value: boolean): void;
   (e: 'update:totalItems', value: number): void;
@@ -321,7 +321,7 @@ const serverParams = ref<AgencyRequestFilter>({
 });
 const quickActions = reactive({ isAsap: false });
 
-const tableConfig = computed(() => ({ ...defaultConfig, ...props.config }));
+const tableConfig = computed(() => ({ ...defaultConfig, ...config }));
 const totalQuantityWorking = computed(() =>
   rows.value.reduce((total, r) => total + r.workersQuantityWorking, 0));
 const totalQuantity = computed(() =>
@@ -330,7 +330,7 @@ const totalQuantity = computed(() =>
 function onCellClick(row: AgencyRequestListItem, column: TableColumnRef) {
   switch (column.field) {
     case 'workersQuantityWorking':
-      router.push({
+      void router.push({
         path: `${requestDetailBase.value}/${row.id}`,
         query: { tab: 'Workers' }
       });
@@ -345,7 +345,7 @@ function onCellClick(row: AgencyRequestListItem, column: TableColumnRef) {
     case 'actions':
       break;
     default:
-      router.push(`${requestDetailBase.value}/${row.id}`);
+      void router.push(`${requestDetailBase.value}/${row.id}`);
       break;
   }
 }
@@ -388,37 +388,35 @@ function getStatusClass(row: AgencyRequestListItem) {
   return requestStatusClass(row.requestStatus);
 }
 
-function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem>> {
-  if (!props.companyProfileId && !props.agencyId) {
+async function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<AgencyRequestListItem>> {
+  if (!companyProfileId && !agencyId) {
     agencyStore.updateAgencyRequestFilter(params);
   }
   const fetchRequests = isSalesView.value ? getSalesRequests : getAgencyRequests;
-  return fetchRequests(params)
-    .then((response) => {
-      rows.value = response.items.map((i) => ({ ...i, notesCount: i.notesCount || 0 }));
-      jobBoardsSummary.value = response.jobBoardsSummary || [];
-      return { ...response, items: rows.value };
-    });
+  const response = await fetchRequests(params);
+  rows.value = response.items.map((i) => ({ ...i, notesCount: i.notesCount || 0 }));
+  jobBoardsSummary.value = response.jobBoardsSummary;
+  return { ...response, items: rows.value };
 }
 
 function reloadRequests() {
   grid.value?.reload();
 }
 
-function bulkUpdateIsAsap() {
+async function bulkUpdateIsAsap() {
   quickActionsKey.value++;
   emit('onDataLoading', true);
   const payload = {
     ids: checkedRows.value.map((cr) => cr.id),
     isAsap: quickActions.isAsap
   };
-  updateIsAsapRequests(payload)
-    .then(() => {
-      reloadRequests();
-    }).catch((error) => {
-      showAlertError(error);
-      emit('onDataLoading', false);
-    });
+  try {
+    await updateIsAsapRequests(payload);
+    reloadRequests();
+  } catch (error) {
+    showAlertError(error);
+    emit('onDataLoading', false);
+  }
 }
 
 function onShowBulkCancelModal() {
@@ -431,42 +429,40 @@ function onShowBulkRecruitersModal() {
   showBulkRecruitersModal.value = true;
 }
 
-function onBulkRecruitersConfirmed(recruiterIds: string[]) {
+async function onBulkRecruitersConfirmed(recruiterIds: string[]) {
   emit('onDataLoading', true);
-  bulkUpdateRecruiters({
-    ids: checkedRows.value.map((cr) => cr.id),
-    recruiterIds
-  })
-    .then(() => {
-      showBulkRecruitersModal.value = false;
-      showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters unassigned' : 'Recruiters assigned');
-      reloadRequests();
-    })
-    .catch((error) => {
-      showBulkRecruitersModal.value = false;
-      showAlertError(error);
-      emit('onDataLoading', false);
+  try {
+    await bulkUpdateRecruiters({
+      ids: checkedRows.value.map((cr) => cr.id),
+      recruiterIds
     });
+    showBulkRecruitersModal.value = false;
+    showAlertSuccess(recruiterIds.length === 0 ? 'Recruiters unassigned' : 'Recruiters assigned');
+    reloadRequests();
+  } catch (error) {
+    showBulkRecruitersModal.value = false;
+    showAlertError(error);
+    emit('onDataLoading', false);
+  }
 }
 
 
-function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; otherMessage: string }) {
+async function onBulkCancelConfirmed({ reasonId, otherMessage }: { reasonId: string; otherMessage: string }) {
   emit('onDataLoading', true);
-  bulkCancelRequests({
-    ids: checkedRows.value.map((cr) => cr.id),
-    cancellationReasonId: reasonId,
-    otherCancellationReason: otherMessage
-  })
-    .then((result) => {
-      showBulkCancelModal.value = false;
-      showAlertSuccess(`Cancelled ${result.cancelled} order(s), skipped ${result.skipped}`);
-      reloadRequests();
-    })
-    .catch((error) => {
-      showBulkCancelModal.value = false;
-      showAlertError(error);
-      emit('onDataLoading', false);
+  try {
+    const result = await bulkCancelRequests({
+      ids: checkedRows.value.map((cr) => cr.id),
+      cancellationReasonId: reasonId,
+      otherCancellationReason: otherMessage
     });
+    showBulkCancelModal.value = false;
+    showAlertSuccess(`Cancelled ${result.cancelled} order(s), skipped ${result.skipped}`);
+    reloadRequests();
+  } catch (error) {
+    showBulkCancelModal.value = false;
+    showAlertError(error);
+    emit('onDataLoading', false);
+  }
 }
 
 function applyPendingReviewFilter() {
@@ -483,7 +479,7 @@ watch(checkedRows, (selected) => {
   quickActions.isAsap = selected.length > 0 && selected.every((r) => r.isAsap);
 });
 
-if (!props.companyProfileId && !props.agencyId) {
+if (!companyProfileId && !agencyId) {
   if (agencyStore.agencyRequestFilter) {
     serverParams.value = { ...agencyStore.agencyRequestFilter };
     const selectedStatuses = serverParams.value.statuses;
@@ -507,20 +503,23 @@ if (!props.companyProfileId && !props.agencyId) {
   });
 } else {
   serverParams.value.onlyMine = false;
-  if (props.companyProfileId) {
-    serverParams.value.companyProfileId = props.companyProfileId;
+  if (companyProfileId) {
+    serverParams.value.companyProfileId = companyProfileId;
   }
-  if (props.agencyId) {
-    serverParams.value.agencyId = props.agencyId;
+  if (agencyId) {
+    serverParams.value.agencyId = agencyId;
   }
 }
-getSourcesForRequests().then((sources) => {
+async function loadJobBoards() {
+  const sources = await getSourcesForRequests();
   availableJobBoards.value = sources;
   const selectedJobBoards = serverParams.value.jobBoardIds;
-  if (selectedJobBoards && selectedJobBoards.length) {
+  if (selectedJobBoards?.length) {
     jobBoardsSelected.value = sources.filter((s) => selectedJobBoards.includes(s.id));
   }
-});
+}
+
+void loadJobBoards();
 </script>
 
 <style scoped lang="scss">

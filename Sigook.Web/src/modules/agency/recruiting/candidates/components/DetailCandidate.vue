@@ -28,7 +28,7 @@
           </div>
           <div class="column is-12">
             <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
-              @formattedPhone="(phone: string) => phoneNumber = phone" />
+              @formattedPhone="(phone) => phoneNumber = phone ?? ''" />
           </div>
           <div class="column is-12 mb-3">
             <AddressComponent ref="addressComponent" v-model:model="location" :require-postal-code="false"
@@ -75,7 +75,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { useAdmin } from '@/shared/composables/useAdmin';
@@ -88,8 +88,8 @@ import AddressComponent from '@/shared/ui/Address.vue';
 import type { CandidateDetail } from '@/modules/agency/recruiting/candidates/types';
 import type { Gender, LocationModel, Source } from "@/shared/types/common";
 
-const props = defineProps<{ candidateId: number | string }>();
-const emit = defineEmits<{ (e: 'onUpdateWorker', value: boolean): void }>();
+const { candidateId } = defineProps<{ candidateId: number | string }>();
+const emit = defineEmits<(e: 'onUpdateWorker', value: boolean) => void>();
 
 const { isAdmin } = useAdmin();
 
@@ -111,42 +111,41 @@ const genderList = ref<Gender[]>([]);
 const sourceList = ref<Source[]>([]);
 const sourceError = ref('');
 const phoneNumber = ref('');
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
+const addressComponent = useTemplateRef<InstanceType<typeof AddressComponent>>('addressComponent');
 const location = ref<LocationModel>({ address: '', postalCode: '', city: null });
 
 const genders = computed(() => genderList.value);
 const hasDnuPermission = computed(() => {
-  if (!candidate.value || !candidate.value.dnu) {
+  if (!candidate.value?.dnu) {
     return false;
-  } else if (candidate.value.dnu && isAdmin.value) {
+  } else if (isAdmin.value) {
     return false;
   } else {
     return true;
   }
 });
 
-function loadCandidate() {
+async function loadCandidate() {
   isLoading.value = true;
-  getAgencyCandidate(String(props.candidateId))
-    .then(response => {
-      isLoading.value = false;
-      location.value = {
-        address: response.address || '',
-        postalCode: response.postalCode || '',
-        city: response.city ?? null,
-      };
-      candidate.value = response;
-      phoneNumber.value = response.phoneNumbers?.[0]?.phoneNumber || '';
-      form.hydrate({
-        name: response.name || '',
-        email: response.email || '',
-      });
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const response = await getAgencyCandidate(String(candidateId));
+    isLoading.value = false;
+    location.value = {
+      address: response.address || '',
+      postalCode: response.postalCode || '',
+      city: response.city ?? null,
+    };
+    candidate.value = response;
+    phoneNumber.value = response.phoneNumbers[0]?.phoneNumber || '';
+    form.hydrate({
+      name: response.name || '',
+      email: response.email || '',
     });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 async function validateForm() {
@@ -154,15 +153,16 @@ async function validateForm() {
   const { valid } = await form.validate();
   const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
   const addressValid = addressComponent.value ? await addressComponent.value.validateAddress() : false;
-  sourceError.value = candidate.value.sourceId ? '' : 'Source is required';
+  sourceError.value = candidate.value?.sourceId ? '' : 'Source is required';
   if (!valid || !phoneValid || !addressValid || sourceError.value) {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
-  submitCandidate();
+  await submitCandidate();
 }
 
-function submitCandidate() {
+async function submitCandidate() {
+  if (!candidate.value) return;
   isLoading.value = true;
   const payload = {
     ...candidate.value,
@@ -173,27 +173,30 @@ function submitCandidate() {
     city: location.value.city ? { id: location.value.city.id, value: location.value.city.value } : null,
     phoneNumbers: [{ phoneNumber: phoneNumber.value }],
   };
-  updateAgencyCandidate(String(props.candidateId), payload)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      emit('onUpdateWorker', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyCandidate(String(candidateId), payload);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    emit('onUpdateWorker', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 watch(() => candidate.value?.sourceId, () => { sourceError.value = ''; });
 
-Promise.all([getGenders(), getSources()])
-  .then(([genderResult, sourceResult]) => {
+async function loadCatalogs() {
+  try {
+    const [genderResult, sourceResult] = await Promise.all([getGenders(), getSources()]);
     genderList.value = genderResult;
     sourceList.value = sourceResult;
-    loadCandidate();
-  })
-  .catch(error => {
+  } catch (error) {
     showAlertError(error);
-  });
+    return;
+  }
+  await loadCandidate();
+}
+
+void loadCatalogs();
 </script>

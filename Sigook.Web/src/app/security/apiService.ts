@@ -3,7 +3,7 @@ import pinia from '@/app/stores';
 import { useSecurityStore } from '@/app/stores/security';
 import qs from 'qs';
 
-const apiUrl: string = import.meta.env.VUE_APP_URL_API as string;
+const apiUrl: string = import.meta.env.VUE_APP_URL_API;
 
 const http = axios.create({
   baseURL: apiUrl,
@@ -53,7 +53,7 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
         originalRequest.headers.Authorization = `${newUser.token_type} ${newUser.access_token}`;
       }
       originalRequest.headers['accept-language'] = localStorage.getItem('language') && localStorage.getItem('language') !== 'en' ? localStorage.getItem('language') : 'en-US';
-      return http(originalRequest);
+      return await http(originalRequest);
     } catch (e) {
       await signOutAndRedirectToLogin();
       return Promise.reject(e);
@@ -65,7 +65,7 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
         break;
       case 500:
         alert('Oops something was wrong please try again later');
-        if (error.response?.config?.responseType === 'blob') {
+        if (error.response.config.responseType === 'blob') {
           const errorMsg = "An error occurred please try again, if the error persists try later one of our engineers will solve it soon";
           return Promise.reject({ data: errorMsg });
         }
@@ -77,16 +77,16 @@ http.interceptors.response.use(response => response, async (error: AxiosError) =
 });
 
 export const api = {
-  get: <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    http.get<T>(url, config).then(r => r.data),
-  post: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    http.post<T>(url, body, config).then(r => r.data),
-  put: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    http.put<T>(url, body, config).then(r => r.data),
-  patch: <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
-    http.patch<T>(url, body, config).then(r => r.data),
-  del: <T = void>(url: string, config?: AxiosRequestConfig): Promise<T> =>
-    http.delete<T>(url, config).then(r => r.data),
+  get: async <T>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    (await http.get<T>(url, config)).data,
+  post: async <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    (await http.post<T>(url, body, config)).data,
+  put: async <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    (await http.put<T>(url, body, config)).data,
+  patch: async <T = void>(url: string, body?: unknown, config?: AxiosRequestConfig): Promise<T> =>
+    (await http.patch<T>(url, body, config)).data,
+  del: async <T = void>(url: string, config?: AxiosRequestConfig): Promise<T> =>
+    (await http.delete<T>(url, config)).data,
 };
 
 export default http;

@@ -42,39 +42,35 @@ import { showAlertError } from "@/shared/utils/toast";
 import { getUserNotifications, updateUserNotification } from "@/shared/api/userNotificationApi";
 import type { UserNotificationItem } from '@/shared/types/common';
 
-defineProps<{ isDisabled?: boolean }>();
-const emit = defineEmits<{ (e: 'hideEditButton', v: boolean): void }>();
+const emit = defineEmits<(e: 'hideEditButton', v: boolean) => void>();
 
 const data = ref<UserNotificationItem[] | null>(null);
 const isLoading = ref(false);
 
-function loadNotifications() {
+async function loadNotifications() {
   isLoading.value = true;
-  getUserNotifications()
-    .then(response => {
-      data.value = response;
-      isLoading.value = false;
-    })
-    .catch(error => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    data.value = await getUserNotifications();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function saveNotification(item: UserNotificationItem) {
+async function saveNotification(item: UserNotificationItem) {
   isLoading.value = true;
-  updateUserNotification(item)
-    .then(() => {
-      isLoading.value = false;
-    })
-    .catch(error => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    await updateUserNotification(item);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 emit('hideEditButton', true);
-loadNotifications();
+void loadNotifications();
 </script>
 
 <style lang="scss">

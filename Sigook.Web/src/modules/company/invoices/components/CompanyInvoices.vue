@@ -44,15 +44,19 @@ const serverParams = ref<CompanyInvoiceFilter>({
   pageSize: 30,
 });
 
-function onDownloadInvoicePdf(invoice: CompanyInvoiceListItem) {
+async function onDownloadInvoicePdf(invoice: CompanyInvoiceListItem) {
   if (invoice.pdfUrl) {
     openFileUrl(invoice.pdfUrl);
     return;
   }
   isLoading.value = true;
-  downloadCompanyInvoicePdf(invoice.id)
-    .then((response) => downloadPDF(response, invoice.invoiceNumber))
-    .catch((error) => showAlertError(error))
-    .finally(() => { isLoading.value = false; });
+  try {
+    const response = await downloadCompanyInvoicePdf(invoice.id);
+    downloadPDF(response, invoice.invoiceNumber);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>

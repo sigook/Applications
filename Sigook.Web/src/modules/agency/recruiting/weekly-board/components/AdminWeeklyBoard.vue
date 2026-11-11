@@ -191,7 +191,7 @@ import RunnerHistoryModal from '@/modules/agency/recruiting/requests/runners/Run
 const dateFormat = 'YYYY-MM-DD';
 
 const agencyStore = useAgencyStore();
-const userName = computed(() => agencyStore.agency?.fullName || 'Weekly Board');
+const userName = computed(() => agencyStore.agency.fullName || 'Weekly Board');
 
 function startOfWeek(date: dayjs.Dayjs): dayjs.Dayjs {
   const offset = (date.day() + 6) % 7;
@@ -219,7 +219,8 @@ const draggedAssignment = ref<WeeklyBoardAssignment | null>(null);
 const dropTarget = ref<{ recruiterId: string; date: string } | null>(null);
 
 const days = computed<WeekDay[]>(() => {
-  const [from, to] = range.value;
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return [];
   const start = dayjs(from);
   const end = dayjs(to);
@@ -241,23 +242,24 @@ const days = computed<WeekDay[]>(() => {
 });
 
 const rangeLabel = computed(() => {
-  const [from, to] = range.value;
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return '';
   return `${dayjs(from).format('MMM D')} – ${dayjs(to).format('MMM D, YYYY')}`;
 });
 
-function loadBoard(): void {
-  const [from, to] = range.value;
+async function loadBoard(): Promise<void> {
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return;
   isLoading.value = true;
-  getWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat) })
-    .then(response => {
-      board.value = response;
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    board.value = await getWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat) });
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function shiftWeek(direction: number): void {
@@ -285,7 +287,7 @@ function statusTagType(status: RequestStatus): string {
 }
 
 function statusLabel(status: RequestStatus): string {
-  return RequestStatusLabels[status] ?? '';
+  return RequestStatusLabels[status];
 }
 
 function formatDetailDate(date: string): string {
@@ -297,19 +299,18 @@ function openAssign(preset?: AssignPreset): void {
   showAssign.value = true;
 }
 
-function openDetail(assignment: WeeklyBoardAssignment): void {
+async function openDetail(assignment: WeeklyBoardAssignment): Promise<void> {
   detail.value = assignment;
   detailRunners.value = [];
   showDetail.value = true;
   isLoading.value = true;
-  getRequestRunners(assignment.requestId)
-    .then(response => {
-      detailRunners.value = response;
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    detailRunners.value = await getRequestRunners(assignment.requestId);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function openRunnerHistory(worker: WeeklyBoardRunner): void {
@@ -317,18 +318,18 @@ function openRunnerHistory(worker: WeeklyBoardRunner): void {
   showRunnerHistory.value = true;
 }
 
-function onAssign(payload: AssignRecruitersPayload): void {
+async function onAssign(payload: AssignRecruitersPayload): Promise<void> {
   isSaving.value = true;
-  assignRecruiters(payload)
-    .then(() => {
-      showAlertSuccess('Recruiter assigned');
-      showAssign.value = false;
-      loadBoard();
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isSaving.value = false;
-    });
+  try {
+    await assignRecruiters(payload);
+    showAlertSuccess('Recruiter assigned');
+    showAssign.value = false;
+    void loadBoard();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 function onDragStart(assignment: WeeklyBoardAssignment): void {
@@ -357,10 +358,10 @@ function isDragging(assignment: WeeklyBoardAssignment): boolean {
 }
 
 function isDropTarget(recruiterId: string, date: string): boolean {
-  return !!draggedAssignment.value && dropTarget.value?.recruiterId === recruiterId && dropTarget.value?.date === date;
+  return !!draggedAssignment.value && dropTarget.value?.recruiterId === recruiterId && dropTarget.value.date === date;
 }
 
-function onDrop(toRecruiterId: string, toDate: string): void {
+async function onDrop(toRecruiterId: string, toDate: string): Promise<void> {
   const assignment = draggedAssignment.value;
   dropTarget.value = null;
   draggedAssignment.value = null;
@@ -371,22 +372,22 @@ function onDrop(toRecruiterId: string, toDate: string): void {
 
   isLoading.value = true;
   isSaving.value = true;
-  moveAssignment({
-    requestId: assignment.requestId,
-    fromRecruiterId: assignment.recruiterId,
-    fromWorkDate: fromDate,
-    toRecruiterId,
-    toWorkDate: toDate,
-  })
-    .then(() => {
-      showAlertSuccess('Assignment moved');
-      loadBoard();
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-      isSaving.value = false;
+  try {
+    await moveAssignment({
+      requestId: assignment.requestId,
+      fromRecruiterId: assignment.recruiterId,
+      fromWorkDate: fromDate,
+      toRecruiterId,
+      toWorkDate: toDate,
     });
+    showAlertSuccess('Assignment moved');
+    void loadBoard();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+    isSaving.value = false;
+  }
 }
 
 function confirmUnassign(assignment: WeeklyBoardAssignment): void {
@@ -401,22 +402,22 @@ function confirmUnassign(assignment: WeeklyBoardAssignment): void {
   });
 }
 
-function onUnassign(assignment: WeeklyBoardAssignment): void {
+async function onUnassign(assignment: WeeklyBoardAssignment): Promise<void> {
   isSaving.value = true;
-  unassignRecruiter({
-    requestId: assignment.requestId,
-    recruiterId: assignment.recruiterId,
-    workDate: dayjs(assignment.workDate).format(dateFormat),
-  })
-    .then(() => {
-      showAlertSuccess('Assignment removed');
-      showDetail.value = false;
-      loadBoard();
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isSaving.value = false;
+  try {
+    await unassignRecruiter({
+      requestId: assignment.requestId,
+      recruiterId: assignment.recruiterId,
+      workDate: dayjs(assignment.workDate).format(dateFormat),
     });
+    showAlertSuccess('Assignment removed');
+    showDetail.value = false;
+    void loadBoard();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 watch(range, loadBoard, { immediate: true });

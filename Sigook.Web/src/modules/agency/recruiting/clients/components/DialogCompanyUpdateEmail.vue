@@ -41,8 +41,8 @@ import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError } from "@/shared/utils/toast";
 import { updateAgencyCompanyEmail } from '@/modules/agency/recruiting/clients/api';
 
-const props = defineProps<{ companyProfileId: number | string }>();
-const emit = defineEmits<{ (e: 'closeModal', changed: boolean, newEmail: string): void }>();
+const { companyProfileId } = defineProps<{ companyProfileId: number | string }>();
+const emit = defineEmits<(e: 'closeModal', changed: boolean, newEmail: string) => void>();
 
 const schema = yup.object({
   newEmail: yup.string().required('Email is required').email('Invalid email'),
@@ -63,23 +63,22 @@ const isLoading = ref(false);
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    updateEmail(values.newEmail);
+  void form.handleSubmit(async (values) => {
+    await updateEmail(values.newEmail);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function updateEmail(email: string) {
+async function updateEmail(email: string) {
   isLoading.value = true;
-  updateAgencyCompanyEmail(String(props.companyProfileId), { newEmail: email })
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true, email);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyCompanyEmail(String(companyProfileId), { newEmail: email });
+    isLoading.value = false;
+    emit('closeModal', true, email);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

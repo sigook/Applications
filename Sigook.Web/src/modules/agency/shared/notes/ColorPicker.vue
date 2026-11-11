@@ -17,9 +17,9 @@
     </b-dropdown>
 </template>
 <script setup lang="ts">
-defineProps<{ modelValue: string }>();
+const { modelValue } = defineProps<{ modelValue: string }>();
 
-const emit = defineEmits<{ (e: 'update:modelValue', color: string): void }>();
+const emit = defineEmits<(e: 'update:modelValue', color: string) => void>();
 
 const colors = [
   '#fefefe',

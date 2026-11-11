@@ -38,7 +38,7 @@ import { createRunnerInterview } from '@/modules/agency/recruiting/requests/runn
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { INTERVIEW_TYPES, INTERVIEW_TYPE_LABELS, InterviewType } from '@/modules/agency/recruiting/requests/runners/types';
 
-const props = defineProps<{ requestId: string; runnerId: string }>();
+const { requestId, runnerId } = defineProps<{ requestId: string; runnerId: string }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
 
 const interviewTypes = INTERVIEW_TYPES;
@@ -64,25 +64,24 @@ function interviewTypeLabel(type: InterviewType): string {
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(
-    values => {
+  void form.handleSubmit(
+    async values => {
       if (!values.scheduledDate) return;
       isLoading.value = true;
-      createRunnerInterview(props.requestId, props.runnerId, {
-        scheduledDate: values.scheduledDate.toISOString(),
-        type: values.type,
-        interviewer: values.interviewer || undefined,
-        notes: values.notes || undefined,
-      })
-        .then(() => {
-          showAlertSuccess('Interview added');
-          emit('updated');
-          emit('close');
-        })
-        .catch(err => {
-          isLoading.value = false;
-          showAlertError(err);
+      try {
+        await createRunnerInterview(requestId, runnerId, {
+          scheduledDate: values.scheduledDate.toISOString(),
+          type: values.type,
+          interviewer: values.interviewer || undefined,
+          notes: values.notes || undefined,
         });
+        showAlertSuccess('Interview added');
+        emit('updated');
+        emit('close');
+      } catch (err) {
+        isLoading.value = false;
+        showAlertError(err);
+      }
     },
     () => showAlertError('Please make sure all required fields are filled out correctly'),
   )();

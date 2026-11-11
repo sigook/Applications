@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import CandidateApplyForm from '@/modules/landing/components/shared/forms/CandidateApplyForm.vue'
 import LandingIcon from '@/modules/landing/components/shared/icons/LandingIcon.vue'
 import { useCandidateApplyModal } from '@/modules/landing/composables/useCandidateApplyModal'
@@ -49,7 +49,7 @@ const { isOpen, context, close } = useCandidateApplyModal()
 const title = computed(() => (context.value?.jobTitle ? 'Apply for this role' : 'Register with us'))
 const subtitle = computed(() => context.value?.jobTitle ?? null)
 
-const panelRef = ref<HTMLElement | null>(null)
+const panelRef = useTemplateRef<HTMLElement>('panelRef')
 useFocusTrap(isOpen, panelRef)
 
 let closeTimer: ReturnType<typeof setTimeout> | null = null
@@ -60,7 +60,7 @@ function onBackdropClick(): void {
 
 function onSubmitted(): void {
   if (closeTimer) clearTimeout(closeTimer)
-  closeTimer = setTimeout(() => close(), 800)
+  closeTimer = setTimeout(() => { close(); }, 800)
 }
 
 function onKeydown(event: KeyboardEvent): void {

@@ -47,7 +47,7 @@
 import { dateMonth } from '@/shared/format';
 import type { RequestGroupFill, RequestGroupSummary } from '@/modules/agency/shared/request-groups/types';
 
-defineProps<{
+const { group, countLabel, fill } = defineProps<{
   group: RequestGroupSummary;
   countLabel: string;
   fill?: RequestGroupFill | null;

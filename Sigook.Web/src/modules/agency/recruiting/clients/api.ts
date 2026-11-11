@@ -4,14 +4,14 @@ import { generateFileName } from '@/shared/utils/fileNaming';
 import type { CatalogItem, PaginatedList } from '@/shared/types/common';
 import type { AgencyCompanyFilter, AgencyCompanyListItem, AgencyCompanyContactPerson, AgencyCompanyLocationModel, AgencyCompanyJobPosition, AgencyCompanyJobPositionFilter, VaccinationRequiredModel, InvoiceNotesModel, InvoiceRecipientModel, UpdateIsAsapRequestsPayload, CompanyDeletionCheck } from '@/modules/agency/recruiting/clients/types';
 import type { CovenantFileModel } from '@/shared/types/common';
-import type { AgencyCompanyProfileDetail, CompanyProfileDocumentModel, CompanyProfileListItem, CompanyProfilePaymentTermsUpdate, CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
+import type { AgencyCompanyProfileDetail, CompanyProfileFormState, CompanyProfileDocumentModel, CompanyProfileListItem, CompanyProfilePaymentTermsUpdate, CompanyProfileSettingsUpdate } from '@/modules/agency/recruiting/clients/types';
 import type { CompanyProfileDetail, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
 
 const companyProfilesUrl = '/api/agency/recruiting/clients';
 
 const recruitingCompanyProfilesUrl = '/api/agency/recruiting/clients';
 
-export function createAgencyCompany(company: Partial<CompanyProfileDetail>): Promise<{ id: string }> {
+export function createAgencyCompany(company: CompanyProfileFormState): Promise<{ id: string }> {
   return api.post<{ id: string }>(companyProfilesUrl, company);
 }
 
@@ -23,7 +23,7 @@ export function getAgencyCompany(companyId: string): Promise<AgencyCompanyProfil
   return api.get<AgencyCompanyProfileDetail>(`${companyProfilesUrl}/${companyId}`);
 }
 
-export function updateAgencyCompany(companyId: string, company: Partial<CompanyProfileDetail>): Promise<void> {
+export function updateAgencyCompany(companyId: string, company: CompanyProfileFormState): Promise<void> {
   return api.put(`${companyProfilesUrl}/${companyId}`, company);
 }
 

@@ -35,16 +35,16 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
   if (fileObjects.identificationType2) {
     generatedFileNames.identificationType2 = generateFileName('Document', fileObjects.identificationType2.name);
   }
-  if (fileObjects.licenses && fileObjects.licenses.length > 0) {
+  if (fileObjects.licenses.length > 0) {
     generatedFileNames.licenses = fileObjects.licenses.map((file: File) => generateFileName('License', file.name));
   }
-  if (fileObjects.certificates && fileObjects.certificates.length > 0) {
+  if (fileObjects.certificates.length > 0) {
     generatedFileNames.certificates = fileObjects.certificates.map((file: File) => generateFileName('Certificate', file.name));
   }
   if (fileObjects.resume) {
     generatedFileNames.resume = generateFileName('Resume', fileObjects.resume.name);
   }
-  if (fileObjects.otherDocuments && fileObjects.otherDocuments.length > 0) {
+  if (fileObjects.otherDocuments.length > 0) {
     generatedFileNames.otherDocuments = fileObjects.otherDocuments.map((file: File) => generateFileName('OtherDocument', file.name));
   }
 
@@ -87,7 +87,7 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
       description: worker.identificationType2File?.description || ""
     };
   }
-  if (worker.licenses && worker.licenses.length > 0) {
+  if (worker.licenses.length > 0) {
     workerData.licenses = worker.licenses.map((l, index) => ({
       license: {
         fileName: generatedFileNames.licenses[index],
@@ -98,7 +98,7 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
       expires: l.expires
     }));
   }
-  if (worker.certificates && worker.certificates.length > 0) {
+  if (worker.certificates.length > 0) {
     workerData.certificates = worker.certificates.map((c, index) => ({
       fileName: generatedFileNames.certificates[index],
       description: c.description
@@ -107,7 +107,7 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
   if (worker.resume) {
     workerData.resume = { fileName: generatedFileNames.resume };
   }
-  if (worker.otherDocuments && worker.otherDocuments.length > 0) {
+  if (worker.otherDocuments.length > 0) {
     workerData.otherDocuments = worker.otherDocuments.map((d, index) => ({
       fileName: generatedFileNames.otherDocuments[index],
       description: d.description
@@ -130,12 +130,12 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
   if (fileObjects.identificationType2 && generatedFileNames.identificationType2) {
     formData.append(generatedFileNames.identificationType2, fileObjects.identificationType2, generatedFileNames.identificationType2);
   }
-  if (fileObjects.licenses && fileObjects.licenses.length > 0) {
+  if (fileObjects.licenses.length > 0) {
     fileObjects.licenses.forEach((file: File, index: number) => {
       formData.append(generatedFileNames.licenses[index], file, generatedFileNames.licenses[index]);
     });
   }
-  if (fileObjects.certificates && fileObjects.certificates.length > 0) {
+  if (fileObjects.certificates.length > 0) {
     fileObjects.certificates.forEach((file: File, index: number) => {
       formData.append(generatedFileNames.certificates[index], file, generatedFileNames.certificates[index]);
     });
@@ -143,7 +143,7 @@ export async function createMultipartFormData(worker: CreateWorkerState, fileObj
   if (fileObjects.resume && generatedFileNames.resume) {
     formData.append(generatedFileNames.resume, fileObjects.resume, generatedFileNames.resume);
   }
-  if (fileObjects.otherDocuments && fileObjects.otherDocuments.length > 0) {
+  if (fileObjects.otherDocuments.length > 0) {
     fileObjects.otherDocuments.forEach((file: File, index: number) => {
       formData.append(generatedFileNames.otherDocuments[index], file, generatedFileNames.otherDocuments[index]);
     });

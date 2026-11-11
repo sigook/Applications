@@ -35,16 +35,16 @@ import { appGlobals } from '@/app/globals';
 import { currency, dateMonth, splitCapital } from '@/shared/format';
 import type { WorkerRequestListItem } from '@/modules/worker/requests/types';
 
-const props = defineProps<{
+const { job, clickable } = defineProps<{
   job: WorkerRequestListItem;
   clickable?: boolean;
 }>();
 
-const emit = defineEmits<{ (e: 'click'): void }>();
+const emit = defineEmits<(e: 'click') => void>();
 
-const address = computed(() => [props.job.location, props.job.entrance].filter(Boolean).join(' - ') || 'N/A');
+const address = computed(() => [job.location, job.entrance].filter(Boolean).join(' - ') || 'N/A');
 
-const status = computed(() => (props.job.status && props.job.status !== 'None' ? props.job.status : ''));
+const status = computed(() => (job.status && job.status !== 'None' ? job.status : ''));
 
 const statusClass = computed(() => {
   switch (status.value.toLowerCase()) {
@@ -67,18 +67,18 @@ const statusClass = computed(() => {
 });
 
 const showFinish = computed(() =>
-  props.job.durationTerm !== appGlobals.$longTerm
-  || props.job.status === appGlobals.$statusFilled
-  || props.job.status === appGlobals.$statusCancelled,
+  job.durationTerm !== appGlobals.$longTerm
+  || job.status === appGlobals.$statusFilled
+  || job.status === appGlobals.$statusCancelled,
 );
 
 const dates = computed(() => {
-  const start = dateMonth(props.job.startAt);
-  return showFinish.value && props.job.finishAt ? `${start} - ${dateMonth(props.job.finishAt)}` : start;
+  const start = dateMonth(job.startAt);
+  return showFinish.value && job.finishAt ? `${start} - ${dateMonth(job.finishAt)}` : start;
 });
 
 const pay = computed(() =>
-  props.job.workerSalary ? `${currency(props.job.workerSalary)}/year` : `${currency(props.job.workerRate)}/hr`,
+  job.workerSalary ? `${currency(job.workerSalary)}/year` : `${currency(job.workerRate)}/hr`,
 );
 </script>
 

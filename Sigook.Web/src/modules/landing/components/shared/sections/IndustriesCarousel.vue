@@ -126,18 +126,21 @@ interface LearnMoreCard {
 
 type CarouselCard = IndustryCard | LearnMoreCard
 
-const props = withDefaults(defineProps<{
+const {
+  eyebrow = 'Industries',
+  heading,
+  headingAccent,
+  subtitle,
+  learnMoreTitle = 'Learn more',
+  learnMoreSubtitle = 'Explore all sectors',
+} = defineProps<{
   eyebrow?: string
   heading: string
   headingAccent: string
   subtitle: string
   learnMoreTitle?: string
   learnMoreSubtitle?: string
-}>(), {
-  eyebrow: 'Industries',
-  learnMoreTitle: 'Learn more',
-  learnMoreSubtitle: 'Explore all sectors',
-})
+}>()
 
 const INDUSTRIES: readonly IndustryCard[] = [
   { kind: 'industry', key: 'automotive', title: 'Automotive', iconName: 'automotive', tone: 'blue' },
@@ -159,8 +162,8 @@ const SLIDES = computed<readonly CarouselCard[][]>(() => {
   const learnMore: LearnMoreCard = {
     kind: 'learn-more',
     key: 'learn-more',
-    title: props.learnMoreTitle,
-    subtitle: props.learnMoreSubtitle,
+    title: learnMoreTitle,
+    subtitle: learnMoreSubtitle,
   }
 
   const all: readonly CarouselCard[] = [...INDUSTRIES, learnMore]
@@ -198,7 +201,7 @@ const { onPointerDown, onPointerUp } = useSwipe(
     next()
     start()
   },
-  () => prev(),
+  () => { prev(); },
 )
 
 const trackStyle = computed(() => ({

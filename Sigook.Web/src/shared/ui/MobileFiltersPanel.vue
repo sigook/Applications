@@ -15,14 +15,11 @@
 <script setup lang="ts">
 import SheetPanel from '@/shared/ui/SheetPanel.vue';
 
-withDefaults(
-  defineProps<{
-    modelValue: boolean;
-    activeCount?: number;
-    title?: string;
-  }>(),
-  { activeCount: 0, title: 'Filters' },
-);
+const { modelValue, activeCount = 0, title = 'Filters' } = defineProps<{
+  modelValue: boolean;
+  activeCount?: number;
+  title?: string;
+}>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;

@@ -136,7 +136,7 @@ const onRequestCode = handleSubmit(async () => {
     resetForm({ values: { email: email.value, code: '', newPassword: '', confirmPassword: '' } });
     startCooldown();
   } catch {
-    await showAlertError('Could not send the code. Try again later.');
+    showAlertError('Could not send the code. Try again later.');
   } finally {
     isLoading.value = false;
   }
@@ -149,7 +149,7 @@ async function onResend(): Promise<void> {
     startCooldown();
     showAlertSuccess('A new code was sent. Check your inbox.');
   } catch {
-    await showAlertError('Could not send the code. Try again later.');
+    showAlertError('Could not send the code. Try again later.');
   }
 }
 
@@ -164,7 +164,7 @@ const onReset = handleSubmit(async () => {
       newPassword: newPassword.value,
     });
     showAlertSuccess('Password updated. Sign in with your new password.');
-    router.push('/login');
+    void router.push('/login');
   } catch (e) {
     if (isAxiosError(e) && e.response?.status === 400) {
       const data = e.response.data as PasswordResetErrorResponse;

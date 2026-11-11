@@ -22,34 +22,34 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import LocationAddress from '@/shared/ui/Address.vue';
 import PhoneInput from '@/shared/ui/PhoneInput.vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { createWorkerContactInformation } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail, WorkerContactInformationModel } from '@/shared/worker-profile/types';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
-const worker = ref<Partial<WorkerProfileDetail>>({});
-const addressComponent = ref<InstanceType<typeof LocationAddress> | null>(null);
-const mobileComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const worker = ref<WorkerProfileDetail>({ ...data });
+const addressComponent = useTemplateRef<InstanceType<typeof LocationAddress>>('addressComponent');
+const mobileComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('mobileComponent');
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
 
 async function validateAll() {
   const addressValid = await addressComponent.value?.validateAddress();
   const mobileValid = await mobileComponent.value?.validatePhone();
   const phoneValid = await phoneComponent.value?.validatePhone();
   if (addressValid && mobileValid && phoneValid) {
-    saveContactInformation();
+    await saveContactInformation();
   } else {
     showAlertError('Please make sure all required fields are filled out correctly');
   }
 }
 
-function saveContactInformation() {
+async function saveContactInformation() {
   isLoading.value = true;
   const payload: WorkerContactInformationModel = {
     mobileNumber: worker.value.mobileNumber,
@@ -57,19 +57,16 @@ function saveContactInformation() {
     phoneExt: worker.value.phoneExt,
     location: worker.value.location,
   };
-  createWorkerContactInformation(worker.value.id, payload)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerContactInformation(worker.value.id, payload);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-if (props.data != null) {
-  worker.value = Object.assign({}, props.data);
-  worker.value.location = Object.assign({}, props.data.location);
-}
+worker.value = Object.assign({}, data);
+worker.value.location = Object.assign({}, data.location);
 </script>

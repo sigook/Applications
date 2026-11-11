@@ -119,16 +119,14 @@ interface PunchRejected {
   reference: string;
 }
 
-const props = defineProps<{
+const { requestId, request } = defineProps<{
   requestId: string;
   request?: WorkerRequestDetail;
 }>();
 
 const emptyStatus = (): PunchStatus => ({ clockType: ClockType.None, dayHours: 0, weekHours: 0 });
 
-const emit = defineEmits<{
-  (e: 'refreshRequest'): void;
-}>();
+const emit = defineEmits<(e: 'refreshRequest') => void>();
 
 const appStore = useAppStore();
 const workerStore = useWorkerStore();
@@ -158,7 +156,7 @@ const phase = computed(() => {
 });
 
 const isClearlyOutOfRange = computed(() => {
-  const checkpoint = props.request?.punchCheckpoint;
+  const checkpoint = request?.punchCheckpoint;
   const current = position.value;
   if (!checkpoint || !current || clockType.value === ClockType.None) return false;
   const { latitude, longitude, accuracy } = current.coords;
@@ -200,13 +198,13 @@ const geo = computed<GeoStrip>(() => {
   }
   const { latitude, longitude, accuracy } = current.coords;
   const coordinates = `${latitude.toFixed(6)}, ${longitude.toFixed(6)} (±${Math.round(accuracy)} m)`;
-  const checkpoint = props.request?.punchCheckpoint;
+  const checkpoint = request?.punchCheckpoint;
   if (!checkpoint) {
     return {
       state: 'neutral',
       icon: 'map-marker-outline',
       title: 'Location shared',
-      subtitle: `${props.request?.location ?? 'Check point'} · your location is checked when you punch.`,
+      subtitle: `${request?.location ?? 'Check point'} · your location is checked when you punch.`,
       coordinates
     };
   }
@@ -233,7 +231,7 @@ const geo = computed<GeoStrip>(() => {
       ? `Get closer to ${clockType.value === ClockType.ClockOut ? 'clock out' : 'clock in'}. Already on site? Contact your agency.`
       : 'Get closer before you clock in.',
     coordinates,
-    reference: blocked ? `${workerReference()} · Request #${props.request?.numberId ?? '-'}` : undefined
+    reference: blocked ? `${workerReference()} · Request #${request.numberId ?? '-'}` : undefined
   };
 });
 
@@ -245,7 +243,7 @@ function workerReference(): string {
 }
 
 function punchReference(): string {
-  return `${workerReference()} · Request #${props.request?.numberId ?? '-'} · ${dayjs().format('MMM DD, YYYY hh:mm A')}`;
+  return `${workerReference()} · Request #${request?.numberId ?? '-'} · ${dayjs().format('MMM DD, YYYY hh:mm A')}`;
 }
 
 function elapsed(seconds: number): string {
@@ -267,8 +265,8 @@ const clockLabel = computed(() => {
   if (phase.value === 'done') return 'Sent to your agency for approval';
   if (phase.value === 'none') return 'No shift to punch on this day';
   if (phase.value === 'error') return 'Could not check your shift status';
-  if (props.request?.startAt && props.request?.finishAt) {
-    return `Request runs ${date(props.request.startAt)} - ${date(props.request.finishAt)}`;
+  if (request?.startAt && request.finishAt) {
+    return `Request runs ${date(request.startAt)} - ${date(request.finishAt)}`;
   }
   return 'Current time';
 });
@@ -295,7 +293,7 @@ function askConfirm() {
 
 function onCta() {
   if (phase.value === 'error') {
-    retry();
+    void retry();
     return;
   }
   askConfirm();
@@ -310,7 +308,7 @@ async function refreshClockType() {
   }
   try {
     status.value = await getPunchStatus(
-      props.requestId,
+      requestId,
       position.value.coords.latitude,
       position.value.coords.longitude
     );
@@ -328,29 +326,28 @@ async function retry() {
   isLoading.value = false;
 }
 
-function registerHour() {
+async function registerHour() {
   if (!position.value) return;
   const wasClockIn = confirmAction.value === 'in';
   confirmAction.value = null;
   punchRejected.value = null;
   isLoading.value = true;
-  return workerRegisterTime(props.requestId, position.value.coords.latitude, position.value.coords.longitude)
-    .then(async () => {
-      emit('refreshRequest');
-      await refreshClockType();
-      isLoading.value = false;
-      showAlertSuccess(wasClockIn ? 'Clocked in successfully!' : 'Clocked out successfully!');
-    })
-    .catch(async (error: unknown) => {
-      isLoading.value = false;
-      const data = (error as { data?: unknown }).data;
-      const message = (await getErrorMessage(data)).replace(/<br\/>/g, ' ').trim();
-      if (/too far/i.test(message)) {
-        punchRejected.value = { message, reference: punchReference() };
-        return;
-      }
-      showAlertError(data);
-    });
+  try {
+    await workerRegisterTime(requestId, position.value.coords.latitude, position.value.coords.longitude);
+    emit('refreshRequest');
+    await refreshClockType();
+    isLoading.value = false;
+    showAlertSuccess(wasClockIn ? 'Clocked in successfully!' : 'Clocked out successfully!');
+  } catch (error) {
+    isLoading.value = false;
+    const data = (error as { data?: unknown }).data;
+    const message = (await getErrorMessage(data)).replace(/<br\/>/g, ' ').trim();
+    if (/too far/i.test(message)) {
+      punchRejected.value = { message, reference: punchReference() };
+      return;
+    }
+    showAlertError(data);
+  }
 }
 
 function onVisibilityChange() {
@@ -360,7 +357,7 @@ function onVisibilityChange() {
 const timerId = setInterval(() => (now.value = dayjs()), 1000);
 document.addEventListener('visibilitychange', onVisibilityChange);
 
-(async () => {
+void (async () => {
   today.value = await appStore.getCurrentDate();
   navigator.geolocation.watchPosition(
     (p) => {

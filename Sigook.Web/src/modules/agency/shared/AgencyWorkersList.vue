@@ -6,7 +6,7 @@
         <b-field label="Worker" :message="'Type at least 3 characters to search'">
           <b-autocomplete v-model="workerSelected" :data="workers" placeholder="Worker" name="worker" append-to-body
             :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker"
-            :custom-formatter="(option) => `${option.fullName} | ${option.approvedToWork ? 'Approved' : 'Not Approved'}`">
+            :custom-formatter="(option: AgencyWorkerDropdownItem) => `${option.fullName} | ${option.approvedToWork ? 'Approved' : 'Not Approved'}`">
           </b-autocomplete>
         </b-field>
       </div>
@@ -27,7 +27,7 @@ import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { AgencyWorkerDropdownItem } from '@/modules/agency/recruiting/workers/types';
 
-const emit = defineEmits<{ (e: 'workerBooked'): void }>();
+const emit = defineEmits<(e: 'workerBooked') => void>();
 const route = useRoute();
 
 const isLoading = ref(false);
@@ -45,7 +45,7 @@ function selectWorker(worker: AgencyWorkerDropdownItem | null) {
   }
 }
 
-async function bookWorker() {
+function bookWorker() {
   getDialog().prompt({
     message: "Starting Date",
     inputAttrs: {
@@ -54,18 +54,22 @@ async function bookWorker() {
       required: true
     },
     confirmText: 'Book',
-    onConfirm: async (value, dialog) => {
-      isLoading.value = true;
-      await bookAgencyRequestWorker(requestId.value, workerProfileId.value, { startWorking: value }).then(() => {
-        isLoading.value = false;
-        showAlertSuccess('Booked');
-        emit('workerBooked');
-        dialog.close();
-      }).catch(error => {
-        isLoading.value = false;
-        showAlertError(error);
-      });
-    }
+    onConfirm: (value, dialog) => book(value, dialog)
   });
+}
+
+async function book(value: string, dialog: { close: () => void }) {
+  if (!workerProfileId.value) return;
+  isLoading.value = true;
+  try {
+    await bookAgencyRequestWorker(requestId.value, workerProfileId.value, { startWorking: value });
+    isLoading.value = false;
+    showAlertSuccess('Booked');
+    emit('workerBooked');
+    dialog.close();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

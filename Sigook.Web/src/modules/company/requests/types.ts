@@ -1,6 +1,6 @@
 import type { LocationDetailModel } from '@/shared/types/common';
 import type { CreateAgencyRequestModel, RequestShiftModel } from '@/shared/request-detail/types';
-import { DurationTerm, EmploymentType, RequestStatus } from '@/shared/constants/enums';
+import { DurationTerm, EmploymentType, RequestStatus, WorkerRequestStatus } from '@/shared/constants/enums';
 
 // Company Request models
 export interface CompanyRequestFilter {
@@ -49,7 +49,7 @@ export interface CompanyRequestDetail {
   jobPositionRate?: { id: string; value: string } | null;
   agencyRate?: number | null;
   status: RequestStatus;
-  durationTerm: number;
+  durationTerm: DurationTerm;
   displayShift?: string;
   createdAt: string;
   startAt?: string | null;
@@ -100,7 +100,7 @@ export interface CompanyRequestWorker {
   workerProfileId: string;
   name: string;
   email?: string;
-  workerRequestStatus: number;
+  workerRequestStatus: WorkerRequestStatus;
   status?: string;
   profileImage: string;
   isSubcontractor: boolean;

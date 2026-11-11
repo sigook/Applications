@@ -20,10 +20,10 @@ import { statusTagType } from '@/modules/worker/activity/activityFormat';
 import type { WorkerAssignmentListItem } from '@/modules/worker/activity/types';
 import OpenPunchCardButton from '@/modules/worker/requests/components/OpenPunchCardButton.vue';
 
-const props = defineProps<{ assignment: WorkerAssignmentListItem }>();
+const { assignment } = defineProps<{ assignment: WorkerAssignmentListItem }>();
 const router = useRouter();
 
-const subtitle = computed(() => [props.assignment.clientName, props.assignment.location].filter(Boolean).join(' · '));
+const subtitle = computed(() => [assignment.clientName, assignment.location].filter(Boolean).join(' · '));
 </script>
 
 <style lang="scss" scoped>

@@ -131,7 +131,7 @@ const isDirectHiringComputed = computed(() => isDirectHiring(request.value));
 const { canEdit, canCancel, statusLabel, statusVariant } = useRequestStatus(request);
 
 const termLabel = computed(() =>
-  request.value ? DurationTermLabels[request.value.durationTerm as DurationTerm] ?? '' : '');
+  request.value ? DurationTermLabels[request.value.durationTerm] : '');
 
 const chips = computed(() => (termLabel.value ? [termLabel.value] : []));
 
@@ -168,67 +168,63 @@ const staffing = computed(() => {
   });
 });
 
-function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {
+async function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {
   if (!request.value) return;
   modalValidation.value = false;
   isLoading.value = true;
-  cancelRequestApi(request.value.id, reason.reasonId, reason.otherMessage)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Cancelled');
-      router.push('/company-requests');
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await cancelRequestApi(request.value.id, reason.reasonId, reason.otherMessage);
+    isLoading.value = false;
+    showAlertSuccess('Cancelled');
+    void router.push('/company-requests');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function getData() {
-  getRequest(route.params.id as string)
-    .then((response) => {
-      isLoading.value = false;
-      request.value = response;
-    })
-    .catch((error: unknown) => {
-      showAlertError((error as { data?: unknown }).data);
-      isLoading.value = false;
-    });
+async function getData() {
+  try {
+    const response = await getRequest(route.params.id as string);
+    isLoading.value = false;
+    request.value = response;
+  } catch (error) {
+    showAlertError((error as { data?: unknown }).data);
+    isLoading.value = false;
+  }
 }
 
 function alertRequestAnotherWorker() {
   modalValidationRequestAnotherWorker.value = true;
 }
 
-function onRequestAnotherWorker(comment: string) {
+async function onRequestAnotherWorker(comment: string) {
   modalValidationRequestAnotherWorker.value = false;
   isLoading.value = true;
-  requestAnotherWorkerApi(route.params.id as string, { comments: comment })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Requested');
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await requestAnotherWorkerApi(route.params.id as string, { comments: comment });
+    isLoading.value = false;
+    showAlertSuccess('Requested');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onUpdateRequirements() {
   form.markInteracted(['requirements']);
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isLoading.value = true;
-    editRequest(route.params.id as string, { requirements: values.requirements })
-      .then(() => {
-        isLoading.value = false;
-        showAlertSuccess('Updated');
-        if (request.value) request.value.requirements = values.requirements;
-        editContentModal.value = false;
-      })
-      .catch((error: unknown) => {
-        isLoading.value = false;
-        showAlertError((error as { data?: unknown }).data);
-      });
+    try {
+      await editRequest(route.params.id as string, { requirements: values.requirements });
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+      if (request.value) request.value.requirements = values.requirements;
+      editContentModal.value = false;
+    } catch (error) {
+      isLoading.value = false;
+      showAlertError((error as { data?: unknown }).data);
+    }
   })();
 }
 
@@ -236,14 +232,14 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: `/company-requests/${route.params.id}`,
+  void router.push({
+    path: `/company-requests/${String(route.params.id)}`,
     query: { tab: tab },
   });
 }
 
-getData();
-if (route.query && route.query.tab) {
+void getData();
+if (route.query.tab) {
   const tab = route.query.tab as string;
   currentTab.value = tab;
   if (!visitedTabs.value.includes(tab)) {

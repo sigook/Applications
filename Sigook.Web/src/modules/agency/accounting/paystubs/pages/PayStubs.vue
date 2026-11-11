@@ -159,10 +159,10 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<AgencyPayStubRow>> {
+async function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<AgencyPayStubRow>> {
   agencyStore.updateAgencyPayStubFilter(params);
-  return getAgencyPayStubs(params)
-    .then((response) => ({ ...response, items: response.items.map((i) => ({ ...i, emailSending: false })) }));
+  const response = await getAgencyPayStubs(params);
+  return { ...response, items: response.items.map((i) => ({ ...i, emailSending: false })) };
 }
 
 function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
@@ -170,39 +170,37 @@ function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
     openFileUrl(payStub.pdfUrl);
     return;
   }
-  renderPayStubPdf(payStub, downloadPayStubPdf);
+  void renderPayStubPdf(payStub, downloadPayStubPdf);
 }
 
 function onRegeneratePayStubPdf(payStub: AgencyPayStubRow) {
-  renderPayStubPdf(payStub, regeneratePayStubPdf);
+  void renderPayStubPdf(payStub, regeneratePayStubPdf);
 }
 
-function renderPayStubPdf(payStub: AgencyPayStubRow, render: (payStubId: string) => Promise<Blob>) {
+async function renderPayStubPdf(payStub: AgencyPayStubRow, render: (payStubId: string) => Promise<Blob>) {
   isLoading.value = true;
-  render(payStub.id)
-    .then((response) => {
-      isLoading.value = false;
-      payStub.pdfGenerated = true;
-      downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    const response = await render(payStub.id);
+    isLoading.value = false;
+    payStub.pdfGenerated = true;
+    downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function onSendPayStubEmail(payStub: AgencyPayStubRow) {
+async function onSendPayStubEmail(payStub: AgencyPayStubRow) {
   payStub.emailSending = true;
-  sendPayStubEmail(payStub.id)
-    .then(() => {
-      payStub.emailSending = false;
-      payStub.emailSent = true;
-      showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
-    })
-    .catch((error) => {
-      payStub.emailSending = false;
-      showAlertError(error);
-    });
+  try {
+    await sendPayStubEmail(payStub.id);
+    payStub.emailSending = false;
+    payStub.emailSent = true;
+    showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
+  } catch (error) {
+    payStub.emailSending = false;
+    showAlertError(error);
+  }
 }
 
 function onSendSelectedEmails() {
@@ -213,21 +211,22 @@ function onSendSelectedEmails() {
     confirmText: 'Yes, send them',
     type: 'is-info',
     hasIcon: true,
-    onConfirm: () => {
-      isLoading.value = true;
-      const payStubIds = checkedRows.value.map((p) => p.id);
-      sendPayStubEmailBulk(payStubIds)
-        .then(() => {
-          isLoading.value = false;
-          checkedRows.value = [];
-          showAlertSuccess(`Sending ${count} pay stub(s). A summary will arrive on Teams.`);
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    },
+    onConfirm: () => sendSelectedEmails(count),
   });
+}
+
+async function sendSelectedEmails(count: number) {
+  isLoading.value = true;
+  const payStubIds = checkedRows.value.map((p) => p.id);
+  try {
+    await sendPayStubEmailBulk(payStubIds);
+    isLoading.value = false;
+    checkedRows.value = [];
+    showAlertSuccess(`Sending ${count} pay stub(s). A summary will arrive on Teams.`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onDeletePayStub(payStub: AgencyPayStubRow) {
@@ -242,19 +241,20 @@ function onDeletePayStub(payStub: AgencyPayStubRow) {
     confirmText: 'Yes, I read and I want to delete',
     type: 'is-danger',
     hasIcon: true,
-    onConfirm: () => {
-      isLoading.value = true;
-      deleteAgencyPayStub(payStub.id)
-        .then(() => {
-          isLoading.value = false;
-          grid.value?.reload();
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    },
+    onConfirm: () => deletePayStub(payStub),
   });
+}
+
+async function deletePayStub(payStub: AgencyPayStubRow) {
+  isLoading.value = true;
+  try {
+    await deleteAgencyPayStub(payStub.id);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onPayStubsGenerated() {

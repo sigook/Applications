@@ -125,7 +125,7 @@ import { getCompanyWorkerTimeSheetByDate, postCompanyWorkerTimeSheet, deleteComp
 
 dayjs.extend(duration);
 
-const props = defineProps<{ workerProfileId: string; requestId: string; request: CompanyRequestDetail; worker: CompanyRequestWorker }>();
+const { workerProfileId, requestId, request, worker } = defineProps<{ workerProfileId: string; requestId: string; request: CompanyRequestDetail; worker: CompanyRequestWorker }>();
 
 const { isTouch } = useBreakpoint();
 
@@ -136,7 +136,7 @@ const data = ref<PunchCardDay[]>([]);
 const isLoading = ref(false);
 const editableDay = ref<PunchCardEditableDay | null>(null);
 const showClockIn = ref(false);
-const clockInTime = ref<Date>(emptyTime);
+const clockInTime = ref<Date | null>(emptyTime);
 const maxClockInTime = ref<Date>(new Date());
 const showModalPunchCard = ref(false);
 const showDetailPunchCard = ref(false);
@@ -153,80 +153,73 @@ function dayKeyOf(day: PunchCardDay) {
   return dayjs(day.day).format('YYYY-MM-DD');
 }
 
-function onSheetSave(model: TimeSheetModel) {
+async function onSheetSave(model: TimeSheetModel) {
   const item = editableDay.value;
   if (!item?.id) return;
   isLoading.value = true;
-  updateCompanyRequestWorkerTimeSheet(props.requestId, props.workerProfileId, item.id, model)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      showDaySheet.value = false;
-      getAgencyWorkerTimeSheetByDate();
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateCompanyRequestWorkerTimeSheet(requestId, workerProfileId, item.id, model);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    showDaySheet.value = false;
+    await getAgencyWorkerTimeSheetByDate();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onSheetPost(hours: number) {
   const item = editableDay.value;
   if (!item) return;
   showDaySheet.value = false;
-  reportWorkerTimSheet({ ...item, totalHoursApproved: hours });
+  void reportWorkerTimSheet({ ...item, totalHoursApproved: hours });
 }
 
-function onSheetDelete() {
+async function onSheetDelete() {
   const item = editableDay.value;
   if (!item) return;
-  showAlertConfirm('Are you sure', 'You want to delete this item?')
-    .then(response => {
-      if (response) {
-        showDaySheet.value = false;
-        doDelete(item);
-      }
-    });
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this item?'))) return;
+  showDaySheet.value = false;
+  await doDelete(item);
 }
 
 const maximumDailyHours = computed(() => maximumHoursPerDay);
 
-function timeSheetFastApprove(item: PunchCardDay, requestId: string, workerProfileId: string) {
+async function timeSheetFastApprove(item: PunchCardDay, requestId: string, workerProfileId: string) {
+  if (!item.id) return;
   isLoading.value = true;
   const model = buildTimeSheetApproveModel(item);
-  updateCompanyRequestWorkerTimeSheet(requestId, workerProfileId, item.id, model)
-    .then(() => {
-      updateCell();
-    })
-    .catch((error) => {
-      showAlertError(error);
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    await updateCompanyRequestWorkerTimeSheet(requestId, workerProfileId, item.id, model);
+    updateCell();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function getAgencyWorkerTimeSheetByDate() {
+async function getAgencyWorkerTimeSheetByDate() {
   isLoading.value = true;
-  getCompanyWorkerTimeSheetByDate(props.requestId, props.workerProfileId, { startDate: startDate.value, endDate: endDate.value })
-    .then((response) => {
-      isLoading.value = false;
-      data.value = response;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getCompanyWorkerTimeSheetByDate(requestId, workerProfileId, { startDate: startDate.value, endDate: endDate.value });
+    isLoading.value = false;
+    data.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onMonthChange(sd: string, ed: string) {
   startDate.value = sd;
   endDate.value = ed;
-  getAgencyWorkerTimeSheetByDate();
+  void getAgencyWorkerTimeSheetByDate();
 }
 
 function updateCell() {
-  getAgencyWorkerTimeSheetByDate();
+  void getAgencyWorkerTimeSheetByDate();
   showModalPunchCard.value = false;
   showDaySheet.value = false;
 }
@@ -235,21 +228,20 @@ function isToday(date: string | Date) {
   return dayjs(date).format('YYYY-MM-DD') === dayjs().format('YYYY-MM-DD');
 }
 
-function onClockIn() {
+async function onClockIn() {
   if (!clockInTime.value) return;
   isLoading.value = true;
   const model = { "clockIn": dayjs(clockInTime.value).format("HH:mm:ss") };
-  companyTimeSheetClockIn(props.requestId, props.workerProfileId, model)
-    .then(() => {
-      isLoading.value = false;
-      showClockIn.value = false;
-      getAgencyWorkerTimeSheetByDate();
-      clockInTime.value = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await companyTimeSheetClockIn(requestId, workerProfileId, model);
+    isLoading.value = false;
+    showClockIn.value = false;
+    void getAgencyWorkerTimeSheetByDate();
+    clockInTime.value = dayjs().hour(0).minute(0).second(0).millisecond(0).toDate();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function validatePost(model: PunchCardDay, index: number | string) {
@@ -269,10 +261,10 @@ function validatePost(model: PunchCardDay, index: number | string) {
   const next = { ...itemErrors.value };
   delete next[key];
   itemErrors.value = next;
-  reportWorkerTimSheet(model);
+  void reportWorkerTimSheet(model);
 }
 
-function reportWorkerTimSheet(item: PunchCardEditableDay) {
+async function reportWorkerTimSheet(item: PunchCardEditableDay) {
   isLoading.value = true;
   const model: TimeSheetModel = {
     hours: changeDecimalToHour(item.totalHoursApproved),
@@ -287,43 +279,39 @@ function reportWorkerTimSheet(item: PunchCardEditableDay) {
     bonusOrOthersDescription: item.bonusOrOthersDescription,
     comments: item.comment,
   };
-  postCompanyWorkerTimeSheet(props.requestId, props.workerProfileId, model)
-    .then(() => {
-      isLoading.value = false;
-      getAgencyWorkerTimeSheetByDate();
-    }).catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postCompanyWorkerTimeSheet(requestId, workerProfileId, model);
+    isLoading.value = false;
+    await getAgencyWorkerTimeSheetByDate();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function confirmDelete(item: PunchCardEditableDay) {
-  showAlertConfirm('Are you sure', 'You want to delete this item?')
-    .then(response => {
-      if (response) {
-        doDelete(item);
-      }
-    });
+async function confirmDelete(item: PunchCardEditableDay) {
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this item?'))) return;
+  await doDelete(item);
 }
 
-function doDelete(item: PunchCardEditableDay) {
+async function doDelete(item: PunchCardEditableDay) {
+  if (!item.id) return;
   isLoading.value = true;
-  deleteCompanyWorkerTimeSheetApi(props.requestId, props.workerProfileId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      item.id = null;
-      item.totalHoursApproved = null;
-      item.timeIn = null;
-      getAgencyWorkerTimeSheetByDate();
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteCompanyWorkerTimeSheetApi(requestId, workerProfileId, item.id);
+    isLoading.value = false;
+    item.id = null;
+    item.totalHoursApproved = null;
+    item.timeIn = undefined;
+    await getAgencyWorkerTimeSheetByDate();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function changeDecimalToHour(time: number) {
-  return dayjs().startOf('day').add(time, 'hours').format('HH:mm:ss');
+function changeDecimalToHour(time: number | null) {
+  return dayjs().startOf('day').add(time ?? 0, 'hours').format('HH:mm:ss');
 }
 
 function todayTimeZero(time: string | Date) {
@@ -342,8 +330,8 @@ function openDetail(item: PunchCardEditableDay) {
 function editPunchCard(day: PunchCardDay) {
   editableDay.value = null;
   editableDay.value = { ...day };
-  editableDay.value.timeInApproved = new Date(day.timeInApproved);
-  editableDay.value.timeOutApproved = new Date(day.timeOutApproved);
+  editableDay.value.timeInApproved = day.timeInApproved ? new Date(day.timeInApproved) : null;
+  editableDay.value.timeOutApproved = day.timeOutApproved ? new Date(day.timeOutApproved) : null;
   editableDay.value.missinghoursToDate = stringToDate(editableDay.value.missingHours);
   editableDay.value.missingHoursOvertimeToDate = stringToDate(editableDay.value.missingHoursOvertime);
   editableDay.value.hoursApprovedToDate = startTime.value;
@@ -351,7 +339,7 @@ function editPunchCard(day: PunchCardDay) {
   editableDay.value.missingRateAgency = day.missingRateAgency;
 
   const newTime = new Date();
-  const dur = dayjs.duration(day.totalHoursApproved, 'hours');
+  const dur = dayjs.duration(day.totalHoursApproved ?? 0, 'hours');
   newTime.setHours(dur.hours());
   const min = dur.minutes();
   newTime.setMinutes(min);
@@ -366,7 +354,7 @@ function editPunchCard(day: PunchCardDay) {
   }
 }
 
-function stringToDate(value: string) {
+function stringToDate(value: string | null | undefined) {
   if (value) {
     const tmp = value.split(":");
     const d = new Date();

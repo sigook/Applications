@@ -37,13 +37,13 @@ import { changeRunnerStatus } from '@/modules/agency/recruiting/requests/runners
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { RUNNER_STATUSES, RUNNER_STATUS_LABELS, RunnerStatus } from '@/modules/agency/recruiting/requests/runners/types';
 
-const props = defineProps<{ requestId: string; runnerId: string; currentStatus: RunnerStatus }>();
+const { requestId, runnerId, currentStatus } = defineProps<{ requestId: string; runnerId: string; currentStatus: RunnerStatus }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
 
 // 'Interview rescheduled' is assigned automatically when an interview is
 // rescheduled, so it is not selectable here (kept only if it's the current one).
 const statuses = computed(() =>
-  RUNNER_STATUSES.filter(s => s !== RunnerStatus.InterviewRescheduled || s === props.currentStatus),
+  RUNNER_STATUSES.filter(s => s !== RunnerStatus.InterviewRescheduled || s === currentStatus),
 );
 const isLoading = ref(false);
 
@@ -61,7 +61,7 @@ const schema = yup.object({
 
 const form = useStickyForm<{ status: RunnerStatus; startDate: Date | null; comments: string }>({
   schema,
-  initialValues: { status: props.currentStatus, startDate: null, comments: '' },
+  initialValues: { status: currentStatus, startDate: null, comments: '' },
 });
 const { status, startDate, comments } = form.fields;
 const errors = form.errors;
@@ -72,23 +72,22 @@ function statusLabel(status: RunnerStatus): string {
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(
-    values => {
+  void form.handleSubmit(
+    async values => {
       isLoading.value = true;
-      changeRunnerStatus(props.requestId, props.runnerId, {
-        status: values.status,
-        comments: values.comments || undefined,
-        startDate: values.status === RunnerStatus.Hired && values.startDate ? values.startDate.toISOString() : undefined,
-      })
-        .then(() => {
-          showAlertSuccess('Status updated');
-          emit('updated');
-          emit('close');
-        })
-        .catch(err => {
-          isLoading.value = false;
-          showAlertError(err);
+      try {
+        await changeRunnerStatus(requestId, runnerId, {
+          status: values.status,
+          comments: values.comments || undefined,
+          startDate: values.status === RunnerStatus.Hired && values.startDate ? values.startDate.toISOString() : undefined,
         });
+        showAlertSuccess('Status updated');
+        emit('updated');
+        emit('close');
+      } catch (err) {
+        isLoading.value = false;
+        showAlertError(err);
+      }
     },
     () => showAlertError('Please make sure all required fields are filled out correctly'),
   )();

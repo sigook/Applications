@@ -6,7 +6,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 
-const props = defineProps<{ name?: string }>();
+const { name } = defineProps<{ name?: string }>();
 
 const purple = '156,39,176';
 const indigo = '63,81,181';
@@ -16,7 +16,7 @@ const lime = '205,220,57';
 const amber = '255,193,7';
 
 const backgroundColor = computed(() => {
-  const letter = props.name ? props.name.charAt(props.name.length - 1) : 'a';
+  const letter = name ? name.charAt(name.length - 1) : 'a';
   if (letter < 'd') return purple;
   if (letter < 'h') return indigo;
   if (letter < 'l') return lightBlue;

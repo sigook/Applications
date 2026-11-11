@@ -155,6 +155,7 @@ import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { payStubsCrumbs } from '@/shared/ui/breadcrumbs';
 import type { AgencyWorkerDropdownItem } from '@/modules/agency/recruiting/workers/types';
+import type { CreatePayStubPayload } from '@/modules/agency/accounting/paystubs/types';
 
 const PayStubItemType = {
   Regular: 0,
@@ -242,7 +243,7 @@ watch(payVacations, (value) => {
 
 function onDatesSelected() {
   const d = datesOfWork.value;
-  if (d && d.length === 2) {
+  if (d.length === 2) {
     workBegins.value = dayjs(d[0]).format('YYYY-MM-DD');
     workEnd.value = dayjs(d[1]).format('YYYY-MM-DD');
   }
@@ -299,13 +300,13 @@ function validateItems(): boolean {
   for (const k of Object.keys(itemErrors)) delete itemErrors[k];
   let ok = true;
   items.value.forEach((it, i) => {
-    if (it.type === null || it.type === undefined) { itemErrors['type' + i] = 'Required'; ok = false; }
+    if (it.type === null) { itemErrors['type' + i] = 'Required'; ok = false; }
     if (!it.quantity || it.quantity < 0.01) { itemErrors['qty' + i] = 'Required'; ok = false; }
     if (!it.unitPrice || it.unitPrice < 0.01) { itemErrors['price' + i] = 'Required'; ok = false; }
   });
   if (discount.value) {
-    if (!discount.value.description) { itemErrors['discountDescription'] = 'Required'; ok = false; }
-    if (!discount.value.amount || discount.value.amount < 0.01) { itemErrors['discountAmount'] = 'Required'; ok = false; }
+    if (!discount.value.description) { itemErrors.discountDescription = 'Required'; ok = false; }
+    if (!discount.value.amount || discount.value.amount < 0.01) { itemErrors.discountAmount = 'Required'; ok = false; }
   }
   return ok;
 }
@@ -314,35 +315,33 @@ async function createPayStub() {
   form.markInteracted();
   const { valid } = await form.validate();
   const itemsOk = validateItems();
-  if (!valid || !itemsOk) return;
+  if (!valid || !itemsOk || !workerProfileId.value || !workBegins.value || !workEnd.value) return;
   isLoading.value = true;
-  const payload = {
+  const payload: CreatePayStubPayload = {
     workerProfileId: workerProfileId.value,
     position: position.value,
     workBegins: workBegins.value,
     workEnd: workEnd.value,
     payVacations: payVacations.value,
     items: items.value
-      .filter(i => i.type !== null)
-      .map(i => ({
+      .flatMap(i => i.type === null ? [] : [{
         type: i.type,
         quantity: i.quantity,
         unitPrice: i.unitPrice,
         description: i.description || null,
-      })),
+      }]),
     otherDeductions: discount.value ? discount.value.amount : 0,
     otherDeductionsDescription: discount.value ? discount.value.description : null,
   };
-  createAgencyPayStub(payload)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('PayStub created successfully');
-      router.push('/accounting/paystubs');
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyPayStub(payload);
+    isLoading.value = false;
+    showAlertSuccess('PayStub created successfully');
+    void router.push('/accounting/paystubs');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>
 

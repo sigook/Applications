@@ -12,7 +12,7 @@ import {
 // Maps each typed list of the backend payload into generic AppNotification[].
 // Adding a new kind = add a mapper entry; the bell renders the result unchanged.
 function mapResponse(response: NotificationsResponse): AppNotification[] {
-  return (response.pendingReviewRequests ?? []).map((r) => ({
+  return response.pendingReviewRequests.map((r) => ({
     id: r.requestId,
     type: NotificationType.PendingReviewRequest,
     title: `#${r.numberId} · ${r.jobTitle}`,

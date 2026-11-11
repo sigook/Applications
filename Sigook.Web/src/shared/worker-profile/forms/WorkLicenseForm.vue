@@ -88,8 +88,8 @@ interface LicenseForm {
   expires: Date | null;
 }
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const doesExpire = ref(true);
 
@@ -157,11 +157,11 @@ async function saveLicenses(values: LicenseForm) {
     const allLicenses = [...licenses.value, newLicense];
     const formData = new FormData();
     formData.append('data', JSON.stringify(allLicenses));
-    if (fileObjects.license) {
-      const fn = newLicense.license.fileName;
+    const fn = newLicense.license.fileName;
+    if (fileObjects.license && fn) {
       formData.append(fn, fileObjects.license, fn);
     }
-    await createWorkerLicenses(props.data.id, formData);
+    await createWorkerLicenses(data.id, formData);
     emit('closeModal', true);
   } catch (error) {
     showAlertError(error);
@@ -172,21 +172,19 @@ async function saveLicenses(values: LicenseForm) {
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    saveLicenses(values);
+  void form.handleSubmit(async (values) => {
+    await saveLicenses(values);
   }, () => {
     showAlertError("Please make sure all required fields are filled out correctly");
   })();
 }
 
-if (props.data != null) {
-  for (let i = 0; i < props.data.licenses.length; i++) {
-    licenses.value.push(props.data.licenses[i]);
-  }
+for (let i = 0; i < data.licenses.length; i++) {
+  licenses.value.push(data.licenses[i]);
 }
-appStore.getCurrentDate().then((response) => {
-  todayDate.value = response;
-});
+void (async () => {
+  todayDate.value = await appStore.getCurrentDate();
+})();
 </script>
 
 <style scoped>

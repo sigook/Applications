@@ -58,8 +58,8 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-const props = defineProps<{ save: (user: CreateCompanyUserModel) => Promise<unknown> }>();
-const emit = defineEmits<{ (e: 'updateUsers'): void }>();
+const { save } = defineProps<{ save: (user: CreateCompanyUserModel) => Promise<unknown> }>();
+const emit = defineEmits<(e: 'updateUsers') => void>();
 
 const form = useStickyForm<{ name: string; lastname: string; position: string; email: string }>({
   schema,
@@ -78,10 +78,10 @@ async function validateForm() {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
-  onCreateUser();
+  await onCreateUser();
 }
 
-function onCreateUser() {
+async function onCreateUser() {
   isLoading.value = true;
   const user = {
     name: name.value,
@@ -90,14 +90,13 @@ function onCreateUser() {
     email: email.value,
     mobileNumber: mobileNumber.value,
   };
-  props.save(user)
-    .then(() => {
-      isLoading.value = false;
-      emit('updateUsers');
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    await save(user);
+    isLoading.value = false;
+    emit('updateUsers');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 </script>

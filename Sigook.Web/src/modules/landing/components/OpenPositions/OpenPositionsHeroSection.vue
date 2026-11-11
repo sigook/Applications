@@ -91,9 +91,9 @@ function onSearch(): void {
   const query: Record<string, string> = {}
   if (form.title) query.jobTitle = form.title
   if (form.location) query.location = form.location
-  router.replace({ query })
+  void router.replace({ path: '/open-positions', query })
 
-  fetchJobs({
+  void fetchJobs({
     jobTitle: form.title || undefined,
     location: form.location || undefined,
   })

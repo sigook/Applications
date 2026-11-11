@@ -114,7 +114,7 @@ Sidebar (`app/security/menu.ts`): Recruiting {Requests, Weekly Board, Applicants
 
 ### modules/landing/
 
-`routes.ts` (`/`, `/open-positions`, `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, legal pages, ComingSoon placeholders, legacy redirects; `meta.layout: 'landing'`), `pages/<Section>/`, `components/<Section>/` + `components/shared/{cards,forms,hero,icons,sections,ui}`, `layout/` (Header, Footer, GlobalBackground, AppVersionToast — mounted by `app/App.vue`), `data/` (static JSON), `composables/` (useJobs, useCarousel, useRevealOnScroll, useCandidateApplyModal), `api.ts`, `types.ts`.
+`routes.ts` (`/`, `/open-positions/:numberId?` (each job has its own URL with a `JobPosting` JSON-LD; legacy `?jobId=` redirects to it), `/industries`, `/about`, `/employers`, `/talents`, `/special-projects`, `/partner`, `/apply`, legal pages, ComingSoon placeholders, legacy redirects; `meta.layout: 'landing'`), `pages/<Section>/`, `components/<Section>/` + `components/shared/{cards,forms,hero,icons,sections,ui}`, `layout/` (Header, Footer, GlobalBackground, AppVersionToast — mounted by `app/App.vue`), `data/` (static JSON), `composables/` (useJobs, useJobPostingSchema, useCarousel, useRevealOnScroll, useCandidateApplyModal), `api.ts`, `types.ts`.
 
 ---
 

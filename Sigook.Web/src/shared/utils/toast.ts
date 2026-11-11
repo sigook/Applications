@@ -37,14 +37,15 @@ export async function getErrorMessage(errorMessage: unknown): Promise<string> {
   return typeof value === "string" ? value : String(value ?? "");
 }
 
-export async function showAlertError(errorMessage: unknown): Promise<void> {
-  const message = await getErrorMessage(errorMessage);
-  if (message == null || message === "") return;
-  getToast().open({
-    message,
-    type: 'is-danger',
-    duration: 10000,
-    position: 'is-top-right',
+export function showAlertError(errorMessage: unknown): void {
+  void getErrorMessage(errorMessage).then((message) => {
+    if (message === "") return;
+    getToast().open({
+      message,
+      type: 'is-danger',
+      duration: 10000,
+      position: 'is-top-right',
+    });
   });
 }
 
@@ -65,7 +66,7 @@ export function showAlertSummary(title: string, message: string): Promise<void> 
       type: 'is-warning',
       hasIcon: true,
       confirmText: 'Ok',
-      onConfirm: () => resolve(),
+      onConfirm: () => { resolve(); },
     });
   });
 }
@@ -79,8 +80,8 @@ export function showAlertConfirm(title: string, message?: string, confirmBtnText
       cancelText: 'Cancel',
       type: 'is-warning',
       hasIcon: true,
-      onConfirm: () => resolve(true),
-      onCancel: () => resolve(false),
+      onConfirm: () => { resolve(true); },
+      onCancel: () => { resolve(false); },
     });
   });
 }

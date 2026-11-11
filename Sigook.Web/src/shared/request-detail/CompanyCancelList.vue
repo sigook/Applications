@@ -32,7 +32,7 @@ import { showAlertError } from "@/shared/utils/toast";
 import { getReasonCancellationRequest } from "@/shared/api/catalogApi";
 import type { CancellationReason } from '@/shared/types/common';
 
-const emit = defineEmits<{ (e: 'sendReason', payload: { reasonId: string; otherMessage: string }): void }>();
+const emit = defineEmits<(e: 'sendReason', payload: { reasonId: string; otherMessage: string }) => void>();
 
 const schema = yup.object({
   reason: yup.string().required('Reason is required'),
@@ -49,19 +49,20 @@ const isLoading = ref(true);
 const reasonSelected = ref<CancellationReason | null>(null);
 const cancellationList = ref<CancellationReason[]>([]);
 
-(async () => {
+void (async () => {
   cancellationList.value = await getReasonCancellationRequest();
   isLoading.value = false;
 })();
 
 function validateInput() {
-  if (!reasonSelected.value) {
+  const reason = reasonSelected.value;
+  if (!reason) {
     showAlertError('Please select a cancellation reason');
     return;
   }
   form.markInteracted();
-  form.handleSubmit((values) => {
-    emit('sendReason', { reasonId: reasonSelected.value.id, otherMessage: values.reason });
+  void form.handleSubmit((values) => {
+    emit('sendReason', { reasonId: reason.id, otherMessage: values.reason });
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();

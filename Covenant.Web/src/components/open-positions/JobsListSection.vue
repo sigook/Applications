@@ -141,16 +141,16 @@ const selectJob = (job: Job) => {
   }
 
   selectedJob.value = job
-  router.replace({ query: { ...route.query, jobId: job.numberId } })
+  void router.replace({ query: { ...route.query, jobId: job.numberId } })
 }
 
 // Función para ver todos los trabajos (limpia filtros y query)
 const viewAllJobs = () => {
   // Limpiar querystring
-  router.replace({ query: {} })
+  void router.replace({ query: {} })
 
   // Cargar todos los trabajos sin filtros
-  fetchJobs()
+  void fetchJobs()
 }
 
 // Función para abrir el dialog de Apply para un trabajo específico
@@ -216,9 +216,9 @@ onMounted(async () => {
     selectedJob.value = initialJob
     if (isMobile.value) expandedIds.value = [initialJob.numberId]
     if (route.query.jobId !== initialJob.numberId) {
-      router.replace({ query: { ...route.query, jobId: initialJob.numberId } })
+      void router.replace({ query: { ...route.query, jobId: initialJob.numberId } })
     }
-    if (jobFromUrl) scrollToSelectedJob(initialJob.numberId)
+    if (jobFromUrl) void scrollToSelectedJob(initialJob.numberId)
   }
 
   await nextTick()
@@ -237,7 +237,7 @@ watch(jobs, (newJobs) => {
     selectedJob.value = first
     if (isMobile.value) expandedIds.value = [first.numberId]
     if (route.query.jobId !== first.numberId) {
-      router.replace({ query: { ...route.query, jobId: first.numberId } })
+      void router.replace({ query: { ...route.query, jobId: first.numberId } })
     }
   } else {
     selectedJob.value = null

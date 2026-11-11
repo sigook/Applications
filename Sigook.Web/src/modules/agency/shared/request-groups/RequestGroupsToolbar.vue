@@ -16,7 +16,7 @@
 import Export from '@/shared/ui/Export.vue';
 import type { GridParams } from '@/shared/types/common';
 
-defineProps<{
+const { hasGroups, exportUrl, exportParams, exportFileName } = defineProps<{
   hasGroups: boolean;
   exportUrl: string;
   exportParams: GridParams;

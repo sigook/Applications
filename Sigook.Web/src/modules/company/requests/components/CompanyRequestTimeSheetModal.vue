@@ -67,12 +67,11 @@ import { maximumHoursPerDay } from "@/shared/constants/catalog";
 import { validateHoursTimeSheet } from '@/modules/company/requests/api';
 import type { PunchCardEditableDay, TimeSheetModel } from '@/shared/punch-card/types';
 
-const props = defineProps<{ editableDay: PunchCardEditableDay; worker: { workerProfileId: string } }>();
-const emit = defineEmits<{ (e: 'updateData'): void }>();
+const { editableDay, worker } = defineProps<{ editableDay: PunchCardEditableDay; worker: { workerProfileId: string } }>();
+const emit = defineEmits<(e: 'updateData') => void>();
 const route = useRoute();
 
-function cloneEditable(src: PunchCardEditableDay | null): PunchCardEditableDay | null {
-  if (!src) return src;
+function cloneEditable(src: PunchCardEditableDay): PunchCardEditableDay {
   const copy = JSON.parse(JSON.stringify(src)) as PunchCardEditableDay;
   const dateFields = ['hoursApprovedToDate', 'missinghoursToDate', 'missingHoursOvertimeToDate'] as const;
   for (const key of dateFields) {
@@ -87,9 +86,9 @@ maximumMissing.setMinutes(0);
 maximumMissing.setSeconds(0);
 
 const isLoading = ref(false);
-const localEditableDay = ref<PunchCardEditableDay | null>(cloneEditable(props.editableDay));
+const localEditableDay = ref<PunchCardEditableDay>(cloneEditable(editableDay));
 
-watch(() => props.editableDay, (newVal) => {
+watch(() => editableDay, (newVal) => {
   localEditableDay.value = cloneEditable(newVal);
 }, { deep: true });
 
@@ -105,8 +104,9 @@ const maximumDailyHours = computed(() => {
   return maximumMissing;
 });
 
-function saveHours() {
+async function saveHours() {
   const item = localEditableDay.value;
+  if (!item.id) return;
   isLoading.value = true;
   const timeInZero = dayjs(item.timeIn).hour(0).minute(0).second(0);
   const model: TimeSheetModel = {
@@ -115,15 +115,14 @@ function saveHours() {
     missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),
     missingHoursOvertime: dayjs(item.missingHoursOvertimeToDate).format("HH:mm:ss"),
   };
-  validateHoursTimeSheet(route.params.id as string, props.worker.workerProfileId, item.id, model)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      emit("updateData");
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await validateHoursTimeSheet(route.params.id as string, worker.workerProfileId, item.id, model);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    emit("updateData");
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

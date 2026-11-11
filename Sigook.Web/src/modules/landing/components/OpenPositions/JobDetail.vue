@@ -75,7 +75,7 @@ import { useCandidateApplyModal } from '@/modules/landing/composables/useCandida
 import ArrowPillCta from '@/modules/landing/components/shared/ui/ArrowPillCta.vue'
 import LandingIcon from '@/modules/landing/components/shared/icons/LandingIcon.vue'
 
-const props = defineProps<{
+const { job } = defineProps<{
   job: JobViewModel
 }>()
 
@@ -83,16 +83,16 @@ const registerModal = useCandidateApplyModal()
 
 function onApply(): void {
   registerModal.open({
-    jobTitle: props.job.title,
-    jobNumber: props.job.numberId,
-    requestId: props.job.requestId,
+    jobTitle: job.title,
+    jobNumber: job.numberId,
+    requestId: job.requestId,
   })
 }
 
-const showSalary = computed(() => !!props.job.salary && props.job.salary !== '$0.00')
+const showSalary = computed(() => !!job.salary && job.salary !== '$0.00')
 
 const formattedPosted = computed(() => {
-  const date = new Date(props.job.createdAt)
+  const date = new Date(job.createdAt)
   if (Number.isNaN(date.getTime())) return ''
   return date.toLocaleDateString('en-US', {
     year: 'numeric',

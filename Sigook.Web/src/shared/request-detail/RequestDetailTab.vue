@@ -72,7 +72,7 @@ import DetailLayout from '@/shared/detail-page/DetailLayout.vue';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import DetailFields from '@/shared/detail-page/DetailFields.vue';
 
-const props = defineProps<{
+const { showSkills, skills, responsibilities, internalRequirements, incentive, complianceItems } = defineProps<{
   fields: RequestFact[];
   description?: string;
   responsibilities?: string;
@@ -85,7 +85,7 @@ const props = defineProps<{
   complianceItems?: RequestComplianceItem[];
 }>();
 
-const hasSkills = computed(() => props.showSkills || !!props.skills?.length);
+const hasSkills = computed(() => showSkills || !!skills?.length);
 
 function anchor(id: string) {
   return `request-section-${id}`;
@@ -95,10 +95,10 @@ const sections = computed<DetailSection[]>(() => [
   { id: anchor('job'), label: 'Job' },
   ...(hasSkills.value ? [{ id: anchor('skills'), label: 'Skills' }] : []),
   { id: anchor('description'), label: 'Description' },
-  { id: anchor('requirements'), label: props.responsibilities ? 'Responsibilities & requirements' : 'Requirements' },
-  ...(props.internalRequirements ? [{ id: anchor('internal'), label: 'Internal', hint: 'agency only' }] : []),
-  ...(props.incentive ? [{ id: anchor('incentive'), label: 'Incentive' }] : []),
-  ...(props.complianceItems?.length ? [{ id: anchor('compliance'), label: 'Compliance' }] : []),
+  { id: anchor('requirements'), label: responsibilities ? 'Responsibilities & requirements' : 'Requirements' },
+  ...(internalRequirements ? [{ id: anchor('internal'), label: 'Internal', hint: 'agency only' }] : []),
+  ...(incentive ? [{ id: anchor('incentive'), label: 'Incentive' }] : []),
+  ...(complianceItems?.length ? [{ id: anchor('compliance'), label: 'Compliance' }] : []),
 ]);
 </script>
 

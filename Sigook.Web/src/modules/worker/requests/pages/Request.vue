@@ -91,32 +91,30 @@ const canApply = computed(() => {
   return available;
 });
 
-function getWorkerRequestFn() {
-  getWorkerRequest(route.params.id as string)
-    .then((response) => {
-      isLoading.value = false;
-      request.value = response;
-    })
-    .catch(() => {
-      isLoading.value = false;
-    });
+async function getWorkerRequestFn() {
+  try {
+    const response = await getWorkerRequest(route.params.id as string);
+    isLoading.value = false;
+    request.value = response;
+  } catch {
+    isLoading.value = false;
+  }
 }
 
-function applyToRequest(comment: string) {
+async function applyToRequest(comment: string) {
   if (!request.value) return;
   const id = request.value.id;
   isLoading.value = true;
   const model = { comments: comment };
-  workerRequestApplySelf(id, model)
-    .then(() => {
-      isLoading.value = false;
-      router.push({ path: '/worker-requests/applied/' + id });
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await workerRequestApplySelf(id, model);
+    isLoading.value = false;
+    void router.push({ path: '/worker-requests/applied/' + id });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-getWorkerRequestFn();
+void getWorkerRequestFn();
 </script>

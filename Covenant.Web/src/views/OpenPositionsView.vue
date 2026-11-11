@@ -2,16 +2,15 @@
   <div class="open-positions-page">
     <MainNavbar />
 
-    <SearchHero @search="handleSearch" />
+    <SearchHero />
 
-    <JobsListSection ref="jobsListRef" />
+    <JobsListSection />
 
     <MainFooter />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { useSeoMeta } from '@unhead/vue'
 import MainNavbar from '@/components/layout/MainNavbar.vue'
 import MainFooter from '@/components/layout/MainFooter.vue'
@@ -24,15 +23,6 @@ useSeoMeta({
   ogTitle: 'Open Positions - Covenant Group',
   ogDescription: 'Browse current job openings. Find temporary, contract, and permanent positions across Canada.',
 })
-
-// Referencia al componente hijo por si necesitamos filtrarlo desde aquí luego
-const jobsListRef = ref(null);
-
-const handleSearch = (filters: any) => {
-  console.log("Searching with filters:", filters);
-  // Aquí luego llamaremos a la API y pasaremos los datos a JobsListSection
-  // O llamaremos un método dentro de jobsListRef para filtrar localmente
-}
 </script>
 
 <style scoped>

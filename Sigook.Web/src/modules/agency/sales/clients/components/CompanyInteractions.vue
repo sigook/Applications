@@ -17,7 +17,7 @@
           </b-select>
         </template>
         <template v-slot="props">
-          {{ INTERACTION_TYPE_LABELS[props.row.interactionType] }}
+          {{ INTERACTION_TYPE_LABELS[props.row.interactionType as InteractionType] }}
         </template>
       </b-table-column>
       <b-table-column field="purpose" label="Purpose" searchable>
@@ -28,7 +28,7 @@
           </b-select>
         </template>
         <template v-slot="props">
-          {{ INTERACTION_PURPOSE_LABELS[props.row.interactionPurpose] }}
+          {{ INTERACTION_PURPOSE_LABELS[props.row.interactionPurpose as InteractionPurpose] }}
         </template>
       </b-table-column>
       <b-table-column field="status" label="Status" sortable searchable>
@@ -38,7 +38,7 @@
             append-to-body />
         </template>
         <template v-slot="props">
-          {{ INTERACTION_STATUS_LABELS[props.row.interactionStatus] }}
+          {{ INTERACTION_STATUS_LABELS[props.row.interactionStatus as InteractionStatus] }}
         </template>
       </b-table-column>
       <b-table-column field="owner" label="Owner" :searchable="isAdmin">
@@ -76,7 +76,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue';
 import { deleteCompanyInteraction, getCompanyInteractions } from '@/modules/agency/sales/clients/api';
-import { CompanyInteractionSortBy, InteractionStatus, INTERACTION_TYPES, INTERACTION_PURPOSES, INTERACTION_STATUSES, INTERACTION_TYPE_LABELS, INTERACTION_PURPOSE_LABELS, INTERACTION_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
+import { CompanyInteractionSortBy, InteractionStatus, type InteractionType, type InteractionPurpose, INTERACTION_TYPES, INTERACTION_PURPOSES, INTERACTION_STATUSES, INTERACTION_TYPE_LABELS, INTERACTION_PURPOSE_LABELS, INTERACTION_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
 import type { CompanyInteraction, CompanyInteractionFilter } from '@/modules/agency/sales/clients/types';
 import type { SalesClientReference } from '@/modules/agency/sales/dashboard/types';
 import type { CatalogItem, GridHandle, PaginatedList } from '@/shared/types/common';
@@ -86,7 +86,7 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/uti
 import InteractionModal from '@/modules/agency/sales/clients/components/InteractionModal.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = defineProps<{ company: SalesClientReference }>();
+const { company } = defineProps<{ company: SalesClientReference }>();
 
 const statusOptions: CatalogItem<InteractionStatus>[] = INTERACTION_STATUSES.map((s) => ({
   id: s,
@@ -115,10 +115,10 @@ const serverParams = ref<CompanyInteractionFilter>({
   createdAtTo: null,
 });
 
-loadOwners();
+void loadOwners();
 
 function loadInteractions(params: CompanyInteractionFilter): Promise<PaginatedList<CompanyInteraction>> {
-  return getCompanyInteractions(props.company.id, params);
+  return getCompanyInteractions(company.id, params);
 }
 
 function applyFilter(): void {
@@ -162,12 +162,12 @@ async function onDelete(interaction: CompanyInteraction): Promise<void> {
   if (!confirmed) return;
   isLoading.value = true;
   try {
-    await deleteCompanyInteraction(props.company.id, interaction.id);
+    await deleteCompanyInteraction(company.id, interaction.id);
     showAlertSuccess('Interaction deleted');
     reload();
   } catch (error) {
     isLoading.value = false;
-    await showAlertError(error);
+    showAlertError(error);
   }
 }
 </script>

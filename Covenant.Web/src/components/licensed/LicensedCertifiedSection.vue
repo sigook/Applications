@@ -118,10 +118,8 @@
       await router.push({ path: '/about', hash: '#contact-section' })
       
       // Intentar asegurar el scroll si la navegación no recarga la app completa
-      nextTick(() => {
-        const el = document.getElementById('contact-section')
-        if (el) el.scrollIntoView({ behavior: 'smooth' })
-      })
+      await nextTick()
+      document.getElementById('contact-section')?.scrollIntoView({ behavior: 'smooth' })
     }
   }
 </script>

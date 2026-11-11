@@ -46,7 +46,7 @@ export const useAgencyStore = defineStore('agency', {
     setAgency(data: AgencyDetail) {
       this.agency = {
         ...data,
-        agencies: data.agencies || (this.agency && this.agency.agencies) || [],
+        agencies: data.agencies ?? this.agency.agencies ?? [],
         // The backend flattens an `isUSA` flag onto each location in this specific
         // endpoint's response — not part of the AgencyLocationDetail shape used elsewhere.
         usaAgency: (data.locations ?? []).some(
@@ -57,9 +57,7 @@ export const useAgencyStore = defineStore('agency', {
     },
     setPersonnelAgencies(data: PersonnelAgencyItem[]) {
       this.personnelAgencies = data;
-      if (this.agency) {
-        this.agency.agencies = data;
-      }
+      this.agency.agencies = data;
     },
     updateAgencyRequestFilter(data: AgencyRequestFilter | null) {
       this.agencyRequestFilter = data;

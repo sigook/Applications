@@ -41,17 +41,17 @@ export function useRunnerActions(onUpdated: () => void) {
     });
   }
 
-  function remove(runner: RunnerActionTarget): void {
+  async function remove(runner: RunnerActionTarget): Promise<void> {
     isDeleting.value = true;
-    deleteAgencyRunner(runner.requestId, runner.runnerId)
-      .then(() => {
-        showAlertSuccess('Runner deleted');
-        onUpdated();
-      })
-      .catch(error => showAlertError(error))
-      .finally(() => {
-        isDeleting.value = false;
-      });
+    try {
+      await deleteAgencyRunner(runner.requestId, runner.runnerId);
+      showAlertSuccess('Runner deleted');
+      onUpdated();
+    } catch (error) {
+      showAlertError(error);
+    } finally {
+      isDeleting.value = false;
+    }
   }
 
   return { target, showStatus, showInterview, showHistory, isDeleting, open, confirmDelete };

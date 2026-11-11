@@ -84,8 +84,8 @@ import { ref, reactive, watch, onMounted } from 'vue';
 import dayjs from "dayjs";
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 
-const props = defineProps<{ currentShift?: RequestShiftModel | null; isUpdate?: boolean }>();
-const emit = defineEmits<{ (e: 'updateModel', shift: RequestShiftModel): void }>();
+const { currentShift, isUpdate } = defineProps<{ currentShift?: RequestShiftModel | null; isUpdate?: boolean }>();
+const emit = defineEmits<(e: 'updateModel', shift: RequestShiftModel) => void>();
 
 const start = new Date();
 start.setMinutes(0);
@@ -122,7 +122,7 @@ function hoursToString(hour: Date): string {
   return dayjs(hour).format('HH:mm:ss').toString();
 }
 
-function stringToHours(time: string): Date {
+function stringToHours(time: string | null | undefined): Date {
   if (time) {
     const [hours, minutes, seconds] = time.split(':').map(Number);
     return dayjs().startOf('day')
@@ -156,20 +156,21 @@ function mapToShift(): RequestShiftModel {
     fridayFinish: hoursToString(weekShift.fri.finish),
     saturdayStart: hoursToString(weekShift.sat.start),
     saturdayFinish: hoursToString(weekShift.sat.finish),
-    comments: comments.value,
+    comments: comments.value ?? undefined,
   };
 }
 
 function mapFromShift() {
-  const cs = props.currentShift;
-  weekShift.sun = { day: 'Sun', going: cs.sunday, start: stringToHours(cs.sundayStart), finish: stringToHours(cs.sundayFinish) };
-  weekShift.mon = { day: 'Mon', going: cs.monday, start: stringToHours(cs.mondayStart), finish: stringToHours(cs.mondayFinish) };
-  weekShift.tue = { day: 'Tue', going: cs.tuesday, start: stringToHours(cs.tuesdayStart), finish: stringToHours(cs.tuesdayFinish) };
-  weekShift.wed = { day: 'Wed', going: cs.wednesday, start: stringToHours(cs.wednesdayStart), finish: stringToHours(cs.wednesdayFinish) };
-  weekShift.thu = { day: 'Thu', going: cs.thursday, start: stringToHours(cs.thursdayStart), finish: stringToHours(cs.thursdayFinish) };
-  weekShift.fri = { day: 'Fri', going: cs.friday, start: stringToHours(cs.fridayStart), finish: stringToHours(cs.fridayFinish) };
-  weekShift.sat = { day: 'Sat', going: cs.saturday, start: stringToHours(cs.saturdayStart), finish: stringToHours(cs.saturdayFinish) };
-  comments.value = cs.comments;
+  const cs = currentShift;
+  if (!cs) return;
+  weekShift.sun = { day: 'Sun', going: cs.sunday ?? null, start: stringToHours(cs.sundayStart), finish: stringToHours(cs.sundayFinish) };
+  weekShift.mon = { day: 'Mon', going: cs.monday ?? null, start: stringToHours(cs.mondayStart), finish: stringToHours(cs.mondayFinish) };
+  weekShift.tue = { day: 'Tue', going: cs.tuesday ?? null, start: stringToHours(cs.tuesdayStart), finish: stringToHours(cs.tuesdayFinish) };
+  weekShift.wed = { day: 'Wed', going: cs.wednesday ?? null, start: stringToHours(cs.wednesdayStart), finish: stringToHours(cs.wednesdayFinish) };
+  weekShift.thu = { day: 'Thu', going: cs.thursday ?? null, start: stringToHours(cs.thursdayStart), finish: stringToHours(cs.thursdayFinish) };
+  weekShift.fri = { day: 'Fri', going: cs.friday ?? null, start: stringToHours(cs.fridayStart), finish: stringToHours(cs.fridayFinish) };
+  weekShift.sat = { day: 'Sat', going: cs.saturday ?? null, start: stringToHours(cs.saturdayStart), finish: stringToHours(cs.saturdayFinish) };
+  comments.value = cs.comments ?? null;
 }
 
 function updateModel() {
@@ -203,14 +204,14 @@ function changeAll() {
   changeAllTo();
 }
 
-watch(() => props.currentShift, (val) => {
-  if (props.isUpdate && val !== null) {
+watch(() => currentShift, (val) => {
+  if (isUpdate && val !== null) {
     mapFromShift();
   }
 }, { immediate: true });
 
 onMounted(() => {
-  if (props.isUpdate && props.currentShift !== null) {
+  if (isUpdate && currentShift !== null) {
     mapFromShift();
   } else {
     updateModel();

@@ -57,7 +57,7 @@
           <template v-slot="props">
             <b-tooltip :label="statusTooltip(props.row)" :active="!!props.row.updatedByName" type="is-dark" position="is-top"
               multilined append-to-body>
-              <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status] }}</b-tag>
+              <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status as InvoiceStatus] }}</b-tag>
             </b-tooltip>
           </template>
         </b-table-column>
@@ -204,7 +204,9 @@ const dateRanges = ref<Record<DateRangeKey, Date[]>>({
 
 function onDateRangeSelected(key: DateRangeKey) {
   const [fromKey, toKey] = dateRangeKeys[key];
-  const [from, to] = dateRanges.value[key];
+  const range = dateRanges.value[key];
+  const from = range.at(0);
+  const to = range.at(1);
   serverParams.value[fromKey] = from?.toISOString() ?? null;
   serverParams.value[toKey] = to?.toISOString() ?? null;
   grid.value?.search();
@@ -255,21 +257,23 @@ function onStatusUpdated() {
   grid.value?.reload();
 }
 
-function onDownloadPaymentsReport() {
+async function onDownloadPaymentsReport() {
   isLoading.value = true;
-  downloadInvoicesPaymentsReport(serverParams.value)
-    .then((file) => downloadFile(file, `Payments_${new Date().toLocaleDateString()}`))
-    .catch((error) => showAlertError(error))
-    .finally(() => { isLoading.value = false; });
+  try {
+    const file = await downloadInvoicesPaymentsReport(serverParams.value);
+    downloadFile(file, `Payments_${new Date().toLocaleDateString()}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
+async function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
   agencyStore.updateAgencyInvoiceFilter(params);
-  return getAgencyInvoices(params)
-    .then((response) => {
-      total.value = response.total;
-      return response.detail;
-    });
+  const response = await getAgencyInvoices(params);
+  total.value = response.total;
+  return response.detail;
 }
 
 function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
@@ -277,24 +281,23 @@ function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
     openFileUrl(invoice.pdfUrl);
     return;
   }
-  renderInvoicePdf(invoice, downloadInvoicePdf);
+  void renderInvoicePdf(invoice, downloadInvoicePdf);
 }
 
 function onRegenerateInvoicePdf(invoice: AgencyInvoiceListItem) {
-  renderInvoicePdf(invoice, regenerateInvoicePdf);
+  void renderInvoicePdf(invoice, regenerateInvoicePdf);
 }
 
-function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
+async function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
   isLoading.value = true;
-  render(invoice.id)
-    .then((response) => {
-      downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    const response = await render(invoice.id);
+    downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 function openSendEmailModal(invoice: AgencyInvoiceListItem) {

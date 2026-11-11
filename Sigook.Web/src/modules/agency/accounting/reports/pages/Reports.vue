@@ -47,7 +47,7 @@ if (isUsaAgency.value) {
 }
 
 watch(tab, (value) => {
-  router.push({
+  void router.push({
     path: '/accounting/reports',
     query: {
       tab: value,

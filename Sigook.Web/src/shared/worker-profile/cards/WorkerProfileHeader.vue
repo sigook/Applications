@@ -1,14 +1,14 @@
 <template>
   <section class="worker-header">
     <div class="worker-header-top">
-      <image-detail class="worker-header-photo" :data="props.worker" @updateProfile="emit('updateProfile')" />
+      <image-detail class="worker-header-photo" :data="worker" @updateProfile="emit('updateProfile')" />
       <div class="worker-header-main">
         <h2 class="worker-header-name">
-          {{ lowercase(props.worker.firstName) }}
-          {{ lowercase(props.worker.middleName) }}
-          {{ lowercase(props.worker.lastName) }}
-          {{ lowercase(props.worker.secondLastName) }}
-          <span class="worker-header-number" :class="props.numberClass">#{{ props.worker.numberId }}</span>
+          {{ lowercase(worker.firstName) }}
+          {{ lowercase(worker.middleName) }}
+          {{ lowercase(worker.lastName) }}
+          {{ lowercase(worker.secondLastName) }}
+          <span class="worker-header-number" :class="numberClass">#{{ worker.numberId }}</span>
         </h2>
         <slot name="chips" />
       </div>
@@ -18,10 +18,10 @@
     </div>
     <detail-kpis v-if="contactKpis.length" :kpis="contactKpis">
       <template #kpi-phone>
-        <copy-link kind="phone" :value="props.worker.mobileNumber" />
+        <copy-link kind="phone" :value="worker.mobileNumber" />
       </template>
       <template #kpi-email>
-        <copy-link kind="email" :value="props.worker.email" />
+        <copy-link kind="email" :value="worker.email" />
       </template>
     </detail-kpis>
   </section>
@@ -36,11 +36,11 @@ import DetailKpis from '@/shared/detail-page/DetailKpis.vue';
 import ImageDetail from '@/shared/worker-profile/forms/WorkImageDetail.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-const props = defineProps<{ worker: WorkerProfileDetail; numberClass?: string }>();
-const emit = defineEmits<{ (e: 'updateProfile'): void }>();
+const { worker, numberClass } = defineProps<{ worker: WorkerProfileDetail; numberClass?: string }>();
+const emit = defineEmits<(e: 'updateProfile') => void>();
 
 const city = computed(() => {
-  const value = props.worker.location?.city;
+  const value = worker.location?.city;
   if (!value) {
     return '';
   }
@@ -48,9 +48,9 @@ const city = computed(() => {
 });
 
 const contactKpis = computed<DetailKpi[]>(() => [
-  ...(props.worker.mobileNumber ? [{ key: 'phone', label: 'Phone', value: props.worker.mobileNumber }] : []),
+  ...(worker.mobileNumber ? [{ key: 'phone', label: 'Phone', value: worker.mobileNumber }] : []),
   ...(city.value ? [{ key: 'location', label: 'Location', value: city.value }] : []),
-  ...(props.worker.email ? [{ key: 'email', label: 'Email', value: props.worker.email }] : []),
+  ...(worker.email ? [{ key: 'email', label: 'Email', value: worker.email }] : []),
 ]);
 </script>
 

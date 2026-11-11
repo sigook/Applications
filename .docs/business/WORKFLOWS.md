@@ -217,6 +217,12 @@ A request-wide view exists at `GET api/agency/recruiting/requests/{requestId}/ti
 
 On the agency punch card the per-day hours input is disabled and the edit icon hidden for users without admin access (superadmin/admin — `useAdmin` in `AgencyPunchCardWorkerContainer.vue`); the attendance `0` is entered by whoever may edit.
 
+Entering a weekly total on the punch card calendar (`CalendarPunchCard.vue`, `usePunchCardCalendar.ts`) fills the days' approved hours through `distributeHours` (`src/shared/punch-card/distributeHours.ts`), capped by `maximumHoursPerDay` (`VUE_APP_MAXIMUM_HOURS_DAY`, default 12):
+- Average above the daily maximum → nothing is distributed.
+- Total below the daily maximum → all of it goes on the first day.
+- Whole-number average → the same hours every day (40 h over 5 days = 8 × 5).
+- Fractional average → each day gets the average rounded up and the last day takes the remainder (37 h over 5 days, max 8 = 8, 8, 8, 8, 5).
+
 ### Step 3: Hours breakdown
 
 Regular / overtime / holiday hour classification is computed by `TimesheetCalculatorService` (`Covenant.Core.BL/Services/Accounting/TimesheetCalculatorService.cs`) when pay stubs and invoices are generated. Rules (44-hour OT threshold, holiday handling, `HolidayIsPaid`) are documented in `.docs/business/TIMESHEET_RULES.md`. Night shift is never computed anywhere; do not add night-shift logic.

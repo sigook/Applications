@@ -24,8 +24,8 @@ export function companyWebsiteUrl(website?: string | null): string {
 
 export function useCompanyDetail(company: Ref<CompanyProfileDetail | null>) {
   const statusLabel = computed(() => {
-    const status = company.value?.companyStatus as unknown as CompanyStatus | undefined;
-    return status ? CompanyStatus[status] ?? '' : '';
+    const status = company.value?.companyStatus;
+    return status ? (CompanyStatus[status] as string | undefined) ?? '' : '';
   });
 
   const statusVariant = computed<DetailChipVariant>(() =>

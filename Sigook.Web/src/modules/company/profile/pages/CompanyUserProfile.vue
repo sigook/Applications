@@ -64,19 +64,18 @@ function changeTab(newTab: string) {
   currentTab.value = newTab;
 }
 
-function getCompanyUser() {
+async function getCompanyUser() {
   isLoading.value = true;
-  getCompanyUserDetail()
-    .then((user) => {
-      companyUser.value = user;
-      isLoading.value = false;
-    })
-    .catch(() => {
-      isLoading.value = false;
-    });
+  try {
+    companyUser.value = await getCompanyUserDetail();
+  } catch {
+    return;
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-getCompanyUser();
+void getCompanyUser();
 </script>
 
 <style lang="scss" scoped>

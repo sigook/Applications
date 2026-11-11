@@ -48,7 +48,7 @@
                     <template #label>Sales Representative <span class="has-text-danger">*</span></template>
                     <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
                       v-model="salesRepresentative" open-on-focus name="salesRepresentative"
-                      :custom-formatter="(option) => `${option.name} - ${option.email}`"
+                      :custom-formatter="(option: AgencyPersonnelListItem) => `${option.name} - ${option.email}`"
                       @select="onSalesRepresentativeSelected">
                     </b-autocomplete>
                   </b-field>
@@ -258,7 +258,7 @@ const {
 const formErrors = form.errors;
 
 watch(form.fields.companyStatus, (v) => {
-  companyStatusValue.value = (v as number | null) ?? null;
+  companyStatusValue.value = (v) ?? null;
 });
 
 const isLoading = ref(true);
@@ -315,7 +315,7 @@ async function init() {
     form.hydrate({
       fullName: existing.fullName || '',
       industry: industryValue || '',
-      companyStatus: existing.companyStatus ?? null,
+      companyStatus: existing.companyStatus,
       salesRepresentative: record ? `${record.name} - ${record.email}` : '',
       about: existing.about || '',
       phoneExt: existing.phoneExt != null ? String(existing.phoneExt) : '',
@@ -324,7 +324,7 @@ async function init() {
     });
   }
 }
-init();
+void init();
 
 function validateAutocompleteSelections(): boolean {
   let valid = true;
@@ -342,7 +342,7 @@ function validateAutocompleteSelections(): boolean {
 
 function validateForm() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     if (!validateAutocompleteSelections()) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
@@ -362,8 +362,8 @@ function validateForm() {
     if (!isUpdate.value) payload.email = values.email;
     if (displayPassword.value) payload.password = values.password;
 
-    if (isUpdate.value) submitUpdateCompany(payload);
-    else submitCreateCompany(payload);
+    if (isUpdate.value) await submitUpdateCompany(payload);
+    else await submitCreateCompany(payload);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
@@ -379,7 +379,7 @@ async function submitCreateCompany(payload: CompanyProfileFormState) {
     const response = await createAgencyCompany(payload);
     await uploadLogo(response.id);
     showAlertSuccess('Company created');
-    router.push(companyBase.value + '/' + response.id);
+    void router.push(companyBase.value + '/' + response.id);
   } catch (error) {
     showAlertError((error as { data?: unknown }).data);
   } finally {
@@ -388,12 +388,14 @@ async function submitCreateCompany(payload: CompanyProfileFormState) {
 }
 
 async function submitUpdateCompany(payload: CompanyProfileFormState) {
+  const companyProfileId = company.value.companyProfileId;
+  if (!companyProfileId) return;
   isLoading.value = true;
   try {
-    await updateAgencyCompany(company.value.companyProfileId, payload);
-    await uploadLogo(company.value.companyProfileId);
+    await updateAgencyCompany(companyProfileId, payload);
+    await uploadLogo(companyProfileId);
     showAlertSuccess('Company updated');
-    router.push(companyBase.value + '/' + company.value.companyProfileId);
+    void router.push(companyBase.value + '/' + company.value.companyProfileId);
   } catch (error) {
     showAlertError((error as { data?: unknown }).data);
   } finally {
@@ -402,11 +404,19 @@ async function submitUpdateCompany(payload: CompanyProfileFormState) {
 }
 
 function onSalesRepresentativeSelected(option: AgencyPersonnelListItem | null) {
-  salesRepresentativeSelected.value = option || null;
+  salesRepresentativeSelected.value = option ?? null;
 }
 
 function selectIndustry(option: Industry | null) {
-  industrySelected.value = option || null;
+  industrySelected.value = option ?? null;
+}
+
+async function confirmAddIndustry(value: string, dialog: { close: () => void }) {
+  const newIndustry = await addIndustryApi({ value });
+  industryOptions.value.push(newIndustry);
+  industrySelected.value = newIndustry;
+  form.setFieldValue('industry', newIndustry.value);
+  dialog.close();
 }
 
 function onAddIndustry() {
@@ -419,13 +429,7 @@ function onAddIndustry() {
     },
     closeOnConfirm: false,
     confirmText: 'Add',
-    onConfirm: async (value, dialog) => {
-      const newIndustry = await addIndustryApi({ value });
-      industryOptions.value.push(newIndustry);
-      industrySelected.value = newIndustry;
-      form.setFieldValue('industry', newIndustry.value);
-      dialog.close();
-    },
+    onConfirm: (value, dialog) => confirmAddIndustry(value, dialog),
   });
 }
 </script>

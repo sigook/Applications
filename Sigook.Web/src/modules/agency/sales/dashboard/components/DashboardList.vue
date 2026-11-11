@@ -9,14 +9,11 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(
-  defineProps<{
-    isEmpty: boolean;
-    loading?: boolean;
-    emptyText?: string;
-  }>(),
-  { loading: false, emptyText: 'Nothing yet' }
-);
+const { isEmpty, loading = false, emptyText = 'Nothing yet' } = defineProps<{
+  isEmpty: boolean;
+  loading?: boolean;
+  emptyText?: string;
+}>();
 </script>
 
 <style scoped lang="scss">

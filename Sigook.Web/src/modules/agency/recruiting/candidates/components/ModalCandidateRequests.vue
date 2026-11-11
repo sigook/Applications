@@ -30,8 +30,8 @@ import { getAllAgencyRequests, postAgencyRequestApplicant } from "@/modules/agen
 import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests/types';
 
-const props = defineProps<{ candidateId: number | string }>();
-const emit = defineEmits<{ (e: 'onSelectRequest'): void }>();
+const { candidateId } = defineProps<{ candidateId: number | string }>();
+const emit = defineEmits<(e: 'onSelectRequest') => void>();
 
 const isLoading = ref(false);
 const { results: rows, isSearching: isLoadingList, search: searchRequests } = useDebouncedSearch(
@@ -39,16 +39,16 @@ const { results: rows, isSearching: isLoadingList, search: searchRequests } = us
   { minLength: 1 });
 const optionSelected = ref<AgencyRequestListItem | null>(null);
 
-function saveRequestApplicant() {
+async function saveRequestApplicant() {
+  if (!optionSelected.value) return;
   isLoading.value = true;
-  postAgencyRequestApplicant(optionSelected.value.id, { candidateId: String(props.candidateId) })
-    .then(() => {
-      isLoading.value = false;
-      emit('onSelectRequest');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyRequestApplicant(optionSelected.value.id, { candidateId: String(candidateId) });
+    isLoading.value = false;
+    emit('onSelectRequest');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

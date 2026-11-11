@@ -30,8 +30,8 @@ export interface TimeSheetListItem {
 export interface TimeSheetModel {
   hours: string;
   timeIn: string;
-  missingHours: string | number;
-  missingHoursOvertime: string | number;
+  missingHours?: string | number;
+  missingHoursOvertime?: string | number;
   deductionsOthers?: number;
   bonusOrOthers?: number;
   deductionsOthersDescription?: string;

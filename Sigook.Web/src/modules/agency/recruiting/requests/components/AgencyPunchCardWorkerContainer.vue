@@ -122,7 +122,7 @@ import type { AgencyRequestDetail, AgencyRequestWorker } from '@/modules/agency/
 
 dayjs.extend(duration);
 
-const props = defineProps<{ workerProfileId: string; requestId: string; request: AgencyRequestDetail; worker: AgencyRequestWorker }>();
+const { workerProfileId, requestId, request, worker } = defineProps<{ workerProfileId: string; requestId: string; request: AgencyRequestDetail; worker: AgencyRequestWorker }>();
 
 const { isAdmin } = useAdmin();
 
@@ -141,42 +141,40 @@ const itemErrors = ref<Record<string, string>>({});
 
 const maximumDailyHours = computed(() => maximumHoursPerDay);
 
-function timeSheetFastApprove(item: PunchCardDay, requestId: string, workerProfileId: string) {
+async function timeSheetFastApprove(item: PunchCardDay, requestId: string, workerProfileId: string) {
+  if (!item.id) return;
   isLoading.value = true;
   const model = buildTimeSheetApproveModel(item);
-  updateAgencyWorkerTimeSheet(requestId, workerProfileId, item.id, model)
-    .then(() => {
-      updateCell();
-    })
-    .catch((error) => {
-      showAlertError(error);
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    await updateAgencyWorkerTimeSheet(requestId, workerProfileId, item.id, model);
+    updateCell();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function loadTimeSheets() {
+async function loadTimeSheets() {
   isLoading.value = true;
-  getAgencyWorkerTimeSheetByDate(props.requestId, props.workerProfileId, { startDate: startDate.value, endDate: endDate.value })
-    .then(response => {
-      isLoading.value = false;
-      data.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyWorkerTimeSheetByDate(requestId, workerProfileId, { startDate: startDate.value, endDate: endDate.value });
+    isLoading.value = false;
+    data.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onMonthChange(sDate: string, eDate: string) {
   startDate.value = sDate;
   endDate.value = eDate;
-  loadTimeSheets();
+  void loadTimeSheets();
 }
 
 function updateCell() {
-  loadTimeSheets();
+  void loadTimeSheets();
   showModalPunchCard.value = false;
 }
 
@@ -197,10 +195,10 @@ function validatePost(model: PunchCardDay, indexDay: number) {
   const next = { ...itemErrors.value };
   delete next[key];
   itemErrors.value = next;
-  reportWorkerTimSheet(model);
+  void reportWorkerTimSheet(model);
 }
 
-function reportWorkerTimSheet(item: PunchCardDay) {
+async function reportWorkerTimSheet(item: PunchCardDay) {
   const model: TimeSheetModel = {
     hours: changeDecimalToHour(item.totalHoursApproved),
     timeIn: todayTimeZero(item.day),
@@ -211,50 +209,52 @@ function reportWorkerTimSheet(item: PunchCardDay) {
     deductionsOthers: item.deductionsOthers
   };
   isLoading.value = true;
-  postAgencyWorkerTimeSheet(props.requestId, props.workerProfileId, model)
-    .then(() => {
-      isLoading.value = false;
-      loadTimeSheets();
-    }).catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyWorkerTimeSheet(requestId, workerProfileId, model);
+    isLoading.value = false;
+    await loadTimeSheets();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function deleteWorkerTimSheet(item: PunchCardDay) {
+async function deleteWorkerTimSheet(item: PunchCardDay) {
+  if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyWorkerTimeSheet(props.requestId, props.workerProfileId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      item.id = null;
-      item.totalHoursApproved = null;
-      item.timeIn = null;
-      loadTimeSheets();
-    }).catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteAgencyWorkerTimeSheet(requestId, workerProfileId, item.id);
+    isLoading.value = false;
+    item.id = null;
+    item.totalHoursApproved = null;
+    item.timeIn = undefined;
+    await loadTimeSheets();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function changeDecimalToHour(time: number) {
-  return dayjs().startOf('day').add(time, 'hours').format('HH:mm:ss');
+function changeDecimalToHour(time: number | null) {
+  return dayjs().startOf('day').add(time ?? 0, 'hours').format('HH:mm:ss');
 }
 
 function todayTimeZero(time: string | Date) {
   return dayjs(time).hour(0).minute(0).second(0).format('YYYY-MM-DDTHH:mm:ss');
 }
 
-function loadTimeSheetUsages(item: PunchCardDay) {
+async function loadTimeSheetUsages(item: PunchCardDay) {
+  if (!item.id) return;
   isLoading.value = true;
-  getAgencyTimeSheetUsages(props.requestId, props.workerProfileId, item.id)
-    .then((response) => {
-      isLoading.value = false;
-      currentTimeSheetUsage.invoiceNumber = response.invoiceNumber;
-      currentTimeSheetUsage.payStubNumber = response.payStubNumber;
-    }).catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyTimeSheetUsages(requestId, workerProfileId, item.id);
+    isLoading.value = false;
+    currentTimeSheetUsage.invoiceNumber = response.invoiceNumber;
+    currentTimeSheetUsage.payStubNumber = response.payStubNumber;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openDetail(item: PunchCardDay) {
@@ -268,8 +268,8 @@ function editPunchCard(day: PunchCardDay) {
   * Update object to show Modal
   * */
   editableDay.value = { ...day };
-  editableDay.value.timeInApproved = new Date(day.timeInApproved);
-  editableDay.value.timeOutApproved = new Date(day.timeOutApproved);
+  editableDay.value.timeInApproved = day.timeInApproved ? new Date(day.timeInApproved) : null;
+  editableDay.value.timeOutApproved = day.timeOutApproved ? new Date(day.timeOutApproved) : null;
   editableDay.value.missinghoursToDate = stringToDate(editableDay.value.missingHours);
   editableDay.value.missingHoursOvertimeToDate = stringToDate(editableDay.value.missingHoursOvertime);
   editableDay.value.hoursApprovedToDate = null;
@@ -279,7 +279,7 @@ function editPunchCard(day: PunchCardDay) {
   * Change hours to format date
   */
   const newTime = new Date();
-  const dur = dayjs.duration(day.totalHoursApproved, 'hours');
+  const dur = dayjs.duration(day.totalHoursApproved ?? 0, 'hours');
   newTime.setHours(dur.hours());
   const min = dur.minutes();
   newTime.setMinutes(min);
@@ -293,7 +293,7 @@ function editPunchCard(day: PunchCardDay) {
   showModalPunchCard.value = true;
 }
 
-function stringToDate(value: string) {
+function stringToDate(value: string | null | undefined) {
   if (value) {
     const tmp = value.split(":");
     const date = new Date();

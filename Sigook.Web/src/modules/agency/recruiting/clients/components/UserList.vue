@@ -28,7 +28,7 @@
 
     <!-- Create user modal-->
     <b-modal custom-content-class="card" v-model="showModal" @close="showModal = false" width="500px">
-      <create-user :save="(user) => createCompanyProfileUser(props.company.id, user)" @updateUsers="updateUsers" />
+      <create-user :save="(user) => createCompanyProfileUser(company.id, user)" @updateUsers="updateUsers" />
     </b-modal>
   </div>
 </template>
@@ -43,24 +43,25 @@ import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { AgencyCompanyProfileDetail } from '@/modules/agency/recruiting/clients/types';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 
-const props = defineProps<{ company: AgencyCompanyProfileDetail }>();
+const { company } = defineProps<{ company: AgencyCompanyProfileDetail }>();
 
 const isLoading = ref(false);
 const showModal = ref(false);
 const users = ref<(CompanyUserModel & { actions: null })[]>([]);
 
 async function getUsers() {
-  const response = await getCompanyUsers(props.company.id);
+  const response = await getCompanyUsers(company.id);
   users.value = response.map((r) => ({ ...r, actions: null }));
 }
 
 async function deleteUser(id: string) {
   isLoading.value = true;
-  await deleteCompanyProfileUser(props.company.id, id)
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    await deleteCompanyProfileUser(company.id, id);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(typeof error === 'object' && error !== null && 'data' in error ? error.data : undefined);
+  }
   await getUsers();
   isLoading.value = false;
 }
@@ -70,7 +71,7 @@ async function updateUsers() {
   showModal.value = false;
 }
 
-(async () => {
+void (async () => {
   isLoading.value = true;
   await getUsers();
   isLoading.value = false;

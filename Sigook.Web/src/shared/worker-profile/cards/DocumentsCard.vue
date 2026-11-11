@@ -49,11 +49,11 @@
     </div>
 
     <b-modal custom-content-class="card" v-model="isModalOpen" width="500px">
-      <documents-form v-if="activeForm === 'identification'" :data="props.worker" @closeModal="onSaved" />
-      <resume-form v-else-if="activeForm === 'resume'" :data="props.worker" @closeModal="onSaved" />
-      <license-form v-else-if="activeForm === 'license'" :data="props.worker" @closeModal="onSaved" />
-      <certificate-form v-else-if="activeForm === 'certificate'" :data="props.worker" @closeModal="onSaved" />
-      <other-documents-form v-else-if="activeForm === 'other'" :data="props.worker" @closeAndUpdate="onSaved" />
+      <documents-form v-if="activeForm === 'identification'" :data="worker" @closeModal="onSaved" />
+      <resume-form v-else-if="activeForm === 'resume'" :data="worker" @closeModal="onSaved" />
+      <license-form v-else-if="activeForm === 'license'" :data="worker" @closeModal="onSaved" />
+      <certificate-form v-else-if="activeForm === 'certificate'" :data="worker" @closeModal="onSaved" />
+      <other-documents-form v-else-if="activeForm === 'other'" :data="worker" @closeAndUpdate="onSaved" />
     </b-modal>
   </profile-card>
 </template>
@@ -75,7 +75,7 @@ import OtherDocumentsForm from '@/shared/worker-profile/forms/WorkerOtherDocumen
 
 type DocumentForm = 'identification' | 'resume' | 'license' | 'certificate' | 'other';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
+const { worker } = defineProps<{ worker: WorkerProfileDetail }>();
 const emit = defineEmits<{ (e: 'updateProfile'): void; (e: 'loading', value: boolean): void }>();
 
 const isModalOpen = ref(false);
@@ -89,7 +89,7 @@ function fileLabel(file: CovenantFileModel | null, fallback: string): string {
 }
 
 const rows = computed<WorkerDocumentRow[]>(() => {
-  const w = props.worker;
+  const w = worker;
   const result: WorkerDocumentRow[] = [];
 
   if (w.identificationType1 || w.identificationType1File) {
@@ -178,31 +178,30 @@ function onSaved() {
 
 function deleteRequest(row: WorkerDocumentRow, id: string): Promise<void> {
   if (row.kind === 'license') {
-    return deleteWorkerLicenses(props.worker.id, id);
+    return deleteWorkerLicenses(worker.id, id);
   }
   if (row.kind === 'certificate') {
-    return deleteWorkerCertificates(props.worker.id, id);
+    return deleteWorkerCertificates(worker.id, id);
   }
-  return deleteWorkerOtherDocuments(props.worker.id, id);
+  return deleteWorkerOtherDocuments(worker.id, id);
 }
 
-function confirmDelete(row: WorkerDocumentRow) {
+async function confirmDelete(row: WorkerDocumentRow) {
   const id = row.deletableId;
   if (!id) {
     return;
   }
-  showAlertConfirm('Are you sure?', 'You want to delete this document').then((response) => {
-    if (!response) {
-      return;
-    }
-    emit('loading', true);
-    deleteRequest(row, id)
-      .then(() => emit('updateProfile'))
-      .catch((error) => {
-        emit('loading', false);
-        showAlertError(error);
-      });
-  });
+  if (!(await showAlertConfirm('Are you sure?', 'You want to delete this document'))) {
+    return;
+  }
+  emit('loading', true);
+  try {
+    await deleteRequest(row, id);
+    emit('updateProfile');
+  } catch (error) {
+    emit('loading', false);
+    showAlertError(error);
+  }
 }
 </script>
 

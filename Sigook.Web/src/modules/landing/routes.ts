@@ -29,9 +29,14 @@ const routesLanding: RouteRecordRaw[] = [
         meta: { layout: 'landing', requiresAuth: false },
     },
     {
-        path: '/open-positions',
+        path: '/open-positions/:numberId?',
         name: 'open-positions',
         component: OpenPositions,
+        beforeEnter: (to) => {
+            const { jobId, ...query } = to.query;
+            if (typeof jobId !== 'string' || to.params.numberId) return true;
+            return { name: 'open-positions', params: { numberId: jobId }, query, replace: true };
+        },
         meta: { layout: 'landing', requiresAuth: false, title: 'Open Positions', description: 'Browse current job openings in skilled trades, industrial, and professional roles. Search by title and location, and apply online with Sigook.' },
     },
     {
@@ -112,7 +117,7 @@ const routesLanding: RouteRecordRaw[] = [
     { path: '/news', redirect: '/' },
     { path: '/v2/home', redirect: '/' },
     { path: '/v2/terms', redirect: '/terms-and-conditions' },
-    { path: '/v2/:rest(.*)', redirect: (to) => `/${to.params.rest}` },
+    { path: '/v2/:rest(.*)', redirect: (to) => `/${String(to.params.rest)}` },
 ];
 
 export default routesLanding;

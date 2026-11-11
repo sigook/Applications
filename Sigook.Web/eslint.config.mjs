@@ -30,7 +30,10 @@ export default [
       parserOptions: {
         parser: tsparser,
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: ['.vue']
       },
       globals: {
         ...globals.browser,
@@ -54,7 +57,9 @@ export default [
       parser: tsparser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname
       },
       globals: {
         ...globals.browser,
@@ -88,6 +93,7 @@ export default [
       'no-unused-vars': 'off',
       'no-irregular-whitespace': 'warn',
       'no-undef': 'off',
+      'no-redeclare': 'off',
       '@typescript-eslint/no-unused-vars': [
         'warn',
         {
@@ -143,6 +149,32 @@ export default [
           'DefaultImage'
         ]
       }]
+    }
+  },
+
+  {
+    files: ['*.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: null
+      }
+    }
+  },
+
+  {
+    files: ['**/*.{ts,tsx,vue}'],
+    ignores: ['*.config.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/return-await': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': ['error', { ignorePrimitives: { string: true } }],
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      'vue/define-props-destructuring': 'error',
+      'vue/prefer-use-template-ref': 'error'
     }
   },
 

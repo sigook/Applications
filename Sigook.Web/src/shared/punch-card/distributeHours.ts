@@ -21,7 +21,7 @@ export function distributeHours(
       const pureHours = Math.trunc(dailyHours);
       if (pureHours === 0) h = dailyHours;
       else if (totalHoursWeek < dailyHours) h = totalHoursWeek;
-      else if (pureHours === maximumDailyHours) h = pureHours;
+      else if (pureHours === dailyHours) h = pureHours;
       else if (pureHours < totalHoursWeek) h = pureHours + 1;
       else h = totalHoursWeek;
       totalHoursWeek -= h;

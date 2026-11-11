@@ -61,8 +61,8 @@ const schema = yup.object({
   description: yup.string().required('Description is required').min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
 });
 
-const props = defineProps<{ profileId: string }>();
-const emit = defineEmits<{ (e: 'onCreateDocument'): void }>();
+const { profileId } = defineProps<{ profileId: string }>();
+const emit = defineEmits<(e: 'onCreateDocument') => void>();
 
 const form = useStickyForm<{ description: string }>({
   schema,
@@ -89,10 +89,10 @@ async function validateForm() {
     showAlertError("Please make sure all required fields are filled out correctly");
     return;
   }
-  submitDocument();
+  await submitDocument();
 }
 
-function submitDocument() {
+async function submitDocument() {
   if (!documentFile.value) return;
   isLoading.value = true;
   const model = {
@@ -100,15 +100,14 @@ function submitDocument() {
     description: description.value,
     documentType: documentType.value ?? undefined,
   };
-  createAgencyCompanyDocument(props.profileId, model, documentFile.value)
-    .then(() => {
-      isLoading.value = false;
-      emit("onCreateDocument");
-      showAlertSuccess("Created");
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyCompanyDocument(profileId, model, documentFile.value);
+    isLoading.value = false;
+    emit("onCreateDocument");
+    showAlertSuccess("Created");
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

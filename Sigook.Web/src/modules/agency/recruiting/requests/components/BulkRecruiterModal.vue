@@ -35,7 +35,7 @@ import { showAlertError } from '@/shared/utils/toast';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 
-defineProps<{ requestCount: number }>();
+const { requestCount } = defineProps<{ requestCount: number }>();
 const emit = defineEmits<{
   (e: 'submit', recruiterIds: string[]): void;
   (e: 'cancel'): void;
@@ -46,18 +46,17 @@ const personnel = ref<AgencyPersonnelListItem[]>([]);
 const filtered = ref<AgencyPersonnelListItem[]>([]);
 const selected = ref<AgencyPersonnelListItem[]>([]);
 
-function loadPersonnel() {
+async function loadPersonnel() {
   isLoading.value = true;
-  getAgencyPersonnel()
-    .then((response) => {
-      personnel.value = response;
-      filtered.value = response;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyPersonnel();
+    personnel.value = response;
+    filtered.value = response;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onTyping(text: string) {
@@ -76,5 +75,5 @@ function onCancel() {
   emit('cancel');
 }
 
-loadPersonnel();
+void loadPersonnel();
 </script>

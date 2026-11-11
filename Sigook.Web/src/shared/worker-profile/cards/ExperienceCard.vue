@@ -4,8 +4,8 @@
       <b-button type="is-ghost" size="is-small" class="profile-link" icon-left="plus" @click="open(null)">Add</b-button>
     </template>
 
-    <ul v-if="props.worker.jobExperiences.length" class="experience-list">
-      <li v-for="item in props.worker.jobExperiences" :key="item.id" class="experience-row">
+    <ul v-if="worker.jobExperiences.length" class="experience-list">
+      <li v-for="item in worker.jobExperiences" :key="item.id" class="experience-row">
         <span class="experience-period">
           {{ monthYear(item.startDate) }} — {{ item.isCurrentJobPosition ? 'Present' : monthYear(item.endDate) }}
         </span>
@@ -25,7 +25,7 @@
     <p v-else class="profile-empty">No experience added</p>
 
     <b-modal custom-content-class="card" v-model="isModalOpen" :width="editing ? '800px' : '500px'">
-      <work-experience-form :workerId="props.worker.id" :data="editing ?? undefined" @updateExperience="onSaved" />
+      <work-experience-form :workerId="worker.id" :data="editing ?? undefined" @updateExperience="onSaved" />
     </b-modal>
   </profile-card>
 </template>
@@ -39,7 +39,7 @@ import type { WorkerProfileDetail, WorkerProfileJobExperienceDetail } from '@/sh
 import ProfileCard from '@/shared/worker-profile/cards/ProfileCard.vue';
 import WorkExperienceForm from '@/shared/worker-profile/forms/WorkExperienceForm.vue';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
+const { worker } = defineProps<{ worker: WorkerProfileDetail }>();
 const emit = defineEmits<{ (e: 'updateProfile'): void; (e: 'loading', value: boolean): void }>();
 
 const isModalOpen = ref(false);
@@ -59,19 +59,18 @@ function onSaved() {
   emit('updateProfile');
 }
 
-function confirmDelete(item: WorkerProfileJobExperienceDetail) {
-  showAlertConfirm('Are you sure?', 'You want to delete this experience').then((response) => {
-    if (!response) {
-      return;
-    }
-    emit('loading', true);
-    deleteWorkerWorkExperience(props.worker.id, item.id)
-      .then(() => emit('updateProfile'))
-      .catch((error) => {
-        emit('loading', false);
-        showAlertError(error);
-      });
-  });
+async function confirmDelete(item: WorkerProfileJobExperienceDetail) {
+  if (!(await showAlertConfirm('Are you sure?', 'You want to delete this experience'))) {
+    return;
+  }
+  emit('loading', true);
+  try {
+    await deleteWorkerWorkExperience(worker.id, item.id);
+    emit('updateProfile');
+  } catch (error) {
+    emit('loading', false);
+    showAlertError(error);
+  }
 }
 </script>
 

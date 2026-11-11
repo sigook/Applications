@@ -79,8 +79,8 @@ import { calculateAttendanceHours, formatHours, toLocalDateTime } from '@/module
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import type { UserAttendanceListItem } from '@/modules/agency/profile/types';
 
-const props = defineProps<{ attendance: UserAttendanceListItem }>();
-const emit = defineEmits<{ (e: 'saved'): void }>();
+const { attendance } = defineProps<{ attendance: UserAttendanceListItem }>();
+const emit = defineEmits<(e: 'saved') => void>();
 
 const schema = yup.object({
   clockIn: yup.date().required('Clock in is required'),
@@ -92,13 +92,13 @@ const schema = yup.object({
   reason: yup.string().required('Reason is required').max(500, 'Max 500 characters'),
 });
 
-const form = useStickyForm<{ clockIn: Date | null; clockOut: Date | null; lunchMinutes: number; reason: string }>({
+const form = useStickyForm<{ clockIn: Date | null; clockOut: Date | null; lunchMinutes: number | null; reason: string }>({
   schema,
   initialValues: {
-    clockIn: dayjs(props.attendance.clockIn).toDate(),
-    clockOut: props.attendance.clockOut ? dayjs(props.attendance.clockOut).toDate() : null,
-    lunchMinutes: props.attendance.lunchMinutes,
-    reason: props.attendance.editReason ?? '',
+    clockIn: dayjs(attendance.clockIn).toDate(),
+    clockOut: attendance.clockOut ? dayjs(attendance.clockOut).toDate() : null,
+    lunchMinutes: attendance.lunchMinutes,
+    reason: attendance.editReason ?? '',
   },
 });
 const { clockIn, clockOut, lunchMinutes, reason } = form.fields;
@@ -109,7 +109,7 @@ const isLoading = ref(false);
 function onAttendanceDay(time: Date | null): dayjs.Dayjs | null {
   if (!time) return null;
   const value = dayjs(time);
-  return dayjs(props.attendance.date).hour(value.hour()).minute(value.minute()).second(0);
+  return dayjs(attendance.date).hour(value.hour()).minute(value.minute()).second(0);
 }
 
 const preview = computed(() =>
@@ -120,14 +120,18 @@ async function save() {
   const { valid } = await form.validate();
   if (!valid) return;
   isLoading.value = true;
-  updateAttendance(props.attendance.id, {
-    clockIn: toLocalDateTime(onAttendanceDay(clockIn.value)),
-    clockOut: clockOut.value ? toLocalDateTime(onAttendanceDay(clockOut.value)) : null,
-    lunchMinutes: lunchMinutes.value,
-    reason: reason.value,
-  })
-    .then(() => emit('saved'))
-    .catch(showAlertError)
-    .finally(() => { isLoading.value = false; });
+  try {
+    await updateAttendance(attendance.id, {
+      clockIn: toLocalDateTime(onAttendanceDay(clockIn.value)),
+      clockOut: clockOut.value ? toLocalDateTime(onAttendanceDay(clockOut.value)) : null,
+      lunchMinutes: lunchMinutes.value ?? 0,
+      reason: reason.value,
+    });
+    emit('saved');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>

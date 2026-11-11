@@ -27,14 +27,12 @@ import { currency, dateMonth } from '@/shared/format';
 import { hoursLabel } from '@/modules/worker/activity/activityFormat';
 import type { WorkerActivitySummary, WorkerPayStubListItem } from '@/modules/worker/activity/types';
 
-defineProps<{
+const { summary, showLastPay } = defineProps<{
   summary: WorkerActivitySummary | null;
   showLastPay: boolean;
 }>();
 
-const emit = defineEmits<{
-  (e: 'download', payStub: WorkerPayStubListItem): void;
-}>();
+const emit = defineEmits<(e: 'download', payStub: WorkerPayStubListItem) => void>();
 </script>
 
 <style lang="scss" scoped>

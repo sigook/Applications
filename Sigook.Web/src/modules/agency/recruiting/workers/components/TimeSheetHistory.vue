@@ -68,7 +68,7 @@ import type { WorkerTimeSheetHistoryFilter } from '@/modules/agency/recruiting/w
 import type { GridHandle } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = defineProps<{ workerId: string }>();
+const { workerId } = defineProps<{ workerId: string }>();
 
 const { requestBase } = useModuleBase();
 const grid = useTemplateRef<GridHandle>('grid');
@@ -81,7 +81,7 @@ const sortMap = {
 const isLoading = ref(false);
 const datesSelected = ref<Date[]>([]);
 const serverParams = ref<WorkerTimeSheetHistoryFilter>({
-  profileId: props.workerId,
+  profileId: workerId,
   sortBy: 2,
   isDescending: true,
 });

@@ -47,27 +47,32 @@ watch(isUsa, (value) => {
 }, { immediate: true });
 
 function changeTab(tab: string) {
-  router.replace({ query: { ...route.query, tab } });
+  void router.replace({ query: { ...route.query, tab } });
 }
 
-function downloadPayStub(payStub: WorkerPayStubListItem) {
+async function downloadPayStub(payStub: WorkerPayStubListItem) {
   if (payStub.pdfUrl) {
     openFileUrl(payStub.pdfUrl);
     return;
   }
   isLoading.value = true;
-  downloadWorkerPayStubPdf(payStub.id)
-    .then((response) => {
-      isLoading.value = false;
-      downloadPDF(response, payStub.payStubNumber);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await downloadWorkerPayStubPdf(payStub.id);
+    isLoading.value = false;
+    downloadPDF(response, payStub.payStubNumber);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-getActivitySummary(weekStartOf())
-  .then((response) => { summary.value = response; })
-  .catch((error: unknown) => showAlertError(error));
+async function loadSummary() {
+  try {
+    summary.value = await getActivitySummary(weekStartOf());
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+void loadSummary();
 </script>

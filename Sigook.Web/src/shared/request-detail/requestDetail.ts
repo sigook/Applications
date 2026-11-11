@@ -102,12 +102,12 @@ export function formatLocation(location?: LocationDetailModel | null): string {
 }
 
 export function mapsUrl(location?: LocationDetailModel | null): string {
-  if (!location?.latitude || !location?.longitude) return '';
+  if (!location?.latitude || !location.longitude) return '';
   return `https://www.google.com/maps/search/?api=1&query=${location.latitude},${location.longitude}`;
 }
 
 export function mapsEmbedUrl(location?: LocationDetailModel | null): string {
-  if (!location?.latitude || !location?.longitude) return '';
+  if (!location?.latitude || !location.longitude) return '';
   return `https://www.google.com/maps/embed/v1/place?key=AIzaSyCeTK6xFTDyUJsmGoNwWd0RfeTAqj5rlgY&q=${location.latitude},${location.longitude}&zoom=13`;
 }
 

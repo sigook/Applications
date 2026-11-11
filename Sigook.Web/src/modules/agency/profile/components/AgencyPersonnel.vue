@@ -69,24 +69,25 @@ function todayTag(userId: string): { label: string; type: string } {
   return { label: 'Not clocked in', type: '' };
 }
 
-function getAttendancesToday() {
+async function getAttendancesToday() {
   if (!isAdmin.value) return;
-  getAttendancesTodayForUsers()
-    .then(response => { attendancesToday.value = response; })
-    .catch(showAlertError);
+  try {
+    attendancesToday.value = await getAttendancesTodayForUsers();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-function getUsers() {
+async function getUsers() {
   isLoading.value = true;
-  getAgencyPersonnel()
-    .then((response) => {
-      isLoading.value = false;
-      users.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyPersonnel();
+    isLoading.value = false;
+    users.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openCreateModal() {
@@ -106,27 +107,22 @@ function closeModal() {
 
 function updateList() {
   closeModal();
-  getUsers();
+  void getUsers();
 }
 
-function deleteUser(id: string) {
-  showAlertConfirm('Are you sure?', 'You want to delete user.')
-    .then(response => {
-      if (response) {
-        isLoading.value = true;
-        deleteAgencyPersonnel(id)
-          .then(() => {
-            isLoading.value = false;
-            getUsers();
-          })
-          .catch(error => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    });
+async function deleteUser(id: string) {
+  if (!(await showAlertConfirm('Are you sure?', 'You want to delete user.'))) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyPersonnel(id);
+    isLoading.value = false;
+    await getUsers();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-getUsers();
-getAttendancesToday();
+void getUsers();
+void getAttendancesToday();
 </script>

@@ -26,38 +26,39 @@ import { createWorkerLocationPreferences } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CatalogItem, City } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const citiesLocations = ref<City[]>([]);
 const filteredCitiesLocations = ref<City[]>([]);
 const worker = reactive<{ locationPreferences: CatalogItem[] }>({ locationPreferences: [] });
 
-function saveWorkerLocationPreferences() {
+async function saveWorkerLocationPreferences() {
   isLoading.value = true;
-  createWorkerLocationPreferences(props.data.id, worker.locationPreferences)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerLocationPreferences(data.id, worker.locationPreferences);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function loadCities() {
+async function loadCities() {
+  const provinceId = data.location?.city?.province?.id;
+  if (!provinceId) return;
   isLoading.value = true;
-  getCities(props.data.location.city.province.id)
-    .then(result => {
-      isLoading.value = false;
-      citiesLocations.value = result;
-      filteredCitiesLocations.value = result;
-    }).catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const result = await getCities(provinceId);
+    isLoading.value = false;
+    citiesLocations.value = result;
+    filteredCitiesLocations.value = result;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function getFilteredCities(text: string) {
@@ -66,8 +67,6 @@ function getFilteredCities(text: string) {
   );
 }
 
-if (props.data != null) {
-  worker.locationPreferences = props.data.locationPreferences;
-  loadCities();
-}
+worker.locationPreferences = data.locationPreferences;
+void loadCities();
 </script>

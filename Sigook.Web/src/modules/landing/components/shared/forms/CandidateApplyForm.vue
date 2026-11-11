@@ -5,7 +5,7 @@
       <span class="reg-form__context-value">{{ contextLine }}</span>
     </p>
 
-    <nav v-if="props.requestId" class="tabs is-toggle is-fullwidth reg-form__tabs" role="tablist">
+    <nav v-if="requestId" class="tabs is-toggle is-fullwidth reg-form__tabs" role="tablist">
       <ul>
         <li :class="{ 'is-active': activeTab === 'new' }">
           <a role="tab" :aria-selected="activeTab === 'new'" @click="activeTab = 'new'">New Applicant</a>
@@ -295,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted, useTemplateRef } from 'vue'
 import { useForm, useField } from 'vee-validate'
 import * as yup from 'yup'
 
@@ -310,19 +310,15 @@ import type { CandidateFormData } from '@/modules/landing/types'
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast'
 
 
-const props = withDefaults(defineProps<{
+const { jobTitle, requestId } = defineProps<{
   jobTitle?: string
   requestId?: string
   redirectOnSuccess?: boolean
-}>(), {
-  redirectOnSuccess: false,
-})
-
-const emit = defineEmits<{
-  (e: 'submitted'): void
 }>()
 
-const contextLine = computed(() => props.jobTitle || '')
+const emit = defineEmits<(e: 'submitted') => void>()
+
+const contextLine = computed(() => jobTitle || '')
 
 type ApplyTab = 'new' | 'registered'
 const activeTab = ref<ApplyTab>('new')
@@ -370,14 +366,14 @@ const { value: status } = useField<string>('status')
 const { value: termsAccepted } = useField<boolean>('termsAccepted')
 
 const phone = ref('')
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null)
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent')
 
 const interacted = reactive<Record<string, boolean>>({})
 function markInteracted(fields: string[]): void {
   for (const f of fields) interacted[f] = true
 }
 
-const watched: Array<[string, { value: unknown }]> = [
+const watched: [string, { value: unknown }][] = [
   ['fullName', { value: fullName }],
   ['email', { value: email }],
   ['countryId', { value: countryId }],
@@ -388,7 +384,7 @@ const watched: Array<[string, { value: unknown }]> = [
   ['termsAccepted', { value: termsAccepted }],
 ]
 for (const [name, ref_] of watched) {
-  watch(() => (ref_ as { value: unknown }).value, () => { interacted[name] = true })
+  watch(() => (ref_).value, () => { interacted[name] = true })
 }
 
 const errors = computed<Record<string, string>>(() => {
@@ -583,11 +579,11 @@ async function onSubmit(): Promise<void> {
   }
 
   try {
-    await submitCandidateApplication(payload, props.requestId)
+    await submitCandidateApplication(payload, requestId)
     showAlertSuccess('Your application has been submitted')
     emit('submitted')
   } catch (err: unknown) {
-    showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
+    showAlertError((err as { data?: string } | null)?.data ?? 'Something went wrong')
   } finally {
     isSubmitting.value = false
   }
@@ -602,7 +598,7 @@ watch(registeredEmail, () => {
 })
 
 async function onSubmitRegistered(): Promise<void> {
-  if (!props.requestId) return
+  if (!requestId) return
   const value = registeredEmail.value.trim()
   if (!registeredEmailSchema.isValidSync(value)) {
     registeredEmailError.value = 'Enter a valid email address'
@@ -611,11 +607,11 @@ async function onSubmitRegistered(): Promise<void> {
 
   isSubmitting.value = true
   try {
-    await submitRegisteredApplication(value, props.requestId)
+    await submitRegisteredApplication(value, requestId)
     showAlertSuccess('Your application has been submitted')
     emit('submitted')
   } catch (err: unknown) {
-    showAlertError((err as { data?: string })?.data ?? 'Something went wrong')
+    showAlertError((err as { data?: string } | null)?.data ?? 'Something went wrong')
   } finally {
     isSubmitting.value = false
   }

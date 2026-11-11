@@ -25,25 +25,24 @@ import { createWorkerLanguages } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CatalogItem } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const languages = ref<CatalogItem[]>([]);
 const filteredLanguages = ref<CatalogItem[]>([]);
 const worker = reactive<{ languages: CatalogItem[] }>({ languages: [] });
 
-function saveWorkerLanguages() {
+async function saveWorkerLanguages() {
   isLoading.value = true;
-  createWorkerLanguages(props.data.id, worker.languages)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerLanguages(data.id, worker.languages);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function getFilteredLanguages(text: string) {
@@ -52,11 +51,9 @@ function getFilteredLanguages(text: string) {
   );
 }
 
-(async () => {
+void (async () => {
   languages.value = await fetchLanguages();
   filteredLanguages.value = languages.value;
-  if (props.data != null) {
-    worker.languages = props.data.languages;
-  }
+  worker.languages = data.languages;
 })();
 </script>

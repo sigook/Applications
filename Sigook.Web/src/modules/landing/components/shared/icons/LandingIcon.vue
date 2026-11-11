@@ -22,13 +22,13 @@
 import { computed } from 'vue'
 import { ICONS, type IconDef, type LandingIconName } from '@/modules/landing/components/shared/icons/icons'
 
-const props = defineProps<{
+const { name, strokeWidth } = defineProps<{
   name: LandingIconName
   /** Override the icon's default stroke width (stroke icons only). */
   strokeWidth?: number
 }>()
 
-const def = computed<IconDef>(() => ICONS[props.name])
+const def = computed<IconDef>(() => ICONS[name])
 const isFilled = computed(() => (def.value.fill ?? 'none') !== 'none')
 </script>
 

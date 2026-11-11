@@ -66,11 +66,11 @@
           </div>
           <div class="column is-4">
             <phone-input ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone) => mobileNumber = phone" />
+              model="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
           </div>
           <div class="column is-4">
             <phone-input ref="officeComponent" :required="false" :defaultValue="officeNumber"
-              model="Office Number" @formattedPhone="(phone) => officeNumber = phone" />
+              model="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
           </div>
           <div class="column is-4">
             <b-field label="Ext" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
@@ -88,7 +88,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertSuccess } from "@/shared/utils/toast";
@@ -116,8 +116,8 @@ const schema = yup.object({
   officeNumberExt: numericExt,
 });
 
-const props = defineProps<{ agencyData: AgencyDetail }>();
-const emit = defineEmits<{ (e: 'update:agencyData', data: AgencyDetail): void }>();
+const { agencyData } = defineProps<{ agencyData: AgencyDetail }>();
+const emit = defineEmits<(e: 'update:agencyData', data: AgencyDetail) => void>();
 
 const form = useStickyForm({
   schema,
@@ -143,12 +143,12 @@ const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
 
 const isLoading = ref(false);
 const showModal = ref(false);
-const localAgencyData = ref<AgencyDetail>(JSON.parse(JSON.stringify(props.agencyData)));
-const mobileComponent = ref<InstanceType<typeof phoneInput> | null>(null);
-const officeComponent = ref<InstanceType<typeof phoneInput> | null>(null);
+const localAgencyData = ref<AgencyDetail>(JSON.parse(JSON.stringify(agencyData)));
+const mobileComponent = useTemplateRef<InstanceType<typeof phoneInput>>('mobileComponent');
+const officeComponent = useTemplateRef<InstanceType<typeof phoneInput>>('officeComponent');
 
 watch(
-  () => props.agencyData,
+  () => agencyData,
   (newVal) => {
     localAgencyData.value = JSON.parse(JSON.stringify(newVal));
   },
@@ -162,43 +162,43 @@ function openAddContactModal() {
 
 async function validateForm() {
   form.markInteracted();
-  const mobileValid = await mobileComponent.value.validatePhone();
-  const officeValid = await officeComponent.value.validatePhone();
-  form.handleSubmit((values) => {
+  const mobileValid = await mobileComponent.value?.validatePhone();
+  const officeValid = await officeComponent.value?.validatePhone();
+  await form.handleSubmit(async (values) => {
     if (!mobileValid || !officeValid) return;
     isLoading.value = true;
     const contact = {
       ...values,
       officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
     };
-    localAgencyData.value.contactInformation.push(contact);
+    (localAgencyData.value.contactInformation ??= []).push(contact);
     emit('update:agencyData', localAgencyData.value);
-    updateAgency(localAgencyData.value)
-      .then(() => {
-        isLoading.value = false;
-        showModal.value = false;
-        form.resetAll();
-        showAlertSuccess('Updated');
-      })
-      .catch(() => {
-        isLoading.value = false;
-      });
+    try {
+      await updateAgency(localAgencyData.value);
+      isLoading.value = false;
+      showModal.value = false;
+      form.resetAll();
+      showAlertSuccess('Updated');
+    } catch {
+      isLoading.value = false;
+    }
   })();
 }
 
-function removeContact(contact: AgencyContactInformation) {
-  const index = localAgencyData.value.contactInformation.indexOf(contact);
+async function removeContact(contact: AgencyContactInformation) {
+  const contacts = localAgencyData.value.contactInformation;
+  if (!contacts) return;
+  const index = contacts.indexOf(contact);
   if (index === -1) return;
   isLoading.value = true;
-  localAgencyData.value.contactInformation.splice(index, 1);
+  contacts.splice(index, 1);
   emit('update:agencyData', localAgencyData.value);
-  updateAgency(localAgencyData.value)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess("Updated");
-    })
-    .catch(() => {
-      isLoading.value = false;
-    });
+  try {
+    await updateAgency(localAgencyData.value);
+    isLoading.value = false;
+    showAlertSuccess("Updated");
+  } catch {
+    isLoading.value = false;
+  }
 }
 </script>

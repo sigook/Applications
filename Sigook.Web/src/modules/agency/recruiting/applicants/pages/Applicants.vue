@@ -216,7 +216,7 @@ const statusOptions: CatalogItem<RequestApplicantStatus>[] =
 const statusLabel = requestApplicantStatusLabel;
 const statusTagType = requestApplicantStatusTagType;
 
-loadApplicants();
+void loadApplicants();
 
 function countLabel(group: AgencyRequestApplicants): string {
   return group.applicants.length === group.totalApplicants
@@ -236,33 +236,27 @@ function clearSelection() {
   selection.value = {};
 }
 
-function bulkChangeStatus(status: RequestApplicantStatus) {
+async function bulkChangeStatus(status: RequestApplicantStatus) {
   const applicants = selectedApplicants.value;
   if (!applicants.length) return;
   if (status === RequestApplicantStatus.Cancelled) {
-    showAlertConfirm('Are you sure', `You want to cancel ${applicants.length} applicants`)
-      .then((response) => {
-        if (response) sendBulkStatus(applicants, status);
-      })
-      .catch((error) => showAlertError(error));
-    return;
+    if (!(await showAlertConfirm('Are you sure', `You want to cancel ${applicants.length} applicants`))) return;
   }
-  sendBulkStatus(applicants, status);
+  await sendBulkStatus(applicants, status);
 }
 
-function sendBulkStatus(applicants: AgencyApplicant[], status: RequestApplicantStatus) {
+async function sendBulkStatus(applicants: AgencyApplicant[], status: RequestApplicantStatus) {
   isBulkUpdating.value = true;
-  changeAgencyApplicantsStatus({ applicantIds: applicants.map((applicant) => applicant.id), status })
-    .then((result) => {
-      isBulkUpdating.value = false;
-      const names = new Map(applicants.map((applicant) => [applicant.id, applicant.name]));
-      reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.applicantId, reason: s.reason })), names, 'applicants');
-      loadApplicants();
-    })
-    .catch((error) => {
-      isBulkUpdating.value = false;
-      showAlertError(error);
-    });
+  try {
+    const result = await changeAgencyApplicantsStatus({ applicantIds: applicants.map((applicant) => applicant.id), status });
+    isBulkUpdating.value = false;
+    const names = new Map(applicants.map((applicant) => [applicant.id, applicant.name]));
+    reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.applicantId, reason: s.reason })), names, 'applicants');
+    await loadApplicants();
+  } catch (error) {
+    isBulkUpdating.value = false;
+    showAlertError(error);
+  }
 }
 
 // The checklist reports its state after every change, so the row's progress
@@ -297,7 +291,7 @@ function compliancePercent(row: AgencyApplicant): number {
 
 function onCellClick(row: AgencyApplicant, column: TableColumnRef) {
   if (column.field === 'name' && row.workerProfileId) {
-    router.push(`/recruiting/workers/${row.workerProfileId}`);
+    void router.push(`/recruiting/workers/${row.workerProfileId}`);
     return;
   }
   if (column.field === 'compliance' || column.field === 'status') {
@@ -313,28 +307,27 @@ function toggleCompliance(row: AgencyApplicant) {
 
 function onPageChange(page: number) {
   serverParams.value.pageIndex = page;
-  loadApplicants();
+  void loadApplicants();
 }
 
-function loadApplicants() {
+async function loadApplicants() {
   isLoading.value = true;
   clearSelection();
   agencyStore.updateAgencyApplicantsFilter({ ...serverParams.value });
-  getAgencyApplicants(serverParams.value)
-    .then((response) => {
-      groups.value = response.items;
-      totalRequests.value = response.totalItems;
-      totalApplicants.value = response.totalApplicants;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyApplicants(serverParams.value);
+    groups.value = response.items;
+    totalRequests.value = response.totalItems;
+    totalApplicants.value = response.totalApplicants;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openRequest(requestId: string) {
-  router.push(`/recruiting/requests/${requestId}`);
+  void router.push(`/recruiting/requests/${requestId}`);
 }
 
 function showAddApplicant(requestId: string) {
@@ -342,19 +335,18 @@ function showAddApplicant(requestId: string) {
   modalAddApplicant.value = true;
 }
 
-function addApplicant(model: CreateRequestApplicantModel) {
+async function addApplicant(model: CreateRequestApplicantModel) {
   if (!addApplicantRequestId.value) return;
   modalAddApplicant.value = false;
   isLoading.value = true;
-  postAgencyRequestApplicant(addApplicantRequestId.value, model)
-    .then(() => {
-      isLoading.value = false;
-      loadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyRequestApplicant(addApplicantRequestId.value, model);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showComments(row: AgencyApplicant) {
@@ -362,20 +354,19 @@ function showComments(row: AgencyApplicant) {
   modalComments.value = true;
 }
 
-function saveComments(comments: string) {
+async function saveComments(comments: string) {
   const applicant = currentApplicant.value;
   if (!applicant) return;
   modalComments.value = false;
   isLoading.value = true;
-  updateAgencyRequestApplicant(applicant.requestId, applicant.id, { comments })
-    .then(() => {
-      applicant.comments = comments;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyRequestApplicant(applicant.requestId, applicant.id, { comments });
+    applicant.comments = comments;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showCandidateDetail(candidateId: string) {
@@ -385,11 +376,11 @@ function showCandidateDetail(candidateId: string) {
 
 function onCandidateUpdated() {
   modalCandidateDetail.value = false;
-  loadApplicants();
+  void loadApplicants();
 }
 
 function openWorker(workerProfileId: string) {
-  router.push(`/recruiting/workers/${workerProfileId}`);
+  void router.push(`/recruiting/workers/${workerProfileId}`);
 }
 
 function showAddRunner(row: AgencyApplicant) {
@@ -397,50 +388,43 @@ function showAddRunner(row: AgencyApplicant) {
   modalAddRunner.value = true;
 }
 
-function addRunner(type: RunnerType) {
+async function addRunner(type: RunnerType) {
   const applicant = currentApplicant.value;
   if (!applicant?.workerProfileId) return;
   modalAddRunner.value = false;
   isLoading.value = true;
-  createAgencyRunner(applicant.requestId, { workerProfileId: applicant.workerProfileId, type })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Runner added');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyRunner(applicant.requestId, { workerProfileId: applicant.workerProfileId, type });
+    isLoading.value = false;
+    showAlertSuccess('Runner added');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function convertToWorker(candidateId: string) {
+async function convertToWorker(candidateId: string) {
   isLoading.value = true;
-  convertCandidateToWorker(candidateId)
-    .then(() => {
-      isLoading.value = false;
-      loadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await convertCandidateToWorker(candidateId);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function removeApplicant(row: AgencyApplicant) {
-  showAlertConfirm('Are you sure', `You want to remove ${row.name} from request ${row.requestNumberId}`)
-    .then((response) => {
-      if (!response) return;
-      isLoading.value = true;
-      deleteAgencyRequestApplicant(row.requestId, row.id)
-        .then(() => {
-          isLoading.value = false;
-          loadApplicants();
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    })
-    .catch((error) => showAlertError(error));
+async function removeApplicant(row: AgencyApplicant) {
+  if (!(await showAlertConfirm('Are you sure', `You want to remove ${row.name} from request ${row.requestNumberId}`))) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyRequestApplicant(row.requestId, row.id);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

@@ -74,7 +74,7 @@ export interface Industry {
 import { computed } from 'vue'
 import IndustryIcon from '@/modules/landing/components/shared/icons/IndustryIcon.vue'
 
-const props = defineProps<{
+const { industry, expanded, index } = defineProps<{
   industry: Industry
   expanded: boolean
   index: number
@@ -85,8 +85,8 @@ defineEmits<{
 }>()
 
 const photoStyle = computed(() => ({
-  backgroundImage: props.industry.photo
-    ? `url(${props.industry.photo})`
+  backgroundImage: industry.photo
+    ? `url(${industry.photo})`
     : 'none',
 }))
 

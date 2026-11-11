@@ -45,7 +45,7 @@ import type { NoteItem, NotesCreatePayload, NotesDeletePayload, NotesFetchPayloa
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
 
-const props = defineProps<{ profileId: string; createdAt?: string }>();
+const { profileId, createdAt } = defineProps<{ profileId: string; createdAt?: string }>();
 
 const showModal = ref(false);
 const notes = ref<NoteItem[]>([]);
@@ -56,16 +56,17 @@ const createNote = ({ userId, model }: NotesCreatePayload) => createAgencyCompan
 const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyCompanyNote(userId, id, model);
 const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCompanyNote(userId, id);
 
-function load() {
-  getAgencyCompanyNotes(props.profileId, { page: 1, size: 3 })
-    .then((response) => {
-      notes.value = response.items;
-      totalItems.value = response.totalItems;
-    })
-    .catch(showAlertError);
+async function load() {
+  try {
+    const response = await getAgencyCompanyNotes(profileId, { page: 1, size: 3 });
+    notes.value = response.items;
+    totalItems.value = response.totalItems;
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-load();
+void load();
 </script>
 
 <style lang="scss" scoped>

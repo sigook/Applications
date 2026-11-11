@@ -22,16 +22,12 @@ import Breadcrumbs from '@/shared/ui/Breadcrumbs.vue';
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
 import type { PageBreadcrumb } from '@/shared/types/common';
 
-withDefaults(defineProps<{
+const { title, crumbs = [], backTo = null, count = null } = defineProps<{
   title: string;
   crumbs?: PageBreadcrumb[];
   backTo?: RouteLocationRaw | null;
   count?: number | null;
-}>(), {
-  crumbs: () => [],
-  backTo: null,
-  count: null,
-});
+}>();
 
 const { isTouch } = useBreakpoint();
 </script>

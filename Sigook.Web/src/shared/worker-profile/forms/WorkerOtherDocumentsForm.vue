@@ -52,8 +52,8 @@ import { createWorkerOtherDocuments } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CovenantFileModel } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeAndUpdate', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeAndUpdate', value: boolean) => void>();
 
 const schema = yup.object({
   description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
@@ -95,11 +95,11 @@ async function saveOtherDocument(values: { description: string }) {
     const payload: CovenantFileModel = { fileName: otherDocument.value.fileName, description: values.description };
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
-    if (fileObjects.otherDocument) {
-      const fn = payload.fileName;
+    const fn = payload.fileName;
+    if (fileObjects.otherDocument && fn) {
       formData.append(fn, fileObjects.otherDocument, fn);
     }
-    await createWorkerOtherDocuments(props.data.id, formData);
+    await createWorkerOtherDocuments(data.id, formData);
     emit('closeAndUpdate', true);
   } catch (error) {
     showAlertError(error);
@@ -110,8 +110,8 @@ async function saveOtherDocument(values: { description: string }) {
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    saveOtherDocument(values);
+  void form.handleSubmit(async (values) => {
+    await saveOtherDocument(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();

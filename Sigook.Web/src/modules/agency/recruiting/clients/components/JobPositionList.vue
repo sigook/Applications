@@ -150,21 +150,16 @@ function closeVueModal() {
   isDuplicate.value = false;
 }
 
-function onDeleteJobPosition(id: string) {
-  showAlertConfirm("Are you sure", "You want to delete this position")
-    .then((response) => {
-      if (response) {
-        isLoading.value = true;
-        deleteAgencyCompanyJobPosition(profileId, id)
-          .then(() => {
-            showAlertSuccess("Deleted");
-            reload();
-          })
-          .catch((error) => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    });
+async function onDeleteJobPosition(id: string) {
+  if (!(await showAlertConfirm("Are you sure", "You want to delete this position"))) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyCompanyJobPosition(profileId, id);
+    showAlertSuccess("Deleted");
+    reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

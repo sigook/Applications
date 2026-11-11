@@ -91,20 +91,19 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({ path: '/company-profile', query: { tab } });
+  void router.push({ path: '/company-profile', query: { tab } });
 }
 
-function onGetProfile() {
+async function onGetProfile() {
   isLoading.value = true;
-  getCompanyProfile()
-    .then((data) => {
-      companyProfile.value = data;
-    })
-    .catch((error: unknown) => showAlertError((error as { data?: unknown }).data))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    companyProfile.value = await getCompanyProfile();
+  } catch (error) {
+    showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-onGetProfile();
+void onGetProfile();
 </script>

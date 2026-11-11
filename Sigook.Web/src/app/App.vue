@@ -49,11 +49,11 @@ const securityStore = useSecurityStore();
 const isANewVersion = ref(false);
 const isLogged = ref(false);
 
-const isCallback = computed(() => route.name === 'callback' || route.meta?.layout === 'auth');
-const isAuthPending = computed(() => !!route.meta?.requiresAuth);
+const isCallback = computed(() => route.name === 'callback' || route.meta.layout === 'auth');
+const isAuthPending = computed(() => !!route.meta.requiresAuth);
 const isLandingRoute = computed(() =>
-  route.meta?.layout === 'landing'
-  || (route.meta?.layout === 'landing-anonymous' && !securityStore.user)
+  route.meta.layout === 'landing'
+  || (route.meta.layout === 'landing-anonymous' && !securityStore.user)
 );
 
 const MOBILE_REGEX = /Android|iPhone|iPod|BlackBerry/i;
@@ -75,7 +75,7 @@ async function getAppVersion() {
 
 function onVisibilityChange() {
   if (document.visibilityState === 'visible') {
-    getAppVersion();
+    void getAppVersion();
   }
 }
 
@@ -103,8 +103,8 @@ if (MOBILE_REGEX.test(navigator.userAgent)) {
 watch(() => route.fullPath, () => setIsLogged(route), { immediate: true });
 
 onMounted(() => {
-  getAppVersion();
-  versionIntervalId = setInterval(getAppVersion, VERSION_CHECK_INTERVAL_MS);
+  void getAppVersion();
+  versionIntervalId = setInterval(() => { void getAppVersion(); }, VERSION_CHECK_INTERVAL_MS);
   document.addEventListener('visibilitychange', onVisibilityChange);
 });
 

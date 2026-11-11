@@ -82,22 +82,17 @@ async function getUsers() {
   users.value = await getCompanyUser();
 }
 
-function deleteUser(id: string) {
-  showAlertConfirm('Are you sure?', 'You want to delete user.')
-    .then(response => {
-      if (response) {
-        isLoading.value = true;
-        deleteCompanyUser(id)
-          .then(async () => {
-            await getUsers();
-            isLoading.value = false;
-          })
-          .catch(error => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    });
+async function deleteUser(id: string) {
+  if (!(await showAlertConfirm('Are you sure?', 'You want to delete user.'))) return;
+  isLoading.value = true;
+  try {
+    await deleteCompanyUser(id);
+    await getUsers();
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 async function updateList() {
@@ -105,7 +100,5 @@ async function updateList() {
   await getUsers();
 }
 
-(async () => {
-  await getUsers();
-})();
+void getUsers();
 </script>

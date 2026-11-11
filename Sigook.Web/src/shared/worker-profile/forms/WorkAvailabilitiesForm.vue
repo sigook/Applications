@@ -26,30 +26,27 @@ import { createWorkerAvailabilities } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CatalogItem } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const availabilities = ref<CatalogItem[]>([]);
 const worker = reactive<{ availabilities: CatalogItem[] }>({ availabilities: [] });
 
-function saveWorkerAvailabilities() {
+async function saveWorkerAvailabilities() {
   isLoading.value = true;
-  createWorkerAvailabilities(props.data.id, worker.availabilities)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerAvailabilities(data.id, worker.availabilities);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-(async () => {
+void (async () => {
   availabilities.value = await getAvailability();
-  if (props.data != null) {
-    worker.availabilities = props.data.availabilities;
-  }
+  worker.availabilities = data.availabilities;
 })();
 </script>

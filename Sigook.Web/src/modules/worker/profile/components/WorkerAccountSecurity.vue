@@ -109,38 +109,41 @@ function openEmailModal() {
 
 function onChangeEmail() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isLoading.value = true;
-    changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail })
-      .then(() => {
-        currentEmail.value = values.userEmail;
-        isEmailModalOpen.value = false;
-        isLoading.value = false;
-        showAlertSuccess('Updated');
-      })
-      .catch((error) => {
-        isLoading.value = false;
-        showAlertError(error);
-      });
+    try {
+      await changeEmail({ newEmail: values.userEmail, confirmNewEmail: values.confirmNewEmail });
+      currentEmail.value = values.userEmail;
+      isEmailModalOpen.value = false;
+      isLoading.value = false;
+      showAlertSuccess('Updated');
+    } catch (error) {
+      isLoading.value = false;
+      showAlertError(error);
+    }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function onDeactivateAccount() {
+async function signOutAndGoHome() {
+  await securityStore.signOut();
+  window.location.assign('/');
+}
+
+async function onDeactivateAccount() {
   isLoading.value = true;
-  deactivateAccount()
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Your account has been deactivated. You will be signed out shortly.');
-      setTimeout(() => {
-        securityStore.signOut().then(() => window.location.assign('/'));
-      }, 2000);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deactivateAccount();
+    isLoading.value = false;
+    showAlertSuccess('Your account has been deactivated. You will be signed out shortly.');
+    setTimeout(() => {
+      void signOutAndGoHome();
+    }, 2000);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function confirmDeactivation() {
@@ -151,44 +154,42 @@ function confirmDeactivation() {
     cancelText: 'Cancel',
     type: 'is-danger',
     hasIcon: true,
-    onConfirm: () => {
-      onDeactivateAccount();
-    },
+    onConfirm: () => onDeactivateAccount(),
   });
 }
 
-function loadNotifications() {
-  getUserNotifications()
-    .then((response) => {
-      notifications.value = response;
-    })
-    .catch((error) => {
-      showAlertError(error);
-    });
-}
-
-function saveNotification(item: UserNotificationItem) {
-  isLoading.value = true;
-  updateUserNotification(item)
-    .then(() => {
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
-}
-
-getEmail()
-  .then((response) => {
-    currentEmail.value = response.email || '';
-    isLoading.value = false;
-  })
-  .catch((error) => {
+async function loadNotifications() {
+  try {
+    notifications.value = await getUserNotifications();
+  } catch (error) {
     showAlertError(error);
+  }
+}
+
+async function saveNotification(item: UserNotificationItem) {
+  isLoading.value = true;
+  try {
+    await updateUserNotification(item);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
     isLoading.value = false;
-  });
-loadNotifications();
+  }
+}
+
+async function loadEmail() {
+  try {
+    const response = await getEmail();
+    currentEmail.value = response.email || '';
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
+}
+
+void loadEmail();
+void loadNotifications();
 </script>
 
 <style lang="scss" scoped>

@@ -42,31 +42,33 @@ import {
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import type { AgencyInvoiceListItem, PayStubDeleteWarningItem } from '@/modules/agency/accounting/invoices/types';
 
-const props = defineProps<{ invoice: AgencyInvoiceListItem }>();
-const emit = defineEmits<{(e: 'deleted'): void}>();
+const { invoice } = defineProps<{ invoice: AgencyInvoiceListItem }>();
+const emit = defineEmits<(e: 'deleted') => void>();
 
 const isLoading = ref(true);
 const rows = ref<PayStubDeleteWarningItem[]>([]);
 const selectedPayStubs = ref<PayStubDeleteWarningItem[]>([]);
 
 async function loadPayStubs() {
-  rows.value = await getPayStubsByInvoice(props.invoice.id);
+  rows.value = await getPayStubsByInvoice(invoice.id);
 }
 
 async function submitDeleteInvoice() {
   isLoading.value = true;
-  await deleteAgencyInvoice({
-    invoiceId: props.invoice.id,
-    payStubs: selectedPayStubs.value.map((payStub) => payStub.payStubId),
-  }).catch((error: unknown) => {
-    isLoading.value = false;
+  try {
+    await deleteAgencyInvoice({
+      invoiceId: invoice.id,
+      payStubs: selectedPayStubs.value.map((payStub) => payStub.payStubId),
+    });
+    emit("deleted");
+  } catch (error) {
     showAlertError(error);
-  });
-  isLoading.value = false;
-  emit("deleted");
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-(async () => {
+void (async () => {
   await loadPayStubs();
   isLoading.value = false;
 })();

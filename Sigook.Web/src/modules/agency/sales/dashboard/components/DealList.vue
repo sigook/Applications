@@ -39,15 +39,12 @@ import { DEAL_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
 import type { Deal } from '@/modules/agency/sales/clients/types';
 import { compactMoney } from '@/modules/agency/sales/dashboard/format';
 
-withDefaults(
-  defineProps<{
-    items: readonly Deal[];
-    loading?: boolean;
-  }>(),
-  { loading: false }
-);
+const { items, loading = false } = defineProps<{
+  items: readonly Deal[];
+  loading?: boolean;
+}>();
 
-const emit = defineEmits<{ (e: 'edit', deal: Deal): void }>();
+const emit = defineEmits<(e: 'edit', deal: Deal) => void>();
 </script>
 
 <style scoped lang="scss">

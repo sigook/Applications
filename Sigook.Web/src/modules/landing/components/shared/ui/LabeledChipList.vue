@@ -22,15 +22,12 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { label, items, moreLabel, moreTo } = defineProps<{
   label: string
   items: readonly string[]
   moreLabel?: string
   moreTo?: string
-}>(), {
-  moreLabel: undefined,
-  moreTo: undefined,
-})
+}>()
 </script>
 
 <style scoped>

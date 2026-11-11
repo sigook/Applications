@@ -49,7 +49,7 @@ import type { NoteItem, NotesFetchPayload, NotesCreatePayload, NotesUpdatePayloa
 import type { PaginatedList } from '@/shared/types/common';
 import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
 
-defineProps<{ canEdit?: boolean }>();
+const { canEdit: _canEdit } = defineProps<{ canEdit?: boolean }>();
 
 const route = useRoute();
 
@@ -61,20 +61,18 @@ const updateNote = ({ userId, id, model }: NotesUpdatePayload) => updateAgencyRe
 const deleteNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyRequestNote(userId, id);
 const notesList = ref<PaginatedList<NoteItem> | null>(null);
 
-function loadFirstNotes() {
-    getAgencyRequestNotes(profileId, { page: 1, size: 3 })
-        .then(response => {
-            notesList.value = response;
-        })
-        .catch(error => {
-            showAlertError(error);
-        });
+async function loadFirstNotes() {
+    try {
+        notesList.value = await getAgencyRequestNotes(profileId, { page: 1, size: 3 });
+    } catch (error) {
+        showAlertError(error);
+    }
 }
 
 function onCloseModalNotes() {
     showModalNotes.value = false;
-    loadFirstNotes();
+    void loadFirstNotes();
 }
 
-loadFirstNotes();
+void loadFirstNotes();
 </script>

@@ -128,7 +128,7 @@ export function getAgencyRequestApplicant(filter: AgencyRequestApplicantFilter):
 }
 
 export function getAgencyApplicants(filter: AgencyApplicantsFilter): Promise<AgencyApplicantsPagedResponse> {
-  return api.get<AgencyApplicantsPagedResponse>(`${recruitingApplicantsUrl}`, { params: { ...filter } });
+  return api.get<AgencyApplicantsPagedResponse>(recruitingApplicantsUrl, { params: { ...filter } });
 }
 
 export function postAgencyRequestApplicant(requestId: string, model: CreateRequestApplicantModel): Promise<AgencyRequestApplicant> {

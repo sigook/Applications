@@ -1,8 +1,8 @@
 <template>
   <nav class="worker-card worker-profile-index" aria-label="Profile sections">
     <span class="worker-card-eyebrow">On this page</span>
-    <a v-for="section in props.sections" :key="section.id" :href="`#${workerSectionAnchor(section.id)}`"
-      class="worker-profile-index-link" :class="{ 'is-active': section.id === props.activeId }"
+    <a v-for="section in sections" :key="section.id" :href="`#${workerSectionAnchor(section.id)}`"
+      class="worker-profile-index-link" :class="{ 'is-active': section.id === activeId }"
       @click.prevent="emit('select', section.id)">
       <span>{{ section.label }}</span>
       <span v-if="section.pendingCount > 0" class="worker-count is-warning">{{ section.pendingCount }}</span>
@@ -11,9 +11,9 @@
     </a>
     <div class="worker-profile-completeness">
       <span class="worker-profile-completeness-label">Profile completeness</span>
-      <progress class="worker-progress" :value="props.completeness" max="100">{{ props.completeness }}%</progress>
+      <progress class="worker-progress" :value="completeness" max="100">{{ completeness }}%</progress>
       <span class="worker-profile-completeness-value">
-        {{ props.completeness }}%<template v-if="props.missingLabels.length"> · missing {{ props.missingLabels.join(', ').toLowerCase() }}</template>
+        {{ completeness }}%<template v-if="missingLabels.length"> · missing {{ missingLabels.join(', ').toLowerCase() }}</template>
       </span>
     </div>
   </nav>
@@ -23,13 +23,13 @@
 import { workerSectionAnchor } from '@/shared/worker-profile/useWorkerProfileStatus';
 import type { WorkerProfileSection, WorkerProfileSectionId } from '@/shared/worker-profile/types';
 
-const props = defineProps<{
+const { sections, activeId, completeness, missingLabels } = defineProps<{
   sections: WorkerProfileSection[];
   completeness: number;
   missingLabels: string[];
   activeId: WorkerProfileSectionId | null;
 }>();
-const emit = defineEmits<{ (e: 'select', id: WorkerProfileSectionId): void }>();
+const emit = defineEmits<(e: 'select', id: WorkerProfileSectionId) => void>();
 </script>
 
 <style lang="scss" scoped>

@@ -234,7 +234,7 @@ const billingTitle = computed(() =>
 const employmentLabel = computed(() => {
   const r = request.value;
   if (!r) return '';
-  return [EmploymentTypeLabels[r.employmentType as EmploymentType], DurationTermLabels[r.durationTerm as DurationTerm]]
+  return [EmploymentTypeLabels[r.employmentType], DurationTermLabels[r.durationTerm]]
     .filter(Boolean).join(' · ');
 });
 
@@ -305,8 +305,8 @@ const staffing = computed(() => {
   });
 });
 
-loadRequest();
-if (route.query && route.query.tab) {
+void loadRequest();
+if (route.query.tab) {
   const requestedTab = route.query.tab as string;
   const tab = requestedTab === 'Runners' && !hasRecruitingAccess.value ? 'Detail' : requestedTab;
   currentTab.value = tab;
@@ -320,8 +320,8 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: `${requestBase.value}/${route.params.id}`,
+  void router.push({
+    path: `${requestBase.value}/${String(route.params.id)}`,
     query: { tab: tab },
   });
 }
@@ -353,111 +353,112 @@ function onRoleUpdated() {
     return;
   }
   showAlertSuccess('Role updated');
-  loadRequest();
+  void loadRequest();
 }
 
-function loadRequest() {
+async function loadRequest() {
   isLoading.value = true;
-  getAgencyRequest(route.params.id as string)
-    .then((response) => {
-      request.value = response;
-      setCanSendInvitation(response);
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyRequest(route.params.id as string);
+    request.value = response;
+    void setCanSendInvitation(response);
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function refreshCounts() {
-  getAgencyRequest(route.params.id as string)
-    .then((response) => {
-      if (!request.value) return;
-      request.value.applicantsCount = response.applicantsCount;
-      request.value.runnersCount = response.runnersCount;
-      request.value.workersCount = response.workersCount;
-      request.value.workersQuantityWorking = response.workersQuantityWorking;
-      request.value.status = response.status;
-    })
-    .catch((error) => showAlertError(error));
+async function refreshCounts() {
+  try {
+    const response = await getAgencyRequest(route.params.id as string);
+    if (!request.value) return;
+    request.value.applicantsCount = response.applicantsCount;
+    request.value.runnersCount = response.runnersCount;
+    request.value.workersCount = response.workersCount;
+    request.value.workersQuantityWorking = response.workersQuantityWorking;
+    request.value.status = response.status;
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {
+async function onCancelRequest(reason: { reasonId: string; otherMessage: string }) {
   if (!request.value) return;
   cancelRequestModal.value = false;
   isLoading.value = true;
-  cancelAgencyRequest(request.value.id, {
-    cancellationReasonId: reason.reasonId,
-    otherCancellationReason: reason.otherMessage,
-  })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Cancelled');
-      router.push(requestBase.value);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    await cancelAgencyRequest(request.value.id, {
+      cancellationReasonId: reason.reasonId,
+      otherCancellationReason: reason.otherMessage,
     });
+    isLoading.value = false;
+    showAlertSuccess('Cancelled');
+    void router.push(requestBase.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateShift(shift: string) {
-  if (request.value) request.value.displayShift = shift;
+function updateShift(shift: string | undefined) {
+  if (request.value && shift) request.value.displayShift = shift;
   showShiftModal.value = false;
 }
 
-function onOpenRequest() {
+async function onOpenRequest() {
   if (!request.value) return;
   isLoading.value = true;
-  agencyRequestOpen(request.value.id)
-    .then(() => {
-      isLoading.value = false;
-      if (request.value) request.value.status = RequestStatus.Open;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await agencyRequestOpen(request.value.id);
+    isLoading.value = false;
+    request.value.status = RequestStatus.Open;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function onToggleIsAsap() {
+async function onToggleIsAsap() {
   if (!request.value) return;
   isLoading.value = true;
-  updateAgencyRequestIsAsap(request.value.id)
-    .then(() => {
-      isLoading.value = false;
-      if (request.value) request.value.isAsap = !request.value.isAsap;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyRequestIsAsap(request.value.id);
+    isLoading.value = false;
+    request.value.isAsap = !request.value.isAsap;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function onIncreaseWorkersQuantity() {
+async function onIncreaseWorkersQuantity() {
   if (!request.value) return;
   isLoading.value = true;
-  increaseWorkersQuantityByOne(request.value.id)
-    .then(loadRequest)
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await increaseWorkersQuantityByOne(request.value.id);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    return;
+  }
+  await loadRequest();
 }
 
-function onReduceWorkersQuantity() {
+async function onReduceWorkersQuantity() {
   if (!request.value) return;
   isLoading.value = true;
-  reduceWorkersQuantityByOne(request.value.id)
-    .then(loadRequest)
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await reduceWorkersQuantityByOne(request.value.id);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    return;
+  }
+  await loadRequest();
 }
 
-function setCanSendInvitation(r: AgencyRequestDetail) {
+async function setCanSendInvitation(r: AgencyRequestDetail) {
   if (r.status === RequestStatus.Filled) {
     canSendInvitation.value = false;
     return;
@@ -467,31 +468,26 @@ function setCanSendInvitation(r: AgencyRequestDetail) {
     return;
   }
   const sentAt = r.invitationSentItAt;
-  appStore.getCurrentDate().then((now: Date) => {
-    const nextAllowed = new Date(sentAt);
-    nextAllowed.setDate(nextAllowed.getDate() + 7);
-    canSendInvitation.value = nextAllowed <= now;
-  });
+  const now = await appStore.getCurrentDate();
+  const nextAllowed = new Date(sentAt);
+  nextAllowed.setDate(nextAllowed.getDate() + 7);
+  canSendInvitation.value = nextAllowed <= now;
 }
 
-function sendInvitation() {
+async function sendInvitation() {
   if (!request.value) return;
   const id = request.value.id;
-  showAlertConfirm('Are you sure?', warningMessage).then((response) => {
-    if (response) {
-      isLoading.value = true;
-      agencyRequestSendInvitation(id)
-        .then(() => {
-          canSendInvitation.value = false;
-          isLoading.value = false;
-          showAlertSuccess('Sent it!');
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    }
-  });
+  if (!(await showAlertConfirm('Are you sure?', warningMessage))) return;
+  isLoading.value = true;
+  try {
+    await agencyRequestSendInvitation(id);
+    canSendInvitation.value = false;
+    isLoading.value = false;
+    showAlertSuccess('Sent it!');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>
 

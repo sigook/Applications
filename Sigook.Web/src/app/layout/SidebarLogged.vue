@@ -54,7 +54,7 @@
           <b-menu-list>
             <template v-for="(group, i) in menuGroups" :key="i">
               <b-menu-item v-if="group.label" :title="group.label" class="sidebar-group"
-                :ref="(el) => setGroupRef(el, i)" :model-value="isGroupActive(group)"
+                :ref="(el: unknown) => setGroupRef(el, i)" :model-value="isGroupActive(group)"
                 @update:expanded="expandedGroups[i] = $event">
                 <template #label="{ expanded }">
                   <span class="sidebar-group-label">
@@ -210,7 +210,7 @@ watch(() => route.fullPath, () => { isOpen.value = false; });
 const profileUrl = ref('');
 const menuGroups = ref<MenuGroup[]>([]);
 const expandedGroups = ref<boolean[]>([]);
-const groupRefs = ref<Array<{ newExpanded: boolean } | null>>([]);
+const groupRefs = ref<({ newExpanded: boolean } | null)[]>([]);
 
 function setGroupRef(el: unknown, index: number) {
   groupRefs.value[index] = el as { newExpanded: boolean } | null;
@@ -247,9 +247,10 @@ function isGroupActive(group: MenuGroup): boolean {
   return group.items.some((item) => isActive(item.to));
 }
 
-function logout() {
+async function logout() {
   isLoading.value = true;
-  securityStore.signOut().then(() => router.push('/'));
+  await securityStore.signOut();
+  await router.push('/');
 }
 
 async function getAgencyInfo() {
@@ -269,6 +270,7 @@ async function getCompanyInfo() {
 
 async function getCompanyUserInfo() {
   const user = await securityStore.getUser();
+  if (!user) return;
   currentUser.value.fullName = user.profile.name;
   currentUser.value.profileImage = null;
   profileUrl.value = '/company-user-profile';
@@ -286,18 +288,18 @@ function landingPathAfterSwitch(): string {
   if (Object.keys(route.params).length === 0) return route.fullPath;
   const parent = router.getRoutes()
     .filter((r) => !r.redirect && !r.path.includes(':') && route.path.startsWith(`${r.path}/`))
-    .sort((a, b) => b.path.length - a.path.length)[0];
+    .sort((a, b) => b.path.length - a.path.length)
+    .at(0);
   return parent?.path ?? menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
 }
 
-function switchAgency(agency: { id: string; isPrimary: boolean }) {
+async function switchAgency(agency: { id: string; isPrimary: boolean }) {
   if (agency.isPrimary) return;
   isLoading.value = true;
   const target = landingPathAfterSwitch();
-  switchPersonnelAgency(agency.id).then(() => {
-    if (target === route.fullPath) window.location.reload();
-    else window.location.assign(target);
-  });
+  await switchPersonnelAgency(agency.id);
+  if (target === route.fullPath) window.location.reload();
+  else window.location.assign(target);
 }
 
 async function init() {
@@ -323,12 +325,12 @@ async function init() {
   }
   menuGroups.value = menu.getMenu(userRoles, agencyStore.agency);
   expandedGroups.value = menuGroups.value.map(() => false);
-  if (isAgency.value) loadNotifications();
+  if (isAgency.value) void loadNotifications();
   await nextTick();
   expandActiveGroup();
 }
 
-init();
+void init();
 </script>
 
 <style lang="scss">

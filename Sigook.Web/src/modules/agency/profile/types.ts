@@ -98,7 +98,7 @@ export interface AgencyContactInformation {
 export interface AgencyLocationDetail {
   id?: string;
   address: string;
-  city: City;
+  city: City | null;
   province?: Province;
   postalCode: string;
   formattedAddress?: string;
@@ -117,7 +117,7 @@ export interface AgencyPersonnelListItem {
   id: string;
   userId: string;
   name: string;
-  email: string;
+  email: string | null;
   role: string;
 }
 

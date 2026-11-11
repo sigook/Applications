@@ -39,7 +39,7 @@ const isLoading = ref(false);
 const serverParams = ref<AgencyReportFilter>({});
 
 function onDatesSelected() {
-  if (dates.value && dates.value.length === 2) {
+  if (dates.value.length === 2) {
     serverParams.value.startDate = dayjs(dates.value[0]).format('YYYY-MM-DD');
     serverParams.value.endDate = dayjs(dates.value[1]).format('YYYY-MM-DD');
   }
@@ -50,14 +50,13 @@ async function getReport() {
   const { valid } = await form.validate();
   if (!valid) return;
   isLoading.value = true;
-  getCraPayrollReport(serverParams.value)
-    .then(response => {
-      isLoading.value = false;
-      downloadFile(response, `CRA_Payroll_${serverParams.value.startDate}_${serverParams.value.endDate}`);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getCraPayrollReport(serverParams.value);
+    isLoading.value = false;
+    downloadFile(response, `CRA_Payroll_${serverParams.value.startDate}_${serverParams.value.endDate}`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

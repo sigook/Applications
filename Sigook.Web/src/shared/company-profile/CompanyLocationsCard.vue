@@ -29,7 +29,7 @@ import { showAlertError } from '@/shared/utils/toast';
 import { mapsEmbedUrl } from '@/shared/request-detail/requestDetail';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 
-const props = defineProps<{ fetchLocations: () => Promise<LocationDetailModel[]> }>();
+const { fetchLocations } = defineProps<{ fetchLocations: () => Promise<LocationDetailModel[]> }>();
 const emit = defineEmits<{
   (e: 'showAll'): void;
   (e: 'loaded', count: number): void;
@@ -44,18 +44,19 @@ function cityLine(location: LocationDetailModel) {
   return [location.city?.value, location.city?.province?.code, location.postalCode].filter(Boolean).join(', ');
 }
 
-function load() {
-  props.fetchLocations()
-    .then((response) => {
-      locations.value = response;
-      emit('loaded', response.length);
-    })
-    .catch(showAlertError);
+async function load() {
+  try {
+    const response = await fetchLocations();
+    locations.value = response;
+    emit('loaded', response.length);
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 defineExpose({ load });
 
-load();
+void load();
 </script>
 
 <style lang="scss" scoped>

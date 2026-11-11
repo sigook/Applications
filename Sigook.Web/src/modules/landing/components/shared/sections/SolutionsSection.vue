@@ -80,7 +80,7 @@ import ArrowPillCta from '@/modules/landing/components/shared/ui/ArrowPillCta.vu
 import SecondaryCard from '@/modules/landing/components/shared/cards/SecondaryCard.vue'
 import TempToPermDetail from '@/modules/landing/components/shared/sections/TempToPermDetail.vue'
 
-defineProps<{
+const { sectionId, eyebrow, heading, headingAccent, subtitle, options } = defineProps<{
   sectionId: string
   eyebrow: string
   heading: string

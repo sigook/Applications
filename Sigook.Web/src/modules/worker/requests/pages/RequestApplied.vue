@@ -57,28 +57,27 @@ function changeTab(tab: string) {
   }
 }
 
-function refreshRequest() {
-  getWorkerRequest(route.params.id as string)
-    .then((response) => {
-      request.value = response;
-    })
-    .catch(() => undefined);
+async function refreshRequest() {
+  try {
+    request.value = await getWorkerRequest(route.params.id as string);
+  } catch {
+    return;
+  }
 }
 
-function getWorkerRequestFn() {
-  getWorkerRequest(route.params.id as string)
-    .then((response) => {
-      isLoading.value = false;
-      request.value = response;
-      if (route.query.tab === 'punch' && response.punchCardOptionEnabled) {
-        currentTab.value = 'Punch Card';
-        changeTab('Punch Card');
-      }
-    })
-    .catch(() => {
-      isLoading.value = false;
-    });
+async function getWorkerRequestFn() {
+  try {
+    const response = await getWorkerRequest(route.params.id as string);
+    isLoading.value = false;
+    request.value = response;
+    if (route.query.tab === 'punch' && response.punchCardOptionEnabled) {
+      currentTab.value = 'Punch Card';
+      changeTab('Punch Card');
+    }
+  } catch {
+    isLoading.value = false;
+  }
 }
 
-getWorkerRequestFn();
+void getWorkerRequestFn();
 </script>

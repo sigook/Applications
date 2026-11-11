@@ -42,7 +42,7 @@ export interface BulkRunnerStatus {
   startDate?: string | null;
 }
 
-defineProps<{ count: number; isSaving?: boolean }>();
+const { count, isSaving } = defineProps<{ count: number; isSaving?: boolean }>();
 const emit = defineEmits<{ (e: 'submit', value: BulkRunnerStatus): void; (e: 'close'): void }>();
 
 // 'Interview rescheduled' is assigned automatically when an interview is
@@ -70,7 +70,7 @@ const errors = form.errors;
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(
+  void form.handleSubmit(
     (values) => {
       if (values.status === null) return;
       emit('submit', {

@@ -7,8 +7,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ count: number }>();
-const emit = defineEmits<{ (e: 'clear'): void }>();
+const { count } = defineProps<{ count: number }>();
+const emit = defineEmits<(e: 'clear') => void>();
 </script>
 
 <style scoped lang="scss">

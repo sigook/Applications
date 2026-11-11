@@ -1,7 +1,7 @@
 import type { DetailChipVariant, DetailFact, DetailKpi } from '@/shared/detail-page/types';
 import type { ComplianceDocumentTarget } from '@/shared/request-detail/requestApplicant';
 import type { LocationDetailModel } from '@/shared/types/common';
-import type { WorkerRequestFinishReason } from '@/shared/constants/enums';
+import type { DurationTerm, EmploymentType, RequestStatus, WorkerRequestFinishReason } from '@/shared/constants/enums';
 
 export type RequestChipVariant = DetailChipVariant;
 
@@ -10,7 +10,7 @@ export type RequestFact = DetailFact;
 export type RequestKpi = DetailKpi;
 
 export interface RequestStatusSource {
-  status: number;
+  status: RequestStatus;
   workersQuantity: number;
   workersQuantityWorking: number;
 }
@@ -52,8 +52,8 @@ export interface CreateAgencyRequestModel {
   anotherLocation?: LocationDetailModel | null;
   locationId?: string | null;
   jobPositionRateId?: string | null;
-  durationTerm: number;
-  employmentType: number;
+  durationTerm: DurationTerm;
+  employmentType: EmploymentType;
   companyProfileId: string;
   agencyId?: string;
   startAt: string;

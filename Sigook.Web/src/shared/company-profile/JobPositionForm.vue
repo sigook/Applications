@@ -47,7 +47,7 @@
           </b-input>
         </b-field>
       </div>
-      <div class="column is-12" v-if="props.currentPosition">
+      <div class="column is-12" v-if="currentPosition">
         <shift v-if="model.shift" :is-update="true" :current-shift="model.shift"
           @updateModel="(shift) => model.shift = shift" />
       </div>
@@ -71,18 +71,18 @@ import { showAlertError } from "@/shared/utils/toast";
 import Shift from "@/shared/request-detail/ShiftsForm.vue";
 import type { JobPositionModel } from '@/shared/company-profile/types';
 
-const props = defineProps<{
+const { currentPosition, kind, isDuplicate, create, update, load } = defineProps<{
   kind: 'full' | 'basic';
-  create: (model: JobPositionModel) => Promise<{ id: string }>;
+  create: (model: JobPositionModel) => Promise<{ id: string } | null>;
   update?: (id: string, model: JobPositionModel) => Promise<void>;
   load?: (id: string) => Promise<JobPositionModel>;
   currentPosition?: JobPositionModel | null;
   isDuplicate?: boolean;
 }>();
-const emit = defineEmits<{ (e: 'updateContent', id?: string): void }>();
+const emit = defineEmits<(e: 'updateContent', id?: string) => void>();
 
-const isFull = computed(() => props.kind === 'full');
-const isUpdate = computed(() => !!props.currentPosition && !props.isDuplicate);
+const isFull = computed(() => kind === 'full');
+const isUpdate = computed(() => !!currentPosition && !isDuplicate);
 
 const rateRef = ref<number | null>(null);
 const workerRateRef = ref<number | null>(null);
@@ -138,8 +138,8 @@ const form = useStickyForm<{
 const { jobPosition, rate, workerRate, workerRateMax, overtimeStartsAfter, description } = form.fields;
 const formErrors = form.errors;
 
-watch(rate, (v) => { rateRef.value = (v as number | null) ?? null; });
-watch(workerRate, (v) => { workerRateRef.value = (v as number | null) ?? null; });
+watch(rate, (v) => { rateRef.value = (v) ?? null; });
+watch(workerRate, (v) => { workerRateRef.value = (v) ?? null; });
 
 const isLoading = ref(false);
 const model = ref<JobPositionModel>({
@@ -152,7 +152,7 @@ const model = ref<JobPositionModel>({
 
 function validateForm() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     const payload: JobPositionModel = {
       ...model.value,
       jobPosition: values.jobPosition,
@@ -165,52 +165,54 @@ function validateForm() {
       payload.workerRateMax = values.workerRateMax;
       payload.overtimeStartsAfter = values.overtimeStartsAfter;
     }
-    if (isUpdate.value && props.currentPosition?.id && props.update) {
-      save(props.update(props.currentPosition.id, payload).then(() => props.currentPosition?.id));
+    const id = currentPosition?.id;
+    if (isUpdate.value && id && update) {
+      await save(async () => {
+        await update(id, payload);
+        return id;
+      });
     } else {
-      save(props.create(payload).then((response) => response?.id));
+      await save(async () => (await create(payload))?.id);
     }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function save(request: Promise<string | undefined>) {
+async function save(request: () => Promise<string | undefined>) {
   isLoading.value = true;
-  request
-    .then((id) => {
-      isLoading.value = false;
-      emit('updateContent', id);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const id = await request();
+    isLoading.value = false;
+    emit('updateContent', id);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function loadJobPosition(id: string) {
-  if (!props.load) return;
+async function loadJobPosition(id: string) {
+  if (!load) return;
   isLoading.value = true;
-  props.load(id)
-    .then((response) => {
-      model.value = props.isDuplicate ? { ...response, id: undefined } : response;
-      form.hydrate({
-        jobPosition: response.jobPosition || '',
-        rate: response.rate || null,
-        workerRate: response.workerRate || null,
-        workerRateMax: response.workerRateMax ?? null,
-        overtimeStartsAfter: response.overtimeStartsAfter ?? null,
-        description: response.description || '',
-      });
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const response = await load(id);
+    model.value = isDuplicate ? { ...response, id: undefined } : response;
+    form.hydrate({
+      jobPosition: response.jobPosition || '',
+      rate: response.rate === 0 ? null : response.rate ?? null,
+      workerRate: response.workerRate === 0 ? null : response.workerRate ?? null,
+      workerRateMax: response.workerRateMax ?? null,
+      overtimeStartsAfter: response.overtimeStartsAfter ?? null,
+      description: response.description || '',
     });
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-if (props.currentPosition?.id) {
-  loadJobPosition(props.currentPosition.id);
+if (currentPosition?.id) {
+  void loadJobPosition(currentPosition.id);
 }
 </script>

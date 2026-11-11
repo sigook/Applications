@@ -40,8 +40,8 @@ import type { PaginatedList } from "@/shared/types/common";
 import type { CandidateDocument } from "@/modules/agency/recruiting/candidates/types";
 import DocumentsForm from "@/modules/agency/recruiting/candidates/components/DocumentsForm.vue";
 
-const props = defineProps<{ candidateId: number | string }>();
-const emit = defineEmits<{ (e: 'close'): void }>();
+const { candidateId } = defineProps<{ candidateId: number | string }>();
+const emit = defineEmits<(e: 'close') => void>();
 
 const isLoading = ref(false);
 const documents = ref<PaginatedList<CandidateDocument> | null>(null);
@@ -49,32 +49,30 @@ const showForm = ref(false);
 
 const items = computed(() => documents.value?.items ?? []);
 
-function loadDocuments() {
+async function loadDocuments() {
   isLoading.value = true;
-  getCandidateDocuments(String(props.candidateId))
-    .then((response) => {
-      isLoading.value = false;
-      documents.value = response;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getCandidateDocuments(String(candidateId));
+    isLoading.value = false;
+    documents.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function onDeleteDocument(id: string, index: number) {
+async function onDeleteDocument(id: string, index: number) {
   isLoading.value = true;
-  deleteCandidateDocument(String(props.candidateId), id)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess("Deleted");
-      documents.value?.items.splice(index, 1);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteCandidateDocument(String(candidateId), id);
+    isLoading.value = false;
+    showAlertSuccess("Deleted");
+    documents.value?.items.splice(index, 1);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-loadDocuments();
+void loadDocuments();
 </script>

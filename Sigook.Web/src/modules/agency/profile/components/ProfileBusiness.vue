@@ -22,7 +22,7 @@
       </div>
       <div class="column is-3">
         <phone-input ref="phoneComponent" :required="true" :defaultValue="localAgencyData.phonePrincipal"
-          model="Phone Principal" @formattedPhone="(phone) => (localAgencyData.phonePrincipal = phone)">
+          model="Phone Principal" @formattedPhone="(phone: string | null) => (localAgencyData.phonePrincipal = phone ?? undefined)">
         </phone-input>
       </div>
       <div class="column is-3">
@@ -53,7 +53,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertSuccess } from "@/shared/utils/toast";
@@ -84,37 +84,37 @@ const schema = yup.object({
     .matches(urlRegex, { message: 'Invalid URL', excludeEmptyString: true }),
 });
 
-const props = defineProps<{ agencyData: AgencyDetail }>();
-const emit = defineEmits<{ (e: 'update:agencyData', data: AgencyDetail): void }>();
+const { agencyData } = defineProps<{ agencyData: AgencyDetail }>();
+const emit = defineEmits<(e: 'update:agencyData', data: AgencyDetail) => void>();
 
 const form = useStickyForm({
   schema,
   initialValues: {
-    fullName: props.agencyData?.fullName || '',
-    hstNumber: props.agencyData?.hstNumber || '',
-    businessNumber: props.agencyData?.businessNumber || '',
-    phonePrincipalExt: props.agencyData?.phonePrincipalExt != null ? String(props.agencyData.phonePrincipalExt) : '',
-    webPage: props.agencyData?.webPage || '',
+    fullName: agencyData.fullName || '',
+    hstNumber: agencyData.hstNumber || '',
+    businessNumber: agencyData.businessNumber || '',
+    phonePrincipalExt: agencyData.phonePrincipalExt != null ? String(agencyData.phonePrincipalExt) : '',
+    webPage: agencyData.webPage || '',
   },
 });
 const { fullName, hstNumber, businessNumber, phonePrincipalExt, webPage } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const localAgencyData = ref<AgencyDetail>(JSON.parse(JSON.stringify(props.agencyData)));
+const localAgencyData = ref<AgencyDetail>(JSON.parse(JSON.stringify(agencyData)));
 const wsibGroups = ref<WsibGroup[]>([]);
-const phoneComponent = ref<InstanceType<typeof phoneInput> | null>(null);
+const phoneComponent = useTemplateRef<InstanceType<typeof phoneInput>>('phoneComponent');
 
 watch(
-  () => props.agencyData,
+  () => agencyData,
   (newVal) => {
     localAgencyData.value = JSON.parse(JSON.stringify(newVal));
     form.hydrate({
-      fullName: newVal?.fullName || '',
-      hstNumber: newVal?.hstNumber || '',
-      businessNumber: newVal?.businessNumber || '',
-      phonePrincipalExt: newVal?.phonePrincipalExt != null ? String(newVal.phonePrincipalExt) : '',
-      webPage: newVal?.webPage || '',
+      fullName: newVal.fullName || '',
+      hstNumber: newVal.hstNumber || '',
+      businessNumber: newVal.businessNumber || '',
+      phonePrincipalExt: newVal.phonePrincipalExt != null ? String(newVal.phonePrincipalExt) : '',
+      webPage: newVal.webPage || '',
     });
   },
   { deep: true }
@@ -122,8 +122,8 @@ watch(
 
 async function validateForm() {
   form.markInteracted();
-  const phoneValid = await phoneComponent.value.validatePhone();
-  form.handleSubmit((values) => {
+  const phoneValid = await phoneComponent.value?.validatePhone();
+  await form.handleSubmit(async (values) => {
     if (!phoneValid) return;
     isLoading.value = true;
     const updated = {
@@ -135,28 +135,28 @@ async function validateForm() {
       webPage: values.webPage,
     };
     emit('update:agencyData', updated);
-    updateAgency(updated)
-      .then(() => {
-        isLoading.value = false;
-        showAlertSuccess("Updated");
-      })
-      .catch(() => {
-        isLoading.value = false;
-      });
+    try {
+      await updateAgency(updated);
+      isLoading.value = false;
+      showAlertSuccess("Updated");
+    } catch {
+      isLoading.value = false;
+    }
   })();
 }
 
 function beforeWsibBeingSelected(tag: WsibGroup) {
-  return !localAgencyData.value.wsibGroup.some((item) => item.value === tag.value);
+  return !(localAgencyData.value.wsibGroup ?? []).some((item) => item.value === tag.value);
 }
 
 isLoading.value = true;
-getWsibGroups()
-  .then((response) => {
+void (async () => {
+  try {
+    const response = await getWsibGroups();
     isLoading.value = false;
     wsibGroups.value = response;
-  })
-  .catch(() => {
+  } catch {
     isLoading.value = false;
-  });
+  }
+})();
 </script>

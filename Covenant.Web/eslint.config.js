@@ -1,4 +1,3 @@
-// eslint.config.js
 import js from '@eslint/js'
 import pluginVue from 'eslint-plugin-vue'
 import vueParser from 'vue-eslint-parser'
@@ -7,18 +6,14 @@ import tsparser from '@typescript-eslint/parser'
 import globals from 'globals'
 
 export default [
-  // Ignores
   {
-    ignores: ['dist/**', 'node_modules/**', '*.config.js']
+    ignores: ['dist/**', 'node_modules/**', 'coverage/**', '*.config.js']
   },
 
-  // Base JS config
   js.configs.recommended,
 
-  // Vue 3 essential rules
   ...pluginVue.configs['flat/essential'],
 
-  // Custom config for Vue files with TypeScript
   {
     files: ['**/*.vue'],
     languageOptions: {
@@ -26,7 +21,10 @@ export default [
       parserOptions: {
         parser: tsparser,
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname,
+        extraFileExtensions: ['.vue']
       },
       globals: {
         ...globals.browser,
@@ -34,7 +32,6 @@ export default [
         defineProps: 'readonly',
         defineEmits: 'readonly',
         defineExpose: 'readonly',
-        withDefaults: 'readonly',
         defineOptions: 'readonly',
         File: 'readonly',
         FormData: 'readonly',
@@ -46,14 +43,15 @@ export default [
     }
   },
 
-  // Custom config for TypeScript files
   {
     files: ['**/*.{ts,tsx}'],
     languageOptions: {
       parser: tsparser,
       parserOptions: {
         ecmaVersion: 'latest',
-        sourceType: 'module'
+        sourceType: 'module',
+        project: './tsconfig.json',
+        tsconfigRootDir: import.meta.dirname
       },
       globals: {
         ...globals.browser,
@@ -68,15 +66,51 @@ export default [
     }
   },
 
-  // Custom rules
   {
+    plugins: {
+      '@typescript-eslint': tseslint
+    },
     rules: {
-      // Desactiva reglas que causan problemas comunes
       'vue/multi-word-component-names': 'off',
-      'vue/valid-v-slot': 'off', // Vuetify uses slots like v-slot:item.1 for steppers
-      // Agrega tus reglas personalizadas aquí
-      // 'no-console': 'warn',
+      'vue/valid-v-slot': 'off',
+      'no-unused-vars': 'off',
+      'no-undef': 'off',
+      'no-redeclare': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^(_|[A-Z])'
+        }
+      ],
+      '@typescript-eslint/no-explicit-any': 'error',
+      '@typescript-eslint/no-non-null-assertion': 'warn'
+    }
+  },
+
+  {
+    files: ['*.config.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: null
+      }
+    }
+  },
+
+  {
+    files: ['**/*.{ts,tsx,vue}'],
+    ignores: ['*.config.ts'],
+    rules: {
+      '@typescript-eslint/no-floating-promises': 'error',
+      '@typescript-eslint/no-misused-promises': 'error',
+      '@typescript-eslint/use-unknown-in-catch-callback-variable': 'error',
+      '@typescript-eslint/require-await': 'error',
+      '@typescript-eslint/return-await': 'error',
+      '@typescript-eslint/no-unnecessary-condition': 'error',
+      '@typescript-eslint/prefer-nullish-coalescing': ['error', { ignorePrimitives: { string: true } }],
+      '@typescript-eslint/restrict-template-expressions': ['error', { allowNumber: true }],
+      'vue/define-props-destructuring': 'error',
+      'vue/prefer-use-template-ref': 'error'
     }
   }
 ]
-

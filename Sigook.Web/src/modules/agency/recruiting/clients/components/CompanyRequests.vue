@@ -11,7 +11,7 @@ import { ref } from 'vue';
 import TableRequests from '@/modules/agency/recruiting/requests/components/TableRequests.vue';
 import type { AgencyCompanyProfileDetail } from '@/modules/agency/recruiting/clients/types';
 
-defineProps<{ company: AgencyCompanyProfileDetail }>();
+const { company } = defineProps<{ company: AgencyCompanyProfileDetail }>();
 
 const isLoading = ref(true);
 </script>

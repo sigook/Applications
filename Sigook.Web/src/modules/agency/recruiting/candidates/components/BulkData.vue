@@ -25,7 +25,7 @@
     <div v-else>
       <b-field>
         <b-button type="is-ghost" icon-right="file-excel"
-          @click="() => downloadFile(fileError, errorFileName)">See Details</b-button>
+          @click="() => fileError && downloadFile(fileError, errorFileName)">See Details</b-button>
       </b-field>
       <b-button type="is-primary" rounded @click="fileError = null">Try again</b-button>
     </div>
@@ -38,14 +38,14 @@ import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertError } from "@/shared/utils/toast";
 import { downloadFile } from "@/shared/utils/downloadFile";
 
-const props = defineProps<{
+const { uploadFn, errorFileName, title, fileLabel } = defineProps<{
   uploadFn: (agencyId: string, file: File) => Promise<Blob>;
   errorFileName: string;
   title: string;
   fileLabel: string;
 }>();
 
-const emit = defineEmits<{ (e: 'close'): void }>();
+const emit = defineEmits<(e: 'close') => void>();
 
 const agencyStore = useAgencyStore();
 
@@ -56,22 +56,22 @@ const fileError = ref<Blob | null>(null);
 
 const agencies = computed(() => agencyStore.personnelAgencies);
 
-function bulkUpload() {
+async function bulkUpload() {
+  if (!agencySelected.value || !bulkFile.value) return;
   isLoading.value = true;
-  props.uploadFn(agencySelected.value, bulkFile.value)
-    .then((file) => {
-      if (file.size > 0) {
-        fileError.value = file;
-        showAlertError("Some records could not be uploaded, please check the file");
-      } else {
-        emit("close");
-      }
-      bulkFile.value = null;
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const file = await uploadFn(agencySelected.value, bulkFile.value);
+    if (file.size > 0) {
+      fileError.value = file;
+      showAlertError("Some records could not be uploaded, please check the file");
+    } else {
+      emit("close");
+    }
+    bulkFile.value = null;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

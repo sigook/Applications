@@ -235,7 +235,7 @@ import { RESIDENCY_STATUS } from '@/services/types/application.types'
 import type { Job } from '@/services/types/job.types'
 import type { BaseModel, City, Country, Province } from '@/services/types/application.types'
 
-const props = defineProps<{
+const { modelValue, selectedJob } = defineProps<{
   modelValue: boolean
   selectedJob?: Job | null
 }>()
@@ -246,7 +246,7 @@ const emit = defineEmits<{
 }>()
 
 const isOpen = computed({
-  get: () => props.modelValue,
+  get: () => modelValue,
   set: (value) => emit('update:modelValue', value)
 })
 
@@ -275,8 +275,8 @@ const errorMessage = ref('')
 const stepItems = ['Personal Information', 'Additional Details', 'Review & Submit']
 
 const dialogTitle = computed(() => {
-  if (props.selectedJob) {
-    return `Apply for ${props.selectedJob.title}`
+  if (selectedJob) {
+    return `Apply for ${selectedJob.title}`
   }
   return 'Register with Us'
 })
@@ -371,13 +371,11 @@ onMounted(async () => {
 function handlePhoneInput(event: Event) {
   const target = event.target as HTMLInputElement
 
-  if (!cleaveInstance) {
-    cleaveInstance = new Cleave(target, {
-      delimiters: [' ', '-'],
-      blocks: [3, 3, 4],
-      numericOnly: true
-    })
-  }
+  cleaveInstance ??= new Cleave(target, {
+    delimiters: [' ', '-'],
+    blocks: [3, 3, 4],
+    numericOnly: true
+  })
 
   phoneFormatted.value = target.value
   setFieldValue('phone', target.value)
@@ -414,7 +412,7 @@ async function handleSubmit() {
 
   submitting.value = true
   try {
-    await applicationService.submitApplication(values as any, props.selectedJob?.requestId)
+    await applicationService.submitApplication(values, selectedJob?.requestId)
     emit('application-submitted')
     resetForm()
     phoneFormatted.value = ''
@@ -449,7 +447,7 @@ async function handleSubmitRegistered() {
     // Submit just email with requestId (for already registered users)
     await applicationService.submitRegisteredApplication(
       registeredEmail.value,
-      props.selectedJob?.requestId
+      selectedJob?.requestId
     )
     emit('application-submitted')
     registeredEmail.value = ''

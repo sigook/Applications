@@ -60,7 +60,7 @@ import type { RouteLocationRaw } from 'vue-router';
 import type { DetailChip, DetailChipVariant, DetailKpi } from '@/shared/detail-page/types';
 import DetailKpis from '@/shared/detail-page/DetailKpis.vue';
 
-const props = defineProps<{
+const { orgName, title } = defineProps<{
   title: string;
   numberId?: number;
   meta?: string;
@@ -75,12 +75,12 @@ const props = defineProps<{
   kpis: DetailKpi[];
 }>();
 
-const emit = defineEmits<{ (e: 'editLogo'): void }>();
+const emit = defineEmits<(e: 'editLogo') => void>();
 
 const logoFailed = ref(false);
 
 const initials = computed(() =>
-  (props.orgName || props.title || '#').split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase());
+  (orgName || title || '#').split(/\s+/).filter(Boolean).slice(0, 2).map((word) => word[0]).join('').toUpperCase());
 </script>
 
 <style lang="scss" scoped>

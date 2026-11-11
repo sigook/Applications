@@ -226,7 +226,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
@@ -333,9 +333,9 @@ const showLocationModal = ref(false);
 const showRolesModal = ref(false);
 const companyUsers = ref<CompanyUserModel[]>([]);
 const companyUsersSelected = ref<CompanyUserModel[]>([]);
-const companyUserTagInput = ref<InstanceType<typeof BTaginput> | null>(null);
+const companyUserTagInput = useTemplateRef<InstanceType<typeof BTaginput>>('companyUserTagInput');
 
-(async () => {
+void (async () => {
   [locations.value, companyJobPositions.value, companyUsers.value] = await Promise.all([
     getProfileLocations(),
     getCompanyJobPositions(),
@@ -351,7 +351,7 @@ const filteredCompanyJobPositions = computed(() => {
 
 const filteredLocations = computed(() => {
   const search = (branchOffice.value || '').toLowerCase();
-  return locations.value.filter((l) => l.formattedAddress.toLowerCase().includes(search));
+  return locations.value.filter((l) => (l.formattedAddress ?? '').toLowerCase().includes(search));
 });
 
 const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
@@ -359,12 +359,12 @@ const finishDate = computed(() => dayjs(startAt.value).add(1, 'year').toDate());
 function validateAutocompleteSelections(): boolean {
   let valid = true;
 
-  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.jobPosition.toLowerCase() !== jobPosition.value.toLowerCase())) {
+  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.jobPosition?.toLowerCase() !== jobPosition.value.toLowerCase())) {
     form.setFieldError('jobPosition', 'Please select a role from the list');
     valid = false;
   }
 
-  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress.toLowerCase() !== branchOffice.value.toLowerCase())) {
+  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress?.toLowerCase() !== branchOffice.value.toLowerCase())) {
     form.setFieldError('branchOffice', 'Please select a location from the list');
     valid = false;
   }
@@ -372,18 +372,17 @@ function validateAutocompleteSelections(): boolean {
   return valid;
 }
 
-function submitRequest(payload: CreateCompanyRequestModel) {
+async function submitRequest(payload: CreateCompanyRequestModel) {
   isLoading.value = true;
-  createRequest(payload)
-    .then((response) => {
-      showAlertSuccess('Request created');
-      router.push(`/company-requests/${response.id}`);
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    const response = await createRequest(payload);
+    showAlertSuccess('Request created');
+    void router.push(`/company-requests/${response.id}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function onSubmit() {
@@ -392,8 +391,8 @@ function onSubmit() {
     'branchOffice', 'description', 'requirements', 'incentive',
     'incentiveDescription', 'startAt',
   ]);
-  form.handleSubmit((values) => {
-    if (!validateAutocompleteSelections()) {
+  void form.handleSubmit(async (values) => {
+    if (!validateAutocompleteSelections() || !values.startAt) {
       showAlertError(errorMessage);
       return;
     }
@@ -409,8 +408,8 @@ function onSubmit() {
       startAt: values.startAt.toISOString(),
       finishAt: request.finishAt?.toISOString(),
       durationBreak: dayjs(request.durationBreak).format('HH:mm'),
-      breakIsPaid: request.breakIsPaid,
-      isAsap: request.isAsap,
+      breakIsPaid: request.breakIsPaid ?? false,
+      isAsap: request.isAsap ?? false,
       durationTerm: request.durationTerm,
       employmentType: request.employmentType,
       punchCardOptionEnabled: request.punchCardOptionEnabled,
@@ -419,7 +418,7 @@ function onSubmit() {
       locationId: request.locationId,
       companyUserIds: companyUsersSelected.value.map((cu) => cu.id),
     };
-    submitRequest(payload);
+    await submitRequest(payload);
   }, () => {
     showAlertError(errorMessage);
   })();
@@ -452,7 +451,7 @@ async function onUpdateRolesModal(id?: string) {
   companyJobPositions.value = await getCompanyJobPositions();
   const role = companyJobPositions.value.find((cjp) => cjp.id === id);
   if (!role) return;
-  form.setFieldValue('jobPosition', role.jobPosition);
+  form.setFieldValue('jobPosition', role.jobPosition ?? '');
   onJobPositionSelected(role);
 }
 

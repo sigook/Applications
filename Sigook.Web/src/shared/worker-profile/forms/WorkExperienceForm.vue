@@ -85,8 +85,8 @@ interface ExperienceForm {
   endDate: Date | null;
 }
 
-const props = defineProps<{ workerId?: string; data?: WorkerProfileJobExperienceDetail }>();
-const emit = defineEmits<{ (e: 'updateExperience'): void }>();
+const { workerId, data } = defineProps<{ workerId: string; data?: WorkerProfileJobExperienceDetail }>();
+const emit = defineEmits<(e: 'updateExperience') => void>();
 
 const schema = yup.object({
   company: yup.string().required('Company is required')
@@ -121,47 +121,47 @@ const workExperience = reactive<{ isCurrentJobPosition: boolean }>({
   isCurrentJobPosition: true,
 });
 
-function saveCreateExperience(payload: WorkerJobExperienceModel) {
+async function saveCreateExperience(payload: WorkerJobExperienceModel) {
   isLoading.value = true;
-  createWorkerWorkExperience(props.workerId, payload)
-    .then(() => {
-      isLoading.value = false;
-      emit('updateExperience');
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerWorkExperience(workerId, payload);
+    isLoading.value = false;
+    emit('updateExperience');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function saveEditExperience(payload: WorkerJobExperienceModel) {
+async function saveEditExperience(payload: WorkerJobExperienceModel) {
   isLoading.value = true;
-  editWorkerWorkExperience(props.workerId, props.data.id, payload)
-    .then(() => {
-      isLoading.value = false;
-      emit('updateExperience');
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  if (!data) return;
+  try {
+    await editWorkerWorkExperience(workerId, data.id, payload);
+    isLoading.value = false;
+    emit('updateExperience');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
+    if (!values.startDate) return;
     const payload: WorkerJobExperienceModel = {
       isCurrentJobPosition: workExperience.isCurrentJobPosition,
       company: values.company,
       supervisor: values.supervisor,
       duties: values.duties,
-      startDate: values.startDate?.toISOString(),
+      startDate: values.startDate.toISOString(),
       endDate: workExperience.isCurrentJobPosition ? null : values.endDate?.toISOString() ?? null,
     };
-    if (props.data) {
-      saveEditExperience(payload);
+    if (data) {
+      await saveEditExperience(payload);
     } else {
-      saveCreateExperience(payload);
+      await saveCreateExperience(payload);
     }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
@@ -169,7 +169,8 @@ function validateAll() {
 }
 
 function updateData() {
-  const src = props.data;
+  const src = data;
+  if (!src) return;
   workExperience.isCurrentJobPosition = src.isCurrentJobPosition;
   const sd = new Date(src.startDate);
   const ed = src.endDate ? new Date(src.endDate) : null;
@@ -182,10 +183,10 @@ function updateData() {
   });
 }
 
-appStore.getCurrentDate().then((response) => {
-  disableStartDate.value = response;
-});
-if (props.data) {
+void (async () => {
+  disableStartDate.value = await appStore.getCurrentDate();
+})();
+if (data) {
   updateData();
 }
 </script>

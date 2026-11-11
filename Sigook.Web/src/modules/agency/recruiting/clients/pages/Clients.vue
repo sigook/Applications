@@ -128,7 +128,7 @@
           </template>
           <template v-slot="props">
             <b-tag size="is-medium" rounded>
-              {{statuses.find(s => s.id === props.row.companyStatus).value}}
+              {{statuses.find(s => s.id === props.row.companyStatus)?.value}}
             </b-tag>
           </template>
         </b-table-column>
@@ -219,14 +219,18 @@ const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCo
 
 const isMobile = computed(() => appStore.isMobile);
 
-getCompanyStatus()
-  .then((result) => {
-    statuses.value = result as CatalogItem<CompanyStatus>[];
+async function loadStatuses() {
+  try {
+    statuses.value = await getCompanyStatus();
     if (serverParams.value.companyStatuses) {
       statusesSelected.value = statuses.value.filter((s) => serverParams.value.companyStatuses?.includes(s.id));
     }
-  })
-  .catch((error) => showAlertError(error));
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+void loadStatuses();
 if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
   createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
@@ -272,7 +276,7 @@ function onCellClick(row: AgencyCompanyListItem, column: TableColumnRef) {
     case 'actions':
       break;
     default:
-      router.push({ path: `${companyDetailBase.value}/${row.id}` });
+      void router.push({ path: `${companyDetailBase.value}/${row.id}` });
   }
 }
 
@@ -297,20 +301,21 @@ async function onDeleteCompany(row: AgencyCompanyListItem) {
     isLoading.value = false;
     showAlertSuccess(`${check.fullName} was deleted`);
     grid.value?.reload();
-  } catch (error: unknown) {
+  } catch (error) {
     isLoading.value = false;
     showAlertError(error);
   }
 }
 
-function exportWithDetails() {
+async function exportWithDetails() {
   isLoading.value = true;
-  downloadAgencyReport('/api/agency/recruiting/clients/FileWithDetails', serverParams.value)
-    .then((file) => {
-      isLoading.value = false;
-      downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
-    })
-    .catch(() => (isLoading.value = false));
+  try {
+    const file = await downloadAgencyReport('/api/agency/recruiting/clients/FileWithDetails', serverParams.value);
+    isLoading.value = false;
+    downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
+  } catch {
+    isLoading.value = false;
+  }
 }
 </script>
 <style lang="scss">

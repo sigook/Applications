@@ -106,25 +106,23 @@ function openDetail(row: WorkerWeekTimeSheet) {
   showDetail.value = true;
 }
 
-function load() {
+async function load() {
   isLoading.value = true;
-  getWorkerWeekTimeSheets(weekStart.value)
-    .then((response) => {
-      week.value = response;
-      isLoading.value = false;
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    week.value = await getWorkerWeekTimeSheets(weekStart.value);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function moveWeek(direction: number) {
   weekStart.value = dayjs(weekStart.value).add(direction, 'week').format('YYYY-MM-DD');
-  load();
+  void load();
 }
 
-load();
+void load();
 </script>
 
 <style lang="scss" scoped>

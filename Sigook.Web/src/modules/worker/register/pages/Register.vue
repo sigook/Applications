@@ -619,7 +619,7 @@
 </template>
 
 <script setup lang="ts">
-import { reactive, ref, computed, watch } from 'vue';
+import { reactive, ref, computed, watch, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
@@ -705,9 +705,9 @@ const { errors: formErrors, setFieldValue, validateField } = useForm({
     lastName: '',
     birthDay: null,
     gender: null,
-    identificationType1: null,
+    identificationType1: null as IdentificationType | null,
     identificationNumber1: '',
-    identificationType2: null,
+    identificationType2: null as IdentificationType | null,
     identificationNumber2: '',
     email: '',
     password: '',
@@ -746,7 +746,7 @@ watch(agreeTermsAndConditions, () => { interacted.agreeTermsAndConditions = true
 const errors = computed(() => {
   const out: Record<string, string> = {};
   for (const key of Object.keys(formErrors.value)) {
-    out[key] = interacted[key] ? (formErrors.value[key] || '') : '';
+    out[key] = interacted[key] ? (formErrors.value[key as keyof typeof formErrors.value] || '') : '';
   }
   return out;
 });
@@ -778,8 +778,8 @@ const fileObjects = reactive<WorkerFileObjects>({
   otherDocuments: [],
 });
 
-const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const addressComponent = useTemplateRef<InstanceType<typeof AddressComponent>>('addressComponent');
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
 
 async function registerWorkerFn() {
   isLoading.value = true;
@@ -802,7 +802,7 @@ async function registerWorkerFn() {
     const id = await registerWorker(formData, Number.isInteger(requestId) && requestId > 0 ? requestId : undefined);
     isLoading.value = false;
     showAlertSuccess('Your account has been created');
-    router.push(isLogin.value ? `/recruiting/workers/${id}` : '/home');
+    void router.push(isLogin.value ? `/recruiting/workers/${id}` : '/home');
   } catch (error: unknown) {
     isLoading.value = false;
     showAlertError((error as { data?: unknown }).data);
@@ -816,7 +816,7 @@ async function validateForm() {
   const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const allValid = results.every((r) => r.valid);
   if (allValid) {
-    registerWorkerFn();
+    await registerWorkerFn();
   } else {
     showAlertError('Please make sure all required fields are filled out correctly');
   }
@@ -836,8 +836,8 @@ async function validateStep1() {
   markInteracted(fields);
   const results = await Promise.all(fields.map((f) => validateField(f as Parameters<typeof validateField>[0])));
   const fieldsValid = results.every((r) => r.valid);
-  const addressValid = await addressComponent.value.validateAddress();
-  const phoneValid = await phoneComponent.value.validatePhone();
+  const addressValid = await addressComponent.value?.validateAddress() ?? false;
+  const phoneValid = await phoneComponent.value?.validatePhone() ?? false;
   return fieldsValid && addressValid && phoneValid;
 }
 
@@ -855,7 +855,7 @@ async function validateStep3() {
 
   const next: Record<string, string> = {};
   worker.licenses.forEach((item, i) => {
-    const desc = item?.license?.description || '';
+    const desc = item.license.description || '';
     if (!desc) {
       next['description' + i] = 'Description is required';
       valid = false;
@@ -872,7 +872,7 @@ async function validateStep3() {
     }
   });
   worker.certificates.forEach((item, i) => {
-    const desc = item?.description || '';
+    const desc = item.description || '';
     if (!desc) {
       next['descriptioncer' + i] = 'Description is required';
       valid = false;
@@ -885,7 +885,7 @@ async function validateStep3() {
     }
   });
   worker.otherDocuments.forEach((item, i) => {
-    const desc = item?.description || '';
+    const desc = item.description || '';
     if (!desc) {
       next['descriptionOther' + i] = 'Description is required';
       valid = false;
@@ -1042,11 +1042,7 @@ function deleteOtherDocument(index: number) {
 
 function saveImage(image: File) {
   fileObjects.profileImage = image;
-  if (!worker.profileImage) {
-    worker.profileImage = { fileName: image.name };
-  } else {
-    (worker.profileImage as { fileName: string }).fileName = image.name;
-  }
+  worker.profileImage = { ...worker.profileImage, fileName: image.name };
 }
 
 function addSkill(skill: string | Skill): Skill {
@@ -1061,20 +1057,19 @@ function addSkill(skill: string | Skill): Skill {
 function isCanadaSelected(value: boolean) {
   isCanada.value = value;
   isLoading.value = true;
-  if (value === false && worker.otherDocuments.length > 0) {
+  if (!value && worker.otherDocuments.length > 0) {
     fileObjects.otherDocuments = [];
     worker.otherDocuments = [];
   }
   isLoading.value = false;
 }
 
-(async () => {
+void (async () => {
   await loadCatalogs();
   isLoading.value = false;
-  appStore.getCurrentDate().then((response) => {
-    disableStartDate.value = response;
-    disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
-  });
+  const response = await appStore.getCurrentDate();
+  disableStartDate.value = response;
+  disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
 })();
 </script>
 

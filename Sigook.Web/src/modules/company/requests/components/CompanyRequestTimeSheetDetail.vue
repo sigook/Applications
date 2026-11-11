@@ -56,5 +56,5 @@
 import { dateMonth, dateHHmm, hour } from '@/shared/format';
 import type { PunchCardEditableDay } from '@/shared/punch-card/types';
 
-defineProps<{ editableDay: PunchCardEditableDay }>();
+const { editableDay } = defineProps<{ editableDay: PunchCardEditableDay }>();
 </script>

@@ -1,4 +1,4 @@
-export default function (amount: number | null): string {
+export default function (amount: number | null | undefined): string {
   if (!amount) {
     return '';
   }

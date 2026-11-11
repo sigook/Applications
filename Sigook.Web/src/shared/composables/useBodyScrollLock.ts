@@ -35,7 +35,7 @@ export function useBodyScrollLock() {
     unlockScroll()
   }
 
-  onScopeDispose(() => unlock())
+  onScopeDispose(() => { unlock(); })
 
   return { lock, unlock }
 }

@@ -146,7 +146,7 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({ path: `${companyBase.value}/${route.params.id}`, query: { tab } });
+  void router.push({ path: `${companyBase.value}/${String(route.params.id)}`, query: { tab } });
 }
 
 function onContactsChanged(count: number) {
@@ -157,31 +157,32 @@ function onLocationsChanged(count: number) {
   if (company.value?.summary) company.value.summary.locationsCount = count;
 }
 
-function loadCompany() {
-  getAgencyCompany(route.params.id as string)
-    .then((response) => {
-      company.value = response;
-    })
-    .catch(showAlertError)
-    .finally(() => {
-      isLoading.value = false;
-    });
+async function loadCompany() {
+  try {
+    company.value = await getAgencyCompany(route.params.id as string);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function updateLogo(logo: File) {
+async function updateLogo(logo: File) {
   const current = company.value;
   if (!current) return;
   showUpdateLogo.value = false;
   isLoading.value = true;
-  updateAgencyCompanyProfileLogo(current.id, logo)
-    .then(() => loadCompany())
-    .catch((error: unknown) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    await updateAgencyCompanyProfileLogo(current.id, logo);
+  } catch (error) {
+    showAlertError(error);
+    isLoading.value = false;
+    return;
+  }
+  await loadCompany();
 }
 
-loadCompany();
+void loadCompany();
 </script>
 
 <style>

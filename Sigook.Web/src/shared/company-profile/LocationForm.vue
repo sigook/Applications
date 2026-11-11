@@ -1,12 +1,12 @@
 <template>
   <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
-    <h2 class="has-text-centered fz1 mb-4">{{ props.currentLocation ? 'Edit location' : 'New location' }}</h2>
+    <h2 class="has-text-centered fz1 mb-4">{{ currentLocation ? 'Edit location' : 'New location' }}</h2>
 
     <div class="columns is-multiline">
       <div class="column is-12">
         <cvn-address ref="addressComponent" v-model:model="location"
-          :enableProvinceSettings="props.enableProvinceSettings" />
+          :enableProvinceSettings="enableProvinceSettings" />
       </div>
       <div class="column is-6">
         <b-field label="Latitude">
@@ -40,14 +40,14 @@
     </div>
     <div class="mt-5">
       <b-button type="is-primary" @click="validateForm">
-        {{ props.currentLocation ? 'Save' : 'Create' }}
+        {{ currentLocation ? 'Save' : 'Create' }}
       </b-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
@@ -59,13 +59,13 @@ const schema = yup.object({
   entrance: yup.string().nullable().transform((v) => (v === '' ? null : v)).min(2, 'Min 2 characters').max(100, 'Max 100 characters'),
 });
 
-const props = defineProps<{
+const { currentLocation, enableProvinceSettings, save } = defineProps<{
   currentLocation?: LocationDetailModel | null;
   currentIndex?: number;
   save: (location: LocationDetailModel, id?: string) => Promise<unknown>;
   enableProvinceSettings?: boolean;
 }>();
-const emit = defineEmits<{ (e: 'updateContent'): void }>();
+const emit = defineEmits<(e: 'updateContent') => void>();
 
 const form = useStickyForm<{ mainIntersection: string; entrance: string }>({
   schema,
@@ -77,14 +77,14 @@ const form = useStickyForm<{ mainIntersection: string; entrance: string }>({
 const { mainIntersection, entrance } = form.fields;
 const formErrors = form.errors;
 
-const addressComponent = ref<InstanceType<typeof CvnAddress> | null>(null);
+const addressComponent = useTemplateRef<InstanceType<typeof CvnAddress>>('addressComponent');
 const isLoading = ref(false);
 const location = ref<LocationDetailModel>({});
 
 async function validateForm() {
   form.markInteracted();
-  const addressValid = await addressComponent.value.validateAddress();
-  form.handleSubmit((values) => {
+  const addressValid = await addressComponent.value?.validateAddress() ?? false;
+  await form.handleSubmit(async (values) => {
     if (!addressValid) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
@@ -95,50 +95,46 @@ async function validateForm() {
     location.value.latitude = latitude == null || String(latitude) === '' ? null : Number(latitude);
     location.value.longitude = longitude == null || String(longitude) === '' ? null : Number(longitude);
     if (location.value.id) {
-      updateLocation(location.value.id);
+      await updateLocation(location.value.id);
     } else {
-      createLocation();
+      await createLocation();
     }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function createLocation() {
+async function createLocation() {
   isLoading.value = true;
-  const request = props.save(location.value);
-  request
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Created');
-      emit('updateContent');
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await save(location.value);
+    isLoading.value = false;
+    showAlertSuccess('Created');
+    emit('updateContent');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateLocation(id: string) {
+async function updateLocation(id: string) {
   isLoading.value = true;
-  const request = props.save(location.value, id);
-  request
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      emit('updateContent');
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await save(location.value, id);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    emit('updateContent');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-if (props.currentLocation) {
-  location.value = Object.assign({}, props.currentLocation);
+if (currentLocation) {
+  location.value = Object.assign({}, currentLocation);
   form.hydrate({
-    mainIntersection: props.currentLocation.mainIntersection || '',
-    entrance: props.currentLocation.entrance || '',
+    mainIntersection: currentLocation.mainIntersection || '',
+    entrance: currentLocation.entrance || '',
   });
 }
 </script>

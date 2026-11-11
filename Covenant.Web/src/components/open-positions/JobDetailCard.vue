@@ -48,7 +48,7 @@
 <script setup lang="ts">
 import type { Job } from '@/services/types/job.types'
 
-defineProps<{ job: Job }>()
+const { job } = defineProps<{ job: Job }>()
 defineEmits<{ apply: [job: Job] }>()
 </script>
 

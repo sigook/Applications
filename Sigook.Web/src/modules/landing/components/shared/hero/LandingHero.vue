@@ -27,23 +27,25 @@ import DecoMagnifier from '@/modules/landing/components/shared/hero/DecoMagnifie
 import EyebrowPill from '@/shared/ui/EyebrowPill.vue'
 import ScrollIndicator from '@/modules/landing/components/shared/hero/ScrollIndicator.vue'
 
-withDefaults(
-  defineProps<{
-    image: string
-    imageSm: string
-    focal?: string
-    eyebrowVariant?: 'cyan' | 'red' | 'white'
-    eyebrowText: string
-    subtitle: string
-    scrollHref: string
-    magnifierVars?: Record<string, string>
-  }>(),
-  {
-    focal: 'center',
-    eyebrowVariant: 'cyan',
-    magnifierVars: () => ({}),
-  },
-)
+const {
+  image,
+  imageSm,
+  focal = 'center',
+  eyebrowVariant = 'cyan',
+  eyebrowText,
+  subtitle,
+  scrollHref,
+  magnifierVars = {},
+} = defineProps<{
+  image: string
+  imageSm: string
+  focal?: string
+  eyebrowVariant?: 'cyan' | 'red' | 'white'
+  eyebrowText: string
+  subtitle: string
+  scrollHref: string
+  magnifierVars?: Record<string, string>
+}>()
 </script>
 
 <style scoped>

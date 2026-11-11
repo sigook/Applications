@@ -1,5 +1,6 @@
 import { api } from '@/app/security/apiService';
 import type { CompanyProfileDetail, CompanyProfileLocationDetail, CompanyProfileJobPositionRate, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
+import type { LocationDetailModel } from '@/shared/types/common';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
 // Profile
@@ -16,11 +17,11 @@ export function getProfileLocations(): Promise<CompanyProfileLocationDetail[]> {
   return api.get<CompanyProfileLocationDetail[]>('/api/company/profile/locations');
 }
 
-export function createProfileLocation(model: CompanyProfileLocationDetail): Promise<void> {
+export function createProfileLocation(model: LocationDetailModel): Promise<void> {
   return api.post('/api/company/profile/locations', model);
 }
 
-export function updateProfileLocation(id: string, model: CompanyProfileLocationDetail): Promise<void> {
+export function updateProfileLocation(id: string, model: LocationDetailModel): Promise<void> {
   return api.put(`/api/company/profile/locations/${id}`, model);
 }
 

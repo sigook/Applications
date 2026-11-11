@@ -4,7 +4,7 @@
 
     <div class="profile-content">
       <div class="profile-top">
-        <upload-image @imageSelected="(profileImg) => (agency.logo.fileName = profileImg.name)"
+        <upload-image @imageSelected="(profileImg) => (agency.logo = { ...agency.logo, fileName: profileImg.name })"
           :edited-image="agency.logo" :class="{ disabled: isDisabled }" :required="false">
         </upload-image>
 
@@ -13,8 +13,8 @@
           <p class="is-uppercase" v-if="agency.locations[0]">
             <b-icon icon="map-marker" size="is-small"></b-icon>
             {{ agency.locations[0].address }}
-            {{ agency.locations[0].city.value }}
-            {{ agency.locations[0].city.province.code }}
+            {{ agency.locations[0].city?.value }}
+            {{ agency.locations[0].city?.province?.code }}
             {{ agency.locations[0].postalCode }}
           </p>
         </div>
@@ -74,8 +74,8 @@ const isDisabled = ref(true);
 
 const agency = computed(() => agencyStore.agency);
 
-(async () => {
-  if (route.query && route.query.tab) {
+void (async () => {
+  if (route.query.tab) {
     currentTab.value = route.query.tab as string;
     if (!visitedTabs.value.includes(route.query.tab as string)) {
       visitedTabs.value.push(route.query.tab as string);
@@ -93,7 +93,7 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
+  void router.push({
     path: '/agency-profile',
     query: { tab: tab },
   });

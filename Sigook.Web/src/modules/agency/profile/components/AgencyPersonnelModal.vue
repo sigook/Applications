@@ -56,8 +56,8 @@ const schema = yup.object({
   role: yup.string().required('Role is required'),
 });
 
-const props = defineProps<{ personnel?: AgencyPersonnelListItem | null }>();
-const emit = defineEmits<{ (e: 'updateUsers'): void }>();
+const { personnel } = defineProps<{ personnel?: AgencyPersonnelListItem | null }>();
+const emit = defineEmits<(e: 'updateUsers') => void>();
 
 const securityStore = useSecurityStore();
 
@@ -71,30 +71,29 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const assignableRoles = ref<string[]>([]);
 
-const isEdit = computed(() => !!props.personnel);
-const isOwnUser = computed(() => !!props.personnel && props.personnel.userId === securityStore.user?.profile.sub);
+const isEdit = computed(() => !!personnel);
+const isOwnUser = computed(() => !!personnel && personnel.userId === securityStore.user?.profile.sub);
 
-if (props.personnel) {
+if (personnel) {
   form.hydrate({
-    name: props.personnel.name || '',
-    email: props.personnel.email || '',
-    role: props.personnel.role || '',
+    name: personnel.name || '',
+    email: personnel.email || '',
+    role: personnel.role || '',
   });
 }
 
-loadAssignableRoles();
+void loadAssignableRoles();
 
-function loadAssignableRoles() {
+async function loadAssignableRoles() {
   isLoading.value = true;
-  getAssignableRoles()
-    .then((response) => {
-      isLoading.value = false;
-      assignableRoles.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAssignableRoles();
+    isLoading.value = false;
+    assignableRoles.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 async function validateForm() {
@@ -104,23 +103,22 @@ async function validateForm() {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
-  saveUser();
+  await saveUser();
 }
 
-function saveUser() {
+async function saveUser() {
   const model = { name: name.value, email: email.value, role: role.value };
   isLoading.value = true;
-  const request = props.personnel
-    ? updateAgencyPersonnel(props.personnel.id, model)
+  const request = personnel
+    ? updateAgencyPersonnel(personnel.id, model)
     : createAgencyPersonnel(model);
-  request
-    .then(() => {
-      isLoading.value = false;
-      emit("updateUsers");
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await request;
+    isLoading.value = false;
+    emit("updateUsers");
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

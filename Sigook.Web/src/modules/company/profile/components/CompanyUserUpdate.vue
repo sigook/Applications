@@ -20,7 +20,7 @@
     </div>
     <div class="column is-6">
       <PhoneInput :required="false" model="Mobile Number" :default-value="mobileNumber"
-        @formattedPhone="(phone: string) => mobileNumber = phone" />
+        @formattedPhone="(phone: string | null) => mobileNumber = phone" />
     </div>
     <div class="column is-12 mt-5">
       <b-button type="is-primary" @click="update">Save</b-button>
@@ -37,8 +37,8 @@ import { updateCompanyUser } from '@/modules/company/profile/api';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 
-const props = defineProps<{ user: CompanyUserModel }>();
-const emit = defineEmits<{ (e: 'update:user', payload: CompanyUserModel): void }>();
+const { user } = defineProps<{ user: CompanyUserModel }>();
+const emit = defineEmits<(e: 'update:user', payload: CompanyUserModel) => void>();
 
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
@@ -68,9 +68,9 @@ function hydrateFromUser(u: CompanyUserModel | null) {
   });
 }
 
-hydrateFromUser(props.user);
+hydrateFromUser(user);
 
-watch(() => props.user, (newVal) => {
+watch(() => user, (newVal) => {
   hydrateFromUser(newVal);
 }, { deep: true });
 
@@ -79,16 +79,15 @@ async function update() {
   const { valid } = await form.validate();
   if (!valid) return;
   const payload: CompanyUserModel = {
-    ...props.user,
+    ...user,
     name: name.value,
     lastname: lastname.value,
     position: position.value || '',
     mobileNumber: mobileNumber.value || '',
   };
   emit('update:user', payload);
-  updateCompanyUser(userId.value, payload)
-    .then(() => {
-      showAlertSuccess("Updated");
-    });
+  if (!userId.value) return;
+  await updateCompanyUser(userId.value, payload);
+  showAlertSuccess("Updated");
 }
 </script>

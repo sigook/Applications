@@ -49,7 +49,7 @@ import type { PaginatedList } from '@/shared/types/common';
 import type { NoteItem, NoteFormModel, CreateNoteResponse, RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import NoteForm from "@/modules/agency/shared/notes/NoteForm.vue";
 
-const props = withDefaults(defineProps<{
+const { requestId, userId, onGet, onCreate, onUpdate, onDelete, showClose = true } = defineProps<{
   requestId?: string;
   userId?: string;
   onGet?: (payload: RequestNotesFetchPayload) => Promise<PaginatedList<NoteItem>>;
@@ -58,7 +58,7 @@ const props = withDefaults(defineProps<{
   onDelete?: (payload: RequestNotesDeletePayload) => Promise<void>;
   canCreate?: boolean;
   showClose?: boolean;
-}>(), { showClose: true });
+}>();
 
 const emit = defineEmits<{
   (e: 'onUpdateNote', v: { size: number }): void;
@@ -73,69 +73,66 @@ const showModalUpdate = ref(false);
 const editNoteModel = ref<NoteItem | undefined>(undefined);
 const editNoteIndex = ref<number | null>(null);
 
-function getNotes(index: number) {
-  if (!props.onGet) return;
+async function getNotes(index: number) {
+  if (!onGet) return;
   isLoading.value = true;
-  props.onGet({
-    userId: props.userId as string,
-    requestId: props.requestId as string,
-    pagination: { page: index, size: size.value },
-  })
-    .then(response => {
-      isLoading.value = false;
-      notes.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const response = await onGet({
+      userId: userId as string,
+      requestId: requestId as string,
+      pagination: { page: index, size: size.value },
     });
+    isLoading.value = false;
+    notes.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function addNote(newNote: NoteFormModel) {
-  if (!props.onCreate) return;
+async function addNote(newNote: NoteFormModel) {
+  if (!onCreate) return;
   isLoading.value = true;
-  props.onCreate({
-    userId: props.userId as string,
-    requestId: props.requestId as string,
-    model: newNote,
-  })
-    .then(response => {
-      isLoading.value = false;
-      if (!notes.value) return;
-      notes.value.items.unshift({
-        id: response.id,
-        note: newNote.note,
-        color: newNote.color,
-        createdAt: response.createdAt,
-        createdBy: response.createdBy,
-      });
-      emit('onUpdateNote', { size: notes.value.items.length });
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const response = await onCreate({
+      userId: userId as string,
+      requestId: requestId as string,
+      model: newNote,
     });
+    isLoading.value = false;
+    if (!notes.value) return;
+    notes.value.items.unshift({
+      id: response.id,
+      note: newNote.note,
+      color: newNote.color,
+      createdAt: response.createdAt,
+      createdBy: response.createdBy,
+    });
+    emit('onUpdateNote', { size: notes.value.items.length });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function deleteNote(id: string, index: number) {
-  if (!props.onDelete) return;
+async function deleteNote(id: string, index: number) {
+  if (!onDelete) return;
   isLoading.value = true;
-  props.onDelete({
-    userId: props.userId as string,
-    requestId: props.requestId as string,
-    id,
-  })
-    .then(() => {
-      isLoading.value = false;
-      if (!notes.value) return;
-      notes.value.items.splice(index, 1);
-      showAlertSuccess('Deleted');
-      emit('onUpdateNote', { size: notes.value.items.length });
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    await onDelete({
+      userId: userId as string,
+      requestId: requestId as string,
+      id,
     });
+    isLoading.value = false;
+    if (!notes.value) return;
+    notes.value.items.splice(index, 1);
+    showAlertSuccess('Deleted');
+    emit('onUpdateNote', { size: notes.value.items.length });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showModalUpdateNote(item: NoteItem, index: number) {
@@ -144,36 +141,35 @@ function showModalUpdateNote(item: NoteItem, index: number) {
   editNoteIndex.value = index;
 }
 
-function updateNote(model: NoteFormModel) {
-  if (!props.onUpdate || !editNoteModel.value) return;
+async function updateNote(model: NoteFormModel) {
+  if (!onUpdate || !editNoteModel.value) return;
   const id = editNoteModel.value.id;
   isLoading.value = true;
-  props.onUpdate({
-    userId: props.userId as string,
-    requestId: props.requestId as string,
-    id,
-    model,
-  })
-    .then(() => {
-      isLoading.value = false;
-      if (notes.value && editNoteIndex.value !== null) {
-        notes.value.items[editNoteIndex.value] = {
-          id,
-          note: model.note,
-          color: model.color,
-          createdAt: model.createdAt,
-          createdBy: model.createdBy,
-        };
-        emit('onUpdateNote', { size: notes.value.items.length });
-      }
-      showModalUpdate.value = false;
-      editNoteIndex.value = null;
-      editNoteModel.value = undefined;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    await onUpdate({
+      userId: userId as string,
+      requestId: requestId as string,
+      id,
+      model,
     });
+    isLoading.value = false;
+    if (notes.value && editNoteIndex.value !== null) {
+      notes.value.items[editNoteIndex.value] = {
+        id,
+        note: model.note,
+        color: model.color,
+        createdAt: model.createdAt,
+        createdBy: model.createdBy,
+      };
+      emit('onUpdateNote', { size: notes.value.items.length });
+    }
+    showModalUpdate.value = false;
+    editNoteIndex.value = null;
+    editNoteModel.value = undefined;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onNoteClose() {
@@ -181,7 +177,7 @@ function onNoteClose() {
 }
 
 onMounted(() => {
-  getNotes(currentPage.value);
+  void getNotes(currentPage.value);
 });
 </script>
 

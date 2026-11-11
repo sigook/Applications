@@ -209,7 +209,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, nextTick, watch } from 'vue';
+import { ref, reactive, computed, nextTick, watch, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
@@ -233,7 +233,7 @@ function newInvoice(): CreateAgencyInvoiceModel {
 }
 
 function newItem(): CreateInvoiceItemModel {
-  return { quantity: null, unitPrice: null, total: null, description: '' };
+  return { quantity: 0, unitPrice: 0, total: 0, description: '' };
 }
 
 const schema = yup.object({
@@ -261,7 +261,7 @@ const additionalItems = ref<CreateInvoiceItemModel[]>([]);
 const discounts = ref<CreateInvoiceItemModel[]>([]);
 const previewData = ref<InvoicePreviewModel | null>(null);
 const dateSelected = ref<Date[]>([]);
-const previewContainer = ref<HTMLElement | null>(null);
+const previewContainer = useTemplateRef<HTMLElement>('previewContainer');
 
 const filteredCompanies = computed(() =>
   companies.value.filter((c) => c.fullName.toLowerCase().includes((company.value || '').toLowerCase())),
@@ -277,7 +277,7 @@ const filteredRequests = computed(() => {
   );
 });
 
-(async () => {
+void (async () => {
   await loadCompanies();
 })();
 
@@ -291,11 +291,11 @@ async function loadCompanyRequests(companyProfileId: string) {
 }
 
 function loadPreview() {
-  validateForm();
+  void validateForm();
 }
 
 function onDatesSelected() {
-  if (dateSelected.value && dateSelected.value.length === 2) {
+  if (dateSelected.value.length === 2) {
     invoice.value.from = dayjs(dateSelected.value[0]).format('YYYY-MM-DD');
     invoice.value.to = dayjs(dateSelected.value[1]).format('YYYY-MM-DD');
   }
@@ -309,7 +309,7 @@ function selectCompany(c: CompanyProfileListItem | null) {
   resetRequests();
   if (c) {
     invoice.value.companyProfileId = c.id;
-    loadCompanyRequests(c.id);
+    void loadCompanyRequests(c.id);
   } else {
     invoice.value = newInvoice();
     invoiceDate.value = null;
@@ -373,21 +373,20 @@ async function validateForm() {
   invoice.value.invoiceDate = invoiceDate.value ? invoiceDate.value.toISOString() : undefined;
   invoice.value.additionalItems = additionalItems.value;
   invoice.value.discounts = discounts.value;
-  previewAgencyInvoice(invoice.value)
-    .then((response) => {
-      isLoading.value = false;
-      previewData.value = response;
-      nextTick(() => {
-        const el = previewContainer.value?.querySelector('.box');
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const response = await previewAgencyInvoice(invoice.value);
+    isLoading.value = false;
+    previewData.value = response;
+    void nextTick(() => {
+      const el = previewContainer.value?.querySelector('.box');
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
     });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function addItem() {
@@ -411,17 +410,16 @@ function removeDiscount(discount: CreateInvoiceItemModel) {
   discounts.value = discounts.value.filter((d) => d !== discount);
 }
 
-function confirmInvoice() {
+async function confirmInvoice() {
   isLoading.value = true;
-  createAgencyInvoice(invoice.value)
-    .then(() => {
-      isLoading.value = false;
-      router.push('/accounting/invoices');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyInvoice(invoice.value);
+    isLoading.value = false;
+    void router.push('/accounting/invoices');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function cancelPreview() {

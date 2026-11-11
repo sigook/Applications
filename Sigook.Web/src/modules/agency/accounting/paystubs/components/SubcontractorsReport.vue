@@ -45,23 +45,22 @@ const grid = useTemplateRef<GridHandle>('grid');
 const isLoading = ref(false);
 const serverParams = ref<SubcontractorPayrollFilter>({});
 
-function loadSubcontractors(params: SubcontractorPayrollFilter): Promise<PaginatedList<PayrollSubContractorRow>> {
-  return getPayrollSubcontractors(params)
-    .then((response) => ({ ...response, items: response.items.map((item) => ({ ...item, reportDownloading: false })) }));
+async function loadSubcontractors(params: SubcontractorPayrollFilter): Promise<PaginatedList<PayrollSubContractorRow>> {
+  const response = await getPayrollSubcontractors(params);
+  return { ...response, items: response.items.map((item) => ({ ...item, reportDownloading: false })) };
 }
 
-function downloadSubcontractor(subcontractor: PayrollSubContractorRow) {
+async function downloadSubcontractor(subcontractor: PayrollSubContractorRow) {
   const weekEnding = dayjs(subcontractor.weekEnding).format('MM-DD-YYYY');
   subcontractor.reportDownloading = true;
-  downloadSubcontractorReport(weekEnding)
-    .then(response => {
-      subcontractor.reportDownloading = false;
-      downloadFile(response, `Subcontractor_${weekEnding}`);
-    })
-    .catch(error => {
-      subcontractor.reportDownloading = false;
-      showAlertError(error.data);
-    });
+  try {
+    const response = await downloadSubcontractorReport(weekEnding);
+    subcontractor.reportDownloading = false;
+    downloadFile(response, `Subcontractor_${weekEnding}`);
+  } catch (error) {
+    subcontractor.reportDownloading = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 function onDeleteSubcontractor(subcontractor: PayrollSubContractorRow) {
@@ -77,18 +76,19 @@ function onDeleteSubcontractor(subcontractor: PayrollSubContractorRow) {
     confirmText: 'Yes, I read and I want to delete',
     type: 'is-danger',
     hasIcon: true,
-    onConfirm: () => {
-      isLoading.value = true;
-      deleteSubcontractorReport(weekEnding)
-        .then(() => {
-          showAlertSuccess(`Subcontractor report ${weekEnding} deleted successfully`);
-          grid.value?.reload();
-        })
-        .catch(error => {
-          isLoading.value = false;
-          showAlertError(error.data);
-        });
-    },
+    onConfirm: () => deleteSubcontractor(weekEnding),
   });
+}
+
+async function deleteSubcontractor(weekEnding: string) {
+  isLoading.value = true;
+  try {
+    await deleteSubcontractorReport(weekEnding);
+    showAlertSuccess(`Subcontractor report ${weekEnding} deleted successfully`);
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 </script>

@@ -33,7 +33,7 @@ import { showAlertError } from '@/shared/utils/toast';
 
 const PAGE_SIZE = 50;
 
-const props = defineProps<{
+const { modelValue, client } = defineProps<{
   modelValue: boolean;
   client: SalesRecentClient | null;
 }>();
@@ -51,30 +51,30 @@ const isFormOpen = ref(false);
 const editingInteraction = ref<CompanyInteraction | null>(null);
 
 const subtitle = computed(() => {
-  if (!props.client) return '';
+  if (!client) return '';
   const count = totalItems.value === 1 ? '1 interaction' : `${totalItems.value} interactions`;
-  return props.client.email ? `${props.client.email} · ${count}` : count;
+  return client.email ? `${client.email} · ${count}` : count;
 });
 
-const close = (): void => emit('update:modelValue', false);
+const close = (): void => { emit('update:modelValue', false); };
 
-function load(): void {
-  if (!props.client) return;
+async function load(): Promise<void> {
+  if (!client) return;
   isLoading.value = true;
-  getCompanyInteractions(props.client.id, {
-    pageSize: PAGE_SIZE,
-    isDescending: true,
-    sortBy: CompanyInteractionSortBy.CreatedAt,
-  })
-    .then((result) => {
-      interactions.value = result.items;
-      totalItems.value = result.totalItems;
-      asOf.value = new Date().toISOString();
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
+  try {
+    const result = await getCompanyInteractions(client.id, {
+      pageSize: PAGE_SIZE,
+      isDescending: true,
+      sortBy: CompanyInteractionSortBy.CreatedAt,
     });
+    interactions.value = result.items;
+    totalItems.value = result.totalItems;
+    asOf.value = new Date().toISOString();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function startCreate(): void {
@@ -89,16 +89,16 @@ function startEdit(interaction: CompanyInteraction): void {
 
 function onSaved(): void {
   emit('saved');
-  load();
+  void load();
 }
 
 watch(
-  () => props.modelValue,
+  () => modelValue,
   (open) => {
     if (!open) return;
     interactions.value = [];
     totalItems.value = 0;
-    load();
+    void load();
   }
 );
 </script>

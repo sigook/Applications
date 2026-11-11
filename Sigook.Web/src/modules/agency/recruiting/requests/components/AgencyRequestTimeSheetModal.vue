@@ -183,8 +183,7 @@ const schema = yup.object({
   comments: optionalText(1000),
 });
 
-function cloneEditable(src: PunchCardEditableDay | null): PunchCardEditableDay | null {
-  if (!src) return src;
+function cloneEditable(src: PunchCardEditableDay): PunchCardEditableDay {
   const copy = JSON.parse(JSON.stringify(src)) as PunchCardEditableDay;
   const dateFields = ['hoursApprovedToDate', 'missinghoursToDate', 'missingHoursOvertimeToDate', 'timeInApproved', 'timeOutApproved'] as const;
   for (const key of dateFields) {
@@ -194,11 +193,11 @@ function cloneEditable(src: PunchCardEditableDay | null): PunchCardEditableDay |
 }
 
 function valuesFromEditable(src: PunchCardEditableDay | null): TimeSheetForm {
-  const clone: Partial<PunchCardEditableDay> = cloneEditable(src) || {};
+  const clone: Partial<PunchCardEditableDay> = src ? cloneEditable(src) : {};
   return {
-    hoursApproved: clone.hoursApprovedToDate || null,
-    missinghours: clone.missinghoursToDate || null,
-    missingHoursOvertime: clone.missingHoursOvertimeToDate || null,
+    hoursApproved: clone.hoursApprovedToDate ?? null,
+    missinghours: clone.missinghoursToDate ?? null,
+    missingHoursOvertime: clone.missingHoursOvertimeToDate ?? null,
     deductionsW: clone.missingRateWorker ?? null,
     deductionsC: clone.missingRateAgency ?? null,
     deductions: clone.deductionsOthers ?? null,
@@ -211,7 +210,7 @@ function valuesFromEditable(src: PunchCardEditableDay | null): TimeSheetForm {
   };
 }
 
-const props = defineProps<{ editableDay: PunchCardEditableDay; worker: { workerProfileId: string } }>();
+const { editableDay, worker } = defineProps<{ editableDay: PunchCardEditableDay; worker: { workerProfileId: string } }>();
 const emit = defineEmits<{
   (e: 'update:editableDay', value: PunchCardEditableDay): void;
   (e: 'updateData'): void;
@@ -221,7 +220,7 @@ const route = useRoute();
 
 const form = useStickyForm<TimeSheetForm>({
   schema,
-  initialValues: valuesFromEditable(props.editableDay),
+  initialValues: valuesFromEditable(editableDay),
 });
 const {
   hoursApproved, missinghours, missingHoursOvertime,
@@ -241,9 +240,9 @@ maximumMissingDate.setSeconds(0);
 const maximumMissing = ref(maximumMissingDate);
 
 const isLoading = ref(false);
-const localEditableDay = ref<PunchCardEditableDay | null>(cloneEditable(props.editableDay));
+const localEditableDay = ref<PunchCardEditableDay>(cloneEditable(editableDay));
 
-watch(() => props.editableDay, (newVal) => {
+watch(() => editableDay, (newVal) => {
   localEditableDay.value = cloneEditable(newVal);
   hydrate(newVal);
 }, { deep: true });
@@ -265,14 +264,16 @@ function saveHours() {
     'hoursApproved', 'deductionsW', 'deductionsC', 'deductions', 'deductionsDes',
     'bonus', 'bonusDes', 'reimbursements', 'reimbursementsDes', 'comments'
   ]);
-  form.handleSubmit((values) => {
-    sendValidation(values);
+  void form.handleSubmit((values) => {
+    void sendValidation(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function sendValidation(values: TimeSheetForm) {
+async function sendValidation(values: TimeSheetForm) {
+  const timeSheetId = localEditableDay.value.id;
+  if (!timeSheetId) return;
   isLoading.value = true;
   const timeInZero = dayjs(localEditableDay.value.timeIn).hour(0).minute(0).second(0);
   const model: TimeSheetModel = {
@@ -280,41 +281,40 @@ function sendValidation(values: TimeSheetForm) {
     timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
     missingHours: dayjs(values.missinghours).format("HH:mm:ss"),
     missingHoursOvertime: dayjs(values.missingHoursOvertime).format("HH:mm:ss"),
-    deductionsOthers: values.deductions,
+    deductionsOthers: values.deductions ?? 0,
     deductionsOthersDescription: values.deductionsDes,
-    bonusOrOthers: values.bonus || 0,
+    bonusOrOthers: values.bonus ?? 0,
     bonusOrOthersDescription: values.bonusDes || '',
     comments: values.comments,
-    missingRateAgency: values.deductionsC,
-    missingRateWorker: values.deductionsW,
-    reimbursements: values.reimbursements || 0,
+    missingRateAgency: values.deductionsC ?? 0,
+    missingRateWorker: values.deductionsW ?? 0,
+    reimbursements: values.reimbursements ?? 0,
     reimbursementsDescription: values.reimbursementsDes || '',
   };
-  updateAgencyWorkerTimeSheet(route.params.id as string, props.worker.workerProfileId, localEditableDay.value.id, model)
-    .then(() => {
-      isLoading.value = false;
-      const updated: PunchCardEditableDay = {
-        ...localEditableDay.value,
-        hoursApprovedToDate: values.hoursApproved,
-        missinghoursToDate: values.missinghours,
-        missingHoursOvertimeToDate: values.missingHoursOvertime,
-        missingRateWorker: values.deductionsW,
-        missingRateAgency: values.deductionsC,
-        deductionsOthers: values.deductions,
-        deductionsOthersDescription: values.deductionsDes,
-        bonusOrOthers: values.bonus,
-        bonusOrOthersDescription: values.bonusDes,
-        reimbursements: values.reimbursements,
-        reimbursementsDescription: values.reimbursementsDes,
-        comment: values.comments,
-      };
-      emit('update:editableDay', updated);
-      showAlertSuccess('Updated');
-      emit('updateData');
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyWorkerTimeSheet(route.params.id as string, worker.workerProfileId, timeSheetId, model);
+    isLoading.value = false;
+    const updated: PunchCardEditableDay = {
+      ...localEditableDay.value,
+      hoursApprovedToDate: values.hoursApproved,
+      missinghoursToDate: values.missinghours,
+      missingHoursOvertimeToDate: values.missingHoursOvertime,
+      missingRateWorker: model.missingRateWorker,
+      missingRateAgency: model.missingRateAgency,
+      deductionsOthers: model.deductionsOthers,
+      deductionsOthersDescription: values.deductionsDes,
+      bonusOrOthers: model.bonusOrOthers,
+      bonusOrOthersDescription: values.bonusDes,
+      reimbursements: model.reimbursements,
+      reimbursementsDescription: values.reimbursementsDes,
+      comment: values.comments,
+    };
+    emit('update:editableDay', updated);
+    showAlertSuccess('Updated');
+    emit('updateData');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

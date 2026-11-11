@@ -15,7 +15,7 @@ interface DialogConfirmConfig {
   cancelText?: string;
   type?: string;
   hasIcon?: boolean;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
   onCancel?: () => void;
 }
 
@@ -25,7 +25,7 @@ interface DialogAlertConfig {
   confirmText?: string;
   type?: string;
   hasIcon?: boolean;
-  onConfirm?: () => void;
+  onConfirm?: () => void | Promise<void>;
 }
 
 interface DialogPromptConfig {
@@ -37,7 +37,7 @@ interface DialogPromptConfig {
   hasIcon?: boolean;
   closeOnConfirm?: boolean;
   inputAttrs?: Record<string, unknown>;
-  onConfirm?: (value: string, dialog: { close: () => void }) => void;
+  onConfirm?: (value: string, dialog: { close: () => void }) => void | Promise<void>;
   onCancel?: () => void;
 }
 

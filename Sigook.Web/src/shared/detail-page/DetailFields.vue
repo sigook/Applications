@@ -23,7 +23,7 @@
 import type { DetailFact } from '@/shared/detail-page/types';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
+const { fields, columns } = defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
 </script>
 
 <style lang="scss" scoped>

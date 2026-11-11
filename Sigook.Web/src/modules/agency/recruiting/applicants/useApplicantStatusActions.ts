@@ -22,29 +22,29 @@ export function useApplicantStatusActions(onChanged: (status: RequestApplicantSt
 } {
   const isChangingStatus = ref(false);
 
-  function changeStatus(target: ApplicantStatusTarget, status: RequestApplicantStatus, successMessage: string) {
+  async function changeStatus(target: ApplicantStatusTarget, status: RequestApplicantStatus, successMessage: string) {
     isChangingStatus.value = true;
-    changeApplicantStatus(target.requestId, target.applicantId, { status })
-      .then(() => {
-        showAlertSuccess(successMessage);
-        onChanged(status);
-      })
-      .catch((error) => showAlertError(error))
-      .finally(() => {
-        isChangingStatus.value = false;
-      });
+    try {
+      await changeApplicantStatus(target.requestId, target.applicantId, { status });
+      showAlertSuccess(successMessage);
+      onChanged(status);
+    } catch (error) {
+      showAlertError(error);
+    } finally {
+      isChangingStatus.value = false;
+    }
   }
 
   function start(target: ApplicantStatusTarget) {
-    changeStatus(target, RequestApplicantStatus.InProgress, 'Applicant started');
+    void changeStatus(target, RequestApplicantStatus.InProgress, 'Applicant started');
   }
 
   function reopen(target: ApplicantStatusTarget) {
-    changeStatus(target, RequestApplicantStatus.InProgress, 'Applicant reopened');
+    void changeStatus(target, RequestApplicantStatus.InProgress, 'Applicant reopened');
   }
 
   function confirm(target: ApplicantStatusTarget) {
-    changeStatus(target, RequestApplicantStatus.Confirmed, 'Applicant confirmed');
+    void changeStatus(target, RequestApplicantStatus.Confirmed, 'Applicant confirmed');
   }
 
   function confirmCancel(target: ApplicantStatusTarget) {

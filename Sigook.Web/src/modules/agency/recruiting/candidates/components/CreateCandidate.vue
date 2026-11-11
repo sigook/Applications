@@ -23,7 +23,7 @@
             </div>
             <div class="column is-12">
               <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
-                @formattedPhone="(phone: string) => phoneNumber = phone" />
+                @formattedPhone="(phone) => phoneNumber = phone ?? ''" />
             </div>
             <div class="column is-12">
               <AddressComponent ref="addressComponent" v-model:model="location" :require-postal-code="false"
@@ -96,7 +96,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, computed, watch } from 'vue';
+import { ref, reactive, computed, watch, useTemplateRef } from 'vue';
 import { useForm, useField } from 'vee-validate';
 import * as yup from 'yup';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
@@ -109,7 +109,7 @@ import { createAgencyCandidate } from "@/modules/agency/recruiting/candidates/ap
 import type { CreateCandidateModel } from '@/modules/agency/recruiting/candidates/types';
 import type { Source, Gender, LocationModel } from "@/shared/types/common";
 
-const emit = defineEmits<{ (e: 'onClose', value: boolean): void }>();
+const emit = defineEmits<(e: 'onClose', value: boolean) => void>();
 
 const schema = yup.object({
   name: yup.string().required('Full name is required').min(2).max(60),
@@ -131,7 +131,7 @@ watch(email, () => { interacted.email = true; });
 const errors = computed(() => {
   const out: Record<string, string> = {};
   for (const key of Object.keys(formErrors.value)) {
-    out[key] = interacted[key] ? (formErrors.value[key] || '') : '';
+    out[key] = interacted[key] ? (formErrors.value[key as keyof typeof formErrors.value] || '') : '';
   }
   return out;
 });
@@ -146,11 +146,11 @@ const genders = ref<Gender[]>([]);
 const sourceList = ref<Source[]>([]);
 const sourceError = ref('');
 const phoneNumber = ref('');
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
+const addressComponent = useTemplateRef<InstanceType<typeof AddressComponent>>('addressComponent');
 const location = ref<LocationModel>({ address: '', postalCode: '', city: null });
 const candidate = reactive<{
-  phoneNumbers: Array<{ phoneNumber: string }>;
+  phoneNumbers: { phoneNumber: string }[];
   skills: string[];
   sourceId: string | null;
   gender: Gender | null;
@@ -196,18 +196,18 @@ function goToPreviousStep() {
 }
 
 function submit() {
-  handleSubmit(async (values) => {
+  void handleSubmit(async (values) => {
     const phoneValid = phoneComponent.value ? await phoneComponent.value.validatePhone() : false;
     if (!phoneValid) {
       activeStep.value = 0;
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
     }
-    submitCandidate(values);
+    await submitCandidate(values);
   })();
 }
 
-function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'email'>) {
+async function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'email'>) {
   isLoading.value = true;
   const payload: CreateCandidateModel = {
     name: values.name,
@@ -223,19 +223,18 @@ function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'email'>) {
     residencyStatus: candidate.residencyStatus,
     fileName: file.value ? generateFileName('Resume', file.value.name) : null,
   };
-  createAgencyCandidate(payload, file.value)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess("Created");
-      emit('onClose', true);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyCandidate(payload, file.value);
+    isLoading.value = false;
+    showAlertSuccess("Created");
+    emit('onClose', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-(async () => {
+void (async () => {
   [genders.value, sourceList.value] = await Promise.all([getGenders(), getSources()]);
 })();
 </script>

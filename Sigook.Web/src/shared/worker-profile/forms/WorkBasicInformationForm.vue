@@ -90,8 +90,8 @@ interface BasicInfoForm {
   gender: CatalogItem | null;
 }
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   firstName: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
@@ -126,55 +126,54 @@ const genders = ref<CatalogItem[]>([]);
 
 function hydrate(src: WorkerProfileDetail) {
   form.hydrate({
-    firstName: src?.firstName || '',
-    middleName: src?.middleName || '',
-    lastName: src?.lastName || '',
-    secondLastName: src?.secondLastName || '',
-    birthDay: src?.birthDay ? new Date(src.birthDay) : null,
-    gender: src?.gender || null,
+    firstName: src.firstName || '',
+    middleName: src.middleName || '',
+    lastName: src.lastName || '',
+    secondLastName: src.secondLastName || '',
+    birthDay: src.birthDay ? new Date(src.birthDay) : null,
+    gender: src.gender ?? null,
   });
 }
 
-function submitWorkerBasicInformation(values: BasicInfoForm) {
+async function submitWorkerBasicInformation(values: BasicInfoForm) {
+  if (!values.birthDay || !workerId.value) return;
   isLoading.value = true;
   const payload: WorkerBasicInformationModel = {
     firstName: values.firstName,
     middleName: values.middleName,
     lastName: values.lastName,
     secondLastName: values.secondLastName,
-    birthDay: values.birthDay?.toISOString(),
+    birthDay: values.birthDay.toISOString(),
     gender: values.gender,
     hasVehicle: hasVehicle.value,
   };
-  createWorkerBasicInformation(workerId.value, payload)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerBasicInformation(workerId.value, payload);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function validateAll() {
   form.markInteracted(['firstName', 'middleName', 'lastName', 'secondLastName', 'birthDay', 'gender']);
-  form.handleSubmit((values) => {
-    submitWorkerBasicInformation(values);
+  void form.handleSubmit(async (values) => {
+    await submitWorkerBasicInformation(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-if (props.data != null) {
-  workerId.value = props.data.id;
-  hasVehicle.value = !!props.data.hasVehicle;
-  hydrate(props.data);
-}
-appStore.getCurrentDate().then(response => {
+workerId.value = data.id;
+hasVehicle.value = !!data.hasVehicle;
+hydrate(data);
+void (async () => {
+  const response = await appStore.getCurrentDate();
   disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
-});
-(async () => {
+})();
+void (async () => {
   genders.value = await getGenders();
 })();
 </script>

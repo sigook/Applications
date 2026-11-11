@@ -98,8 +98,8 @@ import type { AgencyWorkerHoliday } from '@/modules/agency/recruiting/workers/ty
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { TaxCategory } from '@/shared/types/common';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'update:worker', value: WorkerProfileDetail): void }>();
+const { worker } = defineProps<{ worker: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'update:worker', value: WorkerProfileDetail) => void>();
 
 const schema = yup.object({
   cpp: yup.number().nullable().transform((v, o) => o === '' || o === null ? null : v)
@@ -122,95 +122,99 @@ const isLoading = ref(false);
 const taxCategories = ref<TaxCategory[]>([]);
 const workerHolidays = ref<AgencyWorkerHoliday[]>([]);
 const workerHolidaySelected = ref<AgencyWorkerHoliday | null>(null);
-const localWorker = ref<WorkerProfileDetail>(JSON.parse(JSON.stringify(props.worker)));
+const localWorker = ref<WorkerProfileDetail>(JSON.parse(JSON.stringify(worker)));
 
-watch(() => props.worker, (newVal) => {
+watch(() => worker, (newVal) => {
   localWorker.value = JSON.parse(JSON.stringify(newVal));
   form.hydrate({
-    cpp: newVal?.cpp ?? null,
-    ei: newVal?.ei ?? null,
+    cpp: newVal.cpp ?? null,
+    ei: newVal.ei ?? null,
   });
 }, { deep: true });
 
-function updateExternalId() {
+async function updateExternalId() {
   isLoading.value = true;
-  updateWorkerProfileExternalId(localWorker.value)
-    .then(() => {
-      isLoading.value = false;
-      emit('update:worker', localWorker.value);
-    }).catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateWorkerProfileExternalId(localWorker.value);
+    isLoading.value = false;
+    emit('update:worker', localWorker.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateWcCode() {
+async function updateWcCode() {
   isLoading.value = true;
-  updateWorkerProfileWcCode(localWorker.value)
-    .then(() => {
-      isLoading.value = false;
-      emit('update:worker', localWorker.value);
-    }).catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateWorkerProfileWcCode(localWorker.value);
+    isLoading.value = false;
+    emit('update:worker', localWorker.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateIsContractor() {
+async function updateIsContractor() {
   isLoading.value = true;
-  updateAgencyWorkerContractor(localWorker.value.id)
-    .then(() => {
-      isLoading.value = false;
-      emit('update:worker', localWorker.value);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyWorkerContractor(localWorker.value.id);
+    isLoading.value = false;
+    emit('update:worker', localWorker.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateIsSubContractor() {
+async function updateIsSubContractor() {
   isLoading.value = true;
-  updateAgencyWorkerSubContractor(localWorker.value.id)
-    .then(() => {
-      isLoading.value = false;
-      emit('update:worker', localWorker.value);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyWorkerSubContractor(localWorker.value.id);
+    isLoading.value = false;
+    emit('update:worker', localWorker.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function updateTaxCategory() {
+async function updateTaxCategory() {
   isLoading.value = true;
-  updateWorkerProfileTaxCategory(localWorker.value)
-    .then(() => {
-      isLoading.value = false;
-      emit('update:worker', localWorker.value);
-    }).catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateWorkerProfileTaxCategory(localWorker.value);
+    isLoading.value = false;
+    emit('update:worker', localWorker.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function updateTaxRate() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isLoading.value = true;
     localWorker.value.cpp = values.cpp;
     localWorker.value.ei = values.ei;
-    updateWorkerProfileTaxRate(localWorker.value)
-      .then(() => {
-        isLoading.value = false;
-        emit('update:worker', localWorker.value);
-      }).catch((error) => {
-        isLoading.value = false;
-        showAlertError(error);
-      });
+    try {
+      await updateWorkerProfileTaxRate(localWorker.value);
+      isLoading.value = false;
+      emit('update:worker', localWorker.value);
+    } catch (error) {
+      isLoading.value = false;
+      showAlertError(error);
+    }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
+}
+
+async function confirmHoliday(value: string, dialog: { close: () => void }) {
+  await addNewHoliday(localWorker.value.id, { workerProfileId: localWorker.value.id, date: value });
+  workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
+  dialog.close();
 }
 
 function addHoliday() {
@@ -222,19 +226,16 @@ function addHoliday() {
     },
     closeOnConfirm: false,
     confirmText: 'Add',
-    onConfirm: async (value, dialog) => {
-      await addNewHoliday(localWorker.value.id, { workerProfileId: localWorker.value.id, date: value });
-      workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
-      dialog.close();
-    },
+    onConfirm: (value, dialog) => confirmHoliday(value, dialog),
   });
 }
 
 function onHolidaySelected(date: Date) {
-  workerHolidaySelected.value = workerHolidays.value.find(wh => new Date(wh.date).getDate() === date.getDate());
+  workerHolidaySelected.value = workerHolidays.value.find(wh => new Date(wh.date).getDate() === date.getDate()) ?? null;
 }
 
 async function addUpdateWorkerHoliday() {
+  if (!workerHolidaySelected.value) return;
   isLoading.value = true;
   await addUpdateAgencyWorkerProfileHolidays(localWorker.value.id, workerHolidaySelected.value);
   isLoading.value = false;
@@ -244,12 +245,12 @@ const selectableDates = computed(() => {
   return workerHolidays.value.map((wh) => new Date(wh.date));
 });
 
-(async () => {
+void (async () => {
   taxCategories.value = await getTaxCategories();
   workerHolidays.value = await getAgencyWorkerProfileHolidays(localWorker.value.id);
   form.hydrate({
-    cpp: localWorker.value?.cpp ?? null,
-    ei: localWorker.value?.ei ?? null,
+    cpp: localWorker.value.cpp ?? null,
+    ei: localWorker.value.ei ?? null,
   });
 })();
 </script>

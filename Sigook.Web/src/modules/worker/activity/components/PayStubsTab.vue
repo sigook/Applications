@@ -77,9 +77,7 @@ import { hoursLabel } from '@/modules/worker/activity/activityFormat';
 import type { WorkerPayStubFilter, WorkerPayStubListItem, WorkerPayStubYtd } from '@/modules/worker/activity/types';
 import type { GridHandle } from '@/shared/types/common';
 
-const emit = defineEmits<{
-  (e: 'download', payStub: WorkerPayStubListItem): void;
-}>();
+const emit = defineEmits<(e: 'download', payStub: WorkerPayStubListItem) => void>();
 
 const grid = useTemplateRef<GridHandle>('grid');
 const isLoading = ref(true);
@@ -91,29 +89,34 @@ const serverParams = ref<WorkerPayStubFilter>({
 });
 const year = computed(() => serverParams.value.year);
 
-function loadYtd() {
+async function loadYtd() {
   if (!serverParams.value.year) return;
-  getWorkerPayStubYtd(serverParams.value.year)
-    .then((response) => { ytd.value = response; })
-    .catch((error: unknown) => showAlertError(error));
+  try {
+    ytd.value = await getWorkerPayStubYtd(serverParams.value.year);
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function onYearChanged() {
   grid.value?.search();
-  loadYtd();
+  void loadYtd();
 }
 
-getWorkerPayStubYears()
-  .then((response) => {
+async function loadYears() {
+  try {
+    const response = await getWorkerPayStubYears();
     years.value = response;
     serverParams.value.year = response[0];
     isLoading.value = false;
-    loadYtd();
-  })
-  .catch((error: unknown) => {
+    await loadYtd();
+  } catch (error) {
     isLoading.value = false;
     showAlertError(error);
-  });
+  }
+}
+
+void loadYears();
 </script>
 
 <style lang="scss" scoped>

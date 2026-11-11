@@ -167,10 +167,11 @@ const activeDay = ref<string | null>(null);
 const showAdd = ref(false);
 const activeAssignment = ref<WeeklyBoardAssignment | null>(null);
 
-const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(loadBoard);
+const { target, showStatus, showInterview, showHistory, open, confirmDelete } = useRunnerActions(() => { void loadBoard(); });
 
 const days = computed<WeekDay[]>(() => {
-  const [from, to] = range.value;
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return [];
   const end = dayjs(to);
   const result: WeekDay[] = [];
@@ -188,7 +189,8 @@ const days = computed<WeekDay[]>(() => {
 });
 
 const rangeLabel = computed(() => {
-  const [from, to] = range.value;
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return '';
   return `${dayjs(from).format('MMM D')} – ${dayjs(to).format('MMM D, YYYY')}`;
 });
@@ -215,7 +217,7 @@ function workerInitials(name: string): string {
     .split(' ')
     .filter(Boolean)
     .slice(0, 2)
-    .map(part => part[0]?.toUpperCase() ?? '')
+    .map(part => part.charAt(0).toUpperCase())
     .join('');
 }
 
@@ -232,21 +234,21 @@ function statusTagType(status: RequestStatus): string {
 }
 
 function statusLabel(status: RequestStatus): string {
-  return RequestStatusLabels[status] ?? '';
+  return RequestStatusLabels[status];
 }
 
-function loadBoard(): void {
-  const [from, to] = range.value;
+async function loadBoard(): Promise<void> {
+  const from = range.value.at(0);
+  const to = range.value.at(1);
   if (!from || !to) return;
   isLoading.value = true;
-  getRecruiterWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat) })
-    .then(response => {
-      board.value = response;
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    board.value = await getRecruiterWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat) });
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function shiftWeek(direction: number): void {
@@ -263,24 +265,24 @@ function openAdd(assignment: WeeklyBoardAssignment): void {
   showAdd.value = true;
 }
 
-function onSend(model: CreateRunnerModel): void {
+async function onSend(model: CreateRunnerModel): Promise<void> {
   if (!activeAssignment.value) return;
   isSaving.value = true;
-  addRunner({
-    requestId: activeAssignment.value.requestId,
-    workDate: dayjs(activeAssignment.value.workDate).format(dateFormat),
-    workerProfileId: model.workerProfileId,
-    type: model.type,
-  })
-    .then(() => {
-      showAlertSuccess('Runner sent');
-      showAdd.value = false;
-      loadBoard();
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isSaving.value = false;
+  try {
+    await addRunner({
+      requestId: activeAssignment.value.requestId,
+      workDate: dayjs(activeAssignment.value.workDate).format(dateFormat),
+      workerProfileId: model.workerProfileId,
+      type: model.type,
     });
+    showAlertSuccess('Runner sent');
+    showAdd.value = false;
+    void loadBoard();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 function toTarget(assignment: WeeklyBoardAssignment, runner: WeeklyBoardRunner): RunnerActionTarget {

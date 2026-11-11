@@ -9,13 +9,13 @@ export function compactMoney(amount: number): string {
   const sign = amount < 0 ? '-' : '';
   const value = Math.abs(amount);
 
-  if (value >= 1_000_000) {
-    return `${sign}$${trimZero(value / 1_000_000)}M`;
+  if (Math.round(value) < 1_000) {
+    return `${sign}$${Math.round(value)}`;
   }
-  if (value >= 1_000) {
-    return `${sign}$${trimZero(value / 1_000)}K`;
+  if (roundCompact(value / 1_000) < 1_000) {
+    return `${sign}$${roundCompact(value / 1_000)}K`;
   }
-  return `${sign}$${Math.round(value)}`;
+  return `${sign}$${roundCompact(value / 1_000_000)}M`;
 }
 
 export function relativeTime(occurredAt: string, asOf: string): string {
@@ -78,7 +78,6 @@ export function ratioOf(count: number, max: number): number {
   return Math.min(1, count / max);
 }
 
-function trimZero(value: number): string {
-  const rounded = value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
-  return String(rounded);
+function roundCompact(value: number): number {
+  return value >= 100 ? Math.round(value) : Math.round(value * 10) / 10;
 }

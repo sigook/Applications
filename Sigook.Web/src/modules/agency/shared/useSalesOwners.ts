@@ -7,20 +7,19 @@ import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 export function useSalesOwners(): {
   isAdmin: ComputedRef<boolean>;
   owners: Ref<AgencyPersonnelListItem[]>;
-  loadOwners: () => void;
+  loadOwners: () => Promise<void>;
 } {
   const { isAdmin } = useAdmin();
   const owners = ref<AgencyPersonnelListItem[]>([]);
 
-  function loadOwners(): void {
+  async function loadOwners(): Promise<void> {
     if (!isAdmin.value) return;
-    getAgencyPersonnel()
-      .then((items) => {
-        owners.value = items.filter((p) => !p.role || salesAccess.includes(p.role));
-      })
-      .catch(() => {
-        owners.value = [];
-      });
+    try {
+      const items = await getAgencyPersonnel();
+      owners.value = items.filter((p) => !p.role || salesAccess.includes(p.role));
+    } catch {
+      owners.value = [];
+    }
   }
 
   return { isAdmin, owners, loadOwners };

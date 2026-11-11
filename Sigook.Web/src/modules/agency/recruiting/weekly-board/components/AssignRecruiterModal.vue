@@ -60,7 +60,7 @@ import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 import type { AssignRecruitersPayload, WeekDay, AssignPreset } from '@/modules/agency/recruiting/weekly-board/types';
 
-const props = defineProps<{
+const { days, preset, saving } = defineProps<{
   days: WeekDay[];
   preset?: AssignPreset;
   saving: boolean;
@@ -80,7 +80,7 @@ const personnel = ref<AgencyPersonnelListItem[]>([]);
 const filteredRecruiters = ref<AgencyPersonnelListItem[]>([]);
 const selectedRecruiters = ref<AgencyPersonnelListItem[]>([]);
 
-const selectedDays = ref<string[]>(props.preset?.workDate ? [props.preset.workDate] : []);
+const selectedDays = ref<string[]>(preset?.workDate ? [preset.workDate] : []);
 
 const canAssign = computed(
   () => !!selectedRequest.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
@@ -90,16 +90,17 @@ function onRequestSelected(option: AgencyRequestListItem | null): void {
   selectedRequest.value = option;
 }
 
-function loadPersonnel(): void {
-  getAgencyPersonnel()
-    .then(response => {
-      personnel.value = response;
-      filteredRecruiters.value = response;
-      if (props.preset?.recruiterId) {
-        selectedRecruiters.value = response.filter(r => r.id === props.preset?.recruiterId);
-      }
-    })
-    .catch(error => showAlertError(error));
+async function loadPersonnel(): Promise<void> {
+  try {
+    const response = await getAgencyPersonnel();
+    personnel.value = response;
+    filteredRecruiters.value = response;
+    if (preset?.recruiterId) {
+      selectedRecruiters.value = response.filter(r => r.id === preset.recruiterId);
+    }
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function onRecruiterTyping(text: string): void {
@@ -125,7 +126,7 @@ function submit(): void {
   });
 }
 
-loadPersonnel();
+void loadPersonnel();
 </script>
 
 <style scoped lang="scss">

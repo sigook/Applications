@@ -48,17 +48,17 @@ import CompanyLocationsCard from '@/shared/company-profile/CompanyLocationsCard.
 import CompanyMainContactCard from '@/shared/company-profile/CompanyMainContactCard.vue';
 import CompanyNotesCard from '@/modules/agency/recruiting/clients/components/CompanyNotesCard.vue';
 
-const props = defineProps<{ company: AgencyCompanyProfileDetail }>();
+const { company } = defineProps<{ company: AgencyCompanyProfileDetail }>();
 const emit = defineEmits<{
   (e: 'update:company', value: AgencyCompanyProfileDetail): void;
   (e: 'showTab', tab: string): void;
 }>();
 
 const { isAdmin } = useAdmin();
-const { createdAt } = useCompanyDetail(toRef(props, 'company'));
+const { createdAt } = useCompanyDetail(toRef(() => company));
 
-const fetchLocations = () => getAgencyCompanyLocation(props.company.id);
-const fetchContacts = () => getAgencyCompanyContactPerson(props.company.id);
+const fetchLocations = () => getAgencyCompanyLocation(company.id);
+const fetchContacts = () => getAgencyCompanyContactPerson(company.id);
 
 function anchor(id: string) {
   return `company-section-${id}`;
@@ -68,21 +68,21 @@ const sections = computed<DetailSection[]>(() => [
   { id: anchor('company'), label: 'Company' },
   { id: anchor('about'), label: 'About' },
   { id: anchor('internal'), label: 'Internal', hint: 'agency only' },
-  { id: anchor('documents'), label: 'Documents', count: props.company.summary?.documentsCount },
+  { id: anchor('documents'), label: 'Documents', count: company.summary?.documentsCount },
   { id: anchor('invoicing'), label: 'Invoicing' },
   ...(isAdmin.value ? [{ id: anchor('settings'), label: 'Settings' }] : []),
 ]);
 
 function onDocumentsChanged(delta: number) {
-  if (!props.company.summary) return;
+  if (!company.summary) return;
   emit('update:company', {
-    ...props.company,
-    summary: { ...props.company.summary, documentsCount: props.company.summary.documentsCount + delta },
+    ...company,
+    summary: { ...company.summary, documentsCount: company.summary.documentsCount + delta },
   });
 }
 
 function onLocationsChanged(count: number) {
-  if (!props.company.summary || props.company.summary.locationsCount === count) return;
-  emit('update:company', { ...props.company, summary: { ...props.company.summary, locationsCount: count } });
+  if (!company.summary || company.summary.locationsCount === count) return;
+  emit('update:company', { ...company, summary: { ...company.summary, locationsCount: count } });
 }
 </script>
