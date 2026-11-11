@@ -23,7 +23,6 @@ public class CompanyRequestDetailModel
     public bool JobIsOnBranchOffice { get; set; }
     public LocationDetailModel JobLocation { get; set; }
     public JobPositionDetailModel JobPositionRate { get; set; }
-    public decimal? AgencyRate { get; set; }
     public RequestStatus Status { get; set; }
     public DurationTerm DurationTerm { get; set; }
     public string DisplayShift { get; set; }

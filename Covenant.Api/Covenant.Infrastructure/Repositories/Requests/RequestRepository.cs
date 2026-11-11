@@ -471,7 +471,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
              {
                  Value = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle
              },
-             AgencyRate = r.AgencyRate,
              WorkerSalary = r.WorkerSalary,
              CreatedAt = r.CreatedAt,
              Status = r.Status,

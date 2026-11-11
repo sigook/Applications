@@ -14,7 +14,8 @@ namespace Covenant.Common.Repositories.Companies;
 public interface ICompanyRepository : IBaseRepository
 {
     Task<CompanyProfileJobPositionRate> GetJobPosition(Guid id);
-    Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression);
+    Task<IEnumerable<CompanyJobPositionModel>> GetCompanyJobPositions(Guid companyId);
+    Task<CompanyJobPositionModel> GetCompanyJobPositionDetail(Guid id);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId);
     Task<PaginatedList<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter);
     Task<CompanyProfileJobPositionRateModel> GetJobPositionDetail(Guid id);

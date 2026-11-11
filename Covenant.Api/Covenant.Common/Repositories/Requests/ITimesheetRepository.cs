@@ -4,6 +4,7 @@ using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Requests.TimeSheets.Agencies;
+using Covenant.Common.Models.Requests.TimeSheets.Companies;
 using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models.Requests.Workers;
 using Covenant.Common.Models;
@@ -18,6 +19,7 @@ public interface ITimesheetRepository : IBaseRepository
     Task<TimeSheet> GetTimeSheet(Guid id);
     Task<IEnumerable<TimeSheet>> GetTimeSheets(Guid workerId, Guid requestId, Expression<Func<Request, bool>> requestCondition);
     Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerId, Guid requestId, DateTime? startDate, DateTime? endDate);
+    Task<IEnumerable<CompanyTimeSheetListModel>> GetCompanyTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate);
     Task<List<TimeSheetApprovedBillingModel>> GetTimeSheetForCreatingInvoice(IEnumerable<Guid> agencyIds, CreateInvoiceModel model);
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyProfileId);
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId);

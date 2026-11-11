@@ -117,7 +117,7 @@ import SheetPanel from "@/shared/ui/SheetPanel.vue";
 import TimeSheetModal from "@/modules/company/requests/components/CompanyRequestTimeSheetModal.vue";
 import TimeSheetDetail from "@/modules/company/requests/components/CompanyRequestTimeSheetDetail.vue";
 import { useBreakpoint } from '@/shared/composables/useBreakpoint';
-import type { PunchCardDay, PunchCardEditableDay, TimeSheetModel } from '@/shared/punch-card/types';
+import type { PunchCardDay, PunchCardEditableDay, CompanyTimeSheetModel } from '@/shared/punch-card/types';
 import type { CompanyRequestDetail, CompanyRequestWorker } from '@/modules/company/requests/types';
 import { buildTimeSheetApproveModel } from "@/shared/punch-card/timeSheetApprove";
 import { maximumHoursPerDay } from "@/shared/constants/catalog";
@@ -153,7 +153,7 @@ function dayKeyOf(day: PunchCardDay) {
   return dayjs(day.day).format('YYYY-MM-DD');
 }
 
-async function onSheetSave(model: TimeSheetModel) {
+async function onSheetSave(model: CompanyTimeSheetModel) {
   const item = editableDay.value;
   if (!item?.id) return;
   isLoading.value = true;
@@ -266,13 +266,11 @@ function validatePost(model: PunchCardDay, index: number | string) {
 
 async function reportWorkerTimSheet(item: PunchCardEditableDay) {
   isLoading.value = true;
-  const model: TimeSheetModel = {
+  const model: CompanyTimeSheetModel = {
     hours: changeDecimalToHour(item.totalHoursApproved),
     timeIn: todayTimeZero(item.day),
     missingHours: item.missingHours,
     missingHoursOvertime: item.missingHoursOvertime,
-    missingRateWorker: item.missingRateWorker,
-    missingRateAgency: item.missingRateAgency,
     deductionsOthers: item.deductionsOthers,
     bonusOrOthers: item.bonusOrOthers,
     deductionsOthersDescription: item.deductionsOthersDescription,
@@ -335,8 +333,6 @@ function editPunchCard(day: PunchCardDay) {
   editableDay.value.missinghoursToDate = stringToDate(editableDay.value.missingHours);
   editableDay.value.missingHoursOvertimeToDate = stringToDate(editableDay.value.missingHoursOvertime);
   editableDay.value.hoursApprovedToDate = startTime.value;
-  editableDay.value.missingRateWorker = day.missingRateWorker;
-  editableDay.value.missingRateAgency = day.missingRateAgency;
 
   const newTime = new Date();
   const dur = dayjs.duration(day.totalHoursApproved ?? 0, 'hours');

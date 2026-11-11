@@ -2,7 +2,7 @@ import { api } from '@/app/security/apiService';
 import type { PaginatedList } from '@/shared/types/common';
 import type { FinishAssignmentModel, RequestShiftModel } from '@/shared/request-detail/types';
 import type { CompanyRequestFilter, CompanyRequestListItem, CompanyRequestDetail, CompanyRequestWorkerFilter, CompanyRequestWorker, ClockInModel, ClockInResult, CommentsModel, CreateCompanyRequestModel } from '@/modules/company/requests/types';
-import type { TimeSheetListItem, TimeSheetModel } from '@/shared/punch-card/types';
+import type { CompanyTimeSheetListItem, CompanyTimeSheetModel } from '@/shared/punch-card/types';
 
 // Requests
 export function getRequests(filter: CompanyRequestFilter): Promise<PaginatedList<CompanyRequestListItem>> {
@@ -47,19 +47,19 @@ export function requestAnotherWorker(requestId: string, comment: CommentsModel):
 }
 
 // TimeSheet
-export function getCompanyWorkerTimeSheetByDate(requestId: string, workerProfileId: string, date: { startDate: string; endDate: string }): Promise<TimeSheetListItem[]> {
-  return api.get<TimeSheetListItem[]>(`/api/company/requests/${requestId}/Workers/${workerProfileId}/TimeSheets`, { params: { ...date } });
+export function getCompanyWorkerTimeSheetByDate(requestId: string, workerProfileId: string, date: { startDate: string; endDate: string }): Promise<CompanyTimeSheetListItem[]> {
+  return api.get<CompanyTimeSheetListItem[]>(`/api/company/requests/${requestId}/Workers/${workerProfileId}/TimeSheets`, { params: { ...date } });
 }
 
-export function postCompanyWorkerTimeSheet(requestId: string, workerProfileId: string, model: TimeSheetModel): Promise<{ id: string }> {
+export function postCompanyWorkerTimeSheet(requestId: string, workerProfileId: string, model: CompanyTimeSheetModel): Promise<{ id: string }> {
   return api.post<{ id: string }>(`/api/company/requests/${requestId}/Workers/${workerProfileId}/TimeSheets`, model);
 }
 
-export function validateHoursTimeSheet(requestId: string, workerProfileId: string, id: string, model: TimeSheetModel): Promise<void> {
+export function validateHoursTimeSheet(requestId: string, workerProfileId: string, id: string, model: CompanyTimeSheetModel): Promise<void> {
   return api.put(`/api/company/requests/${requestId}/Workers/${workerProfileId}/TimeSheets/${id}`, model);
 }
 
-export function updateCompanyRequestWorkerTimeSheet(requestId: string, workerProfileId: string, id: string, model: TimeSheetModel): Promise<void> {
+export function updateCompanyRequestWorkerTimeSheet(requestId: string, workerProfileId: string, id: string, model: CompanyTimeSheetModel): Promise<void> {
   return api.put(`/api/company/requests/${requestId}/Workers/${workerProfileId}/TimeSheets/${id}`, model);
 }
 

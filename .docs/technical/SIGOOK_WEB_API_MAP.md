@@ -500,7 +500,7 @@ Company portal (client) view of their profile, requests and workers.
 ### Job Positions
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyJobPositions()` | GET | `/api/company/profile/jobpositions` | — | `CompanyProfileJobPositionRate[]` | Roles + rates |
+| `getCompanyJobPositions()` | GET | `/api/company/profile/jobpositions` | — | `CompanyJobPosition[]` | Roles without rates |
 | `createCompanyJobPosition(model)` | POST | `/api/company/profile/jobpositions` | `CreateJobPositionModel` | `{ id }` | Company creates a role without rates (agency admin sets them) |
 
 ### Requests
@@ -523,10 +523,10 @@ Company portal (client) view of their profile, requests and workers.
 ### TimeSheet
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getCompanyWorkerTimeSheetByDate(requestId, workerId, date)` | GET | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets` | `{ startDate, endDate }` (params) | `TimeSheetListItem[]` | |
-| `postCompanyWorkerTimeSheet(requestId, workerId, model)` | POST | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets` | `TimeSheetModel` | `{ id: string }` | |
-| `validateHoursTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | `TimeSheetModel` | `void` | |
-| `updateCompanyRequestWorkerTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | `TimeSheetModel` | `void` | |
+| `getCompanyWorkerTimeSheetByDate(requestId, workerId, date)` | GET | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets` | `{ startDate, endDate }` (params) | `CompanyTimeSheetListItem[]` | No rates |
+| `postCompanyWorkerTimeSheet(requestId, workerId, model)` | POST | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets` | `CompanyTimeSheetModel` | `{ id: string }` | |
+| `validateHoursTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | `CompanyTimeSheetModel` | `void` | |
+| `updateCompanyRequestWorkerTimeSheet(requestId, workerId, id, model)` | PUT | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | `CompanyTimeSheetModel` | `void` | |
 | `deleteCompanyWorkerTimeSheet(requestId, workerId, id)` | DELETE | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/{id}` | — | `void` | |
 | `companyTimeSheetClockIn(requestId, workerId, model)` | POST | `/api/company/requests/{requestId}/workers/{workerId}/TimeSheets/ClockIn` | `ClockInModel` | `ClockInResult` | GPS clock-in |
 

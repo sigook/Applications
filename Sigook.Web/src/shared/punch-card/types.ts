@@ -43,6 +43,10 @@ export interface TimeSheetModel {
   reimbursementsDescription?: string;
 }
 
+export type CompanyTimeSheetListItem = Omit<TimeSheetListItem, 'missingRateWorker' | 'missingRateAgency' | 'reimbursements' | 'reimbursementsDescription'>;
+
+export type CompanyTimeSheetModel = Omit<TimeSheetModel, 'missingRateWorker' | 'missingRateAgency' | 'reimbursements' | 'reimbursementsDescription'>;
+
 export interface PunchCardDay extends Partial<Omit<TimeSheetListItem, 'id' | 'day' | 'totalHoursApproved'>> {
   id: string | null;
   day: string | Date;

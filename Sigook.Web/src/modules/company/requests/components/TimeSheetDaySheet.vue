@@ -70,7 +70,7 @@ import dayjs from 'dayjs';
 import SheetPanel from '@/shared/ui/SheetPanel.vue';
 import { dateHHmm, hour } from '@/shared/format';
 import { maximumHoursPerDay } from '@/shared/constants/catalog';
-import type { PunchCardEditableDay, TimeSheetModel } from '@/shared/punch-card/types';
+import type { PunchCardEditableDay, CompanyTimeSheetModel } from '@/shared/punch-card/types';
 
 const { modelValue, editableDay } = defineProps<{
   modelValue: boolean;
@@ -79,7 +79,7 @@ const { modelValue, editableDay } = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'save', model: TimeSheetModel): void;
+  (e: 'save', model: CompanyTimeSheetModel): void;
   (e: 'post', hours: number): void;
   (e: 'delete'): void;
 }>();

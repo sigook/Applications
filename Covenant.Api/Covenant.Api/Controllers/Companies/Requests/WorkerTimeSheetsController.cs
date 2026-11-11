@@ -1,7 +1,6 @@
 using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Functionals;
-using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Requests.TimeSheets.Companies;
 using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Repositories.Requests;
@@ -25,13 +24,13 @@ public class WorkerTimeSheetsController(ITimesheetService timeSheetService, ITim
     /// <param name="workerProfileId">Worker profile identifier.</param>
     /// <param name="model">Timesheet data.</param>
     [HttpPost]
-    [ProducesResponseType(typeof(TimeSheetListModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyTimeSheetListModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] TimeSheetModel model)
+    public async Task<IActionResult> Post([FromRoute] Guid requestId, [FromRoute] Guid workerProfileId, [FromBody] CompanyTimeSheetModel model)
     {
         if (model is null || !ModelState.IsValid) return BadRequest(ModelState);
-        var result = await timeSheetService.CreateTimesheet(workerProfileId, requestId, model);
-        if (result) return Ok(new TimeSheetListModel { Id = result.Value });
+        var result = await timeSheetService.CreateCompanyTimesheet(workerProfileId, requestId, model);
+        if (result) return Ok(new CompanyTimeSheetListModel { Id = result.Value });
         return BadRequest(ModelState.AddErrors(result.Errors));
     }
 
@@ -41,10 +40,10 @@ public class WorkerTimeSheetsController(ITimesheetService timeSheetService, ITim
     [HttpPut("{id:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] TimeSheetModel model)
+    public async Task<IActionResult> Put([FromRoute] Guid id, [FromBody] CompanyTimeSheetModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = await timeSheetService.UpdateTimesheet(id, model);
+        var result = await timeSheetService.UpdateCompanyTimesheet(id, model);
         if (!result) return BadRequest(result.Errors);
         return Ok();
     }
@@ -83,13 +82,13 @@ public class WorkerTimeSheetsController(ITimesheetService timeSheetService, ITim
     /// <param name="startDate">Optional range start date.</param>
     /// <param name="endDate">Optional range end date.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<TimeSheetListModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CompanyTimeSheetListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(
         [FromRoute] Guid requestId,
         [FromRoute] Guid workerProfileId,
         [FromQuery] DateTime? startDate,
         [FromQuery] DateTime? endDate) =>
-        Ok(await timeSheetRepository.GetTimeSheetsListModel(workerProfileId, requestId, startDate, endDate));
+        Ok(await timeSheetRepository.GetCompanyTimeSheetsListModel(workerProfileId, requestId, startDate, endDate));
 
     /// <summary>Deletes a timesheet by its identifier.</summary>
     /// <param name="requestId">Request identifier.</param>

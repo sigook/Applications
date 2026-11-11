@@ -2,6 +2,7 @@ using Covenant.Common.Enums;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets.Companies;
 using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models.Workers;
 using Covenant.Common.Models;
@@ -13,6 +14,8 @@ public interface ITimesheetService
     Task<Result<RegisterTimeSheetResultModel>> AddClockIn(Guid requestId, Guid workerProfileId, TimeSpan clockIn);
     Task<Result<Guid>> CreateTimesheet(Guid workerProfileId, Guid requestId, TimeSheetModel timeSheetModel);
     Task<Result> UpdateTimesheet(Guid timeSheetId, TimeSheetModel timeSheetModel);
+    Task<Result<Guid>> CreateCompanyTimesheet(Guid workerProfileId, Guid requestId, CompanyTimeSheetModel model);
+    Task<Result> UpdateCompanyTimesheet(Guid timeSheetId, CompanyTimeSheetModel model);
     Task<Result<RegisterTimeSheetResultModel>> Register(Guid requestId, WorkerLocationModel workerLocationModel);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate);
     Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter);

@@ -6,6 +6,7 @@ using Covenant.Common.Models.Accounting.Invoices;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Companies;
 using Covenant.Common.Models.Requests.TimeSheets.Agencies;
+using Covenant.Common.Models.Requests.TimeSheets.Companies;
 using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models.Requests.Workers;
 using Covenant.Common.Models;
@@ -32,51 +33,80 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         return await query.ToListAsync();
     }
 
-    public async Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate)
+    public async Task<IEnumerable<TimeSheetListModel>> GetTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate) =>
+        await WorkerRequestTimeSheets(workerProfileId, requestId, startDate, endDate)
+            .Select(ts => new TimeSheetListModel
+            {
+                Id = ts.Id,
+                Day = ts.Date,
+                ClockIn = ts.ClockIn,
+                ClockOut = ts.ClockOut,
+                ClockInRounded = ts.ClockInRounded,
+                ClockOutRounded = ts.ClockOutRounded,
+                TimeIn = ts.TimeIn,
+                TimeOut = ts.TimeOut,
+                TimeInApproved = ts.TimeInApproved,
+                TimeOutApproved = ts.TimeOutApproved,
+                MissingHours = ts.MissingHours,
+                MissingHoursOvertime = ts.MissingHoursOvertime,
+                MissingRateWorker = ts.MissingRateWorker,
+                MissingRateAgency = ts.MissingRateAgency,
+                DeductionsOthers = ts.DeductionsOthers,
+                DeductionsOthersDescription = ts.DeductionsOthersDescription,
+                Comment = ts.Comment,
+                CanUpdate = ts.TimeSheetTotal == null && ts.TimeSheetTotalPayroll == null,
+                WasApproved = ts.TimeInApproved != null && ts.TimeOutApproved != null,
+                Week = PostgresFunctions.get_week_start_sunday(ts.Date),
+                BonusOrOthers = ts.BonusOrOthers,
+                BonusOrOthersDescription = ts.BonusOrOthersDescription,
+                Reimbursements = ts.Reimbursements,
+                ReimbursementsDescription = ts.ReimbursementsDescription,
+                TotalHours = ts.TotalHours,
+                TotalHoursApproved = ts.TotalHoursApproved
+            })
+            .ToListAsync();
+
+    public async Task<IEnumerable<CompanyTimeSheetListModel>> GetCompanyTimeSheetsListModel(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate) =>
+        await WorkerRequestTimeSheets(workerProfileId, requestId, startDate, endDate)
+            .Select(ts => new CompanyTimeSheetListModel
+            {
+                Id = ts.Id,
+                Day = ts.Date,
+                ClockIn = ts.ClockIn,
+                ClockOut = ts.ClockOut,
+                ClockInRounded = ts.ClockInRounded,
+                ClockOutRounded = ts.ClockOutRounded,
+                TimeIn = ts.TimeIn,
+                TimeOut = ts.TimeOut,
+                TimeInApproved = ts.TimeInApproved,
+                TimeOutApproved = ts.TimeOutApproved,
+                MissingHours = ts.MissingHours,
+                MissingHoursOvertime = ts.MissingHoursOvertime,
+                DeductionsOthers = ts.DeductionsOthers,
+                DeductionsOthersDescription = ts.DeductionsOthersDescription,
+                Comment = ts.Comment,
+                CanUpdate = ts.TimeSheetTotal == null && ts.TimeSheetTotalPayroll == null,
+                WasApproved = ts.TimeInApproved != null && ts.TimeOutApproved != null,
+                Week = PostgresFunctions.get_week_start_sunday(ts.Date),
+                BonusOrOthers = ts.BonusOrOthers,
+                BonusOrOthersDescription = ts.BonusOrOthersDescription,
+                TotalHours = ts.TotalHours,
+                TotalHoursApproved = ts.TotalHoursApproved
+            })
+            .ToListAsync();
+
+    private IQueryable<TimeSheet> WorkerRequestTimeSheets(Guid workerProfileId, Guid requestId, DateTime? startDate, DateTime? endDate)
     {
-        var timeSheet = Context.TimeSheets.AsQueryable();
+        var query = Context.TimeSheets.Where(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId && ts.WorkerRequest.RequestId == requestId);
         if (startDate.HasValue)
         {
-            timeSheet = timeSheet.Where(ts => ts.Date >= startDate.Value);
+            query = query.Where(ts => ts.Date >= startDate.Value);
         }
         if (endDate.HasValue)
         {
-            timeSheet = timeSheet.Where(ts => ts.Date <= endDate.Value);
+            query = query.Where(ts => ts.Date <= endDate.Value);
         }
-        var query = from wr in Context.WorkerRequests.Where(c => c.WorkerProfileId == workerProfileId && c.RequestId == requestId)
-                    join ts in timeSheet on wr.Id equals ts.WorkerRequestId
-                    orderby ts.Date
-                    select new TimeSheetListModel
-                    {
-                        Id = ts.Id,
-                        Day = ts.Date,
-                        ClockIn = ts.ClockIn,
-                        ClockOut = ts.ClockOut,
-                        ClockInRounded = ts.ClockInRounded,
-                        ClockOutRounded = ts.ClockOutRounded,
-                        TimeIn = ts.TimeIn,
-                        TimeOut = ts.TimeOut,
-                        TimeInApproved = ts.TimeInApproved,
-                        TimeOutApproved = ts.TimeOutApproved,
-                        MissingHours = ts.MissingHours,
-                        MissingHoursOvertime = ts.MissingHoursOvertime,
-                        MissingRateWorker = ts.MissingRateWorker,
-                        MissingRateAgency = ts.MissingRateAgency,
-                        DeductionsOthers = ts.DeductionsOthers,
-                        DeductionsOthersDescription = ts.DeductionsOthersDescription,
-                        Comment = ts.Comment,
-                        CanUpdate = ts.TimeSheetTotal == null && ts.TimeSheetTotalPayroll == null,
-                        WasApproved = ts.TimeInApproved != null && ts.TimeOutApproved != null,
-                        Week = PostgresFunctions.get_week_start_sunday(ts.Date),
-                        BonusOrOthers = ts.BonusOrOthers,
-                        BonusOrOthersDescription = ts.BonusOrOthersDescription,
-                        Reimbursements = ts.Reimbursements,
-                        ReimbursementsDescription = ts.ReimbursementsDescription,
-                        TotalHours = ts.TotalHours,
-                        TotalHoursApproved = ts.TotalHoursApproved
-                    };
-        var result = await query.ToListAsync();
-        return result;
+        return query.OrderBy(ts => ts.Date);
     }
 
     public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid agencyId, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter)

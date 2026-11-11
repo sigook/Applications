@@ -129,6 +129,13 @@ service. The request shift is the reference case: `GET api/agency/recruiting/req
 (policy `Agency`) and `GET api/company/requests/{requestId}/shift` (policy `Company`) both delegate to
 `IRequestService.GetRequestShift`.
 
+Rates are agency-confidential: no `api/company/*` endpoint returns or accepts an agency rate, worker
+rate, missing rate or reimbursement. The company portal gets its own DTOs (`CompanyJobPositionModel`,
+`CompanyRequestDetailModel` without `AgencyRate`, `CompanyTimeSheetListModel`, `CompanyTimeSheetModel`);
+when a company edits a timesheet, `ITimesheetService.UpdateCompanyTimesheet` keeps the stored missing
+rates and reimbursements. The only money a company sees is its own invoices and the salary it typed on a
+direct-hire request.
+
 Staff attendance (`api/agency/profile/attendance`): every agency staff role clocks itself in/out
 (policy `Agency`); the per-user "today" list, the report, its Excel export and punch corrections
 are policy `Admin`.

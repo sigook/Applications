@@ -1,5 +1,5 @@
 import { api } from '@/app/security/apiService';
-import type { CompanyProfileDetail, CompanyProfileLocationDetail, CompanyProfileJobPositionRate, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
+import type { CompanyProfileDetail, CompanyProfileLocationDetail, CompanyJobPosition, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
 import type { LocationDetailModel } from '@/shared/types/common';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
@@ -30,8 +30,8 @@ export function deleteProfileLocation(id: string): Promise<void> {
 }
 
 // Job Positions
-export function getCompanyJobPositions(): Promise<CompanyProfileJobPositionRate[]> {
-  return api.get<CompanyProfileJobPositionRate[]>('/api/company/profile/jobpositions');
+export function getCompanyJobPositions(): Promise<CompanyJobPosition[]> {
+  return api.get<CompanyJobPosition[]>('/api/company/profile/jobpositions');
 }
 
 export function createCompanyJobPosition(model: CreateJobPositionModel): Promise<{ id: string }> {

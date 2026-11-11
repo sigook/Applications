@@ -43,8 +43,8 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         return locations;
     }
 
-    public Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId) =>
-        GetJobPositions(cpjpr => cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted);
+    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId) =>
+        await SelectJobPositions(cpjpr => cpjpr.CompanyProfileId == companyProfileId && !cpjpr.IsDeleted).OrderBy(c => c.JobPosition).ToListAsync();
 
     public async Task<PaginatedList<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, GetJobPositionsFilter filter)
     {
@@ -54,8 +54,24 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         return await ApplySortJobPositions(query, filter).ThenBy(c => c.Id).ToPaginatedList(filter);
     }
 
-    public async Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression) =>
-        await SelectJobPositions(expression).OrderBy(c => c.JobPosition).ToListAsync();
+    public async Task<IEnumerable<CompanyJobPositionModel>> GetCompanyJobPositions(Guid companyId) =>
+        await SelectCompanyJobPositions(c => c.CompanyProfile.CompanyId == companyId && !c.IsDeleted).OrderBy(c => c.JobPosition).ToListAsync();
+
+    public Task<CompanyJobPositionModel> GetCompanyJobPositionDetail(Guid id) =>
+        SelectCompanyJobPositions(c => c.Id == id).SingleOrDefaultAsync();
+
+    private IQueryable<CompanyJobPositionModel> SelectCompanyJobPositions(Expression<Func<CompanyProfileJobPositionRate, bool>> expression) =>
+        SelectJobPositions(expression)
+            .Select(s => new CompanyJobPositionModel
+            {
+                Id = s.Id,
+                JobPosition = s.JobPosition,
+                OvertimeStartsAfter = s.OvertimeStartsAfter,
+                Description = s.Description,
+                Shift = s.Shift,
+                CreatedAt = s.CreatedAt,
+                DisplayShift = s.DisplayShift
+            });
 
     private static IOrderedQueryable<CompanyProfileJobPositionRateModel> ApplySortJobPositions(IQueryable<CompanyProfileJobPositionRateModel> query, GetJobPositionsFilter filter) =>
         filter.SortBy switch

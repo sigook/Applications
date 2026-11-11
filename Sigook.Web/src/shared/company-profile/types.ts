@@ -46,6 +46,16 @@ export interface CompanyProfileJobPositionRate {
   displayShift?: string;
 }
 
+export interface CompanyJobPosition {
+  id: string;
+  jobPosition?: string;
+  overtimeStartsAfter?: number | null;
+  description?: string;
+  shift?: RequestShiftModel | null;
+  createdAt?: string | null;
+  displayShift?: string;
+}
+
 export interface JobPositionModel {
   id?: string;
   companyProfileId?: string;

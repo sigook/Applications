@@ -47,7 +47,6 @@ export interface CompanyRequestDetail {
   jobIsOnBranchOffice: boolean;
   jobLocation?: LocationDetailModel | null;
   jobPositionRate?: { id: string; value: string } | null;
-  agencyRate?: number | null;
   status: RequestStatus;
   durationTerm: DurationTerm;
   displayShift?: string;
@@ -73,7 +72,6 @@ export interface CompanyRequestFormSettings {
   responsibilities?: string;
   finishAt?: Date | null;
   shift?: RequestShiftModel | null;
-  rate?: number | null;
   jobPositionRateId?: string | null;
   locationId?: string | null;
 }

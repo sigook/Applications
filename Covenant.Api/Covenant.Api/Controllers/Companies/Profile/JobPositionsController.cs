@@ -22,19 +22,19 @@ public class JobPositionsController(ICompanyService companyService) : Controller
     /// <summary>Gets the active job positions of the current company.</summary>
     /// <param name="companyRepository">Company repository resolved from DI.</param>
     [HttpGet]
-    [ProducesResponseType(typeof(IEnumerable<CompanyProfileJobPositionRateModel>), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(IEnumerable<CompanyJobPositionModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromServices] ICompanyRepository companyRepository) =>
-        Ok(await companyRepository.GetJobPositions(cpjpr => cpjpr.CompanyProfile.CompanyId == User.GetCompanyId() && !cpjpr.IsDeleted));
+        Ok(await companyRepository.GetCompanyJobPositions(User.GetCompanyId()));
 
     /// <summary>Gets the detail of a specific job position by its identifier.</summary>
     /// <param name="companyRepository">Company repository resolved from DI.</param>
     /// <param name="id">Job position identifier.</param>
     [HttpGet("{id}")]
-    [ProducesResponseType(typeof(CompanyProfileJobPositionRateModel), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(CompanyJobPositionModel), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> Get([FromServices] ICompanyRepository companyRepository, [FromRoute] Guid id)
     {
-        var model = await companyRepository.GetJobPositionDetail(id);
+        var model = await companyRepository.GetCompanyJobPositionDetail(id);
         if (model is null) return NotFound();
         return Ok(model);
     }
@@ -42,13 +42,13 @@ public class JobPositionsController(ICompanyService companyService) : Controller
     /// <summary>Creates a job position without rates for the current company; an agency admin sets the rates later.</summary>
     /// <param name="model">Job position name, description and shift.</param>
     [HttpPost]
-    [ProducesResponseType(typeof(CompanyProfileJobPositionRateModel), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(CompanyJobPositionModel), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Post([FromBody] CreateJobPositionModel model)
     {
         var result = await companyService.CompanyCreateJobPosition(model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
-        return CreatedAtAction(nameof(Get), new { id = result.Value }, new CompanyProfileJobPositionRateModel { Id = result.Value });
+        return CreatedAtAction(nameof(Get), new { id = result.Value }, new CompanyJobPositionModel { Id = result.Value });
     }
 
     /// <summary>Requests the creation of a new job position via a contact submission.</summary>

@@ -42,10 +42,6 @@
                       <template #empty>You don't have any roles created</template>
                     </b-autocomplete>
                   </b-field>
-                  <template v-if="jobPositionSelected">
-                    <b-tag v-if="request.rate">Rate for this position: {{ request.rate }}</b-tag>
-                    <b-tag v-else type="is-warning">Rates pending: the agency will set them</b-tag>
-                  </template>
                 </div>
                 <div class="column is-6 is-4-desktop">
                   <b-field :label="`${'Branch office'} *`"
@@ -246,7 +242,7 @@ import LocationForm from '@/shared/company-profile/LocationForm.vue';
 import JobPositionForm from '@/shared/company-profile/JobPositionForm.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import type { PageBreadcrumb } from '@/shared/types/common';
-import type { CompanyProfileJobPositionRate, CompanyProfileLocationDetail, CompanyUserModel } from '@/shared/company-profile/types';
+import type { CompanyJobPosition, CompanyProfileLocationDetail, CompanyUserModel } from '@/shared/company-profile/types';
 import type { CompanyRequestFormSettings, CreateCompanyRequestModel } from '@/modules/company/requests/types';
 import type { BTaginput } from 'buefy';
 
@@ -320,14 +316,14 @@ timeZero.setMinutes(0);
 
 const isLoading = ref(true);
 const locations = ref<CompanyProfileLocationDetail[]>([]);
-const companyJobPositions = ref<CompanyProfileJobPositionRate[]>([]);
+const companyJobPositions = ref<CompanyJobPosition[]>([]);
 const request = reactive<CompanyRequestFormSettings>({
   durationBreak: dayjs().startOf('day').toDate(),
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
   punchCardOptionEnabled: true,
 });
-const jobPositionSelected = ref<CompanyProfileJobPositionRate | null>(null);
+const jobPositionSelected = ref<CompanyJobPosition | null>(null);
 const locationSelected = ref<CompanyProfileLocationDetail | null>(null);
 const showLocationModal = ref(false);
 const showRolesModal = ref(false);
@@ -424,15 +420,13 @@ function onSubmit() {
   })();
 }
 
-function onJobPositionSelected(option: CompanyProfileJobPositionRate | null) {
+function onJobPositionSelected(option: CompanyJobPosition | null) {
   jobPositionSelected.value = option;
   if (option) {
     request.shift = option.shift;
-    request.rate = option.workerRate;
     request.jobPositionRateId = option.id;
   } else {
     request.shift = null;
-    request.rate = null;
     request.jobPositionRateId = null;
   }
 }
@@ -464,7 +458,6 @@ watch(jobPosition, (newVal) => {
   if (jobPositionSelected.value && jobPositionSelected.value.jobPosition !== newVal) {
     jobPositionSelected.value = null;
     request.shift = null;
-    request.rate = null;
     request.jobPositionRateId = null;
   }
 });

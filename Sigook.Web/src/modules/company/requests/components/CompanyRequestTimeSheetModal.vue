@@ -65,7 +65,7 @@ import { dateMonth, dateHHmm, hour } from '@/shared/format';
 import dayjs from "dayjs";
 import { maximumHoursPerDay } from "@/shared/constants/catalog";
 import { validateHoursTimeSheet } from '@/modules/company/requests/api';
-import type { PunchCardEditableDay, TimeSheetModel } from '@/shared/punch-card/types';
+import type { PunchCardEditableDay, CompanyTimeSheetModel } from '@/shared/punch-card/types';
 
 const { editableDay, worker } = defineProps<{ editableDay: PunchCardEditableDay; worker: { workerProfileId: string } }>();
 const emit = defineEmits<(e: 'updateData') => void>();
@@ -109,7 +109,7 @@ async function saveHours() {
   if (!item.id) return;
   isLoading.value = true;
   const timeInZero = dayjs(item.timeIn).hour(0).minute(0).second(0);
-  const model: TimeSheetModel = {
+  const model: CompanyTimeSheetModel = {
     hours: dayjs(item.hoursApprovedToDate).format('HH:mm:ss'),
     timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
     missingHours: dayjs(item.missinghoursToDate).format("HH:mm:ss"),

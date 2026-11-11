@@ -141,7 +141,7 @@ const kpis = computed<RequestKpi[]>(() => {
   const showFinish = r.durationTerm !== DurationTerm.LongTerm ||
     r.status === RequestStatus.Filled || r.status === RequestStatus.Cancelled;
   return [
-    rateKpi(r.agencyRate, r.workerSalary, r.incentive),
+    ...(r.workerSalary ? [rateKpi(null, r.workerSalary, r.incentive)] : []),
     datesKpi(r.startAt, r.finishAt, showFinish),
     shiftKpi(r.displayShift, r.durationBreak, r.breakIsPaid),
   ];

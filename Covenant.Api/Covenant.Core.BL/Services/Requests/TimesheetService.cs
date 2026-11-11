@@ -6,6 +6,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Accounting;
 using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Requests.TimeSheets.Companies;
 using Covenant.Common.Models.Requests.TimeSheets;
 using Covenant.Common.Models.Requests;
 using Covenant.Common.Models.Workers;
@@ -101,12 +102,47 @@ public class TimesheetService(
 
     public async Task<Result> UpdateTimesheet(Guid timeSheetId, TimeSheetModel timeSheetModel)
     {
-        var updatedBy = currentUserService.GetNickname();
         var timeSheet = await timeSheetRepository.GetTimeSheet(timeSheetId);
         if (timeSheet is null)
         {
             return Result.Fail();
         }
+        return await UpdateTimesheet(timeSheet, timeSheetModel);
+    }
+
+    public Task<Result<Guid>> CreateCompanyTimesheet(Guid workerProfileId, Guid requestId, CompanyTimeSheetModel model) =>
+        CreateTimesheet(workerProfileId, requestId, ToTimeSheetModel(model, decimal.Zero, decimal.Zero, decimal.Zero, null));
+
+    public async Task<Result> UpdateCompanyTimesheet(Guid timeSheetId, CompanyTimeSheetModel model)
+    {
+        var timeSheet = await timeSheetRepository.GetTimeSheet(timeSheetId);
+        if (timeSheet is null)
+        {
+            return Result.Fail();
+        }
+        return await UpdateTimesheet(timeSheet, ToTimeSheetModel(model, timeSheet.MissingRateWorker, timeSheet.MissingRateAgency, timeSheet.Reimbursements, timeSheet.ReimbursementsDescription));
+    }
+
+    private static TimeSheetModel ToTimeSheetModel(CompanyTimeSheetModel model, decimal missingRateWorker, decimal missingRateAgency, decimal reimbursements, string reimbursementsDescription) => new()
+    {
+        Hours = model.Hours,
+        TimeIn = model.TimeIn,
+        MissingHours = model.MissingHours,
+        MissingHoursOvertime = model.MissingHoursOvertime,
+        DeductionsOthers = model.DeductionsOthers,
+        BonusOrOthers = model.BonusOrOthers,
+        DeductionsOthersDescription = model.DeductionsOthersDescription,
+        BonusOrOthersDescription = model.BonusOrOthersDescription,
+        Comments = model.Comments,
+        MissingRateWorker = missingRateWorker,
+        MissingRateAgency = missingRateAgency,
+        Reimbursements = reimbursements,
+        ReimbursementsDescription = reimbursementsDescription
+    };
+
+    private async Task<Result> UpdateTimesheet(TimeSheet timeSheet, TimeSheetModel timeSheetModel)
+    {
+        var updatedBy = currentUserService.GetNickname();
         var timeInApproved = timeSheetModel.TimeIn;
         var timeOutApproved = timeSheetModel.TimeIn.Add(timeSheetModel.Hours);
         var result = timeSheet.AddApprovedTime(timeInApproved, timeOutApproved);
