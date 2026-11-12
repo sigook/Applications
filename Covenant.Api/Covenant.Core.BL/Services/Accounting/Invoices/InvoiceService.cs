@@ -132,7 +132,7 @@ public class InvoiceService(
         var expiresOn = timeProvider.GetUtcNow().Add(PdfUrlLifetime);
         foreach (var invoice in invoices.Where(i => i.PdfGeneratedAt.HasValue))
         {
-            invoice.PdfUrl = invoicesContainer.GetReadUrl(invoice.Id.ToInvoiceBlobName(), $"Invoice {invoice.InvoiceNumber}.pdf", expiresOn);
+            invoice.PdfUrl = invoicesContainer.GetReadUrl(invoice.Id.ToInvoiceBlobName(), $"{invoice.InvoiceNumber} {invoice.CompanyFullName}.pdf", expiresOn);
         }
     }
 
