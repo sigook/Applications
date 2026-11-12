@@ -90,7 +90,7 @@ public class Startup
         services.AddTestDatabase();
         var invoicesContainer = new Mock<IInvoicesContainer>();
         invoicesContainer.Setup(c => c.Download(Data.Invoice.Id.ToInvoiceBlobName())).ReturnsAsync(Data.PdfContent);
-        invoicesContainer.Setup(c => c.GetReadUrl(Data.GeneratedInvoice.Id.ToInvoiceBlobName(), $"Invoice {Data.GeneratedInvoice.InvoiceNumber}.pdf", It.IsAny<DateTimeOffset>()))
+        invoicesContainer.Setup(c => c.GetReadUrl(Data.GeneratedInvoice.Id.ToInvoiceBlobName(), $"{Data.GeneratedInvoice.InvoiceNumber} {Data.CompanyProfile.FullName}.pdf", It.IsAny<DateTimeOffset>()))
             .Returns(Data.PdfUrl(Data.GeneratedInvoice.Id));
         services.AddSingleton(invoicesContainer.Object);
         services.AddSingleton(Mock.Of<IPayStubsContainer>());

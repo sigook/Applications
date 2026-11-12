@@ -485,7 +485,7 @@ public class PayStubService(
         var expiresOn = timeProvider.GetUtcNow().Add(PdfUrlLifetime);
         foreach (var payStub in result.Items.Where(ps => ps.PdfGeneratedAt.HasValue))
         {
-            payStub.PdfUrl = GetPdfUrl(payStub.Id, payStub.PayStubNumber, expiresOn);
+            payStub.PdfUrl = GetPdfUrl(payStub.Id, $"{payStub.PayStubNumber} {payStub.WorkerFullName}", expiresOn);
         }
         return result;
     }
@@ -501,8 +501,8 @@ public class PayStubService(
         return result;
     }
 
-    private string GetPdfUrl(Guid payStubId, string payStubNumber, DateTimeOffset expiresOn) =>
-        payStubsContainer.GetReadUrl(payStubId.ToPayStubBlobName(), $"PayStub {payStubNumber}.pdf", expiresOn);
+    private string GetPdfUrl(Guid payStubId, string downloadName, DateTimeOffset expiresOn) =>
+        payStubsContainer.GetReadUrl(payStubId.ToPayStubBlobName(), $"{downloadName}.pdf", expiresOn);
 
     public async Task<ResultGenerateDocument<byte[]>> GetPayStubsFile(GetPayStubsFilter filter)
     {
