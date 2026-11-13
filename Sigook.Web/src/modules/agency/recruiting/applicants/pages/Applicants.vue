@@ -5,7 +5,7 @@
 
     <RequestGroupFilters v-model:filter="serverParams" :status-options="statusOptions" @search="loadApplicants" />
 
-    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" :has-groups="groups.length > 0"
+    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" v-model:agency-ids="serverParams.agencyIds" :has-groups="groups.length > 0"
       export-url="/api/agency/recruiting/applicants/File" :export-params="serverParams" export-file-name="Applicants"
       @search="loadApplicants" @expand-all="expandAll" @collapse-all="collapseAll"
       @loading="(value: boolean) => isLoading = value" />
@@ -25,88 +25,87 @@
       </b-button>
     </BulkSelectionBar>
 
-    <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
+    <div class="page-scroll">
+      <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
 
-    <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
-      :fill="{ value: group.confirmedApplicants, total: group.workersQuantity, label: 'confirmed' }"
-      :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
-      <template #menu>
-        <b-dropdown-item aria-role="listitem" @click="showAddApplicant(group.requestId)">Add Applicant</b-dropdown-item>
-        <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
-      </template>
-
-      <SigookGrid :data="group.applicants" :paginated="false" :fit-viewport="false" detailed detail-key="id"
-        v-model:opened-detailed="openedApplicants" checkable :checked-rows="checkedRows(group.requestId)"
-        @update:checked-rows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
-        <b-table-column field="name" label="Applicant" v-slot="props">
-          <span class="is-block">
-            {{ props.row.name }}
-            <b-tooltip label="Candidate" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
-            </b-tooltip>
-            <b-tooltip label="Worker" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
-            </b-tooltip>
-          </span>
-          <i class="fz-2 is-lowercase">
-            <copy-link kind="email" :value="props.row.email" />
-          </i>
-        </b-table-column>
-        <b-table-column field="status" label="Status" width="140" v-slot="props">
-          <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
-        </b-table-column>
-        <b-table-column field="compliance" label="Compliance" width="180" v-slot="props">
-          <div class="applicants-compliance">
-            <span class="applicants-compliance-bar">
-              <span :class="{ 'is-complete': !props.row.mandatoryPending }"
-                :style="{ width: `${compliancePercent(props.row)}%` }"></span>
-            </span>
-            <span class="fz-1">{{ props.row.complianceCompleted }}/{{ props.row.complianceTotal }}</span>
-          </div>
-        </b-table-column>
-        <b-table-column field="comments" label="Comments" width="260" v-slot="props">
-          <div class="applicants-comments">
-            <span class="applicants-comments-text" :title="props.row.comments">{{ props.row.comments }}</span>
-            <b-button type="is-ghost" size="is-small" icon-right="pencil" @click="showComments(props.row)" />
-          </div>
-        </b-table-column>
-        <b-table-column field="createdBy" label="Added By" width="180" v-slot="props">
-          <div class="is-capitalized" v-if="props.row.createdBy">{{ emailName(props.row.createdBy) }}</div>
-          <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
-        </b-table-column>
-        <b-table-column field="actions" width="60" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
-              @click="showCandidateDetail(props.row.candidateId)">
-              Edit Candidate
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
-              @click="convertToWorker(props.row.candidateId)">
-              Convert to Worker
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId"
-              @click="openWorker(props.row.workerProfileId)">
-              Open Worker
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId" @click="showAddRunner(props.row)">
-              Add Runner
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
-              Delete
-            </b-dropdown-item>
-          </b-dropdown>
-        </b-table-column>
-
-        <template #detail="props">
-          <ApplicantComplianceDetail :request-id="props.row.requestId" :applicant-id="props.row.id"
-            :name="props.row.name" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
-            @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
+      <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
+        :fill="{ value: group.confirmedApplicants, total: group.workersQuantity, label: 'confirmed' }"
+        :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
+        <template #menu>
+          <b-dropdown-item aria-role="listitem" @click="showAddApplicant(group.requestId)">Add Applicant</b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
         </template>
-      </SigookGrid>
-    </RequestGroup>
+
+        <SigookGrid :data="group.applicants" :paginated="false" :fit-viewport="false" detailed detail-key="id"
+          v-model:opened-detailed="openedApplicants" checkable :checked-rows="checkedRows(group.requestId)"
+          @update:checked-rows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
+          <b-table-column field="name" label="Applicant" v-slot="props">
+            <span class="is-block">
+              {{ props.row.name }}
+              <HoverTooltip label="Candidate">
+                <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
+              </HoverTooltip>
+              <HoverTooltip label="Worker">
+                <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
+              </HoverTooltip>
+            </span>
+            <i class="fz-2 is-lowercase">
+              <copy-link kind="email" :value="props.row.email" />
+            </i>
+          </b-table-column>
+          <b-table-column field="status" label="Status" width="140" v-slot="props">
+            <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
+          </b-table-column>
+          <b-table-column field="compliance" label="Compliance" width="180" v-slot="props">
+            <div class="applicants-compliance">
+              <span class="applicants-compliance-bar">
+                <span :class="{ 'is-complete': !props.row.mandatoryPending }"
+                  :style="{ width: `${compliancePercent(props.row)}%` }"></span>
+              </span>
+              <span class="fz-1">{{ props.row.complianceCompleted }}/{{ props.row.complianceTotal }}</span>
+            </div>
+          </b-table-column>
+          <b-table-column field="comments" label="Comments" width="260" v-slot="props">
+            <div class="applicants-comments">
+              <span class="applicants-comments-text" :title="props.row.comments">{{ props.row.comments }}</span>
+              <b-button type="is-ghost" size="is-small" icon-right="pencil" @click="showComments(props.row)" />
+            </div>
+          </b-table-column>
+          <b-table-column field="createdBy" label="Added By" width="180" v-slot="props">
+            <div class="is-capitalized" v-if="props.row.createdBy">{{ emailName(props.row.createdBy) }}</div>
+            <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
+          </b-table-column>
+          <b-table-column field="actions" width="60" v-slot="props">
+            <RowActionsDropdown>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="showCandidateDetail(props.row.candidateId)">
+                Edit Candidate
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="convertToWorker(props.row.candidateId)">
+                Convert to Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId"
+                @click="openWorker(props.row.workerProfileId)">
+                Open Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId" @click="showAddRunner(props.row)">
+                Add Runner
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
+                Delete
+              </b-dropdown-item>
+            </RowActionsDropdown>
+          </b-table-column>
+
+          <template #detail="props">
+            <ApplicantComplianceDetail :request-id="props.row.requestId" :applicant-id="props.row.id"
+              :name="props.row.name" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
+              @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
+          </template>
+        </SigookGrid>
+      </RequestGroup>
+    </div>
 
     <RequestGroupsPagination :page="serverParams.pageIndex ?? 1" :total="totalRequests"
       :per-page="serverParams.pageSize ?? PAGE_SIZE" @change="onPageChange" />
@@ -133,6 +132,8 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';

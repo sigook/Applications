@@ -2,6 +2,9 @@
   <div>
     <b-loading v-model="isLoading"></b-loading>
     <SigookGrid :data="users" :refresh="getUsers">
+      <template #filters>
+        <AgencyFilter v-model="agencyIds" @change="reload" />
+      </template>
       <template #actions>
         <b-button v-if="isAdmin" icon-left="clock-outline" @click="showAttendance = true">Attendance report</b-button>
         <b-button v-if="isAdmin" icon-left="plus" @click="openCreateModal">Add</b-button>
@@ -14,6 +17,9 @@
       </b-table-column>
       <b-table-column field="role" label="Role" v-slot="props">
         {{ roleLabels[props.row.role] || props.row.role }}
+      </b-table-column>
+      <b-table-column field="agencies" label="Agencies" :visible="hasSeveralAgencies" v-slot="props">
+        {{ props.row.agencies.join(', ') }}
       </b-table-column>
       <b-table-column field="today" label="Today" :visible="isAdmin" v-slot="props">
         <b-tag :type="todayTag(props.row.userId).type">{{ todayTag(props.row.userId).label }}</b-tag>
@@ -32,28 +38,35 @@
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showAttendance" width="1120px" @close="getAttendancesToday">
-      <AttendanceReportModal v-if="showAttendance" :users="users" />
+      <AttendanceReportModal v-if="showAttendance" :users="users" :agency-ids="agencyIds" />
     </b-modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import { getAgencyPersonnel, deleteAgencyPersonnel, getAttendancesTodayForUsers } from '@/modules/agency/profile/api';
 import { useAdmin } from "@/shared/composables/useAdmin";
 import { roleLabels } from "@/app/security/roles";
 import { formatHours } from "@/modules/agency/profile/attendance";
 import { AttendanceStatus, type AgencyPersonnelListItem, type UserAttendanceToday } from '@/modules/agency/profile/types';
+import { useAgencyStore } from '@/modules/agency/store';
 import PersonnelForm from "@/modules/agency/profile/components/AgencyPersonnelModal.vue";
 import AttendanceReportModal from "@/modules/agency/profile/components/AttendanceReportModal.vue";
 import dayjs from 'dayjs';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+
+const emit = defineEmits<(e: 'loaded', count: number) => void>();
 
 const { isAdmin } = useAdmin();
+const agencyStore = useAgencyStore();
+const hasSeveralAgencies = computed(() => agencyStore.agencies.length > 1);
 
 const isLoading = ref(false);
+const agencyIds = ref<string | undefined>(undefined);
 const showModal = ref(false);
 const users = ref<AgencyPersonnelListItem[]>([]);
 const currentPersonnel = ref<AgencyPersonnelListItem | null>(null);
@@ -72,7 +85,7 @@ function todayTag(userId: string): { label: string; type: string } {
 async function getAttendancesToday() {
   if (!isAdmin.value) return;
   try {
-    attendancesToday.value = await getAttendancesTodayForUsers();
+    attendancesToday.value = await getAttendancesTodayForUsers(agencyIds.value);
   } catch (error) {
     showAlertError(error);
   }
@@ -81,9 +94,10 @@ async function getAttendancesToday() {
 async function getUsers() {
   isLoading.value = true;
   try {
-    const response = await getAgencyPersonnel();
+    const response = await getAgencyPersonnel(agencyIds.value);
     isLoading.value = false;
     users.value = response;
+    if (!agencyIds.value) emit('loaded', response.length);
   } catch (error) {
     isLoading.value = false;
     showAlertError(error);
@@ -123,6 +137,10 @@ async function deleteUser(id: string) {
   }
 }
 
-void getUsers();
-void getAttendancesToday();
+function reload() {
+  void getUsers();
+  void getAttendancesToday();
+}
+
+reload();
 </script>

@@ -11,6 +11,7 @@ import type { RequestComplianceItem, RequestShiftModel } from '@/shared/request-
 export const PENDING_REVIEW_QUERY = 'pending-review';
 
 export interface AgencyRequestFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -103,6 +104,7 @@ export interface AgencyRequestListItem {
 // Detail returned by GET /api/AgencyRequest/{id}. Mirrors AgencyRequestDetailModel.
 export interface AgencyRequestDetail {
   id: string;
+  agencyId: string;
   numberId: number;
   jobTitle: string;
   billingTitle?: string;

@@ -92,7 +92,7 @@ import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertSuccess } from "@/shared/utils/toast";
-import { updateAgency } from '@/modules/agency/sales/agencies/api';
+import { updateAgencyProfile } from '@/modules/agency/profile/api';
 import phoneInput from "@/shared/ui/PhoneInput.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
@@ -174,7 +174,7 @@ async function validateForm() {
     (localAgencyData.value.contactInformation ??= []).push(contact);
     emit('update:agencyData', localAgencyData.value);
     try {
-      await updateAgency(localAgencyData.value);
+      await updateAgencyProfile(agencyData.id, localAgencyData.value);
       isLoading.value = false;
       showModal.value = false;
       form.resetAll();
@@ -194,7 +194,7 @@ async function removeContact(contact: AgencyContactInformation) {
   contacts.splice(index, 1);
   emit('update:agencyData', localAgencyData.value);
   try {
-    await updateAgency(localAgencyData.value);
+    await updateAgencyProfile(agencyData.id, localAgencyData.value);
     isLoading.value = false;
     showAlertSuccess("Updated");
   } catch {

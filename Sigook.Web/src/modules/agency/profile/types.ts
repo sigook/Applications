@@ -19,7 +19,6 @@ export interface AgencyProfile {
   createdAt: string;
   locations: AgencyLocation[];
   agencies: AgencyProfile[];
-  usaAgency: boolean;
   masterAgency: boolean;
 }
 
@@ -30,24 +29,6 @@ export interface AgencyLocation {
   locationId: string;
   location?: LocationDetailModel;
   isBillingAddress: boolean;
-  isActive: boolean;
-}
-
-export enum PersonnelType {
-  Recruiter = 'Recruiter',
-  SalesRepresentative = 'SalesRepresentative',
-  AccountManager = 'AccountManager',
-  Administrator = 'Administrator',
-}
-
-export interface AgencyPersonnel {
-  id: string;
-  agencyId: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  phoneNumber: string;
-  type: PersonnelType;
   isActive: boolean;
 }
 
@@ -71,12 +52,9 @@ export interface AgencyDetail {
   wsibGroup?: { value: string }[];
   contactInformation?: AgencyContactInformation[];
   locations?: AgencyLocationDetail[];
-  agencies?: PersonnelAgencyItem[];
   agencyType?: AgencyType;
   logo?: { fileName?: string; pathFile?: string } | null;
-  usaAgency?: boolean;
   masterAgency?: boolean;
-  profileImage?: string | null;
 }
 
 // Mirrors backend AgencyContactInformationModel (Covenant.Common.Models.Agencies).
@@ -110,6 +88,7 @@ export interface AgencyPersonnelCreateModel {
   name: string | null;
   email: string | null;
   role: string | null;
+  agencyIds: string[];
 }
 
 // Item returned by GET /api/agency/profile/personnel
@@ -119,6 +98,8 @@ export interface AgencyPersonnelListItem {
   name: string;
   email: string | null;
   role: string;
+  agencyIds: string[];
+  agencies: string[];
 }
 
 // Mirrors backend AttendanceStatus
@@ -187,12 +168,7 @@ export interface UpdateUserAttendanceModel {
   reason: string;
 }
 
-// Item returned by GET /api/agency/profile/personnel/agencies. Mirrors backend PersonnelAgencyModel.
-export interface PersonnelAgencyItem {
+export interface AgencyOption {
   id: string;
   name: string;
-  email: string;
-  agencyId: string;
-  isPrimary: boolean;
-  logo?: string | null;
 }

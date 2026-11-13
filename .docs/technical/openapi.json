@@ -4100,6 +4100,62 @@
         }
       }
     },
+    "/api/account": {
+      "get": {
+        "tags": [
+          "UserAccount"
+        ],
+        "summary": "Gets the email and display name of the current authenticated user.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Identity.AccountModel"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Identity.AccountModel"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Covenant.Common.Models.Identity.AccountModel"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/identity": {
       "patch": {
         "tags": [
@@ -5925,6 +5981,78 @@
       }
     },
     "/api/company/profile/contactpeople/{id}": {
+      "put": {
+        "tags": [
+          "ContactPeople"
+        ],
+        "summary": "Updates a contact person of the company.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Contact person identifier.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated contact person data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyProfileContactPersonModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyProfileContactPersonModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyProfileContactPersonModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "ContactPeople"
@@ -6724,6 +6852,80 @@
         }
       }
     },
+    "/api/company/profile/users/{id}/Email": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates the login email of a user of the current company.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "Company user identifier.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "New email information.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/company/invoices": {
       "get": {
         "tags": [
@@ -7211,7 +7413,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -7354,7 +7556,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -7814,7 +8016,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -8006,7 +8208,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -13089,7 +13291,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -14013,7 +14215,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -14205,7 +14407,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -17051,7 +17253,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -17810,7 +18012,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -17958,7 +18160,7 @@
             }
           },
           {
-            "name": "SalesPersonnelId",
+            "name": "SalesUserId",
             "in": "query",
             "schema": {
               "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
@@ -20440,6 +20642,87 @@
       }
     },
     "/api/agency/recruiting/clients/{profileId}/users/{userId}": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates the details of a user of the company that owns the specified company profile.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "Identifier of the user.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Updated user data.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyUserModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyUserModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyUserModel"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      },
       "delete": {
         "tags": [
           "Users"
@@ -20465,6 +20748,89 @@
             }
           }
         ],
+        "responses": {
+          "200": {
+            "description": "OK"
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "text/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/recruiting/clients/{profileId}/users/{userId}/Email": {
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Updates the login email of a user of the company that owns the specified company profile.",
+        "parameters": [
+          {
+            "name": "profileId",
+            "in": "path",
+            "description": "Identifier of the company profile.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "description": "Identifier of the user.",
+            "required": true,
+            "schema": {
+              "$ref": "#/components/schemas/System.Guid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "New email information.",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            },
+            "text/json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            },
+            "application/*+json": {
+              "schema": {
+                "$ref": "#/components/schemas/Covenant.Common.Models.Identity.UpdateEmailModel"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "OK"
@@ -22691,6 +23057,35 @@
         }
       }
     },
+    "/api/agency/profile/agencies": {
+      "get": {
+        "tags": [
+          "AgencyProfile"
+        ],
+        "summary": "Gets the agencies the caller has access to, for the agency filter of the grids.",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.AgencyOptionModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/profile/attendance/today": {
       "get": {
         "tags": [
@@ -23428,84 +23823,12 @@
         }
       }
     },
-    "/api/agency/profile/personnel/agencies": {
-      "get": {
-        "tags": [
-          "PersonnelAgencies"
-        ],
-        "summary": "Gets the personnel of the agencies the current user belongs to.",
-        "responses": {
-          "200": {
-            "description": "OK",
-            "content": {
-              "text/plain": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.PersonnelAgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.PersonnelAgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              },
-              "text/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.PersonnelAgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
-    "/api/agency/profile/personnel/agencies/{id}": {
-      "put": {
-        "tags": [
-          "PersonnelAgencies"
-        ],
-        "summary": "Sets the specified personnel record as the current user's primary agency.",
-        "parameters": [
-          {
-            "name": "id",
-            "in": "path",
-            "description": "Identifier of the personnel record to set as primary.",
-            "required": true,
-            "schema": {
-              "$ref": "#/components/schemas/System.Guid"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK"
-          },
-          "500": {
-            "description": "Internal Server Error"
-          },
-          "401": {
-            "description": "Unauthorized — authentication required"
-          },
-          "403": {
-            "description": "Forbidden — insufficient permissions"
-          }
-        }
-      }
-    },
     "/api/agency/profile/personnel": {
       "get": {
         "tags": [
           "Personnel"
         ],
-        "summary": "Gets all personnel of the current agency.",
+        "summary": "Gets the personnel of the selected agencies.",
         "responses": {
           "200": {
             "description": "OK",
@@ -26833,6 +27156,9 @@
           "id": {
             "$ref": "#/components/schemas/System.Guid"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "numberId": {
             "$ref": "#/components/schemas/System.Int64"
           },
@@ -27319,6 +27645,9 @@
           "id": {
             "$ref": "#/components/schemas/System.Guid"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "numberId": {
             "$ref": "#/components/schemas/System.Int64"
           },
@@ -27711,6 +28040,17 @@
           }
         }
       },
+      "Covenant.Common.Models.Agencies.AgencyOptionModel": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "name": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.Agencies.AgencyPersonnelModel": {
         "type": "object",
         "properties": {
@@ -27726,45 +28066,19 @@
           "email": {
             "$ref": "#/components/schemas/System.String"
           },
-          "agencyId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
           "role": {
             "$ref": "#/components/schemas/System.String"
+          },
+          "agencyIds": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+          },
+          "agencies": {
+            "$ref": "#/components/schemas/System.Collections.Generic.List`1[[System.String, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
           }
         }
       },
       "Covenant.Common.Models.Agencies.GetAgenciesSortBy": {
         "type": "integer"
-      },
-      "Covenant.Common.Models.Agencies.PersonnelAgencyModel": {
-        "type": "object",
-        "properties": {
-          "isPrimary": {
-            "$ref": "#/components/schemas/System.Boolean"
-          },
-          "logo": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "id": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "userId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "name": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "email": {
-            "$ref": "#/components/schemas/System.String"
-          },
-          "agencyId": {
-            "$ref": "#/components/schemas/System.Guid"
-          },
-          "role": {
-            "$ref": "#/components/schemas/System.String"
-          }
-        }
       },
       "Covenant.Common.Models.Agencies.UpdateUserAttendanceModel": {
         "type": "object",
@@ -28229,6 +28543,16 @@
           "industry": {
             "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyProfileIndustryDetailModel"
           },
+          "agencyId": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
           "salesRepresentativeId": {
             "oneOf": [
               {
@@ -28654,6 +28978,16 @@
           "industry": {
             "$ref": "#/components/schemas/Covenant.Common.Models.Companies.CompanyProfileIndustryDetailModel"
           },
+          "agencyId": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
           "salesRepresentativeId": {
             "oneOf": [
               {
@@ -28979,6 +29313,21 @@
             "$ref": "#/components/schemas/System.Guid"
           },
           "value": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
+      "Covenant.Common.Models.Identity.AccountModel": {
+        "required": [
+          "email",
+          "name"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "name": {
             "$ref": "#/components/schemas/System.String"
           }
         }
@@ -29781,6 +30130,9 @@
         "type": "object",
         "properties": {
           "id": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "agencyId": {
             "$ref": "#/components/schemas/System.Guid"
           },
           "numberId": {
@@ -30603,6 +30955,9 @@
           "requestId": {
             "$ref": "#/components/schemas/System.Guid"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "numberId": {
             "$ref": "#/components/schemas/System.Int32"
           },
@@ -31261,6 +31616,9 @@
         "type": "object",
         "properties": {
           "requestId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
+          "agencyId": {
             "$ref": "#/components/schemas/System.Guid"
           },
           "numberId": {
@@ -32313,6 +32671,9 @@
       "Covenant.Common.Models.Requests.WeeklyBoard.WeeklyBoardAssignmentModel": {
         "type": "object",
         "properties": {
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "recruiterId": {
             "$ref": "#/components/schemas/System.Guid"
           },
@@ -33698,6 +34059,9 @@
           "id": {
             "$ref": "#/components/schemas/System.Guid"
           },
+          "agencyId": {
+            "$ref": "#/components/schemas/System.Guid"
+          },
           "numberId": {
             "$ref": "#/components/schemas/System.Int64"
           },
@@ -34241,16 +34605,16 @@
           "$ref": "#/components/schemas/Covenant.Common.Models.Agencies.AgencyContactInformationModel"
         }
       },
+      "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.AgencyOptionModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Agencies.AgencyOptionModel"
+        }
+      },
       "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.AgencyPersonnelModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Models.Agencies.AgencyPersonnelModel"
-        }
-      },
-      "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Agencies.PersonnelAgencyModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
-        "type": "array",
-        "items": {
-          "$ref": "#/components/schemas/Covenant.Common.Models.Agencies.PersonnelAgencyModel"
         }
       },
       "System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.BaseModel`1[[System.Guid, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]], Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -35211,9 +35575,6 @@
     },
     {
       "name": "Attendance"
-    },
-    {
-      "name": "PersonnelAgencies"
     },
     {
       "name": "Personnel"

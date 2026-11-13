@@ -30,18 +30,19 @@ public class SalesServicePeriodWindowTest
     public SalesServicePeriodWindowTest()
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyIds()).Returns([_agencyId]);
         _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
             {
                 _capturedFrom = from;
                 _capturedTo = to;
             })
             .ReturnsAsync([]);
         _companyRepository
-            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .Callback<Guid, Guid?, DateTime, DateTime>((_, _, from, to) =>
+            .Setup(r => r.GetInteractionsByType(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime>((_, _, from, to) =>
             {
                 _capturedInteractionsFrom = from;
                 _capturedInteractionsTo = to;
@@ -153,7 +154,7 @@ public class SalesServicePeriodWindowTest
 
         Assert.False(result);
         _companyRepository.Verify(
-            r => r.GetDealsByStatus(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
+            r => r.GetDealsByStatus(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
             Times.Never);
     }
 

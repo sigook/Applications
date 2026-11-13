@@ -6,6 +6,7 @@ public class AgencyPersonnelModel
     public Guid UserId { get; set; }
     public string Name { get; set; }
     public string Email { get; set; }
-    public Guid AgencyId { get; set; }
     public string Role { get; set; }
+    public List<Guid> AgencyIds { get; set; } = [];
+    public List<string> Agencies { get; set; } = [];
 }

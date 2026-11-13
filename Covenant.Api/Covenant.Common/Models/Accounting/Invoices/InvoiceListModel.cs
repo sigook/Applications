@@ -6,6 +6,7 @@ namespace Covenant.Common.Models.Accounting.Invoices;
 public class InvoiceListModel
 {
     public Guid Id { get; set; }
+    public Guid AgencyId { get; set; }
     public long NumberId { get; set; }
     public DateTime CreatedAt { get; set; }
     public string AgencyFullName { get; set; }

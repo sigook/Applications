@@ -1,3 +1,4 @@
+using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Requests;
@@ -35,7 +36,7 @@ public class AgencyRejectWorkerServiceTest
 
         var sut = new RequestService(
             Mock.Of<ICompanyRepository>(),
-            Mock.Of<IAgencyRepository>(),
+            Mock.Of<IAgencyService>(),
             Mock.Of<ILocationRepository>(),
             new FakeTimeProvider(),
             requestRepository.Object,
@@ -66,7 +67,7 @@ public class AgencyRejectWorkerServiceTest
         requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
         var sut = new RequestService(
             Mock.Of<ICompanyRepository>(),
-            Mock.Of<IAgencyRepository>(),
+            Mock.Of<IAgencyService>(),
             Mock.Of<ILocationRepository>(),
             new FakeTimeProvider(),
             requestRepository.Object,

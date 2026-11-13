@@ -30,7 +30,7 @@ public class CandidatesController(
     [ProducesResponseType(typeof(PaginatedList<CandidateListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCandidates([FromQuery] GetCandidatesFilter filter)
     {
-        return Ok(await candidateRepository.GetCandidates(User.GetAgencyId(), filter));
+        return Ok(await candidateRepository.GetCandidates(User.GetAgencyIds(), filter));
     }
 
     /// <summary>Generates and downloads an Excel report of the current agency's candidates.</summary>
@@ -40,7 +40,7 @@ public class CandidatesController(
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCandidatesFile([FromQuery] GetCandidatesFilter filter)
     {
-        var data = candidateRepository.GetAllCandidates(User.GetAgencyId(), filter).ToList();
+        var data = candidateRepository.GetAllCandidates(User.GetAgencyIds(), filter).ToList();
         var file = await mediator.Send(new GenerateAgencyCandidatesReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }

@@ -91,14 +91,14 @@
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
           <b-field v-if="props.row.workerRequestStatus === WorkerRequestStatus.Booked" grouped>
-            <b-tooltip label="End assignment" type="is-dark" position="is-top" append-to-body>
+            <HoverTooltip label="End assignment">
               <b-button type="is-primary" outlined rounded icon-right="flag-checkered"
                 @click="onShowModalFinish(props.row)"></b-button>
-            </b-tooltip>
-            <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body class="ml-2">
+            </HoverTooltip>
+            <HoverTooltip label="Reject" class="ml-2">
               <b-button type="is-danger" outlined rounded icon-right="close"
                 @click="confirmDelete(props.row)"></b-button>
-            </b-tooltip>
+            </HoverTooltip>
           </b-field>
         </b-table-column>
         <template v-if="!directHiring" #detail="props">
@@ -131,6 +131,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { showAlertError } from "@/shared/utils/toast";

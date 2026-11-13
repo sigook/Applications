@@ -37,7 +37,7 @@ public class WorkersController(
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerProfileListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromQuery] GetWorkerProfileFilter filter) =>
-        Ok(await workerRepository.GetWorkersProfile(User.GetAgencyId(), filter));
+        Ok(await workerRepository.GetWorkersProfile(User.GetAgencyIds(), filter));
 
     /// <summary>Generates and downloads an Excel report of the current agency's worker profiles.</summary>
     /// <param name="filter">Worker profile filter parameters.</param>
@@ -46,7 +46,7 @@ public class WorkersController(
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile([FromQuery] GetWorkerProfileFilter filter)
     {
-        var data = workerRepository.GetAllWorkersProfile(User.GetAgencyId(), filter).ToList();
+        var data = workerRepository.GetAllWorkersProfile(User.GetAgencyIds(), filter).ToList();
         var file = await mediator.Send(new GenerateAgencyWorkersProfileReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
@@ -93,7 +93,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Dnu(Guid id)
     {
-        var result = await workerService.UpdateDnu(User.GetAgencyId(), id);
+        var result = await workerService.UpdateDnu(User.GetAgencyIds(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -105,7 +105,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> IsContractor(Guid id)
     {
-        var result = await workerService.UpdateContractor(User.GetAgencyId(), id);
+        var result = await workerService.UpdateContractor(User.GetAgencyIds(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -117,7 +117,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> IsSubcontractor(Guid id)
     {
-        var result = await workerService.UpdateSubcontractor(User.GetAgencyId(), id);
+        var result = await workerService.UpdateSubcontractor(User.GetAgencyIds(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -133,7 +133,7 @@ public class WorkersController(
         var validation = await updateEmailValidator.ValidateAsync(model);
         if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
 
-        var result = await workerService.UpdateEmail(User.GetAgencyId(), workerProfileId, model?.NewEmail);
+        var result = await workerService.UpdateEmail(User.GetAgencyIds(), workerProfileId, model?.NewEmail);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }
@@ -145,7 +145,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> UpdateApprovedToWork(Guid id)
     {
-        var result = await workerService.UpdateApprovedToWork(User.GetAgencyId(), id);
+        var result = await workerService.UpdateApprovedToWork(User.GetAgencyIds(), id);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

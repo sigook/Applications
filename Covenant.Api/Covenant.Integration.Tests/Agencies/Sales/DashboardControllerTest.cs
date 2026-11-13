@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using Covenant.Api.Controllers.Agencies.Sales;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities.Agencies;
@@ -201,10 +202,10 @@ public class DashboardControllerTest(CustomWebApplicationFactory<DashboardContro
         public static readonly User AdminUser = new(CvnEmail.Create("admin@dashboard.com").Value);
         public static readonly User RecruiterUser = new(CvnEmail.Create("recruiter@dashboard.com").Value);
 
-        public static readonly AgencyPersonnel SalesPersonnel = AgencyPersonnel.CreatePrimary(FakeAgency.Id, SalesUser.Id, "Sales Rep");
-        public static readonly AgencyPersonnel OtherSalesPersonnel = AgencyPersonnel.CreatePrimary(FakeAgency.Id, OtherSalesUser.Id, "Other Rep");
-        public static readonly AgencyPersonnel AdminPersonnel = AgencyPersonnel.CreatePrimary(FakeAgency.Id, AdminUser.Id, "Admin");
-        public static readonly AgencyPersonnel RecruiterPersonnel = AgencyPersonnel.CreatePrimary(FakeAgency.Id, RecruiterUser.Id, "Recruiter");
+        public static readonly AgencyMemberModel SalesPersonnel = TestAgencyMembers.Add(FakeAgency.Id, SalesUser.With(u => u.UpdateName("Sales Rep")).Id);
+        public static readonly AgencyMemberModel OtherSalesPersonnel = TestAgencyMembers.Add(FakeAgency.Id, OtherSalesUser.With(u => u.UpdateName("Other Rep")).Id);
+        public static readonly AgencyMemberModel AdminPersonnel = TestAgencyMembers.Add(FakeAgency.Id, AdminUser.With(u => u.UpdateName("Admin")).Id);
+        public static readonly AgencyMemberModel RecruiterPersonnel = TestAgencyMembers.Add(FakeAgency.Id, RecruiterUser.With(u => u.UpdateName("Recruiter")).Id);
 
         public static readonly CompanyProfile FakeCompany =
             FakeData.FakeCompanyProfileForAgency(FakeAgency.Id, "Dashboard Client", companyEmail: "client@dashboard.com");
@@ -216,7 +217,6 @@ public class DashboardControllerTest(CustomWebApplicationFactory<DashboardContro
         {
             context.Agencies.AddRange(FakeAgency, OtherAgency);
             context.Users.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
-            context.AgencyPersonnel.AddRange(SalesPersonnel, OtherSalesPersonnel, AdminPersonnel, RecruiterPersonnel);
             context.AddRange(FakeCompany, OtherAgencyCompany);
 
             context.Deals.AddRange(

@@ -1,6 +1,7 @@
 // Filter used by agency accounting reports endpoints.
 // Mirrors backend HoursWorkedFilter (+ the weekly-payroll `weekEnding` shortcut).
 export interface AgencyReportFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;

@@ -22,7 +22,7 @@ The tree mirrors the navigation: **portal → menu → feature**, and everything
 
 ```
 src/main.ts                      entry (index.html)
-src/app/                         SPA shell: App.vue, globals.ts, router/index.ts (guard + composes modules/*/routes.ts), security/ (apiService, securityService, roles, menu, authErrors, authApi), stores/ (index, app, security), layout/ (SidebarLogged, UserNotification), pages/ (Callback, SilentRefresh, Unauthorized, NotFound, EmailPreferences, auth/)
+src/app/                         SPA shell: App.vue, globals.ts, router/index.ts (guard + composes modules/*/routes.ts), security/ (apiService, securityService, roles, menu, authErrors, authApi), stores/ (index, app, security), layout/ (SidebarLogged), pages/ (Callback, SilentRefresh, Unauthorized, NotFound, EmailPreferences, auth/)
 src/shared/<concept>/            used by 2+ portals; the folder name is the concept it comes from:
                                  ui/ (SigookGrid, PageHeader, Breadcrumbs, PhoneInput, Address, PreviewImage, SearchSelect, Export, EyebrowPill, MobileFiltersPanel, SheetPanel…), detail-page/, request-detail/, worker-profile/{cards,forms}/ (+ api.ts, types.ts), punch-card/, company-profile/ (+ types.ts, useCompanyDetail), api/ (catalog, location, account, userNotification, shared, reportApi = generic Excel download), composables/, utils/, format/ (date/money/text formatters, import from '@/shared/format'), constants/ (enums, catalog), types/ (common, security, invoice)
 src/modules/<portal>/            routes.ts + store.ts + one folder per menu/feature:
@@ -36,7 +36,7 @@ src/assets/ src/lang/            unchanged (global SCSS partials, VeeValidate ru
 
 Rules enforced by ESLint (`no-restricted-imports` in `eslint.config.mjs`):
 - A module never imports another module (`@/modules/company/*` from agency, etc.). The only exception is `routes.ts` (the agency route that mounts `modules/worker/register`).
-- `src/shared` never imports from `@/modules/*`. A shared component receives the portal-specific function or component as a prop (`CompanyCreateUserModal :save`, `LocationForm :save`, `CommentsCard :create-comment`, `PersonalCard :update-email`).
+- `src/shared` never imports from `@/modules/*`. A shared component receives the portal-specific function or component as a prop (`CompanyUserModal :save`, `LocationForm :save`, `CommentsCard :create-comment`, `PersonalCard :update-email`).
 - Imports are always `@/…` (no relative paths), including SCSS `@import` in `<style>` and asset `src=`/`url()`.
 - File names carry no module prefix: `modules/agency/recruiting/clients/pages/Clients.vue`, not `AgencyCompanies.vue`.
 - One `api.ts` per feature; never merge them into a portal-wide file. Backend URLs follow `api/{portal}/{menu}/{feature}` (see `.docs/technical/SIGOOK_WEB_API_MAP.md`).

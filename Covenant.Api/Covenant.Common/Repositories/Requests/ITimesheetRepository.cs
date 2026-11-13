@@ -24,11 +24,11 @@ public interface ITimesheetRepository : IBaseRepository
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingReportsSubcontractor(IEnumerable<Guid> agencyIds, Guid companyProfileId);
     Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId);
     Task<List<TimeSheetApprovedPayrollModel>> GetApprovedTimeSheetsInRange(Guid workerProfileId, DateTime start, DateTime end);
-    Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid agencyId, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter);
+    Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(IEnumerable<Guid> agencyIds, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter);
     Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds);
     Task<TimeSheetUsagesModel> GetTimeSheetUsages(Guid requestId, Guid workerProfileId, Guid id);
-    Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(Guid agencyId, HoursWorkedFilter filter);
-    Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter);
+    Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(IEnumerable<Guid> agencyIds, HoursWorkedFilter filter);
+    Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(IEnumerable<Guid> agencyIds, TimesheetsReportFilter filter);
     Task<IEnumerable<CompanyProfileJobPositionRateModel>> GetJobPositions(Guid companyProfileId, DateTime startDate, DateTime endDate);
     Task<TimeSheet> GetLatestTimesheet(Expression<Func<WorkerProfile, bool>> condition);
     Task<TimeSheet> GetLatestTimesheet(Guid workerId, Guid requestId);

@@ -43,7 +43,8 @@ import AddressComponent from "@/shared/ui/Address.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import type { AgencyDetail, AgencyLocationDetail } from '@/modules/agency/profile/types';
 
-const { agencyData: _agencyData } = defineProps<{ agencyData?: AgencyDetail }>();
+const { agencyData } = defineProps<{ agencyData: AgencyDetail }>();
+const emit = defineEmits<(e: 'changed', locations: AgencyLocationDetail[]) => void>();
 
 function newLocation(): AgencyLocationDetail {
   return { address: '', city: null, postalCode: '', isBilling: false };
@@ -70,10 +71,11 @@ async function updateLocation(location: AgencyLocationDetail) {
   if (!location.id) return;
   isLoading.value = true;
   try {
-    await updateAgencyLocation(location.id, location);
+    await updateAgencyLocation(agencyData.id, location.id, location);
     isLoading.value = false;
     hideModal();
     location.formattedAddress = getFormattedAddress(location);
+    emit('changed', locations.value);
   } catch (error) {
     isLoading.value = false;
     showAlertError((error as { data?: unknown }).data);
@@ -83,10 +85,11 @@ async function updateLocation(location: AgencyLocationDetail) {
 async function createLocation(location: AgencyLocationDetail) {
   isLoading.value = true;
   try {
-    const r = await createAgencyLocation(location);
+    const r = await createAgencyLocation(agencyData.id, location);
     location.id = r.id;
     location.formattedAddress = getFormattedAddress(location);
     locations.value.push(location);
+    emit('changed', locations.value);
     isLoading.value = false;
     hideModal();
   } catch (error) {
@@ -97,7 +100,8 @@ async function createLocation(location: AgencyLocationDetail) {
 
 async function getLocations() {
   isLoading.value = true;
-  locations.value = await getAgencyLocations();
+  locations.value = await getAgencyLocations(agencyData.id);
+  emit('changed', locations.value);
   isLoading.value = false;
 }
 
@@ -106,9 +110,10 @@ async function deleteLocation(location: AgencyLocationDetail) {
   if (!r || !location.id) return;
   isLoading.value = true;
   try {
-    await deleteAgencyLocation(location.id);
+    await deleteAgencyLocation(agencyData.id, location.id);
     isLoading.value = false;
     locations.value = locations.value.filter(l => l.id !== location.id);
+    emit('changed', locations.value);
   } catch (e) {
     isLoading.value = false;
     showAlertError((e as { data?: unknown }).data);

@@ -5,8 +5,7 @@ public interface ICurrentUserService
     Guid GetUserId();
     Guid GetCompanyId();
     Guid GetAgencyId();
-    Guid GetAgencyPersonnelId();
-    IEnumerable<Guid> GetAgencyIds();
+    List<Guid> GetAgencyIds();
     string GetNickname();
     bool IsAdmin();
     bool IsAgencyStaff();

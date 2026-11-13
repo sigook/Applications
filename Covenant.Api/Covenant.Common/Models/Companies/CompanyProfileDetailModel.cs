@@ -27,6 +27,7 @@ public class CompanyProfileDetailModel
     public bool RequiresPermissionToSeeRequests { get; set; }
     public CovenantFileModel Logo { get; set; }
     public CompanyProfileIndustryDetailModel Industry { get; set; }
+    public Guid? AgencyId { get; set; }
     public Guid? SalesRepresentativeId { get; set; }
     public double OvertimeStartsAfter { get; set; }
     public int PaymentTermDays { get; set; }

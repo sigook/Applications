@@ -74,7 +74,7 @@ import { useSecurityStore } from '@/app/stores/security';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
-import { changeEmail, getEmail, deactivateAccount } from '@/shared/api/accountApi';
+import { changeEmail, getAccount, deactivateAccount } from '@/shared/api/accountApi';
 import { getUserNotifications, updateUserNotification } from '@/shared/api/userNotificationApi';
 import type { UserNotificationItem } from '@/shared/types/common';
 import ProfileCard from '@/shared/worker-profile/cards/ProfileCard.vue';
@@ -179,7 +179,7 @@ async function saveNotification(item: UserNotificationItem) {
 
 async function loadEmail() {
   try {
-    const response = await getEmail();
+    const response = await getAccount();
     currentEmail.value = response.email || '';
   } catch (error) {
     showAlertError(error);

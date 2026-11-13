@@ -36,8 +36,7 @@ public class AccountingService(
 
     public async Task<PaginatedList<PayrollSubContractorListModel>> GetSubcontractors(Pagination filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var result = await subcontractorRepository.GetPayrollsSubcontractor(agencyId, filter);
+        var result = await subcontractorRepository.GetPayrollsSubcontractor(currentUserService.GetAgencyIds(), filter);
         return result;
     }
 
@@ -57,8 +56,7 @@ public class AccountingService(
         {
             return Result.Fail($"Invalid date format ({weekEnding})");
         }
-        var agencyId = currentUserService.GetAgencyId();
-        int deleted = await subcontractorRepository.DeleteReportsByWeekEnding(agencyId, weekEndingDate);
+        int deleted = await subcontractorRepository.DeleteReportsByWeekEnding(currentUserService.GetAgencyIds(), weekEndingDate);
         if (deleted == 0)
         {
             return Result.Fail($"No subcontractor reports found for week ending {weekEndingDate:yyyy-MM-dd}");

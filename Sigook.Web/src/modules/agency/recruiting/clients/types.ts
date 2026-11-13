@@ -57,6 +57,7 @@ export interface CompanyProfilePaymentTermsUpdate {
 
 // Filter for GET /api/agency/recruiting/clients. Mirrors backend GetCompanyForAgencyFilter.
 export interface AgencyCompanyFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -78,6 +79,7 @@ export interface AgencyCompanyFilter {
 // Item returned by GET /api/agency/recruiting/clients.
 export interface AgencyCompanyListItem {
   id: string;
+  agencyId: string;
   fullName: string;
   email: string;
   numberId?: number;

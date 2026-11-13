@@ -109,10 +109,10 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         return query.OrderBy(ts => ts.Date);
     }
 
-    public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(Guid agencyId, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter)
+    public async Task<PaginatedList<TimeSheetHistoryModel>> GetTimeSheetHistory(IEnumerable<Guid> agencyIds, Guid workerProfileId, GetWorkerTimeSheetHistoryFilter filter)
     {
         var query = Context.TimeSheets
-            .Where(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId && ts.WorkerRequest.WorkerProfile.AgencyId == agencyId)
+            .Where(ts => ts.WorkerRequest.WorkerProfileId == workerProfileId && agencyIds.Contains(ts.WorkerRequest.WorkerProfile.AgencyId))
             .Select(ts => new TimeSheetHistoryModel
             {
                 Id = ts.Id,
@@ -478,14 +478,14 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         };
     }
 
-    public async Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(Guid agencyId, HoursWorkedFilter filter)
+    public async Task<IEnumerable<HoursWorkedResponse>> GetHoursWorked(IEnumerable<Guid> agencyIds, HoursWorkedFilter filter)
     {
         var timeSheets = Context.TimeSheets
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
             .ThenInclude(r => r.JobPositionRate)
-            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.CompanyProfile.AgencyId == agencyId);
+            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId));
         if (filter.CompanyProfileId.HasValue)
             timeSheets = timeSheets.Where(qb => qb.WorkerRequest.Request.CompanyProfileId == filter.CompanyProfileId);
         if (filter.JobPositionRateId.HasValue)
@@ -529,13 +529,13 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         return result;
     }
 
-    public async Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(Guid agencyId, TimesheetsReportFilter filter)
+    public async Task<IEnumerable<TimesheetsReportResponse>> GetTimesheetsReport(IEnumerable<Guid> agencyIds, TimesheetsReportFilter filter)
     {
         var timeSheets = Context.TimeSheets
             .AsNoTracking()
             .Include(ts => ts.WorkerRequest)
             .ThenInclude(wr => wr.Request)
-            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && ts.WorkerRequest.Request.CompanyProfile.AgencyId == agencyId);
+            .Where(ts => ts.Date.Date >= filter.StartDate && ts.Date.Date <= filter.EndDate && agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId));
         var query = from ts in timeSheets
                     select new
                     {

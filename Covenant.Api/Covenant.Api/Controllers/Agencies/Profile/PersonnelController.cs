@@ -19,12 +19,12 @@ public class PersonnelController(IAgencyService agencyService) : ControllerBase
 {
     public const string RouteName = "api/agency/profile/personnel";
 
-    /// <summary>Gets all personnel of the current agency.</summary>
+    /// <summary>Gets the personnel of the selected agencies.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<AgencyPersonnelModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get()
     {
-        return Ok(await agencyService.GetAgencyPersonnel(User.GetAgencyId()));
+        return Ok(await agencyService.GetAgencyPersonnel(User.GetAgencyIds()));
     }
 
     /// <summary>Gets the roles that the current user is allowed to assign to a personnel of the current agency.</summary>
@@ -53,7 +53,7 @@ public class PersonnelController(IAgencyService agencyService) : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> GetById([FromRoute] Guid id)
     {
-        var model = await agencyService.GetAgencyPersonnel(User.GetAgencyId(), id);
+        var model = await agencyService.GetAgencyPersonnel(User.GetAgencyIds(), id);
         if (model is null) return NotFound();
         return Ok(model);
     }
@@ -82,7 +82,7 @@ public class PersonnelController(IAgencyService agencyService) : ControllerBase
     public async Task<IActionResult> Delete(
         [FromRoute] Guid id)
     {
-        var result = await agencyService.DeleteAgencyPersonnel(User.GetAgencyId(), id);
+        var result = await agencyService.DeleteAgencyPersonnel(id);
         if (!result) return result.IsNotFound ? NotFound() : BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

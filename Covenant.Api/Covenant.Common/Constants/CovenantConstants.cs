@@ -6,7 +6,6 @@ public static class CovenantConstants
     public const string CompanyId = "companyId";
     public const string AgencyId = "agencyId";
     public const string AgencyIds = "agencyIds";
-    public const string AgencyPersonnelId = "agencyPersonnelId";
 
     public static class Role
     {

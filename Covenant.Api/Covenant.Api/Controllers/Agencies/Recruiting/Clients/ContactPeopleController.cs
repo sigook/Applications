@@ -60,7 +60,7 @@ public class ContactPeopleController(ICompanyRepository companyRepository, IAgen
     public async Task<IActionResult> Put(Guid profileId, Guid id, [FromBody] CompanyProfileContactPersonModel model)
     {
         if (!ModelState.IsValid) return BadRequest(ModelState);
-        var result = await agencyService.UpdateCompanyContactPerson(id, model);
+        var result = await companyService.UpdateContactPerson(id, model);
         if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
         return Ok();
     }

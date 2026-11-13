@@ -23,7 +23,7 @@ Roles live in the identity database (`Rol` / `UserRole` tables managed by ASP.NE
 | `worker` | Worker (mobile app) | Their own jobs |
 
 An **agency owner** gets `admin`. There is no `agency` role: what resolves a user's agency is their
-`AgencyPersonnel` row, not a role.
+`agencyId` claims in the identity database (one per agency), not a role.
 
 ## Role groups
 
@@ -35,7 +35,7 @@ An **agency owner** gets `admin`. There is no `agency` role: what resolves a use
 | `AdminAccess` | superadmin, admin | Invoices, pay stubs, reports, and user management (policy name: `Admin`) |
 
 `AgencyStaff` is also the **identity** group: those are the users for whom `AgencyIdFilter` injects
-the `agencyId` / `agencyIds` / `agencyPersonnelId` claims.
+the `agencyId` / `agencyIds` claims.
 
 ## Core rule: sales is scoped by the list, not by the detail
 
@@ -48,7 +48,7 @@ created it — so they should be able to do the same things a recruiter can do w
 Concretely:
 
 - **Lists are scoped.** `GET api/agency/sales/requests` and `GET api/agency/sales/clients`
-  filter by the caller's `AgencyPersonnelId` (`RequestComission.AgencyPersonnelId` for orders,
+  filter by the caller's user id (`RequestComission.SalesRepresentativeId` for orders,
   `CompanyProfile.SalesRepresentativeId` for clients). Admin and superadmin hit the same endpoints
   **unscoped** — the scoping is per-caller, not per-endpoint.
 - **The unscoped lists are closed to sales.** `GET api/agency/recruiting/requests` and
@@ -171,19 +171,26 @@ to assign:
 `GET api/agency/profile/personnel/Roles` returns that set for the current caller, and the `POST` rejects
 anything outside it. Hiding a role from the dropdown is not a defense — the check is the defense.
 
-If the email already belongs to an existing user (adding them to a second agency), the submitted role
+The body carries `agencyIds`: the agencies the new user joins (empty = the caller's active agency).
+Each one must be among the caller's own agencies, otherwise the request fails with "The selected agency
+is not available". Membership is stored as `agencyId` claims in the identity database.
+
+If the email already belongs to an existing user (adding them to more agencies), the submitted role
 is **ignored** and the user keeps their current role: the role is global, not per-agency, so changing
 it would also change it in their first agency.
 
 Only existing **agency** users can be added to a second agency: if the email belongs to a worker or
-company user, `AgencyService` rejects it with `EmailAlreadyTaken` (`AgencyService.cs:625-628`).
+company user, or the request adds no new agency, `AgencyService` rejects it with `EmailAlreadyTaken`.
 
 ## User editing
 
-`PUT api/agency/profile/personnel/{id}` (Policy `Admin`) changes an agency user's **name, email and role**.
+`PUT api/agency/profile/personnel/{id}` (Policy `Admin`) changes an agency user's **name, email, role and agencies**.
 It is the same `AgencyPersonnelModel` the `POST` takes, validated by `AgencyPersonnelModelValidator`.
 
 - The role must be inside the caller's assignable set — same check as creation.
+- `agencyIds` replaces the user's memberships among the caller's own agencies (agencies the caller
+  cannot see are left untouched); empty keeps them as they are. A user outside the caller's agencies
+  is not found. **Nobody can remove themselves from an agency.**
 - **Nobody can change their own role.** A caller editing their own record may change the name and the
   email, but a role change is rejected server-side; the UI also disables the select. Without this an
   admin could demote themselves and lose access to user management.

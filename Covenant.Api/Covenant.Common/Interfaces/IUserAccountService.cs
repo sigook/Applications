@@ -8,7 +8,9 @@ namespace Covenant.Common.Interfaces;
 public interface IUserAccountService
 {
     Task<Result<User>> CreateUser(CreateUserModel model);
-    Task<Result> UpdateAgencyUser(Guid userId, IdModel agency);
+    Task<Result> UpdateAgencyClaims(Guid userId, IEnumerable<Guid> add, IEnumerable<Guid> remove);
+    Task<IReadOnlyList<AgencyMemberModel>> GetAgencyMembers(IEnumerable<Guid> agencyIds);
+    Task<IReadOnlyList<AgencyMemberModel>> GetUsersAgencies(IEnumerable<Guid> userIds);
     Task<Result> DeleteUserOrClaim(Guid userId, IdModel claim);
     Task<Result> InactiveUser(Guid id);
     Task<Result> UpdateUserEmail(UpdateEmailModel model);

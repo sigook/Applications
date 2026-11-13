@@ -23,5 +23,5 @@ public class WageHistoryController(IWorkerRepository workerRepository) : Control
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<PayStubHistoryModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid workerProfileId, [FromQuery] GetWorkerPayStubHistoryFilter filter) =>
-        Ok(await workerRepository.GetWageHistory(User.GetAgencyId(), workerProfileId, filter));
+        Ok(await workerRepository.GetWageHistory(User.GetAgencyIds(), workerProfileId, filter));
 }

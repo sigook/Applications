@@ -38,6 +38,7 @@ export interface UpdateInvoicePaidAtModel {
 
 // Filter for GET /api/agency/accounting/invoices. Mirrors GetInvoicesFilterV2.
 export interface AgencyInvoiceFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -56,6 +57,7 @@ export interface AgencyInvoiceFilter {
 // Item returned inside the list response. Mirrors backend InvoiceListModel.
 export interface AgencyInvoiceListItem {
   id: string;
+  agencyId: string;
   numberId: number;
   createdAt: string;
   agencyFullName?: string;

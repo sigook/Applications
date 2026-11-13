@@ -256,8 +256,7 @@ public class TimesheetService(
 
     public async Task<HoursWorkedResume> GetHoursWorked(HoursWorkedFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var result = await timeSheetRepository.GetHoursWorked(agencyId, filter);
+        var result = await timeSheetRepository.GetHoursWorked(currentUserService.GetAgencyIds(), filter);
         var resume = new HoursWorkedResume
         {
             TotalRegularHours = result.Sum(x => x.RegularHoursWorked),
@@ -284,8 +283,7 @@ public class TimesheetService(
 
     public async Task<ResultGenerateDocument<MemoryStream>> GetTimesheetsReportFile(TimesheetsReportFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var result = await timeSheetRepository.GetTimesheetsReport(agencyId, filter);
+        var result = await timeSheetRepository.GetTimesheetsReport(currentUserService.GetAgencyIds(), filter);
         var request = await mediator.Send(new GenerateTimesheetsReport(result.ToList()));
         return request;
     }

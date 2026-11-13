@@ -24,6 +24,7 @@ export interface WorkerProfileJobExperienceDetail {
 
 export interface WorkerProfileDetail {
   id: string;
+  agencyId: string;
   numberId: number;
   profileImage: CovenantFileModel | null;
   firstName: string;

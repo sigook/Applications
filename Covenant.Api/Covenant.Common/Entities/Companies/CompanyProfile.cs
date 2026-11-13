@@ -57,7 +57,7 @@ public class CompanyProfile
     public ICollection<CompanyProfileNote> Notes { get; private set; } = [];
     public CompanyProfileIndustry Industry { get; internal set; }
     public Guid? SalesRepresentativeId { get; private set; }
-    public AgencyPersonnel SalesRepresentative { get; private set; }
+    public User SalesRepresentative { get; private set; }
     public Guid IndustryId { get; private set; }
     public string CreatedBy { get; private set; }
     public DateTime CreatedAt { get; private set; } = DateTime.Now;

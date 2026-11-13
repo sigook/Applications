@@ -172,6 +172,7 @@ import { DurationTerm, DurationTermLabels, EmploymentType, EmploymentTypeLabels,
 import { currency, dateFromNow, emailName } from '@/shared/format';
 import { datesKpi, formatBreak, rateKpi, shiftKpi, staffingItems } from '@/shared/request-detail/requestDetail';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
+import { useAgencyName } from '@/modules/agency/shared/useAgencyName';
 import { useRecruitingAccess } from '@/shared/composables/useRecruitingAccess';
 import { useAdmin } from '@/shared/composables/useAdmin';
 import { createAgencyCompanyJobPosition, createAgencyCompanyJobPositionWithoutRates, updateAgencyCompanyJobPosition, getAgencyCompanyJobPositionById } from '@/modules/agency/recruiting/clients/api';
@@ -238,10 +239,12 @@ const employmentLabel = computed(() => {
     .filter(Boolean).join(' · ');
 });
 
+const { agencyName } = useAgencyName();
+
 const chips = computed(() => {
   const r = request.value;
   if (!r) return [];
-  return employmentLabel.value ? [employmentLabel.value] : [];
+  return [agencyName(r.agencyId), employmentLabel.value].filter((label): label is string => !!label);
 });
 
 const showFinish = computed(() => {

@@ -1,3 +1,4 @@
+using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Companies;
@@ -69,11 +70,11 @@ public class CreateRequestServiceTest
             }
         });
         currentUserService = new Mock<ICurrentUserService>();
-        currentUserService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
+        _companyRepository.Setup(cr => cr.GetAgencyId(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(_now, TimeSpan.Zero));
         _sut = new RequestService(
             _companyRepository.Object,
-            Mock.Of<IAgencyRepository>(),
+            Mock.Of<IAgencyService>(),
             locationRepository.Object,
             timeProvider,
             _requestRepository.Object,

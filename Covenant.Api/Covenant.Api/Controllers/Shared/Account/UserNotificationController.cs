@@ -23,8 +23,6 @@ public class UserNotificationController(INotificationRepository notificationRepo
         var targetAllow = new List<NotificationTarget>();
         if (User.IsInRole(CovenantConstants.Role.Worker))
             targetAllow.Add(NotificationTarget.Worker);
-        if (User.IsAgencyStaff())
-            targetAllow.Add(NotificationTarget.Agency);
         if (User.IsInRole(CovenantConstants.Role.Company))
             targetAllow.Add(NotificationTarget.Company);
         List<UserNotificationListModel> list = await notificationRepository.Get(User.GetUserId(), targetAllow);

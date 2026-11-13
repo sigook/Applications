@@ -18,6 +18,14 @@
         </b-field>
       </div>
 
+      <div v-if="agencies.length > 1" class="column is-12">
+        <b-field label="Agency *">
+          <b-select :model-value="agencyId" name="agency" expanded @update:modelValue="onAgencyChanged">
+            <option v-for="agency in agencies" :key="agency.id" :value="agency.id">{{ agency.name }}</option>
+          </b-select>
+        </b-field>
+      </div>
+
       <div class="column is-12">
         <b-field label="Full name *" :type="formErrors.fullName ? 'is-danger' : ''" :message="formErrors.fullName || ''">
           <b-input v-model="fullName" name="full name" placeholder="e.g. Acme Logistics"></b-input>
@@ -168,6 +176,7 @@ import { usePubSub } from '@/shared/composables/usePubSub';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/shared/api/catalogApi';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
+import { useAgencyStore } from '@/modules/agency/store';
 import { createAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
 import type { CatalogItem, Industry } from '@/shared/types/common';
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
@@ -175,6 +184,9 @@ import type { CompanyProfileFormState } from '@/modules/agency/recruiting/client
 
 const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
+const agencyStore = useAgencyStore();
+const agencies = computed(() => agencyStore.agencies);
+const agencyId = ref<string | null>(agencies.value.at(0)?.id ?? null);
 
 const numericExt = yup
   .string()
@@ -267,9 +279,25 @@ const filteredSalesRepresentative = computed(() => {
 async function init() {
   industryOptions.value = await getIndustries();
   statuses.value = await getCompanyStatus();
-  salesRepresentatives.value = await getAgencyPersonnel();
+  salesRepresentatives.value = await getAgencyPersonnel(agencyId.value ?? undefined);
 }
 void init();
+
+watch(agencies, (list) => {
+  const first = list.at(0);
+  if (!agencyId.value && first) void onAgencyChanged(first.id);
+});
+
+async function onAgencyChanged(value: string) {
+  agencyId.value = value;
+  salesRepresentativeSelected.value = null;
+  form.setFieldValue('salesRepresentative', '');
+  try {
+    salesRepresentatives.value = await getAgencyPersonnel(value);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
 
 function validateAutocompleteSelections(): boolean {
   let valid = true;
@@ -304,6 +332,7 @@ async function submit(): Promise<boolean> {
         salesRepresentativeId: salesRepresentativeSelected.value?.id || null,
         industry: { ...company.value.industry, industry: industrySelected.value },
         email: values.email,
+        agencyId: agencyId.value,
       };
       if (displayPassword.value) payload.password = values.password;
       try {

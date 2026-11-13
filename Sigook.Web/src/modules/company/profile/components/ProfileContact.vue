@@ -19,12 +19,17 @@
         <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete contact"
-          @click="removeLine(props.row.id)" />
+        <div class="buttons is-flex-wrap-nowrap">
+          <b-button type="is-info" outlined rounded icon-right="pencil" title="Edit" aria-label="Edit contact"
+            @click="openEditContactModal(props.row)" />
+          <b-button type="is-danger" outlined rounded icon-right="delete" aria-label="Delete contact"
+            @click="removeLine(props.row.id)" />
+        </div>
       </b-table-column>
     </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal">
       <div class="p-3">
+        <h2 class="has-text-centered fz1 mb-4">{{ editingId ? 'Edit contact' : 'New contact' }}</h2>
         <div class="columns is-multiline">
           <div class="column is-6">
             <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
@@ -97,7 +102,7 @@ import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
-import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/modules/company/profile/api';
+import { getContactPeople, deleteContactPerson, saveContactPerson, updateContactPerson } from '@/modules/company/profile/api';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
 const emit = defineEmits<(e: 'loaded', count: number) => void>();
@@ -154,11 +159,29 @@ const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
 const isLoading = ref(false);
 const showModal = ref(false);
 const contactPeople = ref<CompanyContactPersonModel[]>([]);
+const editingId = ref<string | null>(null);
 const mobileComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('mobileComponent');
 const officeComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('officeComponent');
 
 function openAddContactModal() {
+  editingId.value = null;
   form.resetAll();
+  showModal.value = true;
+}
+
+function openEditContactModal(contact: CompanyContactPersonModel) {
+  editingId.value = contact.id ?? null;
+  form.hydrate({
+    title: contact.title,
+    firstName: contact.firstName,
+    middleName: contact.middleName ?? '',
+    lastName: contact.lastName,
+    email: contact.email,
+    position: contact.position,
+    mobileNumber: contact.mobileNumber,
+    officeNumber: contact.officeNumber,
+    officeNumberExt: contact.officeNumberExt?.toString() ?? '',
+  });
   showModal.value = true;
 }
 
@@ -184,7 +207,11 @@ async function validateForm() {
       officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
     };
     try {
-      await saveContactPerson(contact);
+      if (editingId.value) {
+        await updateContactPerson(editingId.value, contact);
+      } else {
+        await saveContactPerson(contact);
+      }
       isLoading.value = false;
       showModal.value = false;
       form.resetAll();

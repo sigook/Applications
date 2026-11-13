@@ -30,7 +30,7 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
     public Task<bool> RunnerExists(Guid requestId, Guid workerProfileId) =>
         Context.Runners.AnyAsync(r => r.RequestId == requestId && r.WorkerProfileId == workerProfileId);
 
-    public async Task<PaginatedList<RunnerListModel>> GetRunners(Guid agencyId, GetRunnersFilter filter)
+    public async Task<PaginatedList<RunnerListModel>> GetRunners(IEnumerable<Guid> agencyIds, GetRunnersFilter filter)
     {
         var query = Context.Runners
             .AsNoTracking()
@@ -50,14 +50,14 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
                 CreatedAt = r.CreatedAt,
                 CreatedBy = r.CreatedBy
             });
-        query = query.Where(ApplyFilter(agencyId, filter));
+        query = query.Where(ApplyFilter(agencyIds, filter));
         query = ApplySort(query, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<AgencyRunnerListModel> GetAllAgencyRunners(Guid agencyId, GetAgencyRunnersFilter filter)
+    public IQueryable<AgencyRunnerListModel> GetAllAgencyRunners(IEnumerable<Guid> agencyIds, GetAgencyRunnersFilter filter)
     {
-        var runners = ApplyRequestFilterAgencyRunners(agencyId, filter);
+        var runners = ApplyRequestFilterAgencyRunners(agencyIds, filter);
         var query = runners.Select(r => new AgencyRunnerListModel
         {
             Id = r.Id,
@@ -85,9 +85,9 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
         return query.Where(ApplyFilterAgencyRunners(filter));
     }
 
-    public async Task<AgencyRunnersPagedResponse> GetAgencyRunners(Guid agencyId, GetAgencyRunnersFilter filter)
+    public async Task<AgencyRunnersPagedResponse> GetAgencyRunners(IEnumerable<Guid> agencyIds, GetAgencyRunnersFilter filter)
     {
-        var query = GetAllAgencyRunners(agencyId, filter);
+        var query = GetAllAgencyRunners(agencyIds, filter);
 
         var requestsQuery = query
             .Select(r => new { r.RequestId, r.RequestNumberId })
@@ -123,6 +123,7 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
             .Select(r => new AgencyRequestRunnersModel
             {
                 RequestId = r.Id,
+                AgencyId = r.CompanyProfile.AgencyId,
                 NumberId = r.NumberId,
                 CompanyFullName = r.CompanyProfile.FullName,
                 JobTitle = r.JobTitle,
@@ -139,9 +140,9 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
             })
             .ToListAsync();
 
-    private IQueryable<Runner> ApplyRequestFilterAgencyRunners(Guid agencyId, GetAgencyRunnersFilter filter)
+    private IQueryable<Runner> ApplyRequestFilterAgencyRunners(IEnumerable<Guid> agencyIds, GetAgencyRunnersFilter filter)
     {
-        var runners = Context.Runners.AsNoTracking().Where(r => r.Request.CompanyProfile.AgencyId == agencyId);
+        var runners = Context.Runners.AsNoTracking().Where(r => agencyIds.Contains(r.Request.CompanyProfile.AgencyId));
         runners = filter.RequestStatuses is { Count: > 0 }
             ? runners.Where(r => filter.RequestStatuses.Contains(r.Request.Status))
             : runners.Where(r => r.Request.Status == RequestStatus.Open);
@@ -153,7 +154,7 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
         if (!string.IsNullOrWhiteSpace(filter.Recruiter))
         {
             var recruiter = filter.Recruiter.ToLower();
-            runners = runners.Where(r => r.Request.Recruiters.Any(rr => rr.Recruiter.User.Email.ToLower() == recruiter));
+            runners = runners.Where(r => r.Request.Recruiters.Any(rr => rr.Recruiter.Email.ToLower() == recruiter));
         }
         if (filter.StartAtFrom.HasValue)
             runners = runners.Where(r => r.Request.StartAt >= filter.StartAtFrom.Value.Date);
@@ -230,9 +231,9 @@ public class RunnerRepository(CovenantContext context) : BaseRepository<Covenant
             })
             .SingleOrDefaultAsync();
 
-    private static Expression<Func<RunnerListModel, bool>> ApplyFilter(Guid agencyId, GetRunnersFilter filter)
+    private static Expression<Func<RunnerListModel, bool>> ApplyFilter(IEnumerable<Guid> agencyIds, GetRunnersFilter filter)
     {
-        Expression<Func<RunnerListModel, bool>> predicate = r => r.AgencyId == agencyId;
+        Expression<Func<RunnerListModel, bool>> predicate = r => agencyIds.Contains(r.AgencyId);
         if (filter.RequestId.HasValue)
             predicate = predicate.And(r => r.RequestId == filter.RequestId.Value);
         predicate = predicate.AndSearch(filter.Name, r => r.Name, r => r.Email);

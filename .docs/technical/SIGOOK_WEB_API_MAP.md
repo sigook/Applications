@@ -17,44 +17,49 @@ Maps every API module (one `api.ts` per feature under `src/modules/{portal}/{men
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
 | `changeEmail(model)` | POST | `/api/account/ChangeEmail` | `ChangeEmailRequest` | `void` | |
-| `getEmail()` | GET | `/api/account/GetEmail` | — | `GetEmailResponse` | Fetch current email |
+| `getAccount()` | GET | `/api/account` | — | `AccountResponse` | Caller's email + `Users.Name` (email when empty); account forms and sidebar user label |
 | `deactivateAccount()` | PATCH | `/identity` | — | `void` | Account deactivation |
 
-**Types:** `ChangeEmailRequest`, `GetEmailResponse` (`src/shared/types/security`)
+**Types:** `ChangeEmailRequest`, `AccountResponse` (`src/shared/types/security`)
 
 ---
 
 ## 2. Agency profile & agencies — `src/modules/agency/profile/api.ts` (profile, personnel, locations, attendance) + `src/modules/agency/sales/agencies/api.ts` (agencies CRUD)
-Agency profile, personnel and agency switching.
+Agency profile, personnel and the agencies of the agency filter.
+
+Every agency endpoint accepts `?agencyIds=` (repeatable) to restrict lists to some of the caller's agencies (default: all of them) and `?agencyId=` to pick the single agency of the Agency Profile endpoints (default: first claim). Ids outside the caller's `agencyId` claims are ignored.
 
 | Function | HTTP Method | Endpoint | Request Type | Response Type | Notes |
 |----------|------------|----------|--------------|---------------|-------|
-| `getAgencyProfile()` | GET | `/api/agency/profile` | — | `AgencyDetail` | Current logged-in agency |
+| `getAgencyProfile(agencyId?)` | GET | `/api/agency/profile` | `agencyId` (params) | `AgencyDetail` | Agency picked in the Profile "Switch agency" dropdown (default: first claim) |
+| `updateAgencyProfile(agencyId, agency)` | PUT | `/api/agency/profile` | `AgencyDetail` + `agencyId` (params) | `void` | Business edit modal / Contacts tab |
 | `getAgency(id)` | GET | `/api/agency/sales/agencies/{id}` | — | `AgencyDetail` | |
 | `getAgenciesList(filter)` | GET | `/api/agency/sales/agencies` | `AgencyListFilter` (params) | `PaginatedList<AgencyListItem>` | |
 | `createAgency(model)` | POST | `/api/agency/sales/agencies` | `CreateAgencyModel` | `{ id: string }` | |
-| `updateAgency(agency)` | PUT | `/api/agency/sales/agencies` | `AgencyDetail` | `void` | |
-| `getAgencyPersonnel()` | GET | `/api/agency/profile/personnel` | — | `AgencyPersonnelListItem[]` | Back-office users; `role` is read from the identity database and is null if that read fails |
-| `createAgencyPersonnel(model)` | POST | `/api/agency/profile/personnel` | `AgencyPersonnelCreateModel` | `void` | |
-| `updateAgencyPersonnel(id, model)` | PUT | `/api/agency/profile/personnel/{id}` | `AgencyPersonnelCreateModel` | `void` | Name, email and role. Policy `Admin` |
+| `getAgencyPersonnel(agencyIds?)` | GET | `/api/agency/profile/personnel` | `agencyIds` (params, `AgencyFilter` of the Users grid; default all the caller's agencies) | `AgencyPersonnelListItem[]` | Back-office users; `id` is the staff user id (`User.Id`), also used by `{id}` below; `role` is read from the identity database and is null if that read fails; `agencyIds`/`agencies` = the user's memberships among the caller's agencies |
+| `createAgencyPersonnel(model)` | POST | `/api/agency/profile/personnel` | `AgencyPersonnelCreateModel` | `void` | `agencyIds` = agencies to join |
+| `updateAgencyPersonnel(id, model)` | PUT | `/api/agency/profile/personnel/{id}` | `AgencyPersonnelCreateModel` | `void` | Name, email, role and agencies. Policy `Admin` |
 | `getAssignableRoles()` | GET | `/api/agency/profile/personnel/Roles` | — | `string[]` | Roles current user may assign |
-| `deleteAgencyPersonnel(id)` | DELETE | `/api/agency/profile/personnel/{id}` | — | `void` | |
-| `getAgencyLocations()` | GET | `/api/agency/profile/locations` | — | `AgencyLocationDetail[]` | |
-| `createAgencyLocation(model)` | POST | `/api/agency/profile/locations` | `AgencyLocationDetail` | `{ id: string }` | |
-| `updateAgencyLocation(id, model)` | PUT | `/api/agency/profile/locations/{id}` | `AgencyLocationDetail` | `void` | |
-| `deleteAgencyLocation(id)` | DELETE | `/api/agency/profile/locations/{id}` | — | `void` | |
-| `getPersonnelAgencies()` | GET | `/api/agency/profile/personnel/agencies` | — | `PersonnelAgencyItem[]` | Agencies user has access to |
-| `switchPersonnelAgency(id)` | PUT | `/api/agency/profile/personnel/agencies/{id}` | — | `void` | Switch active agency context |
+| `deleteAgencyPersonnel(id)` | DELETE | `/api/agency/profile/personnel/{id}` | — | `void` | Removes the user from every agency of the caller; deletes the user when no other agency remains |
+| `getAgencyLocations(agencyId)` | GET | `/api/agency/profile/locations` | — | `AgencyLocationDetail[]` | |
+| `createAgencyLocation(agencyId, model)` | POST | `/api/agency/profile/locations` | `AgencyLocationDetail` | `{ id: string }` | |
+| `updateAgencyLocation(agencyId, id, model)` | PUT | `/api/agency/profile/locations/{id}` | `AgencyLocationDetail` | `void` | |
+| `deleteAgencyLocation(agencyId, id)` | DELETE | `/api/agency/profile/locations/{id}` | — | `void` | |
+| `getAccessibleAgencies()` | GET | `/api/agency/profile/agencies` | — | `AgencyOption[]` | Agencies of the caller's `agencyId` claims (id, name), sorted by name. Feeds `AgencyFilter` and the Bulk Data agency picker |
 | `getAttendanceToday()` | GET | `/api/agency/profile/attendance/today` | `timeZone` (params, device IANA zone) | `UserAttendanceToday` | Current user's clock state today (sidebar button) |
 | `toggleAttendance()` | POST | `/api/agency/profile/attendance` | `timeZone` (params, device IANA zone) | `UserAttendanceToday` | Clock in, or out when today is open |
-| `getAttendancesTodayForUsers()` | GET | `/api/agency/profile/attendance/today/users` | `timeZone` (params, device IANA zone) | `UserAttendanceToday[]` | "Today" column of the Users grid. Policy `Admin` |
-| `getAttendanceReport(filter)` | GET | `/api/agency/profile/attendance/report` | `UserAttendanceReportFilter` (params) | `UserAttendanceReport` | Per-day hours + totals. Policy `Admin` |
-| `downloadAttendanceReport(filter)` | GET | `/api/agency/profile/attendance/report/file` | `UserAttendanceReportFilter` (params) | `Blob` | Excel. Policy `Admin` |
+| `getAttendancesTodayForUsers(agencyIds?)` | GET | `/api/agency/profile/attendance/today/users` | `timeZone` (params, device IANA zone) | `UserAttendanceToday[]` | "Today" column of the Users grid. Policy `Admin` |
+| `getAttendanceReport(agencyIds, filter)` | GET | `/api/agency/profile/attendance/report` | `UserAttendanceReportFilter` (params) | `UserAttendanceReport` | Per-day hours + totals. Policy `Admin` |
+| `downloadAttendanceReport(agencyIds, filter)` | GET | `/api/agency/profile/attendance/report/file` | `UserAttendanceReportFilter` (params) | `Blob` | Excel. Policy `Admin` |
 | `updateAttendance(id, model)` | PUT | `/api/agency/profile/attendance/{id}` | `UpdateUserAttendanceModel` | `void` | Admin punch correction |
 
-**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `PersonnelAgencyItem`, `AttendanceStatus`, `UserAttendance*`, `UpdateUserAttendanceModel` (the feature's `types.ts`)
+**Types:** `AgencyDetail`, `AgencyListFilter`, `AgencyListItem`, `AgencyLocationDetail`, `AgencyPersonnelCreateModel`, `AgencyPersonnelListItem`, `CreateAgencyModel`, `AgencyOption`, `AttendanceStatus`, `UserAttendance*`, `UpdateUserAttendanceModel` (the feature's `types.ts`)
 
-**Pinia:** `useAgencyStore` holds `agency` + `agencyListFilter`; `personnelAgencies` for agency switching.
+**Pinia:** `useAgencyStore` holds `agency` + `agencyListFilter`; `agencies` (loaded by `SidebarLogged`) for the agency filter.
+
+**Agency filter:** `modules/agency/shared/AgencyFilter.vue` (dropdown "All agencies" / "N of M agencies" with one switch per agency plus "All agencies"; hidden when the user has one agency) sits in the `#filters` slot of the top-level agency grids (Requests, Clients, Workers, Candidates, Invoices, Pay Stubs, Subcontractors, Payment and Hours Worked reports, Sub-agencies) and in `RequestGroupsToolbar` (Applicants, Runners). It writes `agencyIds` into the grid params as a comma-separated string: `undefined` = all, `''` = none. The state lives in the grid params only (no localStorage); a page refresh resets it to all agencies.
+
+**Agency flag:** `modules/agency/shared/AgencyBadge.vue` (prop `agencyId`) is a `.request-flag` like ASAP/DH: the agency code (`agencyCode()`: initials, or the first three letters of a one-word name) on a per-agency color (`.request-flag--agency-0..5` in `base.scss`, by position in the `agencies` store), full name in a tooltip. It sits before the row name in the same grids (Clients, Workers, Candidates, Requests, Invoices, Pay Stubs), next to ASAP/DH on the `RequestGroup` header (Applicants, Runners) and the Weekly Board cards, and in front of each agency in `AgencyFilter` as the legend; the Client, Request and Worker detail headers show the full name as a chip. Names come from the `agencies` store through `useAgencyName()`, so the models only carry `agencyId`. Hidden when the user has one agency.
 
 ---
 
@@ -162,6 +167,8 @@ Agency-side management of client companies. Bases: `companyProfilesUrl = /api/ag
 | `getCompanyUsers(id)` | GET | `/api/agency/recruiting/clients/{id}/Users` | — | `CompanyUserModel[]` | |
 | `createCompanyProfileUser(id, user)` | POST | `/api/agency/recruiting/clients/{id}/Users` | `CreateCompanyUserModel` | `{ id: string }` | |
 | `deleteCompanyProfileUser(id, userId)` | DELETE | `/api/agency/recruiting/clients/{id}/Users/{userId}` | — | `void` | |
+| `updateCompanyProfileUser(id, userId, user)` | PUT | `/api/agency/recruiting/clients/{id}/Users/{userId}` | `CompanyUserModel` | `void` | Name, last name, position, mobile |
+| `updateCompanyUserEmail(id, userId, model)` | PUT | `/api/agency/recruiting/clients/{id}/Users/{userId}/Email` | `{ newEmail: string }` | `void` | Login email of a company user |
 
 ### Interactions & Deals (sales)
 Policy `Sales` (sales, admin, superadmin). Owner-scoped: a sales user lists, updates and deletes only the rows they own, `OwnerId` is forced server-side on create; admin/superadmin are unscoped and may pass `ownerId`. The client comes from the route — never from the body or the filter — and update/delete also check that the record belongs to that client (otherwise "not found").
@@ -537,9 +544,11 @@ Company portal (client) view of their profile, requests and workers.
 | `getCompanyUserDetail()` | GET | `/api/company/profile/users/detail` | — | `CompanyUserModel` | Current user |
 | `createCompanyUser(model)` | POST | `/api/company/profile/users` | `CreateCompanyUserModel` | `void` | |
 | `updateCompanyUser(id, user)` | PUT | `/api/company/profile/users/{id}` | `CompanyUserModel` | `void` | |
+| `updateCompanyUserEmail(id, model)` | PUT | `/api/company/profile/users/{id}/Email` | `{ newEmail: string }` | `void` | Login email of another user of the company |
 | `deleteCompanyUser(id)` | DELETE | `/api/company/profile/users/{id}` | — | `void` | |
 | `getContactPeople()` | GET | `/api/company/profile/contactpeople` | — | `CompanyContactPersonModel[]` | |
-| `saveContactPerson(model)` | POST | `/api/company/profile/contactpeople` | `CompanyContactPersonModel` | `void` | Create/update |
+| `saveContactPerson(model)` | POST | `/api/company/profile/contactpeople` | `CompanyContactPersonModel` | `void` | |
+| `updateContactPerson(id, model)` | PUT | `/api/company/profile/contactpeople/{id}` | `CompanyContactPersonModel` | `void` | |
 | `deleteContactPerson(id)` | DELETE | `/api/company/profile/contactpeople/{id}` | — | `void` | |
 | `getCompanyInvoice(filter)` | GET | `/api/company/invoices` | `CompanyInvoiceFilter` (params) | `PaginatedList<CompanyInvoiceListItem>` | `pdfUrl` (1-hour SAS) once the PDF exists |
 | `downloadCompanyInvoicePdf(invoiceId)` | GET | `/api/company/invoices/{invoiceId}/pdf` | — | `Blob` (`responseType: 'blob'`) | Same cached PDF as the agency download; only used when `pdfUrl` is `null` |
@@ -844,7 +853,7 @@ Worker portal: profile build, applications, timesheet.
 
 | Entity | Section | Notable Features |
 |--------|---------|------------------|
-| **Agency** | §2 | Multi-location, personnel, attendance, agency switching, assignable roles |
+| **Agency** | §2 | Multi-location, personnel, attendance, accessible agencies, assignable roles |
 | **Candidate** | §3 | Convert to worker, skills, documents, bulk upload |
 | **Company** (agency view) | §4 | Locations, job positions, contacts, documents, settings, users, deals, interactions |
 | **Company** (self) | §14 | Requests, workers, timesheet validation, users, invoices |

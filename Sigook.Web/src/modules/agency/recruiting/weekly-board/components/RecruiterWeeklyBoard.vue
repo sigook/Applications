@@ -2,23 +2,12 @@
   <div class="recruiter-board">
     <b-loading v-model="isLoading"></b-loading>
 
-    <b-navbar type="is-primary" class="stats-navbar" :mobile-burger="false">
-      <template #brand>
-        <b-navbar-item tag="div" class="stats-name">
-          {{ board?.recruiterName || 'Recruiter' }}
-        </b-navbar-item>
-      </template>
-      <template #end>
-        <b-navbar-item tag="div" class="stat">
-          <span class="stat-value">{{ board?.ordersCount ?? 0 }}</span>
-          <span class="stat-label">Requests this week</span>
-        </b-navbar-item>
-        <b-navbar-item tag="div" class="stat">
-          <span class="stat-value">{{ board?.workersSent ?? 0 }}</span>
-          <span class="stat-label">Runners sent</span>
-        </b-navbar-item>
-      </template>
-    </b-navbar>
+    <PageHeader title="Weekly Board" :crumbs="moduleCrumbs">
+      <div class="board-stats">
+        <span class="stat"><span class="stat-value">{{ board?.ordersCount ?? 0 }}</span><span class="stat-label">Requests this week</span></span>
+        <span class="stat"><span class="stat-value">{{ board?.workersSent ?? 0 }}</span><span class="stat-label">Runners sent</span></span>
+      </div>
+    </PageHeader>
 
     <div class="range-nav">
       <b-button icon-right="chevron-left" @click="shiftWeek(-1)"></b-button>
@@ -29,6 +18,7 @@
       </b-datepicker>
       <b-button icon-right="chevron-right" @click="shiftWeek(1)"></b-button>
       <b-button icon-right="refresh" title="Refresh" :loading="isLoading" @click="loadBoard()"></b-button>
+      <AgencyFilter v-model="agencyIds" @change="loadBoard()" />
     </div>
 
     <div class="day-tabs">
@@ -62,6 +52,7 @@
                 target="_blank"><b-icon icon="clipboard-text-outline" size="is-small"></b-icon>
                 # {{ assignment.numberId }}
               </router-link>
+              <AgencyBadge :agency-id="assignment.agencyId" />
               <span v-if="assignment.isAsap || isDirectHiring(assignment)" class="request-flags">
                 <span v-if="assignment.isAsap" class="request-flag request-flag--asap">Asap</span>
                 <span v-if="isDirectHiring(assignment)" class="request-flag request-flag--dh">DH</span>
@@ -132,6 +123,8 @@
 </template>
 
 <script setup lang="ts">
+import PageHeader from '@/shared/ui/PageHeader.vue';
+import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { ref, computed, watch } from 'vue';
 import dayjs from 'dayjs';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -148,6 +141,8 @@ import CreateRunner from '@/modules/agency/recruiting/requests/runners/CreateRun
 import RunnerActionsDropdown from '@/modules/agency/recruiting/requests/runners/RunnerActionsDropdown.vue';
 import RunnerActionModals from '@/modules/agency/recruiting/requests/runners/RunnerActionModals.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 
 const dateFormat = 'YYYY-MM-DD';
 
@@ -159,6 +154,8 @@ function startOfWeek(date: dayjs.Dayjs): dayjs.Dayjs {
 const initialStart = startOfWeek(dayjs());
 const range = ref<Date[]>([initialStart.toDate(), initialStart.add(6, 'day').toDate()]);
 
+const { moduleCrumbs } = useModuleBase();
+const agencyIds = ref<string | undefined>(undefined);
 const isLoading = ref(false);
 const isSaving = ref(false);
 const board = ref<RecruiterWeeklyBoard | null>(null);
@@ -243,7 +240,7 @@ async function loadBoard(): Promise<void> {
   if (!from || !to) return;
   isLoading.value = true;
   try {
-    board.value = await getRecruiterWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat) });
+    board.value = await getRecruiterWeeklyBoard({ from: dayjs(from).format(dateFormat), to: dayjs(to).format(dateFormat), agencyIds: agencyIds.value });
   } catch (error) {
     showAlertError(error);
   } finally {
@@ -404,7 +401,6 @@ watch(range, loadBoard, { immediate: true });
       font-weight: 700;
       margin-bottom: 0.4rem;
     }
-
     .card-meta {
       font-size: 0.82rem;
       color: $grey-dark;

@@ -19,6 +19,7 @@ export interface WeeklyBoardRunner {
 // Mirrors WeeklyBoardAssignmentModel — a single order card placed on a
 // recruiter row for a given work day.
 export interface WeeklyBoardAssignment {
+  agencyId: string;
   recruiterId: string;
   recruiterName: string;
   requestId: string;
@@ -69,6 +70,7 @@ export interface RecruiterWeeklyBoard {
 export interface WeeklyBoardFilter {
   from: string;
   to: string;
+  agencyIds?: string;
 }
 
 // A single day rendered in the board's date strip / day picker.

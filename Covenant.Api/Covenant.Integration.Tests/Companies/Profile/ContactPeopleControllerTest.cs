@@ -58,6 +58,41 @@ public class ContactPeopleControllerTest : BaseTestOrder, IClassFixture<SeededWe
     }
 
     [Fact]
+    public async Task Put_UpdatesTheContact()
+    {
+        var model = new CompanyProfileContactPersonModel
+        {
+            Title = "Mr",
+            FirstName = "Updated",
+            LastName = "Person",
+            Position = "Plant Manager",
+            MobileNumber = "4165550199",
+            OfficeNumber = "4165550198",
+            OfficeNumberExt = 7,
+            Email = "updated@client.com"
+        };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{ContactPeopleController.RouteName}/{Data.ToUpdate.Id}", model);
+
+        response.EnsureSuccessStatusCode();
+        CompanyProfileContactPerson contact = await Context.CompanyProfileContactPeople.AsNoTracking().SingleAsync(c => c.Id == Data.ToUpdate.Id);
+        Assert.Equal("Updated", contact.FirstName);
+        Assert.Equal("Plant Manager", contact.Position);
+        Assert.Equal("updated@client.com", contact.Email);
+        Assert.Equal(7, contact.OfficeNumberExt);
+    }
+
+    [Fact]
+    public async Task Put_UnknownContact_ReturnsBadRequest()
+    {
+        var model = new CompanyProfileContactPersonModel { Title = "Mr", FirstName = "Nobody", LastName = "Here", Position = "None", Email = "nobody@client.com" };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{ContactPeopleController.RouteName}/{Guid.NewGuid()}", model);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Delete_RemovesTheContact()
     {
         HttpResponseMessage response = await _client.DeleteAsync($"{ContactPeopleController.RouteName}/{Data.ToDelete.Id}");
@@ -101,13 +136,14 @@ public class ContactPeopleControllerTest : BaseTestOrder, IClassFixture<SeededWe
         public static readonly CompanyProfile Company = FakeData.FakeCompanyProfile(companyEmail: "company@contacts.com");
         public static readonly CompanyProfile OtherCompany = FakeData.FakeCompanyProfile(companyEmail: "other.company@contacts.com");
         public static readonly CompanyProfileContactPerson Existing = FakeData.FakeContactPerson(Company.Id, email: "existing@client.com");
+        public static readonly CompanyProfileContactPerson ToUpdate = FakeData.FakeContactPerson(Company.Id, email: "update@client.com");
         public static readonly CompanyProfileContactPerson ToDelete = FakeData.FakeContactPerson(Company.Id, email: "delete@client.com");
         public static readonly CompanyProfileContactPerson OtherContact = FakeData.FakeContactPerson(OtherCompany.Id, email: "other@client.com");
 
         public void Seed(CovenantContext context)
         {
             context.CompanyProfiles.AddRange(Company, OtherCompany);
-            context.CompanyProfileContactPeople.AddRange(Existing, ToDelete, OtherContact);
+            context.CompanyProfileContactPeople.AddRange(Existing, ToUpdate, ToDelete, OtherContact);
             context.SaveChanges();
         }
     }

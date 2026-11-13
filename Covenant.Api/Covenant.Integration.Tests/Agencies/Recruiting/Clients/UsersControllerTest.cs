@@ -2,6 +2,7 @@ using Covenant.Api.Controllers.Agencies.Recruiting.Clients;
 using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities;
 using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Identity;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
@@ -85,17 +86,78 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<SeededWebApplica
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Put_UpdatesDetailsOfCompanyUser()
+    {
+        var model = new CompanyUserModel { Name = "Edna", Lastname = "Edited", Position = "Manager", MobileNumber = "4165550002" };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{Uri(_data.OtherCompany)}/{_data.ToEdit.UserId}", model);
+
+        response.EnsureSuccessStatusCode();
+        CompanyUser edited = await Context.CompanyUsers.AsNoTracking().SingleAsync(u => u.UserId == _data.ToEdit.UserId);
+        Assert.Equal("Edna", edited.Name);
+        Assert.Equal("Edited", edited.Lastname);
+        Assert.Equal("Manager", edited.Position);
+        Assert.Equal("4165550002", edited.MobileNumber);
+    }
+
+    [Fact]
+    public async Task Put_UnknownUser_ReturnsBadRequest()
+    {
+        var model = new CompanyUserModel { Name = "Nobody", Lastname = "Ghost" };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{Uri(_data.Company)}/{Guid.NewGuid()}", model);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Email_UpdatesLoginEmailOfCompanyUser()
+    {
+        var model = new UpdateEmailModel { NewEmail = "renamed.user@client.com" };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{Uri(_data.OtherCompany)}/{_data.ToRename.UserId}/Email", model);
+
+        response.EnsureSuccessStatusCode();
+        User user = await Context.Users.AsNoTracking().SingleAsync(u => u.Id == _data.ToRename.UserId);
+        Assert.Equal("renamed.user@client.com", user.Email);
+    }
+
+    [Fact]
+    public async Task Email_AlreadyTaken_ReturnsBadRequest()
+    {
+        var model = new UpdateEmailModel { NewEmail = _data.Zed.User.Email };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{Uri(_data.Company)}/{_data.Ann.UserId}/Email", model);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Email_UnknownUser_ReturnsBadRequest()
+    {
+        var model = new UpdateEmailModel { NewEmail = "ghost@client.com" };
+
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{Uri(_data.Company)}/{Guid.NewGuid()}/Email", model);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     public class Data : ClientsTestData
     {
         public CompanyUser Ann { get; }
         public CompanyUser Zed { get; }
         public CompanyUser ToDelete { get; }
+        public CompanyUser ToRename { get; }
+        public CompanyUser ToEdit { get; }
 
         public Data()
         {
             Zed = User(Company, "Zed");
             Ann = User(Company, "Ann");
             ToDelete = User(OtherCompany, "Del");
+            ToRename = User(OtherCompany, "Ren");
+            ToEdit = User(OtherCompany, "Edi");
         }
 
         private static CompanyUser User(CompanyProfile company, string name) =>
@@ -105,7 +167,7 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<SeededWebApplica
         public override void Seed(CovenantContext context)
         {
             base.Seed(context);
-            context.CompanyUsers.AddRange(Zed, Ann, ToDelete);
+            context.CompanyUsers.AddRange(Zed, Ann, ToDelete, ToRename, ToEdit);
             context.SaveChanges();
         }
     }

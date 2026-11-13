@@ -1,5 +1,7 @@
 <template>
   <div class="sigook-grid-toolbar request-groups-toolbar">
+    <b-button icon-left="refresh" title="Refresh" aria-label="Refresh" @click="emit('search')" />
+    <AgencyFilter v-model="agencyIds" @change="emit('search')" />
     <b-switch v-model="onlyMine" class="request-groups-toolbar-filter" @update:modelValue="emit('search')">
       Assigned to me
     </b-switch>
@@ -14,6 +16,7 @@
 
 <script setup lang="ts">
 import Export from '@/shared/ui/Export.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
 import type { GridParams } from '@/shared/types/common';
 
 const { hasGroups, exportUrl, exportParams, exportFileName } = defineProps<{
@@ -24,6 +27,7 @@ const { hasGroups, exportUrl, exportParams, exportFileName } = defineProps<{
 }>();
 
 const onlyMine = defineModel<boolean>('onlyMine', { default: false });
+const agencyIds = defineModel<string | undefined>('agencyIds');
 
 const emit = defineEmits<{
   (e: 'search'): void;

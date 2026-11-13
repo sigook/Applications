@@ -14,7 +14,7 @@
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showEmailModal" width="500px">
-      <dialog-company-update-email :company-profile-id="company.id" @closeModal="onEmailUpdated" />
+      <dialog-company-update-email :save="saveCompanyEmail" @closeModal="onEmailUpdated" />
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showVaccinationModal" width="500px">
@@ -31,6 +31,7 @@ import type { DetailFact } from '@/shared/detail-page/types';
 import { companyIndustryLabel, companyWebsiteUrl } from '@/shared/company-profile/useCompanyDetail';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import DetailFields from '@/shared/detail-page/DetailFields.vue';
+import { updateAgencyCompanyEmail } from '@/modules/agency/recruiting/clients/api';
 import ContactInformationForm from '@/modules/agency/recruiting/clients/components/ContactInformationForm.vue';
 import DialogCompanyUpdateEmail from '@/modules/agency/recruiting/clients/components/DialogCompanyUpdateEmail.vue';
 import EditVaccinationRequired from '@/modules/agency/recruiting/clients/components/EditVaccinationRequired.vue';
@@ -67,6 +68,10 @@ const fields = computed<DetailFact[]>(() => [
     onAction: () => { showVaccinationModal.value = true; },
   },
 ]);
+
+function saveCompanyEmail(email: string) {
+  return updateAgencyCompanyEmail(String(company.id), { newEmail: email });
+}
 
 function onEmailUpdated(_changed: boolean, newEmail: string) {
   showEmailModal.value = false;

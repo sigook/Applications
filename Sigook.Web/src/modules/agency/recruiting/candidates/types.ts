@@ -71,6 +71,7 @@ export interface CandidateFilter {
 
 // Filter for GET /api/agency/recruiting/candidates. Mirrors backend GetCandidatesFilter.
 export interface AgencyCandidateFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;

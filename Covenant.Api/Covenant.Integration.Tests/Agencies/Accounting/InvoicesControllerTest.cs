@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Accounting;
@@ -214,7 +215,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         Assert.NotNull(paid);
         Assert.All(paid.Detail.Items, row => Assert.Equal(InvoiceStatus.Paid, row.Status));
         InvoiceListModel row = paid.Detail.Items.Single(i => i.Id == invoice.Id);
-        Assert.Equal(Data.CurrentPersonnel.Name, row.UpdatedByName);
+        Assert.Equal(Data.CurrentUser.Name, row.UpdatedByName);
         Assert.NotNull(row.UpdatedAt);
         Assert.Equal(DateTime.Today, row.PaidAt?.Date);
         Assert.Equal(0, row.DueDays);
@@ -362,7 +363,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         public static readonly Guid AgencyId = Guid.NewGuid();
         public static readonly DateTime FakeNow = new(2019, 01, 01);
         public static readonly User CurrentUser = FakeData.FakeUser();
-        public static readonly AgencyPersonnel CurrentPersonnel = AgencyPersonnel.CreatePrimary(AgencyId, CurrentUser.Id, "Accounting Admin");
+        public static readonly AgencyMemberModel CurrentPersonnel = TestAgencyMembers.Add(AgencyId, CurrentUser.With(u => u.UpdateName("Accounting Admin")).Id);
 
         private readonly City toronto;
 
@@ -410,7 +411,6 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         {
             context.Cities.Add(toronto);
             context.Users.Add(CurrentUser);
-            context.AgencyPersonnel.Add(CurrentPersonnel);
             foreach (BillableCompany company in Companies) company.Seed(context);
             context.SaveChanges();
         }

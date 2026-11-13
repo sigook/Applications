@@ -56,6 +56,7 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                 select new WorkerProfileDetailModel
                 {
                     Id = wp.Id,
+                    AgencyId = wp.AgencyId,
                     NumberId = wp.NumberId,
                     ProfileImage = wp.ProfileImage == null
                         ? new CovenantFileModel
@@ -310,13 +311,13 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
         return result;
     }
 
-    public async Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
+    public async Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter)
     {
-        var query = GetAllWorkersProfile(agencyId, filter);
+        var query = GetAllWorkersProfile(agencyIds, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
+    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter)
     {
         var workers = Context.WorkerProfiles
             .Include(wp => wp.Skills)
@@ -368,15 +369,15 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                         SinNumber = wp.SocialInsurance,
                         ExternalId = wp.ExternalId
                     };
-        var predicateNew = ApplyFilterWorkersProfile(agencyId, filter);
+        var predicateNew = ApplyFilterWorkersProfile(agencyIds, filter);
         query = query.Where(predicateNew);
         query = ApplySortWorkersProfile(query, filter);
         return query;
     }
 
-    private Expression<Func<WorkerProfileListModel, bool>> ApplyFilterWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter)
+    private Expression<Func<WorkerProfileListModel, bool>> ApplyFilterWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter)
     {
-        Expression<Func<WorkerProfileListModel, bool>> predicate = wp => wp.AgencyId == agencyId;
+        Expression<Func<WorkerProfileListModel, bool>> predicate = wp => agencyIds.Contains(wp.AgencyId);
         if (filter.ApprovedToWork)
             predicate = predicate.And(wp => wp.ApprovedToWork);
         if (filter.IsSubcontractor.HasValue)
@@ -496,10 +497,10 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
         return await query.ToListAsync();
     }
 
-    public async Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter)
+    public async Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(IEnumerable<Guid> agencyIds, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter)
     {
         var query = Context.PayStubs
-            .Where(ps => ps.WorkerProfileId == workerProfileId && ps.WorkerProfile.AgencyId == agencyId)
+            .Where(ps => ps.WorkerProfileId == workerProfileId && agencyIds.Contains(ps.WorkerProfile.AgencyId))
             .Select(ps => new PayStubHistoryModel
             {
                 Id = ps.Id,

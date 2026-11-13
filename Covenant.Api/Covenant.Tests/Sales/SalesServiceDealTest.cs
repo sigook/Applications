@@ -34,6 +34,7 @@ public class SalesServiceDealTest
     public SalesServiceDealTest()
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyIds()).Returns([_agencyId]);
         _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
         _uploadedFilesService.Setup(u => u.Validate()).Returns(Result.Ok());
         _sut = new SalesService(
@@ -285,8 +286,8 @@ public class SalesServiceDealTest
         _currentUserService.Setup(i => i.IsSales()).Returns(true);
         GetDealsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
-            .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetDeals(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetDealsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetDealsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<DealListModel>());
         await _sut.GetDeals(_companyProfileId, new GetDealsFilter { OwnerId = Guid.NewGuid() });
         Assert.Equal(_userId, captured.OwnerId);
@@ -298,8 +299,8 @@ public class SalesServiceDealTest
         _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         GetDealsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
-            .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetDeals(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetDealsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetDealsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<DealListModel>());
         await _sut.GetDeals(_companyProfileId, new GetDealsFilter());
         Assert.Null(captured.OwnerId);
@@ -312,8 +313,8 @@ public class SalesServiceDealTest
         var otherUserId = Guid.NewGuid();
         GetDealsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetDeals(_agencyId, _companyProfileId, It.IsAny<GetDealsFilter>()))
-            .Callback<Guid, Guid?, GetDealsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetDeals(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetDealsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetDealsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<DealListModel>());
         await _sut.GetDeals(_companyProfileId, new GetDealsFilter { OwnerId = otherUserId });
         Assert.Equal(otherUserId, captured.OwnerId);

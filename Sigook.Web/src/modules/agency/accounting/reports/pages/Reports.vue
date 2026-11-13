@@ -1,31 +1,30 @@
 <template>
   <div>
     <b-tabs v-model="tab" :destroy-on-hide="true" type="is-toggle">
-      <b-tab-item value="0" label="Subcontractors" :visible="!isUsaAgency">
+      <b-tab-item value="0" label="Subcontractors">
         <subcontractors-report></subcontractors-report>
       </b-tab-item>
-      <b-tab-item value="1" label="Payment" :visible="!isUsaAgency">
+      <b-tab-item value="1" label="Payment">
         <payment-report></payment-report>
       </b-tab-item>
-      <b-tab-item value="2" label="T4" :visible="!isUsaAgency">
+      <b-tab-item value="2" label="T4">
         <t4-report></t4-report>
       </b-tab-item>
-      <b-tab-item value="3" label="CRA Payroll" :visible="!isUsaAgency">
+      <b-tab-item value="3" label="CRA Payroll">
         <cra-payroll-report></cra-payroll-report>
       </b-tab-item>
       <b-tab-item value="4" label="Hours Worked">
         <hours-worked-report></hours-worked-report>
       </b-tab-item>
-      <b-tab-item value="5" label="Timesheets Report" :visible="isUsaAgency">
+      <b-tab-item value="5" label="Timesheets Report">
         <timesheets-report></timesheets-report>
       </b-tab-item>
     </b-tabs>
   </div>
 </template>
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useAgencyStore } from '@/modules/agency/store';
 import SubcontractorsReport from '@/modules/agency/accounting/paystubs/components/SubcontractorsReport.vue';
 import HoursWorkedReport from '@/modules/agency/accounting/reports/components/HoursWorkedReport.vue';
 import T4Report from '@/modules/agency/accounting/reports/components/T4.vue';
@@ -35,16 +34,8 @@ import TimesheetsReport from '@/modules/agency/accounting/reports/components/Tim
 
 const route = useRoute();
 const router = useRouter();
-const agencyStore = useAgencyStore();
 
-const tab = ref<string | null>(null);
-const isUsaAgency = computed(() => agencyStore.agency.usaAgency);
-
-if (isUsaAgency.value) {
-  tab.value = '4';
-} else {
-  tab.value = (route.query.tab as string) || '0';
-}
+const tab = ref<string>((route.query.tab as string | undefined) ?? '0');
 
 watch(tab, (value) => {
   void router.push({

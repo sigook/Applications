@@ -132,6 +132,7 @@ export interface CompanyProfileDetail {
   logo: CovenantFileModel | null;
   industry: CompanyProfileIndustryDetail | null;
   salesRepresentativeId: string | null;
+  agencyId: string | null;
   overtimeStartsAfter: number;
   paymentTermDays: number;
 }

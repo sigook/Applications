@@ -29,7 +29,8 @@
       </div>
     </div>
     <div class="columns is-multiline">
-      <div class="column is-12">
+      <div class="column is-12 hours-worked-actions">
+        <AgencyFilter v-model="serverParams.agencyIds" />
         <b-button type="is-primary" @click="getReport" :loading="isLoadingReport">Generate</b-button>
       </div>
     </div>
@@ -110,6 +111,7 @@ import type { AgencyCompanyJobPosition } from '@/modules/agency/recruiting/clien
 import type { AgencyReportFilter, HoursWorkedReportView } from '@/modules/agency/accounting/reports/types';
 import type { CompanyProfileListItem } from '@/modules/agency/recruiting/clients/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
 
 const schema = yup.object({
   dates: yup
@@ -222,3 +224,11 @@ void (async () => {
   await loadCompanies();
 })();
 </script>
+
+<style lang="scss" scoped>
+.hours-worked-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+</style>

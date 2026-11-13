@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="p-4">
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
       <div class="column is-6">
@@ -58,7 +58,7 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertSuccess } from "@/shared/utils/toast";
 import { getWsibGroups } from "@/shared/api/catalogApi";
-import { updateAgency } from '@/modules/agency/sales/agencies/api';
+import { updateAgencyProfile } from '@/modules/agency/profile/api';
 import phoneInput from "@/shared/ui/PhoneInput.vue";
 import type { AgencyDetail } from '@/modules/agency/profile/types';
 import type { WsibGroup } from '@/shared/types/common';
@@ -85,7 +85,10 @@ const schema = yup.object({
 });
 
 const { agencyData } = defineProps<{ agencyData: AgencyDetail }>();
-const emit = defineEmits<(e: 'update:agencyData', data: AgencyDetail) => void>();
+const emit = defineEmits<{
+  (e: 'update:agencyData', data: AgencyDetail): void;
+  (e: 'saved'): void;
+}>();
 
 const form = useStickyForm({
   schema,
@@ -136,9 +139,10 @@ async function validateForm() {
     };
     emit('update:agencyData', updated);
     try {
-      await updateAgency(updated);
+      await updateAgencyProfile(agencyData.id, updated);
       isLoading.value = false;
       showAlertSuccess("Updated");
+      emit('saved');
     } catch {
       isLoading.value = false;
     }

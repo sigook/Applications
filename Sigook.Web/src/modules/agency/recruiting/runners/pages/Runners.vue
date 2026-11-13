@@ -13,7 +13,7 @@
       </b-field>
     </RequestGroupFilters>
 
-    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" :has-groups="groups.length > 0"
+    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" v-model:agency-ids="serverParams.agencyIds" :has-groups="groups.length > 0"
       export-url="/api/agency/recruiting/runners/File" :export-params="serverParams" export-file-name="Runners"
       @search="loadRunners" @expand-all="expandAll" @collapse-all="collapseAll"
       @loading="(value: boolean) => isLoading = value" />
@@ -24,25 +24,27 @@
       </b-button>
     </BulkSelectionBar>
 
-    <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
+    <div class="page-scroll">
+      <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
 
-    <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
-      :fill="{ value: group.hiredRunners, total: group.workersQuantity, label: 'hired' }"
-      :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
-      <template v-if="!group.usesRunners" #tags>
-        <b-tag>Read-only</b-tag>
-      </template>
-      <template #menu>
-        <b-dropdown-item v-if="group.usesRunners" aria-role="listitem" @click="showAddRunner(group.requestId)">
-          Add Runner
-        </b-dropdown-item>
-        <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
-      </template>
+      <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
+        :fill="{ value: group.hiredRunners, total: group.workersQuantity, label: 'hired' }"
+        :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
+        <template v-if="!group.usesRunners" #tags>
+          <b-tag>Read-only</b-tag>
+        </template>
+        <template #menu>
+          <b-dropdown-item v-if="group.usesRunners" aria-role="listitem" @click="showAddRunner(group.requestId)">
+            Add Runner
+          </b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
+        </template>
 
-      <RunnersGrid :data="group.runners" :can-edit="group.usesRunners" :checkable="group.usesRunners"
-        :checked-rows="checkedRows(group.requestId)"
-        @update:checked-rows="(rows: AgencyRunner[]) => onCheck(group.requestId, rows)" @updated="loadRunners" />
-    </RequestGroup>
+        <RunnersGrid :data="group.runners" :can-edit="group.usesRunners" :checkable="group.usesRunners"
+          :checked-rows="checkedRows(group.requestId)"
+          @update:checked-rows="(rows: AgencyRunner[]) => onCheck(group.requestId, rows)" @updated="loadRunners" />
+      </RequestGroup>
+    </div>
 
     <RequestGroupsPagination :page="serverParams.pageIndex ?? 1" :total="totalRequests"
       :per-page="serverParams.pageSize ?? PAGE_SIZE" @change="onPageChange" />

@@ -28,6 +28,7 @@ export enum AgencyRunnerSortBy {
 
 // Filter for GET /api/agency/recruiting/runners. Mirrors GetAgencyRunnersFilter.
 export interface AgencyRunnersFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -61,6 +62,7 @@ export interface AgencyRunner extends RunnerRow {
 // Mirrors AgencyRequestRunnersModel.
 export interface AgencyRequestRunners {
   requestId: string;
+  agencyId: string;
   numberId: number;
   companyFullName: string;
   jobTitle: string;

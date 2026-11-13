@@ -3,8 +3,11 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
       <div class="column is-12">
-        <SigookGrid :fetch="loadReport" v-model:params="serverParams"
+        <SigookGrid ref="grid" :fetch="loadReport" v-model:params="serverParams"
           @update:loading="(value) => isLoading = value">
+          <template #filters>
+            <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+          </template>
           <b-table-column field="weekEnding" label="Payment Date" v-slot="props">
             {{ date(props.row.weekEnding) }}
           </b-table-column>
@@ -15,11 +18,11 @@
             {{ currency(props.row.totalNet) }}
           </b-table-column>
           <b-table-column field="actions" v-slot="props">
-            <b-tooltip label="Download" type="is-dark" position="is-top" append-to-body>
+            <HoverTooltip label="Download">
               <b-button type="is-success" outlined rounded icon-right="file-excel"
                 :loading="props.row.reportDownloading" @click="onDownloadWeeklyPayrollReport(props.row)">
               </b-button>
-            </b-tooltip>
+            </HoverTooltip>
           </b-table-column>
         </SigookGrid>
       </div>
@@ -27,16 +30,20 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import { ref, useTemplateRef } from 'vue';
+import dayjs from 'dayjs';
 import { showAlertError } from "@/shared/utils/toast";
 import { downloadFile } from '@/shared/utils/downloadFile';
 import { date, currency } from '@/shared/format';
 import { getPaymentReport, downloadWeeklyPayrollReport } from '@/modules/agency/accounting/reports/api';
 import type { AgencyReportFilter, WeeklyPayrollRow } from '@/modules/agency/accounting/reports/types';
-import type { PaginatedList } from '@/shared/types/common';
+import type { GridHandle, PaginatedList } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
 
 const isLoading = ref(false);
+const grid = useTemplateRef<GridHandle>('grid');
 const serverParams = ref<AgencyReportFilter>({});
 
 async function loadReport(params: AgencyReportFilter): Promise<PaginatedList<WeeklyPayrollRow>> {
@@ -49,7 +56,7 @@ async function onDownloadWeeklyPayrollReport(row: WeeklyPayrollRow) {
   try {
     const response = await downloadWeeklyPayrollReport(row.displayWeekEnding);
     row.reportDownloading = false;
-    downloadFile(response, `Payment_${row.displayWeekEnding}`);
+    downloadFile(response, `Payroll ${dayjs(row.weekEnding).format('MMMM D YYYY')}`);
   } catch (error) {
     row.reportDownloading = false;
     showAlertError(error);

@@ -2,9 +2,11 @@ using Covenant.Api.Authorization;
 using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
 using Covenant.Core.BL.Interfaces.Companies;
+using FluentValidation;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,7 +19,8 @@ namespace Covenant.Api.Controllers.Companies.Profile;
 public class UsersController(
     ICompanyService companyService,
     ICompanyRepository companyRepository,
-    ICurrentUserService currentUserService) : ControllerBase
+    ICurrentUserService currentUserService,
+    IValidator<UpdateEmailModel> updateEmailValidator) : ControllerBase
 {
     public const string RouteName = "api/company/profile/users";
 
@@ -89,5 +92,21 @@ public class UsersController(
             return Ok();
         }
         return BadRequest(ModelState.AddErrors(result.Errors));
+    }
+
+    /// <summary>Updates the login email of a user of the current company.</summary>
+    /// <param name="id">Company user identifier.</param>
+    /// <param name="model">New email information.</param>
+    [HttpPut("{id:guid}/Email")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> Email([FromRoute] Guid id, [FromBody] UpdateEmailModel model)
+    {
+        var validation = await updateEmailValidator.ValidateAsync(model);
+        if (!validation.IsValid) return BadRequest(ModelState.AddErrors(validation.ToResultFailure().Errors));
+
+        var result = await companyService.UpdateCompanyUserEmail(id, model.NewEmail);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
     }
 }

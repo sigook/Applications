@@ -61,7 +61,7 @@ public class CompanyRepositoryDashboardTest
         AddDeal(new DateTime(2026, 9, 9, 12, 0, 0, DateTimeKind.Utc), DealStatus.ToSend, 200m);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetDealsByStatus(_agencyId, null, FromUtc, ToUtcExclusive, []);
+        var result = await _sut.GetDealsByStatus([_agencyId], null, FromUtc, ToUtcExclusive, []);
 
         Assert.Equal(2, result.Count);
         var accepted = result.Single(r => r.Status == DealStatus.Accepted);
@@ -78,7 +78,7 @@ public class CompanyRepositoryDashboardTest
         AddDeal(FromUtc.AddSeconds(-1), DealStatus.Sent, 40m);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetDealsByStatus(_agencyId, null, FromUtc, ToUtcExclusive, []);
+        var result = await _sut.GetDealsByStatus([_agencyId], null, FromUtc, ToUtcExclusive, []);
 
         Assert.Equal(10m, Assert.Single(result).TotalValue);
     }
@@ -90,7 +90,7 @@ public class CompanyRepositoryDashboardTest
         AddDeal(new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc), DealStatus.Sent, 99m, companyProfileId: _otherCompanyProfileId);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetDealsByStatus(_agencyId, null, FromUtc, ToUtcExclusive, []);
+        var result = await _sut.GetDealsByStatus([_agencyId], null, FromUtc, ToUtcExclusive, []);
 
         Assert.Equal(10m, Assert.Single(result).TotalValue);
     }
@@ -103,7 +103,7 @@ public class CompanyRepositoryDashboardTest
         AddDeal(new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc), DealStatus.Accepted, 99m, ownerId: _otherOwnerId);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetDealsByStatus(_agencyId, _ownerId, FromUtc, ToUtcExclusive, [DealStatus.Accepted]);
+        var result = await _sut.GetDealsByStatus([_agencyId], _ownerId, FromUtc, ToUtcExclusive, [DealStatus.Accepted]);
 
         var row = Assert.Single(result);
         Assert.Equal(DealStatus.Accepted, row.Status);
@@ -121,7 +121,7 @@ public class CompanyRepositoryDashboardTest
         AddInteraction(new DateTime(2026, 9, 9, 12, 0, 0, DateTimeKind.Utc), InteractionType.Sms, companyProfileId: _otherCompanyProfileId);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetInteractionsByType(_agencyId, null, FromUtc, ToUtcExclusive);
+        var result = await _sut.GetInteractionsByType([_agencyId], null, FromUtc, ToUtcExclusive);
 
         Assert.Equal(2, result.Count);
         Assert.Equal(2, result.Single(r => r.Type == InteractionType.Call).Count);
@@ -135,7 +135,7 @@ public class CompanyRepositoryDashboardTest
         AddInteraction(new DateTime(2026, 9, 7, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, ownerId: _otherOwnerId);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetInteractionsByType(_agencyId, _ownerId, FromUtc, ToUtcExclusive);
+        var result = await _sut.GetInteractionsByType([_agencyId], _ownerId, FromUtc, ToUtcExclusive);
 
         Assert.Equal(1, Assert.Single(result).Count);
     }
@@ -165,7 +165,7 @@ public class CompanyRepositoryDashboardTest
         AddInteraction(new DateTime(2026, 9, 11, 12, 0, 0, DateTimeKind.Utc), InteractionType.Mail, companyProfileId: _otherCompanyProfileId);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetRecentInteractionClients(_agencyId, null, 10);
+        var result = await _sut.GetRecentInteractionClients([_agencyId], null, 10);
 
         Assert.Equal([older, newer], result.Select(c => c.Id));
         Assert.Equal(new DateTime(2026, 9, 10, 12, 0, 0, DateTimeKind.Utc), result[0].LastInteractionAt);
@@ -184,7 +184,7 @@ public class CompanyRepositoryDashboardTest
         AddInteraction(new DateTime(2026, 9, 3, 12, 0, 0, DateTimeKind.Utc), InteractionType.Call, companyProfileId: alsoMine);
         await _context.SaveChangesAsync();
 
-        var result = await _sut.GetRecentInteractionClients(_agencyId, _ownerId, 1);
+        var result = await _sut.GetRecentInteractionClients([_agencyId], _ownerId, 1);
 
         var client = Assert.Single(result);
         Assert.Equal(alsoMine, client.Id);

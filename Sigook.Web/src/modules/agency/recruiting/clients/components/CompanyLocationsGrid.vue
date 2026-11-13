@@ -19,7 +19,7 @@
         {{ props.row.postalCode }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+        <RowActionsDropdown>
           <template #trigger>
             <b-button icon-right="dots-vertical" type="is-text" aria-label="Location actions" />
           </template>
@@ -33,7 +33,7 @@
           <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDelete(props.row)">
             Delete
           </b-dropdown-item>
-        </b-dropdown>
+        </RowActionsDropdown>
       </b-table-column>
     </SigookGrid>
 
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { createAgencyCompanyLocation, deleteAgencyCompanyLocation, getAgencyCompanyLocation, updateAgencyCompanyLocation } from '@/modules/agency/recruiting/clients/api';

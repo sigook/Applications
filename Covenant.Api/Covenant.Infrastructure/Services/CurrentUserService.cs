@@ -12,9 +12,7 @@ public class CurrentUserService(IHttpContextAccessor httpContextAccessor) : ICur
 
     public Guid GetAgencyId() => httpContextAccessor.HttpContext.User.GetAgencyId();
 
-    public Guid GetAgencyPersonnelId() => httpContextAccessor.HttpContext.User.GetAgencyPersonnelId();
-
-    public IEnumerable<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
+    public List<Guid> GetAgencyIds() => httpContextAccessor.HttpContext.User.GetAgencyIds();
 
     public string GetNickname() => httpContextAccessor.HttpContext?.User?.GetNickname();
 

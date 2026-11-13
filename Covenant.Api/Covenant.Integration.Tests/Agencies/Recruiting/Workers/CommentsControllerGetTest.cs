@@ -61,7 +61,7 @@ public class CommentsControllerGetTest(CustomWebApplicationFactory<CommentsContr
             });
             context.WorkerProfiles.Add(Data.WorkerProfile);
             context.CompanyProfiles.Add(Data.CompanyProfile);
-            context.AgencyPersonnel.Add(AgencyPersonnel.CreatePrimary(Data.WorkerProfile.Agency.Id, Data.LoginUser.Id, Data.LoginUser.Email));
+            TestAgencyMembers.Add(Data.WorkerProfile.Agency.Id, Data.LoginUser.With(u => u.UpdateName(Data.LoginUser.Email)).Id);
             context.WorkerComments.AddRange(Data.AgencyComment, Data.CompanyComment);
             context.SaveChanges();
         }

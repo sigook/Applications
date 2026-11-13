@@ -13,9 +13,12 @@
         {{ props.row.isBilling ? 'Yes' : 'No' }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-button type="is-ghost" icon-left="pencil" aria-label="Edit location" @click="editLocation(props.row)" />
-        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete location"
-          @click="deleteLocation(props.row.id)" />
+        <div class="buttons is-flex-wrap-nowrap">
+          <b-button type="is-info" outlined rounded icon-right="pencil" title="Edit" aria-label="Edit location"
+            @click="editLocation(props.row)" />
+          <b-button type="is-danger" outlined rounded icon-right="delete" aria-label="Delete location"
+            @click="deleteLocation(props.row.id)" />
+        </div>
       </b-table-column>
     </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal" width="500px">

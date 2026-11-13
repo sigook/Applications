@@ -23,7 +23,7 @@ export default {
         case roles.admin:
           result.push(this.recruitingMenu());
           result.push(this.salesMenu(agency, true));
-          result.push(this.accountingMenu(agency));
+          result.push(this.accountingMenu());
           break;
         case roles.recruiting:
           result.push(this.recruitingMenu());
@@ -114,8 +114,8 @@ export default {
     }
     return sales;
   },
-  accountingMenu(agency: AgencyDetail): MenuGroup {
-    const accounting: MenuGroup = {
+  accountingMenu(): MenuGroup {
+    return {
       label: "Accounting",
       icon: "finance",
       items: [
@@ -129,16 +129,13 @@ export default {
           icon: "file-chart-outline",
           label: "Reports",
         },
+        {
+          to: "/accounting/paystubs",
+          icon: "cash-multiple",
+          label: "Pay Stubs",
+        },
       ],
     };
-    if (!agency.usaAgency) {
-      accounting.items.push({
-        to: "/accounting/paystubs",
-        icon: "cash-multiple",
-        label: "Pay Stubs",
-      });
-    }
-    return accounting;
   },
   companyMenu(): MenuGroup[] {
     return [

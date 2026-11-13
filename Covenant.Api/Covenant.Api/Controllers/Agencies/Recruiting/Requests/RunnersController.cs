@@ -27,7 +27,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     [HttpGet("Search")]
     [ProducesResponseType(typeof(List<ApplicantSearchResultModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Search([FromRoute] Guid requestId, [FromQuery] string searchTerm) =>
-        Ok(await requestRepository.SearchRunnerProspects(User.GetAgencyId(), requestId, searchTerm));
+        Ok(await requestRepository.SearchRunnerProspects(requestId, searchTerm));
 
     /// <summary>Gets a paginated list of runners for the specified request.</summary>
     /// <param name="requestId">Identifier of the request (order).</param>
@@ -37,7 +37,7 @@ public class RunnersController(IRunnerService runnerService, IRunnerRepository r
     public async Task<IActionResult> Get([FromRoute] Guid requestId, [FromQuery] GetRunnersFilter filter)
     {
         filter.RequestId = requestId;
-        return Ok(await runnerRepository.GetRunners(User.GetAgencyId(), filter));
+        return Ok(await runnerRepository.GetRunners(User.GetAgencyIds(), filter));
     }
 
     /// <summary>Gets the detail of a runner, including its status history and interviews.</summary>

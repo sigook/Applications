@@ -100,13 +100,13 @@
         </b-table-column>
         <b-table-column field="requestStatus" label="Status" v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]" type="is-dark" append-to-body>
+            <HoverTooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]">
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="getStatusClass(props.row)"></div>
               </div>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </b-table-column>
       </SigookGrid>
@@ -127,6 +127,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCompanyStore } from '@/modules/company/store';

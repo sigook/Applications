@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadPayStubs" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/accounting/paystubs/file', fileName: 'PayStubs' }" focusable
         checkable v-model:checked-rows="checkedRows" @update:loading="(value) => isLoading = value">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/accounting/paystubs/create" icon-left="plus">
             Create
@@ -50,6 +53,7 @@
             <b-input v-model="serverParams.workerFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
           </template>
           <template v-slot="props">
+            <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
             {{ props.row.workerFullName }}
           </template>
         </b-table-column>
@@ -67,10 +71,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="onDownloadPayStubPdf(props.row)">Download</b-dropdown-item>
             <b-dropdown-item v-if="props.row.pdfUrl || props.row.pdfGenerated" aria-role="listitem"
               @click="onRegeneratePayStubPdf(props.row)">
@@ -83,7 +84,7 @@
             <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeletePayStub(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
@@ -99,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -114,6 +116,8 @@ import {
   deleteAgencyPayStub,
 } from '@/modules/agency/accounting/paystubs/api';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import GeneratePayStubs from '@/modules/agency/accounting/paystubs/components/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/modules/agency/accounting/paystubs/components/SkipPayrollNumber.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';

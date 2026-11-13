@@ -32,6 +32,15 @@
           </b-select>
         </b-field>
       </div>
+      <div v-if="agencies.length > 1" class="column is-12">
+        <b-field label="Agencies *" :type="agencyError ? 'is-danger' : ''"
+          :message="agencyError || (isOwnUser ? 'You cannot change your own agencies' : '')">
+          <b-taginput v-model="selectedAgencies" :data="filteredAgencies" autocomplete open-on-focus field="name"
+            icon="domain" placeholder="Type to search agencies" append-to-body :disabled="isOwnUser"
+            @typing="(text: string) => agencySearch = text">
+          </b-taginput>
+        </b-field>
+      </div>
       <div class="column is-12 mt-5">
         <b-button type="is-primary" @click="validateForm">{{ isEdit ? 'Save' : 'Create' }}</b-button>
       </div>
@@ -48,7 +57,8 @@ import { createAgencyPersonnel, updateAgencyPersonnel, getAssignableRoles } from
 import { roleLabels } from "@/app/security/roles";
 import { useSecurityStore } from "@/app/stores/security";
 import { useStickyForm } from '@/shared/composables/useStickyForm';
-import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
+import { useAgencyStore } from '@/modules/agency/store';
+import type { AgencyOption, AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(20, 'Max 20 characters'),
@@ -60,6 +70,7 @@ const { personnel } = defineProps<{ personnel?: AgencyPersonnelListItem | null }
 const emit = defineEmits<(e: 'updateUsers') => void>();
 
 const securityStore = useSecurityStore();
+const agencyStore = useAgencyStore();
 
 const form = useStickyForm<{ name: string; email: string; role: string }>({
   schema,
@@ -70,6 +81,28 @@ const formErrors = form.errors;
 
 const isLoading = ref(false);
 const assignableRoles = ref<string[]>([]);
+const agencies = computed(() => agencyStore.agencies);
+
+function defaultAgencyIds(): string[] {
+  return agencies.value.length === 1 ? agencies.value.map((agency) => agency.id) : [];
+}
+
+const agencyIds = ref<string[]>(personnel ? [...personnel.agencyIds] : defaultAgencyIds());
+const agencyError = ref('');
+const agencySearch = ref('');
+
+const selectedAgencies = computed<AgencyOption[]>({
+  get: () => agencies.value.filter((agency) => agencyIds.value.includes(agency.id)),
+  set: (value) => {
+    agencyIds.value = value.map((agency) => agency.id);
+  },
+});
+
+const filteredAgencies = computed(() => {
+  const term = agencySearch.value.toLowerCase();
+  return agencies.value.filter(
+    (agency) => !agencyIds.value.includes(agency.id) && agency.name.toLowerCase().includes(term));
+});
 
 const isEdit = computed(() => !!personnel);
 const isOwnUser = computed(() => !!personnel && personnel.userId === securityStore.user?.profile.sub);
@@ -99,7 +132,8 @@ async function loadAssignableRoles() {
 async function validateForm() {
   form.markInteracted();
   const { valid } = await form.validate();
-  if (!valid) {
+  agencyError.value = agencyIds.value.length === 0 ? 'Select at least one agency' : '';
+  if (!valid || agencyError.value) {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
@@ -107,7 +141,7 @@ async function validateForm() {
 }
 
 async function saveUser() {
-  const model = { name: name.value, email: email.value, role: role.value };
+  const model = { name: name.value, email: email.value, role: role.value, agencyIds: agencyIds.value };
   isLoading.value = true;
   const request = personnel
     ? updateAgencyPersonnel(personnel.id, model)

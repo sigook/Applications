@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-multiline">
+  <div class="columns is-multiline p-4">
     <div class="column is-6">
       <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
         :message="formErrors.name">
@@ -31,14 +31,17 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import * as yup from 'yup';
-import { showAlertSuccess } from "@/shared/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
 import { updateCompanyUser } from '@/modules/company/profile/api';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 
 const { user } = defineProps<{ user: CompanyUserModel }>();
-const emit = defineEmits<(e: 'update:user', payload: CompanyUserModel) => void>();
+const emit = defineEmits<{
+  (e: 'update:user', payload: CompanyUserModel): void;
+  (e: 'saved'): void;
+}>();
 
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
@@ -85,9 +88,15 @@ async function update() {
     position: position.value || '',
     mobileNumber: mobileNumber.value || '',
   };
-  emit('update:user', payload);
   if (!userId.value) return;
-  await updateCompanyUser(userId.value, payload);
+  try {
+    await updateCompanyUser(userId.value, payload);
+  } catch (error) {
+    showAlertError(error);
+    return;
+  }
+  emit('update:user', payload);
+  emit('saved');
   showAlertSuccess("Updated");
 }
 </script>

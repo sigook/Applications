@@ -10,8 +10,9 @@
       :export="{ url: exportUrl, fileName: 'Requests' }" focusable :checkable="tableConfig.enableCheckable"
       v-model:checked-rows="checkedRows" @update:loading="(value) => emit('onDataLoading', value)"
       @loaded="(total) => emit('update:totalItems', total)" @cellclick="onCellClick">
-      <template v-if="tableConfig.showAssignedToMe" #filters>
-        <b-switch v-model="serverParams.onlyMine" @update:modelValue="onOnlyMineChange">Assigned to me</b-switch>
+      <template v-if="showAgencyFilter || tableConfig.showAssignedToMe" #filters>
+        <AgencyFilter v-if="showAgencyFilter" v-model="serverParams.agencyIds" @change="grid?.search()" />
+        <b-switch v-if="tableConfig.showAssignedToMe" v-model="serverParams.onlyMine" @update:modelValue="onOnlyMineChange">Assigned to me</b-switch>
       </template>
       <template #actions>
         <b-dropdown v-if="tableConfig.showQuickActions"
@@ -63,6 +64,7 @@
           <b-input v-model="serverParams.companyFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
         </template>
         <template v-slot="props">
+          <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
           <router-link :to="{ path: companyDetailBase + '/' + props.row.companyProfileId }">
             {{ props.row.companyFullName }}
           </router-link>
@@ -159,10 +161,9 @@
             <b-tag v-for="jb in props.row.jobBoards" :key="jb.sourceId" rounded type="is-info is-light">
               {{ jb.value }}
             </b-tag>
-            <b-tooltip v-if="!props.row.jobBoards || props.row.jobBoards.length === 0"
-              label="Add job boards" type="is-dark" append-to-body>
+            <HoverTooltip v-if="!props.row.jobBoards || props.row.jobBoards.length === 0" label="Add job boards">
               <b-icon icon="plus-circle-outline" size="is-small" class="job-boards-cell__add"></b-icon>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </template>
       </b-table-column>
@@ -174,21 +175,18 @@
         </template>
         <template v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]" type="is-dark" append-to-body>
+            <HoverTooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]">
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="getStatusClass(props.row)"></div>
               </div>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </template>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-          <template #trigger>
-            <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-          </template>
+        <RowActionsDropdown>
           <b-dropdown-item v-if="props.row.requestStatus !== RequestStatus.Cancelled" aria-role="listitem"
             @click="router.push({ path: requestDetailBase + '/update/' + props.row.companyProfileId + '/' + props.row.id })">
             Edit Request
@@ -197,7 +195,7 @@
             @click="router.push({ path: requestDetailBase + '/duplicate/' + props.row.companyProfileId + '/' + props.row.id })">
             Duplicate Request
           </b-dropdown-item>
-        </b-dropdown>
+        </RowActionsDropdown>
       </b-table-column>
     </SigookGrid>
 
@@ -257,6 +255,10 @@ import AgencyShift from '@/shared/request-detail/AgencyShiftDetail.vue';
 import { getAgencyRequestShift } from '@/modules/agency/recruiting/requests/api';
 import CancelList from '@/shared/request-detail/CompanyCancelList.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 
 const { companyProfileId, agencyId, config } = defineProps<{ totalItems?: number; companyProfileId?: string; agencyId?: string; config?: Partial<TableRequestsConfig> }>();
 const emit = defineEmits<{
@@ -269,6 +271,7 @@ const router = useRouter();
 const agencyStore = useAgencyStore();
 const { isAdmin } = useAdmin();
 const grid = useTemplateRef<GridHandle>('grid');
+const showAgencyFilter = !companyProfileId && !agencyId;
 
 const { isSalesView, requestBase: requestDetailBase, companyBase: companyDetailBase } = useModuleBase();
 const exportUrl = computed(() =>

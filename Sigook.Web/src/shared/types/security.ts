@@ -67,6 +67,7 @@ export interface ChangeEmailRequest {
   confirmNewEmail: string;
 }
 
-export interface GetEmailResponse {
+export interface AccountResponse {
   email: string;
+  name: string;
 }

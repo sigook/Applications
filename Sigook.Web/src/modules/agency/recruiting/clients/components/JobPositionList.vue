@@ -24,10 +24,10 @@
           <b-tag v-if="!props.row.workerRate" type="is-warning">Rates pending</b-tag>
           <template v-else>{{ currency(props.row.workerRate) }}</template>
           <div class="is-inline-block">
-            <b-tooltip label="Max" type="is-dark" append-to-body>
+            <HoverTooltip label="Max">
               <span v-if="props.row.workerRateMax">- {{ currency(props.row.workerRateMax) }}
               </span>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </b-table-column>
         <b-table-column field="createdAt" label="Created" sortable v-slot="props">
@@ -39,10 +39,7 @@
             :companyProfileId="profileId" />
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="openEditModal(props.row)">
               Edit Role
             </b-dropdown-item>
@@ -52,7 +49,7 @@
             <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeleteJobPosition(props.row.id)">
               Delete Role
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
         <template #detail="props">
           <p v-if="props.row.description">{{ props.row.description }}</p>
@@ -69,6 +66,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRoute } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/shared/utils/toast";

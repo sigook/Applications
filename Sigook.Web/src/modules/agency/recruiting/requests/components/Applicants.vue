@@ -19,12 +19,12 @@
           <template v-slot="props">
             <span class="is-block">
               {{ props.row.name }}
-              <b-tooltip label="Candidate" type="is-dark" append-to-body>
+              <HoverTooltip label="Candidate">
                 <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
-              </b-tooltip>
-              <b-tooltip label="Worker" type="is-dark" append-to-body>
+              </HoverTooltip>
+              <HoverTooltip label="Worker">
                 <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
-              </b-tooltip>
+              </HoverTooltip>
             </span>
             <i class="fz-2 ellipsis-150 is-lowercase">
               <copy-link kind="email" :value="props.row.email" />
@@ -86,10 +86,7 @@
           </b-button>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
               @click="showCandidateDetail(props.row.candidateId)">
               Edit Candidate
@@ -105,7 +102,7 @@
             <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
 
         <template #detail="props">
@@ -138,6 +135,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";

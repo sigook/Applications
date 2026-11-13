@@ -195,13 +195,13 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         return profile;
     }
 
-    public async Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
+    public async Task<PaginatedList<CompanyProfileListModel>> GetCompaniesProfileForAgency(IEnumerable<Guid> agencyIds, GetCompanyForAgencyFilter filter)
     {
-        var query = GetAllCompaniesProfileForAgency(agencyId, filter);
+        var query = GetAllCompaniesProfileForAgency(agencyIds, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
+    public IQueryable<CompanyProfileListModel> GetAllCompaniesProfileForAgency(IEnumerable<Guid> agencyIds, GetCompanyForAgencyFilter filter)
     {
         var companies = Context.CompanyProfiles
             .Include(cp => cp.Locations)
@@ -209,8 +209,8 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
             .Include(cp => cp.Company)
             .Include(cp => cp.Notes)
             .AsQueryable();
-        if (filter.SalesPersonnelId.HasValue)
-            companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesPersonnelId.Value);
+        if (filter.SalesUserId.HasValue)
+            companies = companies.Where(cp => cp.SalesRepresentativeId == filter.SalesUserId.Value);
         var query = from cp in companies
                     from cpcp in Context.CompanyProfileContactPeople.Where(cpcp => cpcp.CompanyProfileId == cp.Id).OrderBy(cpcp => cpcp.Id).Take(1).DefaultIfEmpty()
                     orderby cp.FullName
@@ -240,15 +240,15 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                         NotesCount = cp.Notes.Count(n => !n.Note.IsDeleted),
                         SalesRepresentative = cp.SalesRepresentative.Name
                     };
-        var predicateNew = ApplyFilterCompanyProfiles(agencyId, filter);
+        var predicateNew = ApplyFilterCompanyProfiles(agencyIds, filter);
         query = query.Where(predicateNew);
         query = ApplySortCompanyProfiles(query, filter);
         return query;
     }
 
-    public async Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(Guid agencyId, GetCompanyForAgencyFilter filter)
+    public async Task<List<CompanyProfileWithDetailsModel>> GetCompaniesWithDetailsForAgency(IEnumerable<Guid> agencyIds, GetCompanyForAgencyFilter filter)
     {
-        var companyList = GetAllCompaniesProfileForAgency(agencyId, filter).ToList();
+        var companyList = GetAllCompaniesProfileForAgency(agencyIds, filter).ToList();
         var profileIds = companyList.Select(c => c.Id).ToList();
 
         var contacts = await Context.CompanyProfileContactPeople
@@ -327,9 +327,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
         return result;
     }
 
-    private Expression<Func<CompanyProfileListModel, bool>> ApplyFilterCompanyProfiles(Guid agencyId, GetCompanyForAgencyFilter filter)
+    private Expression<Func<CompanyProfileListModel, bool>> ApplyFilterCompanyProfiles(IEnumerable<Guid> agencyIds, GetCompanyForAgencyFilter filter)
     {
-        Expression<Func<CompanyProfileListModel, bool>> predicate = c => c.AgencyId == agencyId;
+        Expression<Func<CompanyProfileListModel, bool>> predicate = c => agencyIds.Contains(c.AgencyId);
         if (SearchExtensions.HasSearchTokens(filter.BusinessInfo))
         {
             var nameMatches = SearchExtensions.SearchPredicate<CompanyProfileListModel>(filter.BusinessInfo, c => c.FullName);
@@ -405,7 +405,7 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                 DocumentsCount = cp.Documents.Count,
                 SalesRepresentativeName = cp.SalesRepresentative == null
                     ? null
-                    : cp.SalesRepresentative.Name ?? cp.SalesRepresentative.User.Email
+                    : cp.SalesRepresentative.Name ?? cp.SalesRepresentative.Email
             })
             .SingleAsync();
         return model;
@@ -453,6 +453,7 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
                 },
                 RequiresPermissionToSeeRequests = cp.RequiresPermissionToSeeRequests,
                 SalesRepresentativeId = cp.SalesRepresentativeId,
+                AgencyId = cp.AgencyId,
                 OvertimeStartsAfter = cp.OvertimeStartsAfter.TotalHours,
                 PaymentTermDays = cp.PaymentTermDays
             });
@@ -606,9 +607,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
 
     }
 
-    public async Task<PaginatedList<DealListModel>> GetDeals(Guid agencyId, Guid? companyProfileId, GetDealsFilter filter)
+    public async Task<PaginatedList<DealListModel>> GetDeals(IEnumerable<Guid> agencyIds, Guid? companyProfileId, GetDealsFilter filter)
     {
-        var deals = Context.Deals.Where(d => d.CompanyProfile.AgencyId == agencyId);
+        var deals = Context.Deals.Where(d => agencyIds.Contains(d.CompanyProfile.AgencyId));
         if (companyProfileId.HasValue) deals = deals.Where(d => d.CompanyProfileId == companyProfileId.Value);
         var query = deals
             .Select(d => new DealListModel
@@ -637,9 +638,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
     public Task<Deal> GetDeal(Expression<Func<Deal, bool>> expression) =>
         Context.Deals.FirstOrDefaultAsync(expression);
 
-    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid agencyId, Guid? companyProfileId, GetCompanyInteractionsFilter filter)
+    public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(IEnumerable<Guid> agencyIds, Guid? companyProfileId, GetCompanyInteractionsFilter filter)
     {
-        var interactions = Context.CompanyInteractions.Where(i => i.CompanyProfile.AgencyId == agencyId);
+        var interactions = Context.CompanyInteractions.Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId));
         if (companyProfileId.HasValue) interactions = interactions.Where(i => i.CompanyProfileId == companyProfileId.Value);
         var query = interactions
             .Select(i => new CompanyInteractionListModel
@@ -664,10 +665,10 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
     public Task<CompanyInteraction> GetInteraction(Expression<Func<CompanyInteraction, bool>> expression) =>
         Context.CompanyInteractions.FirstOrDefaultAsync(expression);
 
-    public Task<List<DealStatusSummaryModel>> GetDealsByStatus(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses)
+    public Task<List<DealStatusSummaryModel>> GetDealsByStatus(IEnumerable<Guid> agencyIds, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive, List<DealStatus> statuses)
     {
         var query = Context.Deals
-            .Where(d => d.CompanyProfile.AgencyId == agencyId && d.Date >= fromUtc && d.Date < toUtcExclusive);
+            .Where(d => agencyIds.Contains(d.CompanyProfile.AgencyId) && d.Date >= fromUtc && d.Date < toUtcExclusive);
         if (ownerId.HasValue) query = query.Where(d => d.UserId == ownerId.Value);
         if (statuses is { Count: > 0 }) query = query.Where(d => statuses.Contains(d.Status));
         return query
@@ -681,10 +682,10 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
             .ToListAsync();
     }
 
-    public Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(Guid agencyId, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive)
+    public Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(IEnumerable<Guid> agencyIds, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive)
     {
         var query = Context.CompanyInteractions
-            .Where(i => i.CompanyProfile.AgencyId == agencyId && i.CreatedAt >= fromUtc && i.CreatedAt < toUtcExclusive);
+            .Where(i => agencyIds.Contains(i.CompanyProfile.AgencyId) && i.CreatedAt >= fromUtc && i.CreatedAt < toUtcExclusive);
         if (ownerId.HasValue) query = query.Where(i => i.UserId == ownerId.Value);
         return query
             .GroupBy(i => i.InteractionType)
@@ -696,12 +697,12 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
             .ToListAsync();
     }
 
-    public Task<List<RecentClientModel>> GetRecentInteractionClients(Guid agencyId, Guid? ownerId, int take)
+    public Task<List<RecentClientModel>> GetRecentInteractionClients(IEnumerable<Guid> agencyIds, Guid? ownerId, int take)
     {
         var interactions = Context.CompanyInteractions.AsQueryable();
         if (ownerId.HasValue) interactions = interactions.Where(i => i.UserId == ownerId.Value);
         return Context.CompanyProfiles
-            .Where(cp => cp.AgencyId == agencyId)
+            .Where(cp => agencyIds.Contains(cp.AgencyId))
             .Select(cp => new
             {
                 cp.Id,
@@ -820,10 +821,13 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
             _ => query.AddOrderBy(filter, i => i.CreatedAt)
         };
 
-    public async Task<List<BaseModel<Guid>>> GetCompaniesList(Guid agencyId, string searchTerm)
+    public Task<Guid> GetAgencyId(Guid companyProfileId) =>
+        Context.CompanyProfiles.Where(cp => cp.Id == companyProfileId).Select(cp => cp.AgencyId).FirstOrDefaultAsync();
+
+    public async Task<List<BaseModel<Guid>>> GetCompaniesList(IEnumerable<Guid> agencyIds, string searchTerm)
     {
         var query = Context.CompanyProfiles
-            .Where(cp => cp.AgencyId == agencyId)
+            .Where(cp => agencyIds.Contains(cp.AgencyId))
             .WhereSearch(searchTerm, cp => cp.FullName)
             .Select(cp => new BaseModel<Guid>
             {

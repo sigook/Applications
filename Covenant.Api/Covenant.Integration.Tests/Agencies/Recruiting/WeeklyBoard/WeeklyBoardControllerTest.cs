@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.WeeklyBoard;
 using Covenant.Common.Entities.Agencies;
@@ -30,7 +31,7 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
 
     private static string Week(DateTime from) => $"?from={from:yyyy-MM-dd}&to={from.AddDays(6):yyyy-MM-dd}";
 
-    private Task<HttpResponseMessage> Assign(Request request, IEnumerable<AgencyPersonnel> recruiters, params DateTime[] days) =>
+    private Task<HttpResponseMessage> Assign(Request request, IEnumerable<User> recruiters, params DateTime[] days) =>
         _client.PostAsJsonAsync(WeeklyBoardController.RouteName, new AssignRecruitersModel
         {
             RequestId = request.Id,
@@ -49,17 +50,17 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     {
         Request request = _data.ForAssign;
 
-        (await Assign(request, [Data.Alice, Data.Bob], Monday, Monday.AddDays(1))).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser, Data.BobUser], Monday, Monday.AddDays(1))).EnsureSuccessStatusCode();
 
         Assert.Equal(4, (await Assignments(request)).Count);
         WeeklyBoardModel board = await Board(Monday);
         Assert.Equal(Monday, board.WeekStart);
-        WeeklyBoardRecruiterRowModel alice = board.Recruiters.Single(r => r.RecruiterId == Data.Alice.Id);
-        Assert.Equal(Data.Alice.Name, alice.RecruiterName);
+        WeeklyBoardRecruiterRowModel alice = board.Recruiters.Single(r => r.RecruiterId == Data.AliceUser.Id);
+        Assert.Equal(Data.AliceUser.Name, alice.RecruiterName);
         var aliceAssignments = alice.Assignments.Where(a => a.RequestId == request.Id).ToList();
         Assert.Equal([Monday, Monday.AddDays(1)], aliceAssignments.Select(a => a.WorkDate));
         Assert.Equal(request.NumberId, aliceAssignments[0].NumberId);
-        Assert.Contains(board.Recruiters, r => r.RecruiterId == Data.Bob.Id);
+        Assert.Contains(board.Recruiters, r => r.RecruiterId == Data.BobUser.Id);
         Assert.True(board.Recruiters.Select(r => r.RecruiterName).SequenceEqual(board.Recruiters.Select(r => r.RecruiterName).Order()));
     }
 
@@ -68,7 +69,7 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     {
         Request request = _data.ForOtherWeek;
 
-        (await Assign(request, [Data.Alice], Monday.AddDays(14))).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser], Monday.AddDays(14))).EnsureSuccessStatusCode();
 
         WeeklyBoardModel board = await Board(Monday);
         Assert.DoesNotContain(board.Recruiters.SelectMany(r => r.Assignments), a => a.RequestId == request.Id);
@@ -80,9 +81,9 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     public async Task Assign_SameRecruiterAndDayTwice_ReturnsBadRequest()
     {
         Request request = _data.ForDuplicate;
-        (await Assign(request, [Data.Alice], Monday)).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser], Monday)).EnsureSuccessStatusCode();
 
-        HttpResponseMessage response = await Assign(request, [Data.Alice], Monday);
+        HttpResponseMessage response = await Assign(request, [Data.AliceUser], Monday);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         Assert.Single(await Assignments(request));
@@ -103,13 +104,24 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     }
 
     [Fact]
+    public async Task Assign_RecruiterFromAnotherAgency_ReturnsBadRequest()
+    {
+        Request request = _data.ForOtherAgencyRecruiter;
+
+        HttpResponseMessage response = await Assign(request, [Data.CarolUser], Monday);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Empty(await Assignments(request));
+    }
+
+    [Fact]
     public async Task Unassign_RemovesOnlyThatDay()
     {
         Request request = _data.ForUnassign;
-        (await Assign(request, [Data.Alice], Monday, Monday.AddDays(2))).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser], Monday, Monday.AddDays(2))).EnsureSuccessStatusCode();
 
         HttpResponseMessage response = await _client.DeleteAsync(
-            $"{WeeklyBoardController.RouteName}?requestId={request.Id}&recruiterId={Data.Alice.Id}&workDate={Monday:yyyy-MM-dd}");
+            $"{WeeklyBoardController.RouteName}?requestId={request.Id}&recruiterId={Data.AliceUser.Id}&workDate={Monday:yyyy-MM-dd}");
 
         response.EnsureSuccessStatusCode();
         RequestRecruiter remaining = Assert.Single(await Assignments(request));
@@ -120,20 +132,20 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     public async Task Move_ToAnotherRecruiterAndDay_UpdatesAssignment()
     {
         Request request = _data.ForMove;
-        (await Assign(request, [Data.Alice], Monday)).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser], Monday)).EnsureSuccessStatusCode();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{WeeklyBoardController.RouteName}/move", new MoveAssignmentModel
         {
             RequestId = request.Id,
-            FromRecruiterId = Data.Alice.Id,
+            FromRecruiterId = Data.AliceUser.Id,
             FromWorkDate = Monday,
-            ToRecruiterId = Data.Bob.Id,
+            ToRecruiterId = Data.BobUser.Id,
             ToWorkDate = Monday.AddDays(3)
         });
 
         response.EnsureSuccessStatusCode();
         RequestRecruiter moved = Assert.Single(await Assignments(request));
-        Assert.Equal(Data.Bob.Id, moved.RecruiterId);
+        Assert.Equal(Data.BobUser.Id, moved.RecruiterId);
         Assert.Equal(Monday.AddDays(3), moved.WorkDate);
     }
 
@@ -141,26 +153,45 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     public async Task Move_OntoExistingAssignment_ReturnsBadRequest()
     {
         Request request = _data.ForMoveConflict;
-        (await Assign(request, [Data.Alice, Data.Bob], Monday)).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser, Data.BobUser], Monday)).EnsureSuccessStatusCode();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{WeeklyBoardController.RouteName}/move", new MoveAssignmentModel
         {
             RequestId = request.Id,
-            FromRecruiterId = Data.Alice.Id,
+            FromRecruiterId = Data.AliceUser.Id,
             FromWorkDate = Monday,
-            ToRecruiterId = Data.Bob.Id,
+            ToRecruiterId = Data.BobUser.Id,
             ToWorkDate = Monday
         });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        Assert.Contains(await Assignments(request), a => a.RecruiterId == Data.Alice.Id);
+        Assert.Contains(await Assignments(request), a => a.RecruiterId == Data.AliceUser.Id);
+    }
+
+    [Fact]
+    public async Task Move_ToRecruiterFromAnotherAgency_ReturnsBadRequest()
+    {
+        Request request = _data.ForMoveOtherAgency;
+        (await Assign(request, [Data.AliceUser], Monday)).EnsureSuccessStatusCode();
+
+        HttpResponseMessage response = await _client.PostAsJsonAsync($"{WeeklyBoardController.RouteName}/move", new MoveAssignmentModel
+        {
+            RequestId = request.Id,
+            FromRecruiterId = Data.AliceUser.Id,
+            FromWorkDate = Monday,
+            ToRecruiterId = Data.CarolUser.Id,
+            ToWorkDate = Monday
+        });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(Data.AliceUser.Id, Assert.Single(await Assignments(request)).RecruiterId);
     }
 
     [Fact]
     public async Task AddRunner_LinksRunnerToAssignment_AndAddsNote()
     {
         Request request = _data.ForRunner;
-        (await Assign(request, [Data.Alice], Monday)).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.AliceUser], Monday)).EnsureSuccessStatusCode();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{WeeklyBoardController.RouteName}/runner", new AddRunnerModel
         {
@@ -172,7 +203,7 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
 
         response.EnsureSuccessStatusCode();
         var mine = await _client.GetFromJsonAsync<RecruiterWeeklyBoardModel>($"{WeeklyBoardController.RouteName}/mine{Week(Monday)}");
-        Assert.Equal(Data.Alice.Name, mine.RecruiterName);
+        Assert.Equal(Data.AliceUser.Name, mine.RecruiterName);
         WeeklyBoardAssignmentModel assignment = mine.Assignments.Single(a => a.RequestId == request.Id);
         Assert.Equal(1, assignment.RunnersSent);
         WeeklyBoardRunnerModel runner = Assert.Single(assignment.Runners);
@@ -189,7 +220,7 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
     public async Task AddRunner_WithoutOwnAssignment_ReturnsBadRequest()
     {
         Request request = _data.ForRunnerWithoutAssignment;
-        (await Assign(request, [Data.Bob], Monday)).EnsureSuccessStatusCode();
+        (await Assign(request, [Data.BobUser], Monday)).EnsureSuccessStatusCode();
 
         HttpResponseMessage response = await _client.PostAsJsonAsync($"{WeeklyBoardController.RouteName}/runner", new AddRunnerModel
         {
@@ -239,8 +270,10 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
 
         public static readonly User AliceUser = FakeData.FakeUser("alice.weeklyboard@mail.com");
         public static readonly User BobUser = FakeData.FakeUser("bob.weeklyboard@mail.com");
-        public static readonly AgencyPersonnel Alice = AgencyPersonnel.CreatePrimary(AgencyId, AliceUser.Id, "Alice Recruiter");
-        public static readonly AgencyPersonnel Bob = AgencyPersonnel.CreatePrimary(AgencyId, BobUser.Id, "Bob Recruiter");
+        public static readonly AgencyMemberModel Alice = TestAgencyMembers.Add(AgencyId, AliceUser.With(u => u.UpdateName("Alice Recruiter")).Id);
+        public static readonly AgencyMemberModel Bob = TestAgencyMembers.Add(AgencyId, BobUser.With(u => u.UpdateName("Bob Recruiter")).Id);
+        public static readonly User CarolUser = FakeData.FakeUser("carol.weeklyboard@mail.com");
+        public static readonly AgencyMemberModel Carol = TestAgencyMembers.Add(Guid.NewGuid(), CarolUser.With(u => u.UpdateName("Carol Recruiter")).Id);
 
 
         public static readonly WorkerProfile Runner = new(FakeData.FakeUser("rita.runner@mail.com"), AgencyId)
@@ -260,18 +293,20 @@ public class WeeklyBoardControllerTest(SeededWebApplicationFactory<WeeklyBoardCo
         public Request ForMoveConflict { get; } = Order();
         public Request ForRunner { get; } = Order();
         public Request ForRunnerWithoutAssignment { get; } = Order();
+        public Request ForOtherAgencyRecruiter { get; } = Order();
+        public Request ForMoveOtherAgency { get; } = Order();
 
         private static Request Order() =>
             FakeData.FakeRequest(agencyId: AgencyId, companyProfileId: Anchor.CompanyProfileId, jobPositionRateId: Anchor.JobPositionRateId.GetValueOrDefault(), startAt: Monday);
 
         public void Seed(CovenantContext context)
         {
-            context.Users.AddRange(AliceUser, BobUser);
+            context.Users.AddRange(AliceUser, BobUser, CarolUser);
             context.Requests.Add(Anchor);
-            context.AgencyPersonnel.AddRange(Alice, Bob);
             context.WorkerProfiles.Add(Runner);
             context.Requests.AddRange(ForAssign, ForOtherWeek, ForDuplicate, ForUnknownRecruiter,
-                ForUnassign, ForMove, ForMoveConflict, ForRunner, ForRunnerWithoutAssignment);
+                ForUnassign, ForMove, ForMoveConflict, ForRunner, ForRunnerWithoutAssignment,
+                ForOtherAgencyRecruiter, ForMoveOtherAgency);
             context.SaveChanges();
         }
     }

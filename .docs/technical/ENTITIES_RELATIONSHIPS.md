@@ -14,12 +14,13 @@ erDiagram
     User ||--o| Agency : "Agency.UserId"
     User ||--o| CompanyProfile : "CompanyProfile.CompanyId"
     User ||--o| WorkerProfile : "WorkerProfile.WorkerId"
-    User ||--o{ AgencyPersonnel : "AgencyPersonnel.UserId"
     User ||--o{ UserAttendance : "UserAttendance.UserId"
     Agency ||--o{ CompanyProfile : "AgencyId"
     Agency ||--o{ WorkerProfile : "AgencyId"
     Agency ||--o{ Candidate : "AgencyId"
-    AgencyPersonnel ||--o{ CompanyProfile : "SalesRepresentativeId"
+    User ||--o{ CompanyProfile : "SalesRepresentativeId"
+    User ||--o{ RequestComission : "SalesRepresentativeId"
+    User ||--o{ RequestRecruiter : "RecruiterId"
     CompanyProfile ||--o{ CompanyProfileJobPositionRate : ""
     CompanyProfile ||--o{ Request : "Request.CompanyProfileId"
     CompanyProfileJobPositionRate ||--o{ Request : "JobPositionRateId"
@@ -49,7 +50,6 @@ point at **User**, not at the profile entity:
 | `WorkerProfile.WorkerId` | worker `User` | — |
 | `CompanyUser.UserId` | member `User` | — |
 | `Agency.UserId` | agency `User` | — |
-| `AgencyPersonnel.UserId` | staff `User` | — |
 | `UserNotificationType.UserId` | any `User` | — |
 | `Runner.CreatedBy`/`UpdatedBy`/`ChangedBy`/`RescheduledBy` | acting `User` (real audit FKs, `RunnerConfiguration.cs:45-53`) | — |
 
@@ -76,7 +76,7 @@ Deliberate exceptions — leave them alone:
 
 | Table | Why |
 |---|---|
-| `AgencyPersonnel`, `AgencyContactInformation` | collective / uncountable |
+| `AgencyContactInformation` | collective / uncountable |
 | `CompanyProfileContactPeople` | natural plural, not the mechanical `...Persons` |
 | `RequestComissions` | misspelling baked into table, entity and config filename — the only config file not named `{Entity}Configuration.cs` |
 | `CompanyProfileInvoiceNotes` | entity class is already plural |
@@ -120,19 +120,21 @@ Computed `BillingAddress` = first location with `IsBilling`.
 Join/child tables: `AgencyLocation` links Agency↔Location with `IsBilling`;
 `AgencyWsibGroup` links to `WsibGroup.cs` (WSIB insurance classification).
 
-### AgencyPersonnel (`AgencyPersonnel.cs`)
+### Agency staff (no entity)
 
-Staff member of an agency: `Id`, `AgencyId`, `UserId` → User, `Name`, `IsPrimary`. **There is no
-`PersonnelType` field** — what a person can do is determined by their identity role
-(recruiting/sales/admin). Referenced by `CompanyProfile.SalesRepresentativeId` (sales portfolio)
-and `RequestRecruiter.RecruiterId` (weekly board). Unique index `(AgencyId, UserId)`.
+Staff membership is not stored in the API database: each staff user has one `agencyId` claim per
+agency in the identity database (`UserClaims`), copied into the access token. What a person can do is
+their identity role (recruiting/sales/admin) and their display name is `User.Name`. Sales
+representatives (`CompanyProfile.SalesRepresentativeId`, `RequestComission.SalesRepresentativeId`) and
+weekly-board recruiters (`RequestRecruiter.RecruiterId`) point at `User.Id`. The members of an agency
+come from `IUserAccountService.GetAgencyMembers` (identity DB) and their details from `Users`.
 
 ### UserAttendance (`UserAttendance.cs`)
 
 Daily clock-in/clock-out of an agency staff user: `Id`, `UserId` → User, `Date`, `ClockIn`,
 `ClockOut?`, `LunchMinutes` (60 Mon–Fri / 0 Sat–Sun at clock-in, admin-editable), plus the admin correction trail `EditedBy`, `EditedAt`, `EditReason`. Keyed by the
-**user**, not by `AgencyPersonnel`: a user in several agencies has one attendance per day. An
-agency sees the attendances of the users that are its personnel. Times are the user's own local
+**user**, not by agency: a user in several agencies has one attendance per day. An
+agency sees the attendances of the users that have its `agencyId` claim. Times are the user's own local
 wall-clock time (time zone of their device when punching), stored as `timestamp without time zone` so Npgsql's legacy mode returns them untouched
 (a `timestamptz` column would come back shifted to the server's time zone). Unique index `(UserId, Date)`. Rules in `.docs/business/WORKFLOWS.md` §7.
 
@@ -146,7 +148,7 @@ The client company, always owned by an agency. Key fields:
 
 - Identity: `Id`, `NumberId`, `CompanyId` → User, `AgencyId`, `FullName`
 - Sales: `CompanyStatus` (`Lead=1, Potential, Prospect, Quoted, Client, Blocked, Inactive=7` —
-  `Enums/CompanyStatus.cs`), `SalesRepresentativeId` → AgencyPersonnel
+  `Enums/CompanyStatus.cs`), `SalesRepresentativeId` → User (staff)
 - Billing/payroll behavior: `PaidHolidays`, `OvertimeStartsAfter` (TimeSpan, default 44h,
   minimum 40h), `PaymentTermDays` (int, default 30, 1–365; days to pay an invoice — see
   `.docs/business/BILLING_RULES.md` → *Invoice Status & Payment Terms*), `RequiredPaymentMethod`
@@ -321,7 +323,7 @@ with `Source.IsAvailableForRequests = true` are selectable as job boards
 
 ### RequestRecruiter (weekly board)
 
-`RequestRecruiter.cs`: assigns an `AgencyPersonnel` recruiter to a request, optionally for one
+`RequestRecruiter.cs`: assigns a staff `User` as recruiter (`RecruiterId` → User) to a request, optionally for one
 `WorkDate` (day cell on the recruiting weekly board). Max 10 recruiters per request per day;
 unique `(RequestId, RecruiterId, WorkDate)`. Managed through `Request.AddRecruiter` /
 `RemoveRecruiter` / `MoveRecruiterAssignment` and `WeeklyBoardService` /
@@ -482,7 +484,7 @@ formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeductio
 | `Gender.cs`, `Language.cs`, `Lift.cs`, `Day.cs`, `Availability*` | catalogs |
 | `WsibGroup.cs` | WSIB classification catalog |
 | `User.cs` | see [User anchor](#the-user-anchor-critical-gotcha) |
-| `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs); `NotificationType.Id` is a hand-assigned `int` — the only non-Guid PK |
+| `Notification/` | `NotificationType`, `UserNotificationType` (per-user notification prefs); `NotificationType.Id` is a hand-assigned `int` — the only non-Guid PK; `Target` is `Worker = 1` or `Company = 2` (agency types were removed) |
 
 ---
 
@@ -497,7 +499,6 @@ From `Covenant.Infrastructure/Configurations/` (`HasIndex(...).IsUnique()`):
 | Source | `Value` |
 | CompanyProfile | `CompanyId` |
 | WorkerProfile | `WorkerId` |
-| AgencyPersonnel | `(AgencyId, UserId)` |
 | UserAttendance | `(UserId, Date)` |
 | CompanyUser | `(CompanyProfileId, UserId)` |
 | WorkerRequest | `(RequestId, WorkerProfileId)` |

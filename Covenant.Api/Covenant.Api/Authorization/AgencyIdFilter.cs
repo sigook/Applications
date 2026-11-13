@@ -1,5 +1,4 @@
 using Covenant.Common.Constants;
-using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Utils.Extensions;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc;
@@ -7,30 +6,36 @@ using System.Security.Claims;
 
 namespace Covenant.Api.Authorization;
 
-/// <summary>
-/// Adds the agencyId, agencyIds and agencyPersonnelId claims to agency staff, replacing whatever the token carried.
-/// </summary>
-public class AgencyIdFilter(IAgencyRepository repository) : IAsyncActionFilter
+public class AgencyIdFilter : IActionFilter
 {
     private static readonly string[] AgencyClaimTypes =
     [
         CovenantConstants.AgencyId,
-        CovenantConstants.AgencyIds,
-        CovenantConstants.AgencyPersonnelId
+        CovenantConstants.AgencyIds
     ];
 
-    public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
+    public void OnActionExecuting(ActionExecutingContext context) => AddAgencyClaims(context);
+
+    public void OnActionExecuted(ActionExecutedContext context)
     {
-        await AddAgencyClaims(context);
-        await next();
     }
 
-    private async Task AddAgencyClaims(ActionExecutingContext context)
+    private static void AddAgencyClaims(ActionExecutingContext context)
     {
         if (context.Controller is not ControllerBase controller || !controller.User.IsAgencyStaff()) return;
-        if (!controller.User.TryGetUserId(out Guid userId)) return;
 
-        var agencyContext = await repository.GetAgencyContextForUser(userId);
+        List<Guid> accessible = [.. ParseIds(controller.User.FindAll(CovenantConstants.AgencyId).Select(c => c.Value)).Distinct()];
+
+        var query = context.HttpContext.Request.Query;
+        var requested = ParseIds(query[CovenantConstants.AgencyIds].SelectMany(v => (v ?? string.Empty).Split(','))).ToHashSet();
+        List<Guid> selected = query.ContainsKey(CovenantConstants.AgencyIds)
+            ? [.. accessible.Where(requested.Contains)]
+            : accessible;
+
+        var requestedAgency = ParseIds(query[CovenantConstants.AgencyId]).FirstOrDefault();
+        var agencyId = accessible.Contains(requestedAgency)
+            ? requestedAgency
+            : accessible.FirstOrDefault();
 
         foreach (var identity in controller.User.Identities)
         {
@@ -40,12 +45,14 @@ public class AgencyIdFilter(IAgencyRepository repository) : IAsyncActionFilter
             }
         }
 
-        var claims = new List<Claim> { new(CovenantConstants.AgencyId, (agencyContext?.AgencyId ?? Guid.Empty).ToString()) };
-        if (agencyContext is not null)
-        {
-            claims.Add(new Claim(CovenantConstants.AgencyIds, string.Join(",", agencyContext.AgencyIds)));
-            claims.Add(new Claim(CovenantConstants.AgencyPersonnelId, agencyContext.AgencyPersonnelId.ToString()));
-        }
+        List<Claim> claims =
+        [
+            new(CovenantConstants.AgencyId, agencyId.ToString()),
+            new(CovenantConstants.AgencyIds, string.Join(",", selected))
+        ];
         controller.User.AddIdentity(new ClaimsIdentity(claims));
     }
+
+    private static IEnumerable<Guid> ParseIds(IEnumerable<string> values) =>
+        values.Select(v => Guid.TryParse(v?.Trim(), out var id) ? id : Guid.Empty).Where(id => id != Guid.Empty);
 }

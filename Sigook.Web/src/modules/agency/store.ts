@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { appGlobals } from '@/app/globals';
-import type { AgencyDetail, PersonnelAgencyItem } from '@/modules/agency/profile/types';
+import type { AgencyDetail, AgencyOption } from '@/modules/agency/profile/types';
 import type { AgencyListFilter } from '@/modules/agency/sales/agencies/types';
 import type { AgencyRequestFilter } from '@/modules/agency/recruiting/requests/types';
 import type { AgencyApplicantsFilter } from '@/modules/agency/recruiting/applicants/types';
@@ -13,7 +13,7 @@ import type { AgencyPayStubFilter } from '@/modules/agency/accounting/paystubs/t
 
 interface AgencyStoreState {
   agency: AgencyDetail;
-  personnelAgencies: PersonnelAgencyItem[];
+  agencies: AgencyOption[];
   agencyRequestFilter: AgencyRequestFilter | null;
   agencyApplicantsFilter: AgencyApplicantsFilter | null;
   agencyRunnersFilter: AgencyRunnersFilter | null;
@@ -31,7 +31,7 @@ export const useAgencyStore = defineStore('agency', {
     // `agencyStore.agency.*` directly without null checks. Populated by setAgency
     // once the user's profile loads.
     agency: {} as AgencyDetail,
-    personnelAgencies: [],
+    agencies: [],
     agencyRequestFilter: null,
     agencyApplicantsFilter: null,
     agencyRunnersFilter: null,
@@ -46,18 +46,11 @@ export const useAgencyStore = defineStore('agency', {
     setAgency(data: AgencyDetail) {
       this.agency = {
         ...data,
-        agencies: data.agencies ?? this.agency.agencies ?? [],
-        // The backend flattens an `isUSA` flag onto each location in this specific
-        // endpoint's response — not part of the AgencyLocationDetail shape used elsewhere.
-        usaAgency: (data.locations ?? []).some(
-          (l) => (l as unknown as { isUSA?: boolean }).isUSA === true
-        ),
         masterAgency: data.agencyType === appGlobals.$agencyTypeMaster,
       };
     },
-    setPersonnelAgencies(data: PersonnelAgencyItem[]) {
-      this.personnelAgencies = data;
-      this.agency.agencies = data;
+    setAgencies(data: AgencyOption[]) {
+      this.agencies = data;
     },
     updateAgencyRequestFilter(data: AgencyRequestFilter | null) {
       this.agencyRequestFilter = data;

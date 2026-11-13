@@ -126,10 +126,10 @@
         <b-taglist>
           <b-tag v-if="props.row.isMissingClockOut" type="is-danger is-light">Missing out</b-tag>
           <b-tag v-if="props.row.isWeekend" type="is-warning is-light">Weekend</b-tag>
-          <b-tooltip v-if="props.row.isEdited" type="is-dark" append-to-body
+          <HoverTooltip v-if="props.row.isEdited"
             :label="`${props.row.editedBy ?? ''}: ${props.row.editReason ?? ''}`">
             <b-tag type="is-info is-light">Edited</b-tag>
-          </b-tooltip>
+          </HoverTooltip>
         </b-taglist>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
@@ -159,6 +159,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { computed, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import { downloadAttendanceReport, getAttendanceReport } from '@/modules/agency/profile/api';
@@ -169,7 +170,7 @@ import type { AgencyPersonnelListItem, UserAttendanceListItem, UserAttendanceRep
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import AttendanceEditModal from '@/modules/agency/profile/components/AttendanceEditModal.vue';
 
-const { users } = defineProps<{ users: AgencyPersonnelListItem[] }>();
+const { users, agencyIds } = defineProps<{ users: AgencyPersonnelListItem[]; agencyIds?: string }>();
 
 function thisWeek(): Date[] {
   const start = dayjs().subtract((dayjs().day() + 6) % 7, 'day').startOf('day');
@@ -229,7 +230,7 @@ async function load() {
   if (!filter.value) return;
   isLoading.value = true;
   try {
-    report.value = await getAttendanceReport(filter.value);
+    report.value = await getAttendanceReport(agencyIds, filter.value);
   } catch (error) {
     showAlertError(error);
   } finally {
@@ -241,7 +242,7 @@ async function exportReport() {
   if (!filter.value) return;
   isLoading.value = true;
   try {
-    const blob = await downloadAttendanceReport(filter.value);
+    const blob = await downloadAttendanceReport(agencyIds, filter.value);
     downloadFile(blob, `Attendance_${filter.value.from}_${filter.value.to}`);
   } catch (error) {
     showAlertError(error);

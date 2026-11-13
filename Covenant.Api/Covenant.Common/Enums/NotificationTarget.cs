@@ -2,7 +2,6 @@
 
 public enum NotificationTarget
 {
-    Agency,
-    Worker,
-    Company
+    Worker = 1,
+    Company = 2
 }

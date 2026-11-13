@@ -86,8 +86,16 @@ const canAssign = computed(
   () => !!selectedRequest.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
 );
 
+const eligibleRecruiters = computed(() => {
+  const agencyId = selectedRequest.value?.agencyId;
+  return agencyId ? personnel.value.filter(p => p.agencyIds.includes(agencyId)) : personnel.value;
+});
+
 function onRequestSelected(option: AgencyRequestListItem | null): void {
   selectedRequest.value = option;
+  const eligibleIds = new Set(eligibleRecruiters.value.map(r => r.id));
+  selectedRecruiters.value = selectedRecruiters.value.filter(r => eligibleIds.has(r.id));
+  onRecruiterTyping('');
 }
 
 async function loadPersonnel(): Promise<void> {
@@ -106,7 +114,7 @@ async function loadPersonnel(): Promise<void> {
 function onRecruiterTyping(text: string): void {
   const term = (text || '').toLowerCase();
   const selectedIds = new Set(selectedRecruiters.value.map(s => s.id));
-  filteredRecruiters.value = personnel.value.filter(
+  filteredRecruiters.value = eligibleRecruiters.value.filter(
     p => !selectedIds.has(p.id) && p.name.toLowerCase().includes(term)
   );
 }

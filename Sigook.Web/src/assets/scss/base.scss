@@ -497,6 +497,8 @@ input:-webkit-autofill {
   gap: 2px;
 }
 
+$agency-flag-colors: $navy, $purple, $green-text, $accent-text, $grey-dark, $danger-hover;
+
 .request-flag {
   padding: 2px 4px;
   border-radius: 3px;
@@ -514,6 +516,13 @@ input:-webkit-autofill {
   &--dh {
     background: #1d4ed8;
     color: $white;
+  }
+
+  @each $color in $agency-flag-colors {
+    &--agency-#{index($agency-flag-colors, $color) - 1} {
+      background: $color;
+      color: $white;
+    }
   }
 }
 

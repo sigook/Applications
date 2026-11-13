@@ -35,5 +35,5 @@ public class GetRequestForAgencyFilter : Pagination
     public Guid? CompanyProfileId { get; set; }
     public Guid? AgencyId { get; set; }
     public string Filter { get; set; }
-    public Guid? SalesPersonnelId { get; set; }
+    public Guid? SalesUserId { get; set; }
 }

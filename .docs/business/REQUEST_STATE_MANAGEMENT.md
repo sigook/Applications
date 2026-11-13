@@ -187,7 +187,7 @@ CSS classes come from `requestStatusClass(status)` in `src/shared/request-detail
 - Agency list (`TableRequests.vue`) has a "Pending Review" status filter; `/recruiting/requests?status=pending-review` resets the filters (incl. `onlyMine`) to show only pending requests.
 - The sidebar bell (`api/agency/notifications`) lists every `PendingReview` request of the agency for admin/recruiting users (sales-only users get an empty list). Each item opens the request detail.
 - Agency request detail shows a "Pending review" alert and a "Review & approve" button (admin/recruiting) that opens the edit form in review mode; its submit is "Save & Approve".
-- The company only sees the badge in its portal; no email is sent to the company. The agency receives the "New Request to review" email.
+- The company only sees the badge in its portal; no email is sent to the company. The agency always receives the "New Request to review" email at the agency account email (there is no agency notification preference; the same goes for the "Request was canceled" and "Company has registered" emails).
 
 ---
 

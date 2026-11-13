@@ -9,6 +9,7 @@
         <div class="worker-chips">
           <span v-if="worker.approvedToWork" class="worker-chip is-success">Approved to work</span>
           <span v-else class="worker-chip is-danger">Not approved</span>
+          <span v-if="agencyName(worker.agencyId)" class="worker-chip">{{ agencyName(worker.agencyId) }}</span>
           <span v-if="worker.isSubcontractor" class="worker-chip is-info">Subcontractor</span>
           <span v-if="worker.isContractor" class="worker-chip">Contractor</span>
           <span v-if="worker.dnu" class="worker-chip is-danger">DNU</span>
@@ -108,6 +109,7 @@ import requestHistory from '@/modules/agency/recruiting/workers/components/Agenc
 import timeSheetHistory from '@/modules/agency/recruiting/workers/components/TimeSheetHistory.vue';
 import notes from '@/modules/agency/recruiting/workers/components/Notes.vue';
 import WorkerProfileHeader from '@/shared/worker-profile/cards/WorkerProfileHeader.vue';
+import { useAgencyName } from '@/modules/agency/shared/useAgencyName';
 import ProfileIndex from '@/shared/worker-profile/cards/ProfileIndex.vue';
 import NeedsAttention from '@/shared/worker-profile/cards/NeedsAttention.vue';
 import PersonalCard from '@/shared/worker-profile/cards/PersonalCard.vue';
@@ -132,6 +134,7 @@ const commentPageIndex = ref(1);
 const currentTab = ref<string>('profile');
 const visitedTabs = ref<string[]>(['profile']);
 const worker = ref<WorkerProfileDetail | null>(null);
+const { agencyName } = useAgencyName();
 const commentsData = ref<WorkerCommentList | null>(null);
 const commentsCard = useTemplateRef<InstanceType<typeof CommentsCard>>('commentsCard');
 

@@ -2,6 +2,7 @@ import type { CovenantFileModel, LocationDetailModel, WsibGroup } from '@/shared
 import { AgencyType, AgencyContactInformation } from '@/modules/agency/profile/types';
 
 export interface AgencyListFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   sortBy?: number;

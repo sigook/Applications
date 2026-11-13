@@ -18,7 +18,8 @@ public class NotificationServiceTest
     public NotificationServiceTest()
     {
         _currentUserService.Setup(c => c.GetAgencyId()).Returns(_agencyId);
-        _requestRepository.Setup(r => r.GetPendingReviewRequests(_agencyId)).ReturnsAsync(
+        _currentUserService.Setup(c => c.GetAgencyIds()).Returns([_agencyId]);
+        _requestRepository.Setup(r => r.GetPendingReviewRequests(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)))).ReturnsAsync(
             [new PendingReviewRequestNotificationModel { RequestId = Guid.NewGuid(), NumberId = 10, JobTitle = "Picker" }]);
         _sut = new NotificationService(Mock.Of<INotificationRepository>(), _requestRepository.Object, _currentUserService.Object);
     }
@@ -39,7 +40,7 @@ public class NotificationServiceTest
         NotificationsModel result = await _sut.GetNotifications();
 
         Assert.Empty(result.PendingReviewRequests);
-        _requestRepository.Verify(r => r.GetPendingReviewRequests(It.IsAny<Guid>()), Times.Never);
+        _requestRepository.Verify(r => r.GetPendingReviewRequests(It.IsAny<IEnumerable<Guid>>()), Times.Never);
     }
 
     [Fact]

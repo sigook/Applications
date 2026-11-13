@@ -201,6 +201,14 @@ export function deleteCompanyProfileUser(profileId: string, userId: string): Pro
   return api.del(`${companyProfilesUrl}/${profileId}/Users/${userId}`);
 }
 
+export function updateCompanyProfileUser(profileId: string, userId: string, user: CompanyUserModel): Promise<void> {
+  return api.put(`${companyProfilesUrl}/${profileId}/Users/${userId}`, user);
+}
+
+export function updateCompanyUserEmail(profileId: string, userId: string, model: { newEmail: string }): Promise<void> {
+  return api.put(`${companyProfilesUrl}/${profileId}/Users/${userId}/Email`, model);
+}
+
 export function updateIsAsapRequests(model: UpdateIsAsapRequestsPayload): Promise<void> {
   return api.put('/api/agency/recruiting/requests/is-asap', model);
 }

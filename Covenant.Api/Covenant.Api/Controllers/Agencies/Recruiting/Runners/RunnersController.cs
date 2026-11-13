@@ -55,7 +55,7 @@ public class RunnersController(
     public async Task<IActionResult> GetFile(GetAgencyRunnersFilter filter)
     {
         if (filter.OnlyMine) filter.Recruiter = User.GetNickname();
-        var data = runnerRepository.GetAllAgencyRunners(User.GetAgencyId(), filter).ToList();
+        var data = runnerRepository.GetAllAgencyRunners(User.GetAgencyIds(), filter).ToList();
         var file = await mediator.Send(new GenerateAgencyRunnersReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }

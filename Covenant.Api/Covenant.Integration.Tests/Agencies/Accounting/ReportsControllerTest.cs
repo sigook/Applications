@@ -319,7 +319,7 @@ public class ReportsControllerTest(SeededWebApplicationFactory<ReportsController
         {
             context.Cities.Add(city);
             context.Users.Add(CurrentUser);
-            context.AgencyPersonnel.Add(AgencyPersonnel.CreatePrimary(AgencyId, CurrentUser.Id, "Accounting"));
+            TestAgencyMembers.Add(AgencyId, CurrentUser.With(u => u.UpdateName("Accounting")).Id);
             WholeHours.Seed(context);
             HalfHours.Seed(context);
             ForFile.Seed(context);

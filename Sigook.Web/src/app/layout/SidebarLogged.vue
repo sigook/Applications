@@ -88,20 +88,18 @@
           :append-to-body="!isDrawer" aria-role="menu">
           <template #trigger>
             <div class="sidebar-user-trigger"
-              :title="missingRequirementsCount ? `${currentUser.fullName} · ${missingRequirementsLabel}` : currentUser.fullName">
+              :title="missingRequirementsCount ? `${userName} · ${missingRequirementsLabel}` : userName">
               <b-badge tag="span" class="sidebar-user-avatar-wrap" type="is-danger" rounded
                 :dot="isAgency && hasNotifications" :value="missingRequirementsCount || undefined">
-                <img v-if="currentUser.logo && !logoFailed" :src="currentUser.logo.pathFile" class="sidebar-user-avatar"
-                  alt="profile" @error="logoFailed = true" />
-                <svg v-else class="sidebar-user-avatar" viewBox="0 0 40 40">
+                <svg class="sidebar-user-avatar" viewBox="0 0 40 40">
                   <circle cx="20" cy="20" r="20" fill="#aeaeae" />
                   <text x="50%" y="50%" text-anchor="middle" fill="white" font-size="17px" font-family="Arial"
                     dy=".35em">
-                    {{ avatarLetters(currentUser.fullName) }}
+                    {{ avatarLetters(userName) }}
                   </text>
                 </svg>
               </b-badge>
-              <span class="sidebar-user-name">{{ currentUser.fullName }}</span>
+              <span class="sidebar-user-name">{{ userName }}</span>
               <b-icon icon="chevron-down" size="is-small" class="sidebar-user-arrow"></b-icon>
             </div>
           </template>
@@ -130,10 +128,6 @@
               </span>
             </router-link>
           </b-dropdown-item>
-          <b-dropdown-item v-for="(item, i) in currentUser.agencies" :key="i" @click="switchAgency(item)"
-            :class="{ 'primary-agency': item.isPrimary }" aria-role="menuitem">
-            {{ item.name }}
-          </b-dropdown-item>
           <b-dropdown-item @click="logout" aria-role="menuitem">
             Log Out
           </b-dropdown-item>
@@ -157,8 +151,9 @@ import { avatarLetters } from '@/shared/format';
 import menu from '@/app/security/menu';
 import roles, { agencyStaff } from '@/app/security/roles';
 import { getMyProfile } from '@/modules/worker/profile/api';
-import { getAgencyProfile, getPersonnelAgencies, switchPersonnelAgency } from '@/modules/agency/profile/api';
+import { getAgencyProfile, getAccessibleAgencies } from '@/modules/agency/profile/api';
 import { getCompanyProfile } from '@/modules/company/profile/api';
+import { getAccount } from '@/shared/api/accountApi';
 import { useNotifications } from '@/modules/agency/shared/notifications/useNotifications';
 import AttendanceClockButton from '@/modules/agency/profile/components/AttendanceClockButton.vue';
 
@@ -185,7 +180,7 @@ const isLoading = ref(false);
 const { isTouch: isDrawer, isCompactDesktop } = useBreakpoint();
 const isCollapsed = ref(isCompactDesktop.value);
 const isOpen = ref(false);
-const logoFailed = ref(false);
+const userName = ref('');
 const mobileBackTo = useMobileBack();
 
 watch(isCompactDesktop, (compact) => {
@@ -227,8 +222,6 @@ function expandActiveGroup() {
   });
 }
 
-const currentUser = computed(() => agencyStore.agency);
-
 const isAgency = computed(() =>
   securityStore.userRoles.some((ur) => agencyStaff.includes(ur)));
 
@@ -254,52 +247,31 @@ async function logout() {
 }
 
 async function getAgencyInfo() {
-  const agency = await getAgencyProfile();
+  const [agency, agencies, account] = await Promise.all([getAgencyProfile(), getAccessibleAgencies(), getAccount()]);
   agencyStore.setAgency(agency);
-  const personnelAgencies = await getPersonnelAgencies();
-  agencyStore.setPersonnelAgencies(personnelAgencies);
+  agencyStore.setAgencies(agencies);
+  userName.value = account.name;
   profileUrl.value = '/agency-profile';
 }
 
 async function getCompanyInfo() {
   const response = await getCompanyProfile();
-  currentUser.value.fullName = response.fullName;
-  currentUser.value.profileImage = response.logo?.pathFile ?? null;
+  userName.value = response.fullName;
   profileUrl.value = '/company-profile';
 }
 
 async function getCompanyUserInfo() {
   const user = await securityStore.getUser();
   if (!user) return;
-  currentUser.value.fullName = user.profile.name;
-  currentUser.value.profileImage = null;
+  userName.value = user.profile.name;
   profileUrl.value = '/company-user-profile';
 }
 
 async function getWorkerInfo() {
   const data = await getMyProfile();
   workerStore.setWorkerProfile(data);
-  currentUser.value.fullName = `${data.firstName} ${data.lastName}`;
-  currentUser.value.profileImage = data.profileImage?.pathFile ?? null;
+  userName.value = `${data.firstName} ${data.lastName}`;
   profileUrl.value = '/worker-profile';
-}
-
-function landingPathAfterSwitch(): string {
-  if (Object.keys(route.params).length === 0) return route.fullPath;
-  const parent = router.getRoutes()
-    .filter((r) => !r.redirect && !r.path.includes(':') && route.path.startsWith(`${r.path}/`))
-    .sort((a, b) => b.path.length - a.path.length)
-    .at(0);
-  return parent?.path ?? menu.getDefaultHomePageUrlBaseOnRoles(securityStore.userRoles);
-}
-
-async function switchAgency(agency: { id: string; isPrimary: boolean }) {
-  if (agency.isPrimary) return;
-  isLoading.value = true;
-  const target = landingPathAfterSwitch();
-  await switchPersonnelAgency(agency.id);
-  if (target === route.fullPath) window.location.reload();
-  else window.location.assign(target);
 }
 
 async function init() {
@@ -544,11 +516,6 @@ $topbar-height: 56px;
   .sidebar-group-arrow {
     margin-left: auto;
   }
-}
-
-.dropdown-item.primary-agency,
-.primary-agency {
-  font-weight: 700;
 }
 
 .sidebar-user-notifications-header {

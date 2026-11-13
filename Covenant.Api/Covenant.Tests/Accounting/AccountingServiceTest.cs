@@ -47,7 +47,7 @@ public class AccountingServiceTest
     {
         var pagination = new Pagination();
         var expected = new PaginatedList<PayrollSubContractorListModel>();
-        _subcontractorRepository.Setup(r => r.GetPayrollsSubcontractor(AgencyId, pagination)).ReturnsAsync(expected);
+        _subcontractorRepository.Setup(r => r.GetPayrollsSubcontractor(It.Is<IEnumerable<Guid>>(ids => ids.Contains(AgencyId)), pagination)).ReturnsAsync(expected);
 
         var result = await _sut.GetSubcontractors(pagination);
 

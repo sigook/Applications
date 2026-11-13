@@ -3,6 +3,7 @@ namespace Covenant.Common.Models.Requests;
 public class AgencyRequestApplicantsModel
 {
     public Guid RequestId { get; set; }
+    public Guid AgencyId { get; set; }
     public int NumberId { get; set; }
     public string CompanyFullName { get; set; }
     public string JobTitle { get; set; }

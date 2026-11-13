@@ -190,7 +190,7 @@ public class ClientsController(
     [HttpGet("companies-list")]
     [ProducesResponseType(typeof(List<BaseModel<Guid>>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetCompaniesList([FromQuery] string searchTerm) =>
-        Ok(await companyRepository.GetCompaniesList(User.GetAgencyId(), searchTerm));
+        Ok(await companyRepository.GetCompaniesList(User.GetAgencyIds(), searchTerm));
 
     /// <summary>Bulk-imports company data for an agency from an uploaded file.</summary>
     /// <param name="agencyId">Identifier of the agency to import companies into.</param>

@@ -1,7 +1,7 @@
 <template>
   <detail-header :title="`${numberId} · ${title}`" :meta="subtitle" :org-name="orgName" :org-link="orgLink"
-    :logo="logo" :logo-icon="logoIcon" :status-label="statusLabel" :status-variant="statusVariant" :chips="headerChips"
-    :kpis="headerKpis">
+    :logo="logo" :logo-icon="logoIcon" :status-label="statusLabel" :status-variant="statusVariant" :chips="flagChips"
+    :meta-chips="metaChips" :kpis="headerKpis">
     <template v-for="(_, name) in $slots" #[name]="scope">
       <slot :name="name" v-bind="scope ?? {}" />
     </template>
@@ -36,11 +36,12 @@ const { isAsap, isDirectHiring, chips, workersTotal, kpis, workersWorking } = de
   kpis: RequestKpi[];
 }>();
 
-const headerChips = computed<DetailChip[]>(() => [
-  ...(isAsap ? [{ label: 'ASAP', variant: 'is-warning' as const }] : []),
-  ...(isDirectHiring ? [{ label: 'Direct hiring', variant: 'is-info' as const }] : []),
-  ...(chips ?? []).map((label) => ({ label })),
+const flagChips = computed<DetailChip[]>(() => [
+  ...(isAsap ? [{ label: 'ASAP', variant: 'is-warning' as const, icon: 'lightning-bolt' }] : []),
+  ...(isDirectHiring ? [{ label: 'Direct hiring', variant: 'is-info' as const, icon: 'account-check' }] : []),
 ]);
+
+const metaChips = computed<DetailChip[]>(() => (chips ?? []).map((label) => ({ label })));
 
 const headerKpis = computed<DetailKpi[]>(() => {
   if (workersTotal === undefined) return kpis;

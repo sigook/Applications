@@ -4,7 +4,7 @@
       {{ label }} <span v-if="required" class="has-text-danger">*</span>
     </template>
     <b-input type="tel" title="phone" :name="name" :disabled="disabled" :placeholder="placeholder"
-      v-model="phone" maxlength="12" />
+      v-model="phone" maxlength="12" :has-counter="false" />
   </b-field>
 </template>
 

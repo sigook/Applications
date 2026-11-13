@@ -165,11 +165,10 @@ public class InteractionsControllerTest(SeededWebApplicationFactory<Interactions
         {
             context.Agencies.AddRange(agency, foreignAgency);
             context.Users.AddRange(SalesUser, OtherSalesUser, AdminUser, ForeignUser);
-            context.AgencyPersonnel.AddRange(
-                AgencyPersonnel.CreatePrimary(agency.Id, SalesUser.Id, "Sales Rep"),
-                AgencyPersonnel.CreatePrimary(agency.Id, OtherSalesUser.Id, "Other Rep"),
-                AgencyPersonnel.CreatePrimary(agency.Id, AdminUser.Id, "Admin"),
-                AgencyPersonnel.CreatePrimary(foreignAgency.Id, ForeignUser.Id, "Foreign Rep"));
+            TestAgencyMembers.Add(agency.Id, SalesUser.With(u => u.UpdateName("Sales Rep")).Id);
+            TestAgencyMembers.Add(agency.Id, OtherSalesUser.With(u => u.UpdateName("Other Rep")).Id);
+            TestAgencyMembers.Add(agency.Id, AdminUser.With(u => u.UpdateName("Admin")).Id);
+            TestAgencyMembers.Add(foreignAgency.Id, ForeignUser.With(u => u.UpdateName("Foreign Rep")).Id);
             context.AddRange(Company, ListCompany, ForeignCompany);
             context.SaveChanges();
         }

@@ -78,13 +78,13 @@
         </template>
         <template v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]" type="is-dark" append-to-body>
+            <HoverTooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]">
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="requestStatusClass(props.row.requestStatus)"></div>
               </div>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </template>
       </b-table-column>
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { dateMonth } from '@/shared/format';

@@ -42,6 +42,7 @@ public class AuthorizationControllerTest
         _userManager.Setup(u => u.FindByIdAsync(_user.Id.ToString())).ReturnsAsync(_user);
         _userManager.Setup(u => u.IsEmailConfirmedAsync(_user)).ReturnsAsync(() => _user.EmailConfirmed);
         _userManager.Setup(u => u.GetRolesAsync(_user)).ReturnsAsync([CovenantConstants.Role.Worker]);
+        _userManager.Setup(u => u.GetClaimsAsync(_user)).ReturnsAsync([]);
         _signInManager.Setup(s => s.CheckPasswordSignInAsync(_user, Password, true)).ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
         _signInManager.Setup(s => s.CheckPasswordSignInAsync(_user, It.Is<string>(p => p != Password), true)).ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Failed);
         _signInManager.Setup(s => s.CanSignInAsync(_user)).ReturnsAsync(true);
@@ -151,6 +152,28 @@ public class AuthorizationControllerTest
         Assert.Equal([CovenantConstants.Role.Worker], [.. principal.GetClaims(Claims.Role)]);
         Assert.Contains(Scopes.OfflineAccess, principal.GetScopes());
         Assert.Equal(["covenant-api"], [.. principal.GetResources()]);
+    }
+
+    [Fact]
+    public async Task PasswordGrant_AgencyClaimsReachOnlyTheAccessToken()
+    {
+        var covenant = Guid.NewGuid().ToString();
+        var sigook = Guid.NewGuid().ToString();
+        _userManager.Setup(u => u.GetRolesAsync(_user)).ReturnsAsync([CovenantConstants.Role.Admin]);
+        _userManager.Setup(u => u.GetClaimsAsync(_user)).ReturnsAsync(
+        [
+            new Claim(CovenantConstants.AgencyId, covenant),
+            new Claim(CovenantConstants.AgencyId, sigook),
+            new Claim(CovenantConstants.AgencyId, covenant),
+            new Claim(CovenantConstants.CompanyId, Guid.NewGuid().ToString())
+        ]);
+
+        var principal = Assert.IsType<SignInResult>(await Controller(PasswordGrant(Email, Password, Scopes.Roles)).Exchange()).Principal;
+
+        Assert.Equal([covenant, sigook], [.. principal.GetClaims(CovenantConstants.AgencyId)]);
+        Assert.Null(principal.GetClaim(CovenantConstants.CompanyId));
+        Assert.All(principal.Claims.Where(c => c.Type == CovenantConstants.AgencyId),
+            c => Assert.Equal([Destinations.AccessToken], [.. c.GetDestinations()]));
     }
 
     [Fact]

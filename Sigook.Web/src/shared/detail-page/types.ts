@@ -6,6 +6,7 @@ export type DetailChipVariant = 'is-success' | 'is-info' | 'is-warning' | 'is-da
 export interface DetailChip {
   label: string;
   variant?: DetailChipVariant;
+  icon?: string;
 }
 
 export interface DetailKpi {

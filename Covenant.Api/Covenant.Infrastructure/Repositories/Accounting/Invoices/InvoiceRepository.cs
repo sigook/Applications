@@ -226,6 +226,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                     select new InvoiceListModel
                     {
                         Id = i.Id,
+                        AgencyId = i.CompanyProfile.AgencyId,
                         NumberId = i.NumberId,
                         InvoiceNumberId = i.InvoiceNumberId,
                         InvoiceNumber = i.InvoiceNumber,
@@ -243,10 +244,7 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
                         PaidAt = i.PaidAt,
                         PdfGeneratedAt = i.PdfGeneratedAt,
                         UpdatedAt = i.UpdatedAt,
-                        UpdatedByName = Context.AgencyPersonnel
-                            .Where(p => p.UserId == i.UpdatedBy && p.AgencyId == i.CompanyProfile.AgencyId)
-                            .Select(p => p.Name)
-                            .FirstOrDefault() ?? i.UpdatedByUser.Email
+                        UpdatedByName = i.UpdatedByUser.Name ?? i.UpdatedByUser.Email
                     };
         var predicateNew = ApplyFilterInvoices(filter);
         query = query.Where(predicateNew);

@@ -47,7 +47,7 @@ public class ClientsListControllerTest(SeededWebApplicationFactory<ClientsTestSt
     public async Task Recruiting_CannotNarrowToASalesRepThroughTheQueryString()
     {
         List<string> names = await Names(await AsRecruiter().GetAsync(
-            $"{ClientsListController.RouteName}?pageSize=50&salesPersonnelId={_data.SalesPersonnel.Id}"));
+            $"{ClientsListController.RouteName}?pageSize=50&salesUserId={_data.Sales.Id}"));
 
         Assert.Equal(4, names.Count);
     }
@@ -82,7 +82,7 @@ public class ClientsListControllerTest(SeededWebApplicationFactory<ClientsTestSt
     public async Task Sales_CannotWidenItsScopeThroughTheQueryString()
     {
         List<string> names = await Names(await AsSales().GetAsync(
-            $"{SalesClientsController.RouteName}?pageSize=50&salesPersonnelId={_data.OtherSalesPersonnel.Id}"));
+            $"{SalesClientsController.RouteName}?pageSize=50&salesUserId={_data.OtherSales.Id}"));
 
         Assert.Equal(["Gamma Sales Client"], names);
     }

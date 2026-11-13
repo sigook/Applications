@@ -23,5 +23,5 @@ public class TimeSheetHistoryController(ITimesheetRepository timeSheetRepository
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<TimeSheetHistoryModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(Guid workerProfileId, [FromQuery] GetWorkerTimeSheetHistoryFilter filter) =>
-        Ok(await timeSheetRepository.GetTimeSheetHistory(User.GetAgencyId(), workerProfileId, filter));
+        Ok(await timeSheetRepository.GetTimeSheetHistory(User.GetAgencyIds(), workerProfileId, filter));
 }

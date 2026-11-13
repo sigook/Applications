@@ -171,6 +171,7 @@ public class ClientsControllerTest(CustomWebApplicationFactory<ClientsController
             services.AddSingleton(userAccountService.Object);
             var currentUserService = new Mock<ICurrentUserService>();
             currentUserService.Setup(c => c.GetAgencyId()).Returns(FakeAgency.Id);
+            currentUserService.Setup(c => c.GetAgencyIds()).Returns([FakeAgency.Id]);
             services.AddSingleton(currentUserService.Object);
             services.AddSingleton<AgencyIdFilter>();
         }

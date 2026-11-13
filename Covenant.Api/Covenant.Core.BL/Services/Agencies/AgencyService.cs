@@ -78,10 +78,14 @@ public class AgencyService(
 
         if (currentUserService.IsSales())
         {
-            model.SalesRepresentativeId = currentUserService.GetAgencyPersonnelId();
+            model.SalesRepresentativeId = currentUserService.GetUserId();
         }
 
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyId = model.AgencyId ?? currentUserService.GetAgencyId();
+        if (!currentUserService.GetAgencyIds().Contains(agencyId))
+        {
+            return Result.Fail<Guid>("The selected agency is not available");
+        }
 
         var rFullName = CompanyName.Create(model.FullName);
 
@@ -135,7 +139,6 @@ public class AgencyService(
 
     public async Task<Result> UpdateCompany(Guid companyProfileId, CompanyProfileDetailModel model)
     {
-        var agencyId = currentUserService.GetAgencyId();
         var fullName = CompanyName.Create(model.FullName);
         if (!fullName) return Result.Fail(fullName.Errors);
         var company = await companyRepository.GetCompanyProfile(cp => cp.Id == companyProfileId);
@@ -185,20 +188,6 @@ public class AgencyService(
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         return Result.Ok(entity.Id);
-    }
-
-    public async Task<Result> UpdateCompanyContactPerson(Guid id, CompanyProfileContactPersonModel model)
-    {
-        var rEmail = CvnEmail.CreateOptional(model.Email);
-        if (!rEmail) return Result.Fail<CompanyProfileContactPerson>(rEmail.Errors);
-        var entity = await companyRepository.GetContactPerson(id);
-        if (entity == null)
-        {
-            return Result.Fail();
-        }
-        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, rEmail.Value);
-        await companyRepository.SaveChangesAsync();
-        return Result.Ok();
     }
 
     public async Task<Result> DeleteCompanyJobPosition(Guid id)
@@ -451,7 +440,7 @@ public class AgencyService(
 
     public async Task<PaginatedList<CompanyProfileDocumentModel>> GetCompanyDocuments(Guid compnayProfileId, Pagination pagination)
     {
-        var agencyPersonnel = await agencyRepository.GetPersonnelByUserId(currentUserService.GetUserId());
+        var userId = currentUserService.GetUserId();
         var isAdmin = currentUserService.IsAdmin();
         var companyProfile = await companyRepository.GetCompanyProfile(cp => cp.Id == compnayProfileId);
         var companyDocuments = await companyRepository.GetDocuments(compnayProfileId, pagination);
@@ -459,7 +448,7 @@ public class AgencyService(
         {
             if (document.DocumentType == CompanyProfileDocumentType.Contract)
             {
-                document.CanDownload = isAdmin || agencyPersonnel.Any(ap => ap.Id == companyProfile.SalesRepresentativeId);
+                document.CanDownload = isAdmin || companyProfile.SalesRepresentativeId == userId;
             }
         }
         return companyDocuments;
@@ -489,8 +478,8 @@ public class AgencyService(
                     var roleUpdated = await userAccountService.UpdateUserRole(updateRole);
                     if (roleUpdated)
                     {
-                        var agencyPersonnel = agencyRepository.GetPersonnel(existingUser.Id);
-                        if (agencyPersonnel == null)
+                        var agencyMemberships = await userAccountService.GetUsersAgencies([existingUser.Id]);
+                        if (agencyMemberships.Count == 0)
                         {
                             var companyUser = companyRepository.GetCompanyUser(existingUser.Id);
                             if (companyUser != null)
@@ -550,64 +539,73 @@ public class AgencyService(
             ? CovenantConstants.Role.SuperAdminAssignable
             : CovenantConstants.Role.AgencyAssignable;
 
-    public async Task<IEnumerable<AgencyPersonnelModel>> GetAgencyPersonnel(Guid agencyId)
+    public async Task<List<AgencyPersonnelModel>> GetAgencyPersonnel(IEnumerable<Guid> agencyIds)
     {
-        var personnel = (await agencyRepository.GetAllPersonnel(agencyId)).ToList();
-        await SetPersonnelRoles(personnel);
+        var members = await userAccountService.GetAgencyMembers(agencyIds);
+        var personnel = await agencyRepository.GetPersonnel(members.Select(m => m.UserId).Distinct());
+        await SetPersonnelDetails(personnel);
         return personnel;
     }
 
-    public async Task<AgencyPersonnelModel> GetAgencyPersonnel(Guid agencyId, Guid id)
+    public async Task<AgencyPersonnelModel> GetAgencyPersonnel(IEnumerable<Guid> agencyIds, Guid id)
     {
-        var model = await agencyRepository.GetPersonnel(agencyId, id);
-        if (model is not null) await SetPersonnelRoles([model]);
-        return model;
+        var agencies = await GetUserAgencyIds(id);
+        if (!agencies.Overlaps(agencyIds)) return null;
+        var personnel = await agencyRepository.GetPersonnel([id]);
+        await SetPersonnelDetails(personnel);
+        return personnel.FirstOrDefault();
     }
 
-    private async Task SetPersonnelRoles(IReadOnlyCollection<AgencyPersonnelModel> personnel)
+    private async Task<HashSet<Guid>> GetUserAgencyIds(Guid userId) =>
+        [.. (await userAccountService.GetUsersAgencies([userId])).Select(m => m.AgencyId)];
+
+    private async Task SetPersonnelDetails(List<AgencyPersonnelModel> personnel)
     {
         if (personnel.Count == 0) return;
-        var roles = await userAccountService.GetUsersRoles(personnel.Select(p => p.UserId));
-        if (!roles)
-        {
-            logger.LogError("Unable to load the roles of the agency personnel: {Error}", roles.StringErrors);
-            return;
-        }
-        var rolesByUser = roles.Value.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.First().Role);
+        var userIds = personnel.Select(p => p.UserId).ToList();
+        var roles = await userAccountService.GetUsersRoles(userIds);
+        var rolesByUser = roles
+            ? roles.Value.GroupBy(r => r.Id).ToDictionary(g => g.Key, g => g.First().Role)
+            : [];
+        if (!roles) logger.LogError("Unable to load the roles of the agency personnel: {Error}", roles.StringErrors);
+
+        var accessible = currentUserService.GetAgencyIds().ToHashSet();
+        var memberships = (await userAccountService.GetUsersAgencies(userIds)).Where(m => accessible.Contains(m.AgencyId)).ToList();
+        var names = (await agencyRepository.GetAgencyOptions(memberships.Select(m => m.AgencyId).Distinct())).ToDictionary(a => a.Id, a => a.Name);
         foreach (var item in personnel)
         {
             if (rolesByUser.TryGetValue(item.UserId, out var role)) item.Role = role;
+            item.AgencyIds = [.. memberships.Where(m => m.UserId == item.UserId).Select(m => m.AgencyId).Where(names.ContainsKey)];
+            item.Agencies = [.. item.AgencyIds.Select(id => names[id]).Order()];
         }
     }
 
-    public async Task<Result> DeleteAgencyPersonnel(Guid agencyId, Guid id)
+    public async Task<Result> DeleteAgencyPersonnel(Guid id)
     {
-        var entity = await agencyRepository.GetPersonnel(id);
-        if (entity is null || entity.AgencyId != agencyId) return Result.Fail(ResultError.NotFound("Personnel not found"));
-        if (await agencyRepository.PersonnelHasRequests(entity.Id))
+        var accessible = currentUserService.GetAgencyIds();
+        var agencies = await GetUserAgencyIds(id);
+        var memberships = agencies.Where(accessible.Contains).ToList();
+        if (memberships.Count == 0) return Result.Fail(ResultError.NotFound("Personnel not found"));
+        if (await agencyRepository.PersonnelHasRequests(id))
             return Result.Fail("This user cannot be deleted because they are still assigned as a recruiter on one or more orders. Please reassign those orders first.");
-        if (await agencyRepository.PersonnelHasCompanies(entity.Id))
+        if (await agencyRepository.PersonnelHasCompanies(id))
             return Result.Fail("This user cannot be deleted because they are still set as the sales representative for one or more clients. Please reassign those clients first.");
-        agencyRepository.Delete(entity);
-        await agencyRepository.SaveChangesAsync();
-        return await userAccountService.DeleteUserOrClaim(entity.UserId, new IdModel(agencyId));
+        if (memberships.Count < agencies.Count) return await userAccountService.UpdateAgencyClaims(id, [], memberships);
+        if (memberships.Count > 1)
+        {
+            var removed = await userAccountService.UpdateAgencyClaims(id, [], memberships.Skip(1));
+            if (!removed) return removed;
+        }
+        return await userAccountService.DeleteUserOrClaim(id, new IdModel(memberships[0]));
     }
 
-    public async Task SetPrimaryPersonnelAgency(Guid userId, Guid personnelId)
+    private Result<List<Guid>> ResolvePersonnelAgencies(IEnumerable<Guid> requested)
     {
-        foreach (var personnel in await agencyRepository.GetPersonnelByUserId(userId))
-        {
-            if (personnel.IsPrimary)
-            {
-                personnel.SetToNotPrimary();
-                agencyRepository.Update(personnel);
-            }
-
-            if (personnel.Id != personnelId) continue;
-            personnel.SetToPrimary();
-            agencyRepository.Update(personnel);
-        }
-        await agencyRepository.SaveChangesAsync();
+        var accessible = currentUserService.GetAgencyIds();
+        List<Guid> agencyIds = requested?.Distinct().ToList() is { Count: > 0 } ids ? ids : [currentUserService.GetAgencyId()];
+        return agencyIds.All(accessible.Contains)
+            ? Result.Ok(agencyIds)
+            : Result.Fail<List<Guid>>(ResultError.Create(nameof(AgencyPersonnelModel.AgencyIds), "The selected agency is not available"));
     }
 
     public async Task<Result> UpdateAgencyProfile(Guid agencyId, AgencyModel model)
@@ -662,8 +660,9 @@ public class AgencyService(
     {
         var validation = await agencyPersonnelValidator.ValidateAsync(model);
         if (!validation.IsValid) return validation.ToResultFailure();
-        var entity = await agencyRepository.GetPersonnel(id);
-        if (entity is null || entity.AgencyId != currentUserService.GetAgencyId())
+        var accessible = currentUserService.GetAgencyIds();
+        var currentAgencies = await GetUserAgencyIds(id);
+        if (!currentAgencies.Overlaps(accessible))
         {
             return Result.Fail("The user does not belong to this agency");
         }
@@ -671,32 +670,50 @@ public class AgencyService(
         {
             return Result.Fail("The selected role cannot be assigned");
         }
+        var agencies = model.AgencyIds is { Count: > 0 }
+            ? ResolvePersonnelAgencies(model.AgencyIds)
+            : Result.Ok(currentAgencies.Where(accessible.Contains).ToList());
+        if (!agencies) return Result.Fail(agencies.Errors);
         var email = CvnEmail.Create(model.Email);
         if (!email) return Result.Fail(email.Errors);
-        var roles = await userAccountService.GetUsersRoles([entity.UserId]);
+        var user = await userRepository.GetUserById(id);
+        if (user is null) return Result.Fail(ResultError.NotFound("Personnel not found"));
+        var roles = await userAccountService.GetUsersRoles([id]);
         if (!roles) return Result.Fail(roles.Errors);
-        var currentRole = roles.Value.FirstOrDefault(r => r.Id == entity.UserId)?.Role;
+        var currentRole = roles.Value.FirstOrDefault(r => r.Id == id)?.Role;
         var roleChanged = !string.Equals(currentRole, model.Role, StringComparison.OrdinalIgnoreCase);
-        if (roleChanged && entity.UserId == currentUserService.GetUserId())
+        var isSelf = id == currentUserService.GetUserId();
+        if (roleChanged && isSelf)
         {
             return Result.Fail("You cannot change your own role");
         }
-        if (!string.Equals(entity.User.Email, email.Value, StringComparison.OrdinalIgnoreCase))
+        var remove = currentAgencies.Where(a => accessible.Contains(a) && !agencies.Value.Contains(a)).ToList();
+        if (isSelf && remove.Count > 0)
         {
-            var emailUpdated = await userAccountService.UpdateUserEmail(new UpdateEmailModel(entity.UserId) { NewEmail = email.Value });
+            return Result.Fail("You cannot remove yourself from an agency");
+        }
+        if (!string.Equals(user.Email, email.Value, StringComparison.OrdinalIgnoreCase))
+        {
+            var emailUpdated = await userAccountService.UpdateUserEmail(new UpdateEmailModel(id) { NewEmail = email.Value });
             if (!emailUpdated) return emailUpdated;
         }
         if (roleChanged)
         {
-            var roleUpdated = await userAccountService.UpdateUserRole(new UpdateRoleModel { Id = entity.UserId, Role = model.Role });
+            var roleUpdated = await userAccountService.UpdateUserRole(new UpdateRoleModel { Id = id, Role = model.Role });
             if (!roleUpdated) return roleUpdated;
         }
-        entity.UpdateName(model.Name);
-        await agencyRepository.SaveChangesAsync();
+        var add = agencies.Value.Where(a => !currentAgencies.Contains(a)).ToList();
+        if (add.Count > 0 || remove.Count > 0)
+        {
+            var claimsUpdated = await userAccountService.UpdateAgencyClaims(id, add, remove);
+            if (!claimsUpdated) return claimsUpdated;
+        }
+        user.UpdateName(model.Name);
+        await userRepository.SaveChangesAsync();
         return Result.Ok();
     }
 
-    public async Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null)
+    public async Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model)
     {
         var validation = await agencyPersonnelValidator.ValidateAsync(model);
         if (!validation.IsValid) return validation.ToResultFailure();
@@ -704,49 +721,43 @@ public class AgencyService(
         {
             return Result.Fail("The selected role cannot be assigned");
         }
+        var agencies = ResolvePersonnelAgencies(model.AgencyIds);
+        if (!agencies) return Result.Fail(agencies.Errors);
         var email = CvnEmail.Create(model.Email);
-        if (email)
+        if (!email) return Result.Fail(email.Errors);
+
+        var user = await userRepository.GetUserByEmail(email.Value);
+        if (user is null)
         {
-            agencyId = agencyId ?? currentUserService.GetAgencyId();
-            var user = await userRepository.GetUserByEmail(email.Value);
-            AgencyPersonnel entity = null;
-            if (user == null)
+            var newUser = await userAccountService.CreateUser(new CreateUserModel
             {
-                var newUser = await userAccountService.CreateUser(new CreateUserModel
-                {
-                    AgencyId = agencyId,
-                    Email = email.Value,
-                    UserType = UserType.AgencyPersonnel,
-                    Role = model.Role
-                });
-                if (newUser)
-                {
-                    entity = AgencyPersonnel.CreatePrimary(agencyId.Value, newUser.Value, model.Name);
-                }
-                else
-                {
-                    return Result.Fail(newUser.Errors);
-                }
-            }
-            else
+                AgencyId = agencies.Value[0],
+                Email = email.Value,
+                UserType = UserType.AgencyPersonnel,
+                Role = model.Role
+            });
+            if (!newUser) return Result.Fail(newUser.Errors);
+            if (agencies.Value.Count > 1)
             {
-                var list = await agencyRepository.GetPersonnelByUserId(user.Id);
-                if (!list.Any() || list.Any(c => c.AgencyId == agencyId))
-                {
-                    return Result.Fail(ApiResources.EmailAlreadyTaken);
-                }
-                var result = await userAccountService.UpdateAgencyUser(user.Id, new IdModel(agencyId.Value));
-                if (!result)
-                {
-                    return Result.Fail(result.Errors);
-                }
-                entity = AgencyPersonnel.Create(agencyId.Value, user, false, model.Name);
+                var claimsAdded = await userAccountService.UpdateAgencyClaims(newUser.Value.Id, agencies.Value.Skip(1), []);
+                if (!claimsAdded) return claimsAdded;
             }
-            await agencyRepository.Create(entity);
-            await agencyRepository.SaveChangesAsync();
+            newUser.Value.UpdateName(model.Name);
+            await userRepository.SaveChangesAsync();
             return Result.Ok();
         }
-        return Result.Fail(email.Errors);
+
+        var currentAgencies = await GetUserAgencyIds(user.Id);
+        var add = agencies.Value.Where(a => !currentAgencies.Contains(a)).ToList();
+        if (currentAgencies.Count == 0 || add.Count == 0)
+        {
+            return Result.Fail(ApiResources.EmailAlreadyTaken);
+        }
+        var result = await userAccountService.UpdateAgencyClaims(user.Id, add, []);
+        if (!result) return result;
+        if (string.IsNullOrWhiteSpace(user.Name)) user.UpdateName(model.Name);
+        await userRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> CreateAgency(AgencyModel model)
@@ -767,9 +778,8 @@ public class AgencyService(
             if (user)
             {
                 agency.AssignOwner(model.AgencyType, user.Value.Id, agencyParentId);
-                var personnel = AgencyPersonnel.CreatePrimary(agency.Id, user.Value, model.FullName);
+                user.Value.UpdateName(model.FullName);
                 await agencyRepository.Create(agency);
-                await agencyRepository.Create(personnel);
                 await agencyRepository.SaveChangesAsync();
                 return Result.Ok();
             }
@@ -811,7 +821,7 @@ public class AgencyService(
     public async Task<Result<List<UserAttendanceTodayModel>>> GetUserAttendancesToday(string timeZone)
     {
         if (timeProvider.GetLocalNow(timeZone) is not { } localNow) return Result.Fail<List<UserAttendanceTodayModel>>(UnknownTimeZone);
-        var attendances = await agencyRepository.GetUserAttendancesForAgency(currentUserService.GetAgencyId(), localNow.Date);
+        var attendances = await agencyRepository.GetUserAttendancesOfUsers(await GetCurrentAgencyUserIds(), localNow.Date);
         return Result.Ok(attendances.Select(a => ToTodayModel(a.UserId, a)).ToList());
     }
 
@@ -820,7 +830,7 @@ public class AgencyService(
         var validation = await serviceProvider.GetRequiredService<IValidator<GetUserAttendanceReportFilter>>().ValidateAsync(filter);
         if (!validation.IsValid) return validation.ToResultFailure<UserAttendanceReportModel>();
 
-        var items = await agencyRepository.GetUserAttendanceReport(currentUserService.GetAgencyId(), filter);
+        var items = await agencyRepository.GetUserAttendanceReport(await GetCurrentAgencyUserIds(), filter);
         foreach (var item in items)
         {
             var hours = CalculateAttendanceHours(item.Date, item.ClockIn, item.ClockOut, item.LunchMinutes);
@@ -857,8 +867,7 @@ public class AgencyService(
         var validation = await serviceProvider.GetRequiredService<IValidator<UpdateUserAttendanceModel>>().ValidateAsync(model);
         if (!validation.IsValid) return validation.ToResultFailure();
 
-        Guid agencyId = currentUserService.GetAgencyId();
-        UserAttendance attendance = await agencyRepository.GetUserAttendanceForAgency(id, agencyId);
+        UserAttendance attendance = await agencyRepository.GetUserAttendanceOfUsers(id, await GetCurrentAgencyUserIds());
         if (attendance is null) return Result.Fail("Attendance not found.");
         if (model.ClockIn.Date != attendance.Date) return Result.Fail("Clock in must be on the same day as the attendance.");
 
@@ -866,6 +875,9 @@ public class AgencyService(
         await agencyRepository.SaveChangesAsync();
         return Result.Ok();
     }
+
+    private async Task<List<Guid>> GetCurrentAgencyUserIds() =>
+        [.. (await userAccountService.GetAgencyMembers(currentUserService.GetAgencyIds())).Select(m => m.UserId).Distinct()];
 
     private static UserAttendanceTodayModel ToTodayModel(Guid userId, UserAttendance attendance) => new()
     {

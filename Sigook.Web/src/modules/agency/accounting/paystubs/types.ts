@@ -90,6 +90,7 @@ export interface PayStubFilter {
 
 // Filter for GET /api/agency/accounting/paystubs. Mirrors backend GetPayStubsFilter.
 export interface AgencyPayStubFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -104,6 +105,7 @@ export interface AgencyPayStubFilter {
 // Item returned by GET /api/agency/accounting/paystubs. Mirrors backend PayStubListModel.
 export interface AgencyPayStubListItem {
   id: string;
+  agencyId: string;
   numberId: number;
   createdAt: string;
   totalPaid: number;
@@ -134,6 +136,7 @@ export interface CreateSkipPayrollNumberPayload {
 // Filter for GET /api/agency/accounting/reports/subcontractors.
 // Backend only binds Pagination — sortBy etc. are ignored.
 export interface SubcontractorPayrollFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;

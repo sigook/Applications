@@ -108,7 +108,7 @@ public class BaseAzureStorage : IBaseAzureStorage
         {
             BlobContainerName = _containerName,
             BlobName = fileName,
-            ContentDisposition = new ContentDispositionHeaderValue("inline") { FileNameStar = downloadName }.ToString()
+            ContentDisposition = new ContentDispositionHeaderValue("attachment") { FileNameStar = downloadName }.ToString()
         };
         return blob.GenerateSasUri(sas).ToString();
     }

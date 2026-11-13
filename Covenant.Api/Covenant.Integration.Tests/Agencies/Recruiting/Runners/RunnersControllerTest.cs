@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities.Agencies;
@@ -233,8 +234,8 @@ public class RunnersControllerTest(CustomWebApplicationFactory<RunnersController
 
         private static readonly Guid AgencyId = FakeSoonRequest.CompanyProfile.AgencyId;
 
-        public static readonly AgencyPersonnel FakeRecruiter =
-            AgencyPersonnel.CreatePrimary(AgencyId, FakeRecruiterUser.Id, FakeRecruiterUser.Email);
+        public static readonly AgencyMemberModel FakeRecruiter =
+            TestAgencyMembers.Add(AgencyId, FakeRecruiterUser.With(u => u.UpdateName(FakeRecruiterUser.Email)).Id);
 
         public static readonly Request FakeLaterRequest = FakeData.FakeRequest(agencyId: AgencyId, startAt: DateTime.Today.AddDays(20), workersQuantity: 2);
         public static readonly Request FakeRequestWithoutRunners = FakeData.FakeRequest(agencyId: AgencyId, startAt: DateTime.Today.AddDays(40));
@@ -295,7 +296,6 @@ public class RunnersControllerTest(CustomWebApplicationFactory<RunnersController
                     pattern: "{controller}/{action=Index}/{id?}");
             });
             context.Users.Add(FakeRecruiterUser);
-            context.AgencyPersonnel.Add(FakeRecruiter);
             context.Requests.AddRange(FakeSoonRequest, FakeLaterRequest, FakeRequestWithoutRunners);
             context.WorkerProfiles.AddRange(FakeWorkerInterviewed, FakeWorkerHired, FakeWorkerLater, FakeWorkerPassive,
                 FakeWorkerBulkSent, FakeWorkerBulkHired, FakeWorkerBulkHire, FakeWorkerBulkWithoutRunners);

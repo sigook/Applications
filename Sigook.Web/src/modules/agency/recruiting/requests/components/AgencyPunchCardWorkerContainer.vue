@@ -29,18 +29,18 @@
                 </b-tag>
               </div>
               <div class="is-flex is-gap-1 is-justify-content-center is-align-items-center">
-                <b-tooltip label="Detail" type="is-dark" append-to-body>
+                <HoverTooltip label="Detail">
                   <b-button type="is-ghost" @click="openDetail(slotProps.item)" icon-right="eye"></b-button>
-                </b-tooltip>
-                <b-tooltip v-if="isAdmin" label="Edit" type="is-dark" append-to-body>
+                </HoverTooltip>
+                <HoverTooltip v-if="isAdmin" label="Edit">
                   <b-button type="is-ghost" icon-right="pencil" @click="editPunchCard(slotProps.item)">
                   </b-button>
-                </b-tooltip>
-                <b-tooltip label="Approve" type="is-dark" v-if="!slotProps.item.totalHoursApproved" append-to-body>
+                </HoverTooltip>
+                <HoverTooltip label="Approve" v-if="!slotProps.item.totalHoursApproved">
                   <b-button type="is-ghost" icon-right="check"
                     @click="timeSheetFastApprove(slotProps.item, requestId, workerProfileId)">
                   </b-button>
-                </b-tooltip>
+                </HoverTooltip>
                 <div class="is-flex" v-if="slotProps.item.id && !slotProps.item.canUpdate">
                   <b-tooltip :triggers="['click']" :auto-close="['outside', 'escape']" type="is-dark" size="is-medium"
                     position="is-top" multilined append-to-body>
@@ -59,11 +59,11 @@
                       icon-right="paperclip"></b-button>
                   </b-tooltip>
                 </div>
-                <b-tooltip label="Delete" type="is-dark" position="is-bottom"
-                  v-if="slotProps.item.id && slotProps.item.canUpdate" append-to-body>
+                <HoverTooltip label="Delete"
+                  v-if="slotProps.item.id && slotProps.item.canUpdate">
                   <b-button icon-right="delete" type="is-ghost"
                     @click="deleteWorkerTimSheet(slotProps.item)"></b-button>
-                </b-tooltip>
+                </HoverTooltip>
               </div>
             </div>
           </div>
@@ -99,6 +99,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, reactive, computed } from 'vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { dateHHmm, hour } from '@/shared/format';

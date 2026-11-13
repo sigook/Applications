@@ -5,6 +5,7 @@ using Covenant.Common.Entities;
 using Covenant.Common.Interfaces.Identity;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Companies;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Utils.Extensions;
@@ -87,6 +88,26 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplica
     }
 
     [Fact]
+    public async Task Email()
+    {
+        Guid id = Startup.FakeCompanyUserToRename.Id;
+        var response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}/Email", new UpdateEmailModel { NewEmail = "renamed@sigook.com" });
+        response.EnsureSuccessStatusCode();
+
+        User user = await _factory.Services.GetRequiredService<CovenantContext>().Users.AsNoTracking().SingleAsync(u => u.Id == id);
+        Assert.Equal("renamed@sigook.com", user.Email);
+    }
+
+    [Fact]
+    public async Task Email_AlreadyTaken_ReturnsBadRequest()
+    {
+        Guid id = Startup.FakeCompanyUserToRename.Id;
+        var response = await _client.PutAsJsonAsync($"{RequestUri()}/{id}/Email", new UpdateEmailModel { NewEmail = "get@mail.com" });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Get()
     {
         var response = await _client.GetAsync(RequestUri());
@@ -148,6 +169,7 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplica
             return companyUser;
         }
         public static readonly CompanyUser FakeCompanyUserToUpdate = new CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("update@sigook.com").Value));
+        public static readonly CompanyUser FakeCompanyUserToRename = new CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("rename@sigook.com").Value));
         public static readonly CompanyUser FakeCompanyUserToDelete = new CompanyUser(CompanyProfile.Id, new User(CvnEmail.Create("delete@sigook.com").Value));
 
         public void ConfigureServices(IServiceCollection services)
@@ -180,7 +202,7 @@ public class UsersControllerTest : BaseTestOrder, IClassFixture<CustomWebApplica
             if (context.CompanyProfiles.Any()) return;
             context.CompanyProfiles.Add(CompanyProfile);
             context.CompanyUsers.AddRange(FakeCompanyUser,
-                FakeCompanyUserToUpdate, FakeCompanyUserToDelete);
+                FakeCompanyUserToUpdate, FakeCompanyUserToDelete, FakeCompanyUserToRename);
             context.SaveChanges();
         }
     }

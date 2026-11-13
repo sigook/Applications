@@ -3,6 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
     <SigookGrid ref="grid" :fetch="loadSubcontractors" v-model:params="serverParams"
       @update:loading="(value) => isLoading = value">
+      <template #filters>
+        <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+      </template>
       <b-table-column field="weekEnding" label="Week Ending" v-slot="props">
         {{ date(props.row.weekEnding) }}
       </b-table-column>
@@ -14,21 +17,22 @@
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-field>
-          <b-tooltip label="Download Report" type="is-dark" position="is-top" append-to-body>
+          <HoverTooltip label="Download Report">
             <b-button type="is-success" outlined rounded icon-right="file-excel" class="mr-2"
               :loading="props.row.reportDownloading" @click="downloadSubcontractor(props.row)">
             </b-button>
-          </b-tooltip>
-          <b-tooltip label="Delete Report" type="is-dark" position="is-top" append-to-body>
+          </HoverTooltip>
+          <HoverTooltip label="Delete Report">
             <b-button type="is-danger" outlined rounded icon-right="delete" @click="onDeleteSubcontractor(props.row)">
             </b-button>
-          </b-tooltip>
+          </HoverTooltip>
         </b-field>
       </b-table-column>
     </SigookGrid>
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, useTemplateRef } from 'vue';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import dayjs from "dayjs";
@@ -39,6 +43,7 @@ import { getPayrollSubcontractors, downloadSubcontractorReport, deleteSubcontrac
 import type { PayrollSubContractorRow, SubcontractorPayrollFilter } from '@/modules/agency/accounting/paystubs/types';
 import type { GridHandle, PaginatedList } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
 
 const grid = useTemplateRef<GridHandle>('grid');
 

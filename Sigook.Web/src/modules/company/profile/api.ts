@@ -55,6 +55,10 @@ export function updateCompanyUser(id: string, user: CompanyUserModel): Promise<v
   return api.put(`/api/company/profile/users/${id}`, user);
 }
 
+export function updateCompanyUserEmail(id: string, model: { newEmail: string }): Promise<void> {
+  return api.put(`/api/company/profile/users/${id}/Email`, model);
+}
+
 export function deleteCompanyUser(id: string): Promise<void> {
   return api.del(`/api/company/profile/users/${id}`);
 }
@@ -66,6 +70,10 @@ export function getContactPeople(): Promise<CompanyContactPersonModel[]> {
 
 export function saveContactPerson(model: CompanyContactPersonModel): Promise<void> {
   return api.post('/api/company/profile/contactpeople', model);
+}
+
+export function updateContactPerson(id: string, model: CompanyContactPersonModel): Promise<void> {
+  return api.put(`/api/company/profile/contactpeople/${id}`, model);
 }
 
 export function deleteContactPerson(id: string): Promise<void> {

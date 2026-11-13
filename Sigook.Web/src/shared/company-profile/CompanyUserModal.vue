@@ -1,9 +1,13 @@
 <template>
   <div class="p-3">
     <b-loading v-model="isLoading"></b-loading>
-    <b-message type="is-info" has-icon>
+    <b-message v-if="!user" type="is-info" has-icon>
       The user will receive an email to confirm and create a password. If you don't receive an email,
       please check your spam or junk mail folder.
+    </b-message>
+    <b-message v-else-if="emailEditable" type="is-warning" has-icon>
+      If you change the email the user will not be able to login with the previous one anymore,
+      if necessary notify the user about the change.
     </b-message>
     <div class="columns is-multiline">
       <div class="column is-6">
@@ -25,28 +29,27 @@
         </b-field>
       </div>
       <div class="column is-6">
-        <phone-input :required="false" :model="'Mobile'"
+        <phone-input :required="false" :model="'Mobile'" :default-value="user?.mobileNumber"
           @formattedPhone="(phone) => mobileNumber = phone"></phone-input>
       </div>
       <div class="column is-6">
         <b-field :type="formErrors.email ? 'is-danger' : ''" label="Email *"
           :message="formErrors.email">
-          <b-input type="email" v-model="email" name="email" />
+          <b-input type="email" v-model="email" name="email" :disabled="!isEmailEditable" />
         </b-field>
       </div>
       <div class="column is-12 mt-5">
-        <b-button type="is-primary" @click="validateForm">Create</b-button>
+        <b-button type="is-primary" @click="validateForm">{{ user ? 'Save' : 'Create' }}</b-button>
       </div>
     </div>
   </div>
 </template>
 
-
 <script setup lang="ts">
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import * as yup from 'yup';
 import { showAlertError } from "@/shared/utils/toast";
-import type { CreateCompanyUserModel } from '@/shared/company-profile/types';
+import type { CompanyUserModel, CreateCompanyUserModel } from '@/shared/company-profile/types';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
 
@@ -58,18 +61,28 @@ const schema = yup.object({
   email: yup.string().required('Email is required').email('Invalid email').min(6, 'Min 6 characters').max(50, 'Max 50 characters'),
 });
 
-const { save } = defineProps<{ save: (user: CreateCompanyUserModel) => Promise<unknown> }>();
+const { save, user = null, emailEditable = false } = defineProps<{
+  save: (model: CreateCompanyUserModel) => Promise<unknown>;
+  user?: CompanyUserModel | null;
+  emailEditable?: boolean;
+}>();
 const emit = defineEmits<(e: 'updateUsers') => void>();
 
 const form = useStickyForm<{ name: string; lastname: string; position: string; email: string }>({
   schema,
-  initialValues: { name: '', lastname: '', position: '', email: '' },
+  initialValues: {
+    name: user?.name ?? '',
+    lastname: user?.lastname ?? '',
+    position: user?.position ?? '',
+    email: user?.email ?? '',
+  },
 });
 const { name, lastname, position, email } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const mobileNumber = ref<string | null>(null);
+const mobileNumber = ref<string | null>(user?.mobileNumber || null);
+const isEmailEditable = computed(() => !user || emailEditable);
 
 async function validateForm() {
   form.markInteracted();
@@ -78,12 +91,12 @@ async function validateForm() {
     showAlertError('Please make sure all required fields are filled out correctly');
     return;
   }
-  await onCreateUser();
+  await onSave();
 }
 
-async function onCreateUser() {
+async function onSave() {
   isLoading.value = true;
-  const user = {
+  const model = {
     name: name.value,
     lastname: lastname.value,
     position: position.value || null,
@@ -91,7 +104,7 @@ async function onCreateUser() {
     mobileNumber: mobileNumber.value,
   };
   try {
-    await save(user);
+    await save(model);
     isLoading.value = false;
     emit('updateUsers');
   } catch (error) {

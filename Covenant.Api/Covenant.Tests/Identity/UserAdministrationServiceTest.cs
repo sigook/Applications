@@ -233,27 +233,52 @@ public class UserAdministrationServiceTest
     }
 
     [Fact]
-    public async Task AddAgencyClaim_AddsTheClaim()
+    public async Task UpdateAgencyClaims_AddsOnlyMissingAndRemovesRequested()
     {
-        var agencyId = Guid.NewGuid();
-        Claims(IdentityClaims.AgencyId(Guid.NewGuid()));
+        var kept = Guid.NewGuid();
+        var removed = Guid.NewGuid();
+        var added = Guid.NewGuid();
+        Claims(IdentityClaims.AgencyId(kept), IdentityClaims.AgencyId(removed), IdentityClaims.CompanyId(removed));
+        List<Claim> addedClaims = [];
+        List<Claim> removedClaims = [];
+        _userManager.Setup(u => u.AddClaimsAsync(_existing, It.IsAny<IEnumerable<Claim>>()))
+            .Callback<CovenantUser, IEnumerable<Claim>>((_, claims) => addedClaims.AddRange(claims))
+            .ReturnsAsync(IdentityResult.Success);
+        _userManager.Setup(u => u.RemoveClaimsAsync(_existing, It.IsAny<IEnumerable<Claim>>()))
+            .Callback<CovenantUser, IEnumerable<Claim>>((_, claims) => removedClaims.AddRange(claims))
+            .ReturnsAsync(IdentityResult.Success);
 
-        Result result = await _sut.AddAgencyClaim(_existing.Id, agencyId);
+        Result result = await _sut.UpdateAgencyClaims(_existing.Id, [kept, added], [removed]);
 
         Assert.True(result);
-        Assert.Equal(agencyId.ToString(), Assert.Single(_addedClaims).Value);
+        Assert.Equal(added.ToString(), Assert.Single(addedClaims).Value);
+        var claim = Assert.Single(removedClaims);
+        Assert.Equal((CovenantConstants.AgencyId, removed.ToString()), (claim.Type, claim.Value));
     }
 
     [Fact]
-    public async Task AddAgencyClaim_AlreadyInTheAgency_Fails()
+    public async Task UpdateAgencyClaims_NothingToChange_DoesNotTouchClaims()
     {
         var agencyId = Guid.NewGuid();
         Claims(IdentityClaims.AgencyId(agencyId));
 
-        Result result = await _sut.AddAgencyClaim(_existing.Id, agencyId);
+        Result result = await _sut.UpdateAgencyClaims(_existing.Id, [agencyId], []);
 
-        Assert.False(result);
-        Assert.Empty(_addedClaims);
+        Assert.True(result);
+        _userManager.Verify(u => u.AddClaimsAsync(It.IsAny<CovenantUser>(), It.IsAny<IEnumerable<Claim>>()), Times.Never);
+        _userManager.Verify(u => u.RemoveClaimsAsync(It.IsAny<CovenantUser>(), It.IsAny<IEnumerable<Claim>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task GetAgencyMembers_And_GetUsersAgencies_DelegateToTheRepository()
+    {
+        var agencyId = Guid.NewGuid();
+        AgencyMemberModel member = new(_existing.Id, agencyId);
+        _repository.Setup(r => r.GetAgencyMembers(It.Is<IEnumerable<Guid>>(ids => ids.SequenceEqual(new[] { agencyId })))).ReturnsAsync([member]);
+        _repository.Setup(r => r.GetUsersAgencies(It.Is<IEnumerable<Guid>>(ids => ids.SequenceEqual(new[] { _existing.Id })))).ReturnsAsync([member]);
+
+        Assert.Equal(member, Assert.Single(await _sut.GetAgencyMembers([agencyId, agencyId])));
+        Assert.Equal(member, Assert.Single(await _sut.GetUsersAgencies([_existing.Id])));
     }
 
     [Fact]
@@ -261,7 +286,7 @@ public class UserAdministrationServiceTest
     {
         var unknown = Guid.NewGuid();
 
-        Assert.False(await _sut.AddAgencyClaim(unknown, Guid.NewGuid()));
+        Assert.False(await _sut.UpdateAgencyClaims(unknown, [Guid.NewGuid()], []));
         Assert.False(await _sut.RemoveClaimOrDeleteUser(unknown, Guid.NewGuid()));
         Assert.False(await _sut.Deactivate(unknown));
         Assert.False(await _sut.ConfirmEmail(unknown, "token"));

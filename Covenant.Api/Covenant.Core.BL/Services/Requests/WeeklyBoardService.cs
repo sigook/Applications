@@ -5,7 +5,7 @@ using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Requests.Runners;
 using Covenant.Common.Models.Requests.WeeklyBoard;
-using Covenant.Common.Repositories.Agencies;
+using Covenant.Common.Repositories;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Core.BL.Interfaces.Requests;
 
@@ -14,14 +14,14 @@ namespace Covenant.Core.BL.Services.Requests;
 public class WeeklyBoardService(
     IRequestRepository requestRepository,
     IRunnerService runnerService,
-    IAgencyRepository agencyRepository,
+    IUserAccountService userAccountService,
+    IUserRepository userRepository,
     ICurrentUserService currentUserService,
     TimeProvider timeProvider) : IWeeklyBoardService
 {
     public async Task<WeeklyBoardModel> GetWeeklyBoard(WeeklyBoardFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var assignments = (await requestRepository.GetWeeklyBoardAssignments(agencyId, filter.From, filter.To)).ToList();
+        var assignments = (await requestRepository.GetWeeklyBoardAssignments(currentUserService.GetAgencyIds(), filter.From, filter.To)).ToList();
 
         var recruiters = assignments
             .GroupBy(a => new { a.RecruiterId, a.RecruiterName })
@@ -48,14 +48,13 @@ public class WeeklyBoardService(
 
     public async Task<RecruiterWeeklyBoardModel> GetRecruiterWeeklyBoard(WeeklyBoardFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var recruiter = await GetCurrentRecruiter(agencyId);
+        var recruiter = await GetCurrentRecruiter();
         var model = new RecruiterWeeklyBoardModel { WeekStart = filter.From.Date, WeekEnd = filter.To.Date };
         if (recruiter is null) return model;
 
-        model.RecruiterName = recruiter.Name;
+        model.RecruiterName = recruiter.Name ?? recruiter.Email;
 
-        var assignments = (await requestRepository.GetWeeklyBoardAssignmentsForRecruiter(agencyId, recruiter.Id, filter.From, filter.To)).ToList();
+        var assignments = (await requestRepository.GetWeeklyBoardAssignmentsForRecruiter(currentUserService.GetAgencyIds(), recruiter.Id, filter.From, filter.To)).ToList();
 
         model.Assignments = [.. assignments.OrderBy(a => a.WorkDate).ThenBy(a => a.NumberId)];
         model.OrdersCount = assignments.Select(a => a.RequestId).Distinct().Count();
@@ -72,11 +71,11 @@ public class WeeklyBoardService(
         if (request is null) return Result.Fail("Order not found");
 
         var recruiterIds = model.RecruiterIds.Distinct().ToList();
-        var personnel = await agencyRepository.GetPersonnels(recruiterIds);
-        if (personnel.Count != recruiterIds.Count) return Result.Fail("Recruiter not found");
+        var personnel = await GetAgencyStaffUserIds(recruiterIds, request.CompanyProfile.AgencyId);
+        if (personnel.Count != recruiterIds.Count) return Result.Fail("Recruiter not found in the order's agency");
 
         var now = timeProvider.GetLocalNow().DateTime;
-        foreach (var recruiter in personnel)
+        foreach (var recruiter in recruiterIds)
             foreach (var workDate in model.WorkDates.Select(d => d.Date).Distinct())
             {
                 Result result = request.AddRecruiter(recruiter, now, workDate);
@@ -108,8 +107,8 @@ public class WeeklyBoardService(
 
         if (model.FromRecruiterId != model.ToRecruiterId)
         {
-            var personnel = await agencyRepository.GetPersonnels([model.ToRecruiterId]);
-            if (personnel.Count == 0) return Result.Fail("Recruiter not found");
+            var personnel = await GetAgencyStaffUserIds([model.ToRecruiterId], request.CompanyProfile.AgencyId);
+            if (personnel.Count == 0) return Result.Fail("Recruiter not found in the order's agency");
         }
 
         Result result = request.MoveRecruiterAssignment(model.FromRecruiterId, model.FromWorkDate, model.ToRecruiterId, model.ToWorkDate, timeProvider.GetLocalNow().DateTime);
@@ -122,8 +121,7 @@ public class WeeklyBoardService(
 
     public async Task<Result> AddRunner(AddRunnerModel model)
     {
-        var agencyId = currentUserService.GetAgencyId();
-        var recruiter = await GetCurrentRecruiter(agencyId);
+        var recruiter = await GetCurrentRecruiter();
         if (recruiter is null) return Result.Fail("Recruiter not found");
 
         var assignment = await requestRepository.GetRequestRecruiter(model.RequestId, recruiter.Id, model.WorkDate);
@@ -138,7 +136,7 @@ public class WeeklyBoardService(
         var names = await requestRepository.GetWorkerProfileNames([model.WorkerProfileId]);
         if (names.TryGetValue(model.WorkerProfileId, out var name) && !string.IsNullOrWhiteSpace(name))
         {
-            var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name).Value;
+            var note = CovenantNote.Create($"{name} was sent", CovenantNote.RedColor, recruiter.Name ?? recruiter.Email).Value;
             await requestRepository.CreateRange([new RequestNote(model.RequestId, note)]);
             await requestRepository.SaveChangesAsync();
         }
@@ -146,7 +144,8 @@ public class WeeklyBoardService(
         return Result.Ok();
     }
 
-    private async Task<AgencyPersonnel> GetCurrentRecruiter(Guid agencyId) =>
-        (await agencyRepository.GetPersonnelByUserId(currentUserService.GetUserId()))
-            .FirstOrDefault(p => p.AgencyId == agencyId);
+    private Task<User> GetCurrentRecruiter() => userRepository.GetUserById(currentUserService.GetUserId());
+
+    private async Task<List<Guid>> GetAgencyStaffUserIds(IEnumerable<Guid> userIds, Guid agencyId) =>
+        [.. (await userAccountService.GetUsersAgencies(userIds)).Where(m => m.AgencyId == agencyId).Select(m => m.UserId).Distinct()];
 }

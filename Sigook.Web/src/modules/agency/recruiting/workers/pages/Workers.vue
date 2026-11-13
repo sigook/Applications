@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadWorkers" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/recruiting/workers/File', fileName: 'Workers' }" focusable
         @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total" @cellclick="onCellClick">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/recruiting/workers/register" icon-left="plus">Create</b-button>
         </template>
@@ -33,6 +36,7 @@
           </template>
           <template v-slot="props">
             <span class="is-block">
+              <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
               <router-link :to="{ path: '/recruiting/workers/' + props.row.id }">
                 {{ props.row.fullName }}
               </router-link>
@@ -93,9 +97,9 @@
               <b-tag v-for="(skill, index) in props.row.skills.slice(0, 3)" :key="`${skill}_${index}`" rounded>
                 {{ skill }}
               </b-tag>
-              <b-tooltip v-if="props.row.skills.length > 3" :label="props.row.skills.join(', ')" type="is-dark" multilined append-to-body>
+              <HoverTooltip v-if="props.row.skills.length> 3" :label="props.row.skills.join(', ')" type="is-dark" multilined append-to-body>
                 <b-tag rounded type="is-info is-light" class="see-more">See more...</b-tag>
-              </b-tooltip>
+              </HoverTooltip>
             </div>
           </template>
         </b-table-column>
@@ -115,10 +119,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="router.push(`/recruiting/workers/${props.row.id}`)">
               Edit
             </b-dropdown-item>
@@ -128,13 +129,15 @@
             <b-dropdown-item aria-role="listitem" v-if="props.row.approvedToWork" @click="confirmDelete(props.row)">
               Reject to work
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
@@ -146,6 +149,8 @@ import { formatPhone } from '@/shared/utils/phoneFormat';
 import { getAgencyWorkers, updateApprovedToWork } from '@/modules/agency/recruiting/workers/api';
 import { dateMonth } from '@/shared/format';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';

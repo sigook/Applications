@@ -1,12 +1,12 @@
 import { api } from '@/app/security/apiService';
-import type { ChangeEmailRequest, GetEmailResponse } from '@/shared/types/security';
+import type { ChangeEmailRequest, AccountResponse } from '@/shared/types/security';
 
 export function changeEmail(model: ChangeEmailRequest): Promise<void> {
   return api.post('/api/account/ChangeEmail', model);
 }
 
-export function getEmail(): Promise<GetEmailResponse> {
-  return api.get<GetEmailResponse>('/api/account/GetEmail');
+export function getAccount(): Promise<AccountResponse> {
+  return api.get<AccountResponse>('/api/account');
 }
 
 export function deactivateAccount(): Promise<void> {

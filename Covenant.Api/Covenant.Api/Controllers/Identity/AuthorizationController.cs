@@ -220,7 +220,11 @@ public class AuthorizationController(
             .SetClaim(Claims.EmailVerified, user.EmailConfirmed)
             .SetClaim(IdentityClaims.Nickname, nickname ?? user.Email)
             .SetClaim(IdentityClaims.IdentityProvider, identityProvider ?? IdentityClaims.LocalIdentityProvider)
-            .SetClaims(Claims.Role, [.. await userManager.GetRolesAsync(user)]);
+            .SetClaims(Claims.Role, [.. await userManager.GetRolesAsync(user)])
+            .SetClaims(CovenantConstants.AgencyId, [.. (await userManager.GetClaimsAsync(user))
+                .Where(c => c.Type == CovenantConstants.AgencyId)
+                .Select(c => c.Value)
+                .Distinct()]);
 
         identity.SetScopes(scopes);
         identity.SetResources(await scopeManager.ListResourcesAsync(identity.GetScopes()).ToListAsync());

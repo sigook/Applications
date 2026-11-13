@@ -1,9 +1,9 @@
 <template>
-  <div>
+  <div class="company-profile-page">
     <b-loading v-model="isLoading"></b-loading>
 
     <detail-header v-if="companyProfile" :title="lowercase(companyProfile.fullName)" :number-id="companyProfile.numberId"
-      :meta="industry" :logo="companyProfile.logo?.pathFile" :kpis="kpis">
+      :meta="industry" :logo="companyProfile.logo?.pathFile" :kpis="kpis" :header-hidden="!isCompanyTab">
       <b-tabs v-model="currentTab" @update:modelValue="changeTab">
         <b-tab-item label="Profile" value="Profile">
           <company-profile-tab v-if="visitedTabs.includes('Profile')" v-model:company="companyProfile"
@@ -22,14 +22,12 @@
           </template>
           <profile-contact v-if="visitedTabs.includes('Contacts')" @loaded="onContactsLoaded" />
         </b-tab-item>
-        <b-tab-item label="Users" value="CompanyUsers">
-          <company-users v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile" />
-        </b-tab-item>
-        <b-tab-item label="Account security" value="AccountSecurity">
-          <account-security v-if="visitedTabs.includes('AccountSecurity')" :company-data="companyProfile" />
-        </b-tab-item>
-        <b-tab-item label="Notifications" value="UserNotification">
-          <user-notification v-if="visitedTabs.includes('UserNotification')" />
+        <b-tab-item label="Users" value="CompanyUsers" header-class="settings-tab-group">
+          <template #header>
+            Users<span v-if="usersCount !== undefined" class="detail-tab-count">{{ usersCount }}</span>
+          </template>
+          <company-users v-if="visitedTabs.includes('CompanyUsers')" :company-data="companyProfile"
+            @loaded="usersCount = $event" />
         </b-tab-item>
       </b-tabs>
     </detail-header>
@@ -40,7 +38,7 @@
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError } from '@/shared/utils/toast';
-import { getCompanyProfile } from '@/modules/company/profile/api';
+import { getCompanyProfile, getCompanyUser } from '@/modules/company/profile/api';
 import { lowercase } from '@/shared/format';
 import { useCompanyDetail } from '@/shared/company-profile/useCompanyDetail';
 import type { CompanyProfileDetail } from '@/shared/company-profile/types';
@@ -49,11 +47,10 @@ import DetailHeader from '@/shared/detail-page/DetailHeader.vue';
 import CompanyProfileTab from '@/modules/company/profile/components/CompanyProfileTab.vue';
 import ProfileLocation from '@/modules/company/profile/components/ProfileLocation.vue';
 import ProfileContact from '@/modules/company/profile/components/ProfileContact.vue';
-import AccountSecurity from '@/shared/company-profile/ProfileAccountInformation.vue';
-import UserNotification from '@/app/layout/UserNotification.vue';
 import CompanyUsers from '@/modules/company/profile/components/CompanyUsers.vue';
 
-const tabs = ['Profile', 'Locations', 'Contacts', 'CompanyUsers', 'AccountSecurity', 'UserNotification'];
+const tabs = ['Profile', 'Locations', 'Contacts', 'CompanyUsers'];
+const companyTabs = ['Profile', 'Locations', 'Contacts'];
 
 const route = useRoute();
 const router = useRouter();
@@ -64,11 +61,13 @@ const contactsCount = ref<number>();
 const locationsCount = ref<number>();
 const locationsVersion = ref(0);
 const contactsVersion = ref(0);
+const usersCount = ref<number>();
 const { industry, createdAt } = useCompanyDetail(companyProfile);
 
 const initialTab = typeof route.query.tab === 'string' && tabs.includes(route.query.tab) ? route.query.tab : 'Profile';
 const currentTab = ref<string>(initialTab);
 const visitedTabs = ref<string[]>(['Profile', initialTab]);
+const isCompanyTab = computed(() => companyTabs.includes(currentTab.value));
 
 const kpis = computed<DetailKpi[]>(() => [
   ...(locationsCount.value !== undefined ? [{ key: 'locations', label: 'Locations', value: String(locationsCount.value) }] : []),
@@ -106,4 +105,34 @@ async function onGetProfile() {
 }
 
 void onGetProfile();
+void (async () => {
+  try {
+    usersCount.value = (await getCompanyUser()).length;
+  } catch (error) {
+    showAlertError(error);
+  }
+})();
 </script>
+
+<style lang="scss" scoped>
+@import '@/assets/scss/variables';
+
+.company-profile-page :deep(.tabs li.settings-tab-group) {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  padding-left: 14px;
+  border-left: 1px solid $gray-border;
+
+  &::before {
+    content: 'Settings';
+    padding-right: 4px;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: $grey-font;
+  }
+}
+</style>

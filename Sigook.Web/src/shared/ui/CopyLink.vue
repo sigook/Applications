@@ -3,16 +3,17 @@
     <a :href="`${KIND[kind].scheme}:${value}`" class="copy-link-text" @click.stop>
       <b-icon v-if="icon" :icon="KIND[kind].icon" size="is-small" />{{ value }}<template v-if="ext"> Ext. {{ ext }}</template>
     </a>
-    <b-tooltip :label="copied ? 'Copied' : KIND[kind].copyLabel" type="is-dark" append-to-body>
+    <HoverTooltip :label="copied ? 'Copied' : KIND[kind].copyLabel">
       <button type="button" class="copy-link-copy" :aria-label="`Copy ${value}`" @click.stop.prevent="copy">
         <b-icon :icon="copied ? 'check' : 'content-copy'" size="is-small" />
       </button>
-    </b-tooltip>
+    </HoverTooltip>
   </span>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { showAlertError } from '@/shared/utils/toast';
 import type { CopyLinkKind } from '@/shared/types/common';
 

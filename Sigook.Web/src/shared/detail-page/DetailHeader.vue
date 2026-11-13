@@ -1,9 +1,9 @@
 <template>
-  <div class="detail-page">
+  <div class="detail-page" :class="{ 'is-header-hidden': headerHidden }">
     <p v-if="$slots.alert" class="detail-alert">
       <slot name="alert" />
     </p>
-    <section class="detail-header">
+    <section v-if="!headerHidden" class="detail-header">
       <div class="detail-header-top">
         <router-link v-if="orgLink" :to="orgLink" class="detail-header-logo" :aria-label="orgName">
           <img v-if="logo && !logoFailed" :src="logo" alt="" @error="logoFailed = true" />
@@ -21,19 +21,34 @@
         </span>
         <div class="detail-header-main">
           <div class="detail-header-title-row">
-            <h1 class="detail-header-title">{{ title }}</h1>
-            <span v-if="statusLabel" class="detail-chip" :class="statusVariant">{{ statusLabel }}</span>
-            <span v-for="chip in chips" :key="chip.label" class="detail-chip" :class="chip.variant">{{ chip.label }}</span>
+            <h1 class="detail-header-title" :title="title">{{ title }}</h1>
+            <span v-if="statusLabel || chips?.length" class="detail-header-chips">
+              <span v-if="statusLabel" class="detail-chip" :class="statusVariant">{{ statusLabel }}</span>
+              <template v-for="chip in chips" :key="chip.label">
+                <b-tooltip v-if="chip.icon" :label="chip.label" position="is-top" type="is-dark">
+                  <span class="detail-chip is-icon" :class="chip.variant" tabindex="0" :aria-label="chip.label">
+                    <b-icon :icon="chip.icon" size="is-small"></b-icon>
+                  </span>
+                </b-tooltip>
+                <span v-else class="detail-chip" :class="chip.variant">{{ chip.label }}</span>
+              </template>
+            </span>
           </div>
-          <span v-if="numberId !== undefined || meta || orgName" class="detail-header-meta">
-            <template v-if="numberId !== undefined">#{{ numberId }}</template>
-            <template v-if="meta"><template v-if="numberId !== undefined"> · </template>{{ meta }}</template>
+          <div v-if="numberId !== undefined || meta || orgName || metaChips?.length" class="detail-header-meta">
+            <span v-if="numberId !== undefined || meta">
+              <template v-if="numberId !== undefined">#{{ numberId }}</template>
+              <template v-if="meta"><template v-if="numberId !== undefined"> · </template>{{ meta }}</template>
+            </span>
             <template v-if="orgName">
-              ·
-              <router-link v-if="orgLink" :to="orgLink">{{ orgName }}</router-link>
-              <span v-else>{{ orgName }}</span>
+              <router-link v-if="orgLink" :to="orgLink" class="detail-header-org">
+                <b-icon icon="domain" size="is-small"></b-icon>{{ orgName }}
+              </router-link>
+              <span v-else class="detail-header-org">{{ orgName }}</span>
             </template>
-          </span>
+            <span v-for="chip in metaChips" :key="chip.label" class="detail-chip is-meta" :class="chip.variant">
+              <b-icon v-if="chip.icon" :icon="chip.icon" size="is-small"></b-icon>{{ chip.label }}
+            </span>
+          </div>
 
           <slot name="subtitle" />
         </div>
@@ -69,9 +84,11 @@ const { orgName, title } = defineProps<{
   logo?: string | null;
   logoIcon?: string;
   logoEditable?: boolean;
+  headerHidden?: boolean;
   statusLabel?: string;
   statusVariant?: DetailChipVariant;
   chips?: DetailChip[];
+  metaChips?: DetailChip[];
   kpis: DetailKpi[];
 }>();
 
@@ -171,18 +188,27 @@ const initials = computed(() =>
 
 .detail-header-title-row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
   gap: 6px 10px;
+  min-width: 0;
+
+  @include mobile {
+    flex-wrap: wrap;
+  }
 }
 
 .detail-header-title {
+  flex: 0 1 auto;
+  min-width: 0;
   margin: 0;
+  overflow: hidden;
   font-size: 24px;
   font-weight: 700;
   line-height: 1.25;
   color: $navy;
+  text-overflow: ellipsis;
   text-transform: capitalize;
+  white-space: nowrap;
 
   @include compact-desktop {
     font-size: 22px;
@@ -191,16 +217,34 @@ const initials = computed(() =>
   @include mobile {
     flex-basis: 100%;
     font-size: 21px;
+    white-space: normal;
   }
 }
 
+.detail-header-chips {
+  display: inline-flex;
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
 .detail-header-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
   font-size: 15px;
   color: $grey-font;
+}
 
-  a {
-    color: $blue;
-  }
+.detail-header-org {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  color: $blue;
+  white-space: nowrap;
 }
 
 .detail-chip {
@@ -212,6 +256,26 @@ const initials = computed(() =>
   font-weight: 600;
   background: $gray-bg;
   color: $grey-font;
+  white-space: nowrap;
+
+  &.is-icon {
+    justify-content: center;
+    width: 32px;
+    height: 28px;
+    padding: 0;
+    cursor: default;
+
+    &:focus-visible {
+      outline: 2px solid $blue;
+      outline-offset: 2px;
+    }
+  }
+
+  &.is-meta {
+    gap: 4px;
+    padding: 2px 10px;
+    font-size: 13px;
+  }
 
   &.is-success {
     background: rgba($green, 0.18);
@@ -280,6 +344,12 @@ const initials = computed(() =>
     background: $gray-bg;
     font-size: 13px;
     color: $grey-font;
+  }
+}
+
+.is-header-hidden > .detail-body {
+  :deep(> .b-tabs > .tabs) {
+    border-radius: 12px;
   }
 }
 

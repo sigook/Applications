@@ -40,7 +40,7 @@ Sigook.Web/
 | `router/index.ts` | Creates the router from `modules/{agency,company,worker,landing}/routes.ts`; auth guard (`requiresAuth` + `meta.role` groups → `/login?returnUrl=` or `/unauthorized`), scroll behavior, canonical link, page titles; owns `/login`, `/forgot-password`, `/confirm-email`, `/create-password`, `/callback`, `/silent-refresh`, `/unauthorized`, `/email-preferences` and the 404 |
 | `security/` | `apiService.ts` (axios instance + the `api` wrapper every `api.ts` uses), `securityService.ts` (oidc-client-ts, password grant, Microsoft 365), `roles.ts` (7 roles + route groups), `menu.ts` (`getMenu(userRoles, agency)` builds the sidebar), `authErrors.ts`, `authApi.ts` (token/userinfo/password endpoints) |
 | `stores/` | `index.ts` (pinia + persistedstate), `app.ts` (`isMobile`, `currentDate`), `security.ts` (`user`, `userRoles`, sign-in/out). Portal stores live in `modules/<portal>/store.ts` |
-| `layout/` | `SidebarLogged.vue` (sidebar + mobile topbar, user menu, staff clock-in button, notifications bell; for workers a red badge with the number of missing approval requirements on the avatar, on "Edit Profile" and on the mobile burger), `UserNotification.vue` |
+| `layout/` | `SidebarLogged.vue` (sidebar + mobile topbar, user menu, staff clock-in button, notifications bell; for workers a red badge with the number of missing approval requirements on the avatar, on "Edit Profile" and on the mobile burger) |
 | `pages/` | `Callback`, `SilentRefresh`, `Unauthorized`, `NotFound`, `EmailPreferences`, `auth/{Login,ForgotPassword,ConfirmEmail,CreatePassword}` |
 
 `app/` may import from `modules/*` (it composes them). Nothing else may.
@@ -51,12 +51,12 @@ Sigook.Web/
 
 | Folder | Contents |
 |--------|----------|
-| `ui/` | SigookGrid (the only `b-table` wrapper), PageHeader, Breadcrumbs (+ `breadcrumbs.ts`), PhoneInput, Address, ProvinceSettingsModal, PreviewImage, CropImage, DefaultImage (globally registered in `main.ts`), SearchSelect, Export, FormSkillAdd, EditTextarea, EyebrowPill, MobileFiltersPanel, SheetPanel |
+| `ui/` | SigookGrid (the only `b-table` wrapper), HoverTooltip, RowActionsDropdown, PageHeader, Breadcrumbs (+ `breadcrumbs.ts`), PhoneInput, Address, ProvinceSettingsModal, PreviewImage, CropImage, DefaultImage (globally registered in `main.ts`), SearchSelect, Export, FormSkillAdd, EditTextarea, EyebrowPill, MobileFiltersPanel, SheetPanel |
 | `detail-page/` | DetailHeader, DetailKpis (also used by WorkerProfileHeader), DetailLayout, DetailCard, DetailFields + `types.ts` — frame of the request and company detail pages |
 | `request-detail/` | RequestHeader, RequestDetailTab, RequestStaffingCard, RequestLocationCard, ShiftDetail, AgencyShiftDetail, ShiftsForm (weekly shift editor), CompanyCancelList, `useRequestStatus`, `requestDetail.ts` (KPI builders, maps helpers), `types.ts` (request detail, `RequestComplianceItem`, `CreateAgencyRequestModel`, `RequestShiftModel`), `requestApplicant.ts` |
 | `worker-profile/` | `cards/` (WorkerProfileHeader, ProfileCard, PersonalCard, ContactCard, DocumentsCard, PreferencesCard, SkillsCard, ExperienceCard, CommentsCard, ProfileIndex, NeedsAttention), `forms/` (the `Work*Form` modals, WorkImageDetail, WorkEmailForm, DialogWorkerComment), `useWorkerProfileStatus`, `api.ts` (profile section endpoints), `types.ts`. Used by the agency worker detail and the worker's own profile |
 | `punch-card/` | CalendarPunchCard, DataEntryTerms, `distributeHours`, `timeSheetApprove`, `directHiring`, `types.ts` (TimeSheetModel, PunchCard*) |
-| `company-profile/` | CompanyLocationsCard, CompanyMainContactCard, LocationForm, JobPositionForm (`kind` `full` = with rates for agency admins, `basic` = name/description/shift for companies and non-admins; receives `create`/`update`/`load`), CompanyCreateUserModal, ProfileAccountInformation, `useCompanyDetail`, `types.ts` (CompanyProfileDetail, CompanyUserModel, …) |
+| `company-profile/` | CompanyLocationsCard, CompanyMainContactCard, LocationForm, JobPositionForm (`kind` `full` = with rates for agency admins, `basic` = name/description/shift for companies and non-admins; receives `create`/`update`/`load`), CompanyUserModal (create/edit; email editable on create or with `email-editable`, passed by the agency Users grid and the company Users grid), `useCompanyDetail`, `types.ts` (CompanyProfileDetail, CompanyUserModel, …) |
 | `api/` | `catalogApi`, `locationApi`, `accountApi`, `userNotificationApi`, `sharedApi`, `reportApi` (`downloadAgencyReport`, the generic Excel download used by SigookGrid) |
 | `composables/` | useAdmin, useRecruitingAccess, useSalesAccess, useSuperAdmin, useBreakpoint, useBodyScrollLock, useFocusTrap, useGoBack, useStickyForm, usePubSub, useDropdownReveal, useElementSize, useSwipe |
 | `utils/` | toast, downloadFile, compressFile, fileNaming, fileValidation, multipart, validation, phoneFormat, locationLabel, buefyProgrammatic |
@@ -64,7 +64,7 @@ Sigook.Web/
 | `constants/` | `enums.ts` (RequestStatus, ClockType, CompanyStatus, …), `catalog.ts` |
 | `types/` | `common.ts` (PaginatedList, catalogs, CovenantFileModel, GridHandle, …), `security.ts`, `invoice.ts` (InvoiceSummaryModel shared by agency and company) |
 
-Shared components never import from a module. When behaviour differs per portal they receive it as a prop: `CompanyCreateUserModal :save`, `LocationForm :save`, `CommentsCard :create-comment`, `PersonalCard :update-email`.
+Shared components never import from a module. When behaviour differs per portal they receive it as a prop: `CompanyUserModal :save`, `LocationForm :save`, `CommentsCard :create-comment`, `PersonalCard :update-email`.
 
 ---
 
@@ -77,11 +77,11 @@ Every portal has `routes.ts` (its `RouteRecordRaw[]`) and `store.ts` (its Pinia 
 | Folder | Routes | Contents |
 |--------|--------|----------|
 | `shared/` | — | Cross-menu pieces: `notes/` (ModalNotes, NotesPopover, NoteForm, ColorPicker, `api.ts`, `types.ts`), `notifications/` (bell payload: `api.ts`, `types.ts`, `useNotifications`), `request-groups/` (the shell of the boards grouped by request: RequestGroup = collapsible header with number · client · job, meta, DH/ASAP, Starts and the fill chip; RequestGroupFilters; RequestGroupsToolbar = Assigned to me + expand/collapse + export; BulkSelectionBar + `bulkReport.ts`; RequestGroupsPagination; `types.ts`), `useModuleBase` (`/sales` vs `/recruiting` prefix), `useSalesOwners`, AgencyRequests, AgencyWorkers(+List) |
-| `profile/` | `/agency-profile` | AgencyProfile page; ProfileBusiness/Billing/Contact, AgencyPersonnel(+Modal), Attendance{ClockButton,EditModal,ReportModal}, `attendance.ts`; `api.ts` (profile, personnel, locations, attendance), `types.ts` (AgencyDetail, personnel, attendance) |
+| `profile/` | `/agency-profile` | AgencyProfile page on `shared/detail-page/` (DetailHeader with "Switch agency" dropdown `?agencyId=` when the user has several agencies + Locations/Contacts KPIs; agency tabs Profile · Locations · Contacts; then "All agencies · Users" with its own `AgencyFilter`, where the header is hidden; agency users have no Security/Notifications tabs — email changes go through the Users grid); AgencyProfileTab (Business card + Edit modal, rail Locations/Main contact), ProfileBusiness/Billing(=Locations)/Contact, AgencyPersonnel(+Modal), Attendance{ClockButton,EditModal,ReportModal}, `attendance.ts`; `api.ts` (profile, personnel, locations, attendance), `types.ts` (AgencyDetail, personnel, attendance) |
 | `recruiting/requests/` | `/recruiting/requests[/create/:companyProfileId \| /update/… \| /duplicate/… \| /:id]` and the same under `/sales/requests` | Requests, Request, CreateRequest (create/update/duplicate share it; it loads `GET …/requests/lookup` in-page under the full-page `b-loading`, no route resolver); TableRequests, Applicants, ManageApplicantsModal, Runners, punch-card container (expanded from the Workers tab rows; the Workers tab is the only worker/punch-card grid and hides hours, punch card and timesheet export on Direct Hiring), ReportTo, RequestedBy, RequestNotes, Skills, Shift*, JobBoardsModal, …; `runners/` (CreateRunner, RunnerActions*, Runner*Modal, `useRunnerActions`, `api.ts`, `types.ts`); `api.ts`, `timeSheetApi.ts`, `types.ts` |
 | `recruiting/applicants/` | `/recruiting/applicants` | Applicants board (built on `shared/request-groups`), ApplicantCompliance*, RequestComplianceModal, `useApplicantStatusActions`, `compliance.ts`, `types.ts` |
 | `recruiting/runners/` | `/recruiting/runners` | Runners board (same shell as applicants), RunnersGrid (the grid of the board and of the request's Runners tab), RunnerDetailPanel (history + interviews, detail row of the grid and body of RunnerHistoryModal), BulkRunnerStatusModal, `api.ts`, `types.ts` |
-| `recruiting/weekly-board/` | `/recruiting/weekly-board` | WeeklyBoard (admin + recruiter views), AssignRecruiterModal, `api.ts`, `types.ts` |
+| `recruiting/weekly-board/` | `/recruiting/weekly-board` | WeeklyBoard (admin + recruiter views, both with `AgencyFilter` → `?agencyIds=`), AssignRecruiterModal (recruiters limited to the selected request's agency; the API rejects assigning or moving to a recruiter outside it), `api.ts`, `types.ts` |
 | `recruiting/candidates/` | `/recruiting/candidates` | Candidates, CreateCandidate, DetailCandidate, documents modals, BulkData, `api.ts`, `types.ts` |
 | `recruiting/workers/` | `/recruiting/workers[/register \| /:id]` | Workers, WorkerDetail; agency-only cards (Notes, TimeSheetHistory, WorkWageHistory, WorkerSettings), request history; `workerFeatures.ts`, `workerStatus.ts`, `api.ts`, `types.ts`. `/register` mounts `modules/worker/register` |
 | `recruiting/clients/` | `/recruiting/companies[/create \| /update/:companyProfileId \| /:id]` and the same under `/sales/companies` | Clients, CreateClient, ClientDetail; company detail cards (CompanyDetailTab, Info/Documents/Invoicing/Settings/Notes cards, CompanyLocationsGrid), contacts, job positions, users, documents, logo; `api.ts`, `types.ts` |
@@ -93,7 +93,7 @@ Every portal has `routes.ts` (its `RouteRecordRaw[]`) and `store.ts` (its Pinia 
 | `accounting/paystubs/` | `/accounting/paystubs[/create]` | PayStubs, CreatePayStub, GeneratePayStubs, SkipPayrollNumber, SubcontractorsReport, `api.ts`, `types.ts` |
 | `accounting/reports/` | `/accounting/reports` | Reports, T4, CRAPayroll, HoursWorkedReport, PaymentReport, TimesheetsReport, `api.ts`, `types.ts` |
 
-Sidebar (`app/security/menu.ts`): Recruiting {Requests, Weekly Board, Applicants, Runners, Candidates, Workers, Clients}, Sales {Dashboard, Clients, Agencies (master agency admins)}, Accounting {Invoices, Reports, Pay Stubs (non-USA)}. Admin/superadmin see all three; recruiting and sales only theirs. Default home: superadmin/admin → `/recruiting/requests`, recruiting → `/recruiting/weekly-board`, sales → `/sales/requests`. `/agency-*` legacy paths redirect.
+Sidebar (`app/security/menu.ts`): Recruiting {Requests, Weekly Board, Applicants, Runners, Candidates, Workers, Clients}, Sales {Dashboard, Clients, Agencies (master agency admins)}, Accounting {Invoices, Reports, Pay Stubs}. Admin/superadmin see all three; recruiting and sales only theirs. Default home: superadmin/admin → `/recruiting/requests`, recruiting → `/recruiting/weekly-board`, sales → `/sales/requests`. `/agency-*` legacy paths redirect.
 
 ### modules/company/
 
@@ -101,7 +101,7 @@ Sidebar (`app/security/menu.ts`): Recruiting {Requests, Weekly Board, Applicants
 |--------|--------|----------|
 | `requests/` | `/company-requests[/create \| /:id]` | Requests, Request (shared `request-detail/` header + Detail tab and a Workers tab whose rows expand into the punch card; Direct Hiring shows no hours, punch card or timesheet export), CreateRequest; CompanyRequestWorkers, punch card + timesheet components, DialogRequestWorker, `usePunchCardCalendar`; `api.ts`, `types.ts` |
 | `invoices/` | `/company-invoices` | Invoices page, CompanyInvoices grid, `api.ts`, `types.ts` |
-| `profile/` | `/company-profile`, `/company-user-profile` | CompanyProfile (tabs Profile, Locations, Contacts, Users, Account security, Notifications), CompanyUserProfile; CompanyProfileTab, CompanyUsers(+Update), ProfileBusiness/Contact/Location; `api.ts`, `types.ts` |
+| `profile/` | `/company-profile`, `/company-user-profile` | CompanyProfile (tabs Profile, Locations, Contacts + Settings group: Users; header hidden on Users; no notifications and no self-service email change: the agency or a company admin changes a user's email from the Users grid), CompanyUserProfile (DetailHeader + read-only Personal card with Edit modal); CompanyProfileTab, CompanyUsers(+Update), ProfileBusiness/Contact/Location; `api.ts`, `types.ts` |
 
 ### modules/worker/
 
@@ -138,7 +138,7 @@ Component styles are `<style scoped>`; the few feature partials that are importe
 - **One `api.ts` per feature**, plain functions over the `api` wrapper; never merge them per portal. Endpoints in `SIGOOK_WEB_API_MAP.md`.
 - **`types.ts` per feature**; `shared/types/common.ts` only for transversal shapes.
 - **No API data caching in Pinia** — stores keep list filters and auth only.
-- **Grids:** every table is a `shared/ui/SigookGrid` (server mode with `:fetch` + `v-model:params`, client mode with `:data`; toolbar, Excel export through `downloadAgencyReport`, `#mobile-card` on touch). No page uses `b-table` directly.
+- **Grids:** every table is a `shared/ui/SigookGrid` (server mode with `:fetch` + `v-model:params`, client mode with `:data`; toolbar, Excel export through `downloadAgencyReport`, `#mobile-card` on touch). No page uses `b-table` directly. Row cells never mount `b-tooltip`/`b-dropdown` with `append-to-body`: each one creates a body node, forces a layout read and registers a `ResizeObserver` and document listeners on mount (90 rows took ~27 s). Use `shared/ui/HoverTooltip` (renders the tooltip only on hover/focus) and `shared/ui/RowActionsDropdown` (mounts the `b-dropdown` on first click; default `⋮` trigger, `#trigger` slot to override).
 - **Forms:** VeeValidate 4 + Yup; toasts via `shared/utils/toast`.
 - **Reusable components take function props** (the API function is passed in) instead of importing a portal's API.
 - **Environment:** `import.meta.env.VUE_APP_*` (`VUE_APP_URL_API`, `VUE_APP_SECURITY_SERVER`, `VUE_APP_CLIENT`, `VUE_APP_RE_CAPTCHA_SITE_KEY`, `VUE_APP_MAXIMUM_HOURS_DAY`).

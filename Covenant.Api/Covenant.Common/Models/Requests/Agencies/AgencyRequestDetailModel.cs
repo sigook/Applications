@@ -6,6 +6,7 @@ namespace Covenant.Common.Models.Requests.Agencies;
 public class AgencyRequestDetailModel
 {
     public Guid Id { get; set; }
+    public Guid AgencyId { get; set; }
     public int NumberId { get; set; }
     public string JobTitle { get; set; }
     public string BillingTitle { get; set; }

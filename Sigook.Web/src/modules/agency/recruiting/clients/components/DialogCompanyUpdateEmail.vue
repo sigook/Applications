@@ -3,9 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <b-message type="is-warning" has-icon>
-      Please note that if you change this email the worker will
+      Please note that if you change this email the user will
       not be able to login with the previous email anymore,
-      if necessary notify the worker about the change.
+      if necessary notify the user about the change.
     </b-message>
 
     <div class="columns is-multiline">
@@ -39,9 +39,8 @@ import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError } from "@/shared/utils/toast";
-import { updateAgencyCompanyEmail } from '@/modules/agency/recruiting/clients/api';
 
-const { companyProfileId } = defineProps<{ companyProfileId: number | string }>();
+const { save } = defineProps<{ save: (email: string) => Promise<void> }>();
 const emit = defineEmits<(e: 'closeModal', changed: boolean, newEmail: string) => void>();
 
 const schema = yup.object({
@@ -73,7 +72,7 @@ function validateAll() {
 async function updateEmail(email: string) {
   isLoading.value = true;
   try {
-    await updateAgencyCompanyEmail(String(companyProfileId), { newEmail: email });
+    await save(email);
     isLoading.value = false;
     emit('closeModal', true, email);
   } catch (error) {

@@ -5,7 +5,7 @@
     <div v-if="!fileError">
       <b-field label="Agency">
         <b-select v-model="agencySelected" expanded>
-          <option v-for="agency in agencies" :key="agency.agencyId" :value="agency.agencyId">{{ agency.name }}
+          <option v-for="agency in agencies" :key="agency.id" :value="agency.id">{{ agency.name }}
           </option>
         </b-select>
       </b-field>
@@ -54,7 +54,7 @@ const bulkFile = ref<File | null>(null);
 const agencySelected = ref<string | null>(null);
 const fileError = ref<Blob | null>(null);
 
-const agencies = computed(() => agencyStore.personnelAgencies);
+const agencies = computed(() => agencyStore.agencies);
 
 async function bulkUpload() {
   if (!agencySelected.value || !bulkFile.value) return;
