@@ -12,20 +12,20 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import ClientForm from '@/modules/agency/sales/dashboard/components/ClientForm.vue';
 
-defineProps<{ modelValue: boolean }>();
+const { modelValue } = defineProps<{ modelValue: boolean }>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
   (e: 'saved'): void;
 }>();
 
-const formRef = ref<InstanceType<typeof ClientForm> | null>(null);
+const formRef = useTemplateRef<InstanceType<typeof ClientForm>>('formRef');
 const isSaving = ref(false);
 
-const close = (): void => emit('update:modelValue', false);
+const close = (): void => { emit('update:modelValue', false); };
 
 async function onSave(): Promise<void> {
   if (!formRef.value) return;

@@ -4,15 +4,15 @@
       <b-button type="is-ghost" size="is-small" class="profile-link" @click="isModalOpen = true">Edit</b-button>
     </template>
 
-    <div v-if="props.worker.skills.length" class="profile-tags">
-      <span v-for="(item, index) in props.worker.skills" :key="item.id ?? index" class="profile-tag is-outlined">
+    <div v-if="worker.skills.length" class="profile-tags">
+      <span v-for="(item, index) in worker.skills" :key="item.id ?? index" class="profile-tag is-outlined">
         {{ item.skill }}
       </span>
     </div>
     <p v-else class="profile-empty">No skills added</p>
 
     <b-modal custom-content-class="card" v-model="isModalOpen" width="500px">
-      <skills-form :data="props.worker" @closeModal="onSaved" />
+      <skills-form :data="worker" @closeModal="onSaved" />
     </b-modal>
   </profile-card>
 </template>
@@ -23,8 +23,8 @@ import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import ProfileCard from '@/shared/worker-profile/cards/ProfileCard.vue';
 import SkillsForm from '@/shared/worker-profile/forms/WorkSkillsForm.vue';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'updateProfile'): void }>();
+const { worker } = defineProps<{ worker: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'updateProfile') => void>();
 
 const isModalOpen = ref(false);
 

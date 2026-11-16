@@ -13,9 +13,12 @@
         {{ props.row.isBilling ? 'Yes' : 'No' }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-button type="is-ghost" icon-left="pencil" aria-label="Edit location" @click="editLocation(props.row)" />
-        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete location"
-          @click="deleteLocation(props.row.id)" />
+        <div class="buttons is-flex-wrap-nowrap">
+          <b-button type="is-info" outlined rounded icon-right="pencil" title="Edit" aria-label="Edit location"
+            @click="editLocation(props.row)" />
+          <b-button type="is-danger" outlined rounded icon-right="delete" aria-label="Delete location"
+            @click="deleteLocation(props.row.id)" />
+        </div>
       </b-table-column>
     </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal" width="500px">
@@ -38,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import AddressComponent from "@/shared/ui/Address.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
@@ -46,7 +49,7 @@ import { formatLocation, matchesLocation } from '@/shared/request-detail/request
 import type { CompanyProfileLocationDetail } from '@/shared/company-profile/types';
 import { getProfileLocations, createProfileLocation, updateProfileLocation, deleteProfileLocation } from '@/modules/company/profile/api';
 
-const emit = defineEmits<{ (e: 'loaded', count: number): void }>();
+const emit = defineEmits<(e: 'loaded', count: number) => void>();
 
 function newLocation(): CompanyProfileLocationDetail {
   return {
@@ -55,8 +58,8 @@ function newLocation(): CompanyProfileLocationDetail {
     isBilling: false,
     latitude: null,
     longitude: null,
-    entrance: null,
-    mainIntersection: null,
+    entrance: '',
+    mainIntersection: '',
   };
 }
 
@@ -64,7 +67,7 @@ const locations = ref<CompanyProfileLocationDetail[]>([]);
 const isLoading = ref(false);
 const showModal = ref(false);
 const locationBeingUpdate = ref<CompanyProfileLocationDetail>(newLocation());
-const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const addressComponent = useTemplateRef<InstanceType<typeof AddressComponent>>('addressComponent');
 
 function addLocation() {
   locationBeingUpdate.value = newLocation();
@@ -81,70 +84,69 @@ function closeModal() {
   locationBeingUpdate.value = newLocation();
 }
 
-function deleteLocation(id: string) {
-  showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes').then(r => {
-    if (!r) return;
-    isLoading.value = true;
-    deleteProfileLocation(id)
-      .then(() => {
-        isLoading.value = false;
-        getLocations();
-      }).catch(e => {
-        isLoading.value = false;
-        showAlertError(e.data);
-      });
-  });
+async function deleteLocation(id: string) {
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes'))) return;
+  isLoading.value = true;
+  try {
+    await deleteProfileLocation(id);
+    isLoading.value = false;
+    await getLocations();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 async function saveChanges() {
   const addressValid = await addressComponent.value?.validateAddress();
   if (addressValid) {
     if (locationBeingUpdate.value.id) {
-      updateLocation(locationBeingUpdate.value);
+      await updateLocation(locationBeingUpdate.value);
     } else {
-      createLocation(locationBeingUpdate.value);
+      await createLocation(locationBeingUpdate.value);
     }
   }
 }
 
-function updateLocation(location: CompanyProfileLocationDetail) {
+async function updateLocation(location: CompanyProfileLocationDetail) {
+  if (!location.id) return;
   isLoading.value = true;
-  updateProfileLocation(location.id, location)
-    .then(() => {
-      isLoading.value = false;
-      closeModal();
-      getLocations();
-    }).catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
-    });
+  try {
+    await updateProfileLocation(location.id, location);
+    isLoading.value = false;
+    closeModal();
+    await getLocations();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function createLocation(location: CompanyProfileLocationDetail) {
+async function createLocation(location: CompanyProfileLocationDetail) {
   isLoading.value = true;
-  createProfileLocation(location)
-    .then(() => {
-      isLoading.value = false;
-      closeModal();
-      getLocations();
-    }).catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
-    });
+  try {
+    await createProfileLocation(location);
+    isLoading.value = false;
+    closeModal();
+    await getLocations();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function getLocations() {
+async function getLocations() {
   isLoading.value = true;
-  getProfileLocations()
-    .then((response) => {
-      locations.value = response;
-      emit('loaded', response.length);
-    })
-    .catch((error: unknown) => showAlertError((error as { data?: unknown }).data))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    const response = await getProfileLocations();
+    locations.value = response;
+    emit('loaded', response.length);
+  } catch (error) {
+    showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-getLocations();
+void getLocations();
 </script>

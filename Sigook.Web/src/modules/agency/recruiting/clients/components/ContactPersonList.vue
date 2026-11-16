@@ -49,7 +49,7 @@ import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { AgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/types';
 
-const emit = defineEmits<{ (e: 'changed', count: number): void }>();
+const emit = defineEmits<(e: 'changed', count: number) => void>();
 
 const route = useRoute();
 
@@ -61,16 +61,15 @@ const currentContact = ref<AgencyCompanyContactPerson | null>(null);
 
 async function loadContactPersons() {
   isLoading.value = true;
-  await getAgencyCompanyContactPerson(profileId)
-    .then(response => {
-      isLoading.value = false;
-      data.value = response;
-      emit('changed', response.length);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyCompanyContactPerson(profileId);
+    isLoading.value = false;
+    data.value = response;
+    emit('changed', response.length);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openEditModal(item: AgencyCompanyContactPerson) {
@@ -88,26 +87,19 @@ async function onUpdateModal() {
   closeModal();
 }
 
-function onDeleteContactPerson(id: string) {
-  showAlertConfirm("Are you sure", "You want to delete this contact")
-    .then(response => {
-      if (response) {
-        isLoading.value = true;
-        deleteAgencyCompanyContactPerson(profileId, id)
-          .then(async () => {
-            showAlertSuccess('Deleted');
-            await loadContactPersons();
-            isLoading.value = false;
-          })
-          .catch(error => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    }).catch(error => {
-      showAlertError(error);
-    });
+async function onDeleteContactPerson(id: string) {
+  if (!(await showAlertConfirm("Are you sure", "You want to delete this contact"))) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyCompanyContactPerson(profileId, id);
+    showAlertSuccess('Deleted');
+    await loadContactPersons();
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-loadContactPersons();
+void loadContactPersons();
 </script>

@@ -18,7 +18,7 @@
       </div>
       <div class="column is-6 is-3-desktop">
         <PhoneInput ref="phoneComponent" :required="true" model="Phone" label="Phone"
-          :defaultValue="localCompanyData.phone" @formattedPhone="(phone: string) => localCompanyData.phone = phone" />
+          :defaultValue="localCompanyData.phone" @formattedPhone="(phone: string | null) => localCompanyData.phone = phone" />
       </div>
       <div class="column is-6 is-3-desktop">
         <b-field label="Phone Ext" :type="formErrors.phoneExt ? 'is-danger' : ''" :message="formErrors.phoneExt || ''">
@@ -32,7 +32,7 @@
       </div>
       <div class="column is-6 is-3-desktop">
         <PhoneInput ref="faxComponent" :required="false" model="Fax" label="Fax" :defaultValue="localCompanyData.fax"
-          @formattedPhone="(phone: string) => localCompanyData.fax = phone" />
+          @formattedPhone="(phone: string | null) => localCompanyData.fax = phone" />
       </div>
       <div class="column is-6 is-3-desktop">
         <b-field label="Fax Ext" :type="formErrors.faxExt ? 'is-danger' : ''" :message="formErrors.faxExt || ''">
@@ -47,7 +47,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
 import { useStickyForm } from '@/shared/composables/useStickyForm';
@@ -57,7 +57,7 @@ import { updateProfile } from '@/modules/company/profile/api';
 import type { CompanyProfileDetail } from '@/shared/company-profile/types';
 import type { Industry } from '@/shared/types/common';
 
-const props = defineProps<{ companyData: CompanyProfileDetail }>();
+const { companyData } = defineProps<{ companyData: CompanyProfileDetail }>();
 const emit = defineEmits<{
   (e: 'update:companyData', value: CompanyProfileDetail): void;
   (e: 'saved'): void;
@@ -90,11 +90,11 @@ const form = useStickyForm<{
 }>({
   schema,
   initialValues: {
-    fullName: props.companyData?.fullName || '',
-    industry: props.companyData?.industry?.industry?.value || '',
-    phoneExt: props.companyData?.phoneExt != null ? String(props.companyData.phoneExt) : '',
-    faxExt: props.companyData?.faxExt != null ? String(props.companyData.faxExt) : '',
-    website: props.companyData?.website || '',
+    fullName: companyData.fullName || '',
+    industry: companyData.industry?.industry?.value || '',
+    phoneExt: companyData.phoneExt != null ? String(companyData.phoneExt) : '',
+    faxExt: companyData.faxExt != null ? String(companyData.faxExt) : '',
+    website: companyData.website || '',
   },
 });
 const { fullName, industry, phoneExt, faxExt, website } = form.fields;
@@ -103,18 +103,18 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const industries = ref<Industry[]>([]);
 const industrySelected = ref<Industry | null>(null);
-const localCompanyData = ref<CompanyProfileDetail>(JSON.parse(JSON.stringify(props.companyData)));
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const faxComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const localCompanyData = ref<CompanyProfileDetail>(JSON.parse(JSON.stringify(companyData)));
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
+const faxComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('faxComponent');
 
-watch(() => props.companyData, (newVal) => {
+watch(() => companyData, (newVal) => {
   localCompanyData.value = JSON.parse(JSON.stringify(newVal));
   form.hydrate({
-    fullName: newVal?.fullName || '',
-    industry: newVal?.industry?.industry?.value || '',
-    phoneExt: newVal?.phoneExt != null ? String(newVal.phoneExt) : '',
-    faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
-    website: newVal?.website || '',
+    fullName: newVal.fullName || '',
+    industry: newVal.industry?.industry?.value || '',
+    phoneExt: newVal.phoneExt != null ? String(newVal.phoneExt) : '',
+    faxExt: newVal.faxExt != null ? String(newVal.faxExt) : '',
+    website: newVal.website || '',
   });
 }, { deep: true });
 
@@ -124,14 +124,14 @@ const filteredIndustries = computed(() => {
 });
 
 function selectIndustry(option: Industry | null) {
-  industrySelected.value = option || null;
+  industrySelected.value = option ?? null;
 }
 
 async function save() {
   form.markInteracted();
   const phoneValid = await phoneComponent.value?.validatePhone();
   const faxValid = await faxComponent.value?.validatePhone();
-  form.handleSubmit((values) => {
+  await form.handleSubmit(async (values) => {
     if (!phoneValid || !faxValid) return;
     isLoading.value = true;
     const updated = {
@@ -145,20 +145,19 @@ async function save() {
         : null,
     };
     emit('update:companyData', updated);
-    updateProfile(updated.id, updated)
-      .then(() => {
-        isLoading.value = false;
-        showAlertSuccess('Profile updated');
-        emit('saved');
-      })
-      .catch((error: unknown) => {
-        isLoading.value = false;
-        showAlertError((error as { data?: unknown }).data);
-      });
+    try {
+      await updateProfile(updated.id, updated);
+      isLoading.value = false;
+      showAlertSuccess('Profile updated');
+      emit('saved');
+    } catch (error) {
+      isLoading.value = false;
+      showAlertError((error as { data?: unknown }).data);
+    }
   })();
 }
 
-(async () => {
+void (async () => {
   industries.value = await getIndustries();
   if (localCompanyData.value.industry?.industry) {
     industrySelected.value = localCompanyData.value.industry.industry;

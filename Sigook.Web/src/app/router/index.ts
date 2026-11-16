@@ -87,10 +87,10 @@ const router = createRouter({
     return false;
   },
   routes: routes
-    .concat(routesAgency as RouteRecordRaw[])
-    .concat(routesCompany as RouteRecordRaw[])
-    .concat(routesWorker as RouteRecordRaw[])
-    .concat(routesLanding as RouteRecordRaw[]),
+    .concat(routesAgency)
+    .concat(routesCompany)
+    .concat(routesWorker)
+    .concat(routesLanding),
 });
 router.beforeEach(async (to, from, next) => {
   if (from.name !== 'open-positions' && !to.hash) {
@@ -98,7 +98,7 @@ router.beforeEach(async (to, from, next) => {
       window.scrollTo(0, 0);
     }, 0);
   }
-  if (to.meta?.requiresAuth) {
+  if (to.meta.requiresAuth) {
     const securityStore = useSecurityStore(pinia);
     const user = await securityStore.getUser();
     if (!user) {
@@ -109,7 +109,7 @@ router.beforeEach(async (to, from, next) => {
       next();
     }
   } else {
-    if (to.meta?.resolveUser) {
+    if (to.meta.resolveUser) {
       await useSecurityStore(pinia).getUser().catch(() => null);
     }
     next();
@@ -117,7 +117,7 @@ router.beforeEach(async (to, from, next) => {
 });
 
 function isAllowed(to: RouteLocationNormalized, userRoles: string[]): boolean {
-  const allowedRoles = to.meta?.role as string[] | undefined;
+  const allowedRoles = to.meta.role as string[] | undefined;
   if (!allowedRoles?.length) return true;
   return userRoles.some((ur) => allowedRoles.includes(ur));
 }
@@ -148,9 +148,9 @@ function setMetaContent(selector: string, value: string): void {
 }
 
 function setPageMeta(to: RouteLocationNormalized): void {
-  const isLanding = to.meta?.layout === "landing";
-  const pageTitle = to.meta?.title as string | undefined;
-  const pageDescription = to.meta?.description as string | undefined;
+  const isLanding = to.meta.layout === "landing";
+  const pageTitle = to.meta.title as string | undefined;
+  const pageDescription = to.meta.description as string | undefined;
   const title = isLanding && pageTitle ? `${pageTitle} | ${SITE_NAME}` : DEFAULT_TITLE;
   const description = (isLanding && pageDescription) || DEFAULT_DESCRIPTION;
 

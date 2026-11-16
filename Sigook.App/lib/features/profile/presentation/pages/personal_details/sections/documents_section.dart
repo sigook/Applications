@@ -5,7 +5,7 @@ import '../../../../../../core/services/file_picker_service.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/display/profile_info_row.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
-import '../../../../../../core/widgets/navigation/document_preview_page.dart';
+import '../../../../../../core/pages/document_preview_page.dart';
 import '../../../../../catalog/domain/entities/catalog_item.dart';
 import '../../../../../catalog/presentation/providers/catalog_providers.dart';
 import '../../../../../registration/domain/entities/value_objects/identification_number.dart';

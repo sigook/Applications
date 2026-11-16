@@ -14,12 +14,12 @@
   </Teleport>
 </template>
 <script setup lang="ts">
-import { ref, nextTick, onBeforeUnmount } from 'vue';
+import { ref, nextTick, onBeforeUnmount, useTemplateRef } from 'vue';
 import type { PaginatedList } from '@/shared/types/common';
 import type { NoteItem, CreateNoteResponse, RequestNotesFetchPayload, RequestNotesCreatePayload, RequestNotesUpdatePayload, RequestNotesDeletePayload } from '@/modules/agency/shared/notes/types';
 import ModalNotes from '@/modules/agency/shared/notes/ModalNotes.vue';
 
-defineProps<{
+const { userId, requestId, notesCount, canCreate, onGet, onCreate, onUpdate, onDelete } = defineProps<{
   userId: string;
   requestId?: string;
   notesCount?: number;
@@ -30,13 +30,13 @@ defineProps<{
   onDelete?: (payload: RequestNotesDeletePayload) => Promise<void>;
 }>();
 
-const emit = defineEmits<{ (e: 'update:count', size: number): void }>();
+const emit = defineEmits<(e: 'update:count', size: number) => void>();
 
 const POPOVER_WIDTH = 300;
 
 const show = ref(false);
-const triggerEl = ref<HTMLElement | null>(null);
-const popoverEl = ref<HTMLElement | null>(null);
+const triggerEl = useTemplateRef<HTMLElement>('triggerEl');
+const popoverEl = useTemplateRef<HTMLElement>('popoverEl');
 const popoverStyle = ref<Record<string, string>>({});
 
 let scrollContainer: HTMLElement | null = null;
@@ -96,7 +96,7 @@ function open() {
   scrollContainer = getScrollParent(triggerEl.value);
   updatePosition();
   show.value = true;
-  nextTick(bindListeners);
+  void nextTick(bindListeners);
 }
 
 function close() {

@@ -1,5 +1,5 @@
 <template>
-  <div class="columns is-multiline">
+  <div class="columns is-multiline p-4">
     <div class="column is-6">
       <b-field :type="formErrors.name ? 'is-danger' : ''" label="Name"
         :message="formErrors.name">
@@ -20,7 +20,7 @@
     </div>
     <div class="column is-6">
       <PhoneInput :required="false" model="Mobile Number" :default-value="mobileNumber"
-        @formattedPhone="(phone: string) => mobileNumber = phone" />
+        @formattedPhone="(phone: string | null) => mobileNumber = phone" />
     </div>
     <div class="column is-12 mt-5">
       <b-button type="is-primary" @click="update">Save</b-button>
@@ -31,14 +31,17 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 import * as yup from 'yup';
-import { showAlertSuccess } from "@/shared/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
 import { updateCompanyUser } from '@/modules/company/profile/api';
 import type { CompanyUserModel } from '@/shared/company-profile/types';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 
-const props = defineProps<{ user: CompanyUserModel }>();
-const emit = defineEmits<{ (e: 'update:user', payload: CompanyUserModel): void }>();
+const { user } = defineProps<{ user: CompanyUserModel }>();
+const emit = defineEmits<{
+  (e: 'update:user', payload: CompanyUserModel): void;
+  (e: 'saved'): void;
+}>();
 
 const schema = yup.object({
   name: yup.string().required('Name is required').min(2, 'Min 2 characters').max(50, 'Max 50 characters'),
@@ -68,9 +71,9 @@ function hydrateFromUser(u: CompanyUserModel | null) {
   });
 }
 
-hydrateFromUser(props.user);
+hydrateFromUser(user);
 
-watch(() => props.user, (newVal) => {
+watch(() => user, (newVal) => {
   hydrateFromUser(newVal);
 }, { deep: true });
 
@@ -79,16 +82,21 @@ async function update() {
   const { valid } = await form.validate();
   if (!valid) return;
   const payload: CompanyUserModel = {
-    ...props.user,
+    ...user,
     name: name.value,
     lastname: lastname.value,
     position: position.value || '',
     mobileNumber: mobileNumber.value || '',
   };
+  if (!userId.value) return;
+  try {
+    await updateCompanyUser(userId.value, payload);
+  } catch (error) {
+    showAlertError(error);
+    return;
+  }
   emit('update:user', payload);
-  updateCompanyUser(userId.value, payload)
-    .then(() => {
-      showAlertSuccess("Updated");
-    });
+  emit('saved');
+  showAlertSuccess("Updated");
 }
 </script>

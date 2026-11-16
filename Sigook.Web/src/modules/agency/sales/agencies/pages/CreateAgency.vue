@@ -18,7 +18,7 @@
         </div>
         <div class="column is-6 is-3-desktop">
           <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="phoneNumber"
-            @formattedPhone="(phone) => phoneNumber = phone"></phone-input>
+            @formattedPhone="(phone: string | null) => phoneNumber = phone ?? ''"></phone-input>
         </div>
         <div class="column is-6 is-3-desktop">
           <b-field :type="formErrors.agencyType ? 'is-danger' : ''" label="Agency Type"
@@ -44,7 +44,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
@@ -53,6 +53,7 @@ import { createAgency } from '@/modules/agency/sales/agencies/api';
 import { appGlobals } from '@/app/globals';
 import PhoneInput from '@/shared/ui/PhoneInput.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
+import type { AgencyType } from '@/modules/agency/profile/types';
 import { agenciesCrumbs } from '@/shared/ui/breadcrumbs';
 
 const router = useRouter();
@@ -60,7 +61,7 @@ const router = useRouter();
 interface AgencyFormValues {
   fullName: string;
   email: string;
-  agencyType: number | null;
+  agencyType: AgencyType | null;
   password: string;
 }
 
@@ -86,23 +87,24 @@ const formErrors = form.errors;
 const isLoading = ref(false);
 const phoneNumber = ref('');
 const agencyTypes = appGlobals.$agencyTypes;
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
 
 async function validateForm() {
   form.markInteracted();
   const phoneValid = await phoneComponent.value?.validatePhone();
-  form.handleSubmit((values) => {
+  await form.handleSubmit(async (values) => {
     if (!phoneValid) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
     }
-    submitAgency(values);
+    await submitAgency(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function submitAgency(values: AgencyFormValues) {
+async function submitAgency(values: AgencyFormValues) {
+  if (values.agencyType === null) return;
   isLoading.value = true;
   const payload = {
     fullName: values.fullName,
@@ -111,15 +113,14 @@ function submitAgency(values: AgencyFormValues) {
     password: values.password,
     phonePrincipal: phoneNumber.value,
   };
-  createAgency(payload)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Agency created successfully');
-      router.push('/sales/agencies');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgency(payload);
+    isLoading.value = false;
+    showAlertSuccess('Agency created successfully');
+    void router.push('/sales/agencies');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

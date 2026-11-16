@@ -21,5 +21,5 @@ export function useClickOutside(
     }
   });
 
-  onScopeDispose(() => document.removeEventListener('click', onDocumentClick, true));
+  onScopeDispose(() => { document.removeEventListener('click', onDocumentClick, true); });
 }

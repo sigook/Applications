@@ -52,10 +52,10 @@ export function getPayStubsByInvoice(invoiceId: string): Promise<PayStubDeleteWa
 
 export function sendInvoiceEmail(payload: SendInvoiceEmailPayload): Promise<void> {
   const formData = new FormData();
-  payload.recipients.forEach(recipient => formData.append('cc', recipient));
+  payload.recipients.forEach(recipient => { formData.append('cc', recipient); });
   formData.append('subject', payload.subject);
   formData.append('message', payload.body);
-  payload.attachments.forEach(file => formData.append('files', file));
+  payload.attachments.forEach(file => { formData.append('files', file); });
   return api.post(`/api/agency/accounting/invoices/${payload.invoiceId}/email`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });

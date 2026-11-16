@@ -5,7 +5,7 @@ import '../../../../../../core/services/file_picker_service.dart';
 import '../../../../../../core/theme/app_theme.dart';
 import '../../../../../../core/widgets/cards/profile_section_card.dart';
 import '../../../../../../core/widgets/feedback/profile_snack_bar.dart';
-import '../../../../../../core/widgets/navigation/document_preview_page.dart';
+import '../../../../../../core/pages/document_preview_page.dart';
 import '../../../../certificates/presentation/viewmodels/certificates_viewmodel.dart';
 import '../../../../presentation/providers/cached_worker_profile_provider.dart';
 import '../../../../certificates/presentation/widgets/certificate_card.dart';

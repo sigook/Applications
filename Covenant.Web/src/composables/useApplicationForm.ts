@@ -50,7 +50,7 @@ export function useApplicationForm() {
       hasVehicle: false,
       resume: null,
       termsAccepted: false
-    } as any,
+    },
     validateOnMount: false
   })
 
@@ -107,8 +107,8 @@ export function useApplicationForm() {
     })
 
     // Select the appropriate schema for current step
-    let schema: any
-    let valuesToValidate: any = {}
+    let schema: yup.AnyObjectSchema
+    let valuesToValidate: Record<string, unknown>
 
     if (currentStep.value === 1) {
       schema = step1Schema
@@ -130,7 +130,7 @@ export function useApplicationForm() {
         hasVehicle: values.hasVehicle,
         resume: values.resume
       }
-    } else if (currentStep.value === 3) {
+    } else {
       schema = step3Schema
       valuesToValidate = {
         termsAccepted: values.termsAccepted
@@ -143,13 +143,13 @@ export function useApplicationForm() {
       // Clear errors for this step if validation passes
       setErrors({})
       return true
-    } catch (err: any) {
+    } catch (err) {
       // Set errors for this step if validation fails
       const validationErrors: Record<string, string> = {}
-      if (err.inner) {
-        err.inner.forEach((error: any) => {
+      if (err instanceof yup.ValidationError) {
+        err.inner.forEach((error) => {
           if (error.path) {
-            validationErrors[error.path] = error.message
+            validationErrors[error.path] ??= error.message
           }
         })
       }

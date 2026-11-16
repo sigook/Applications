@@ -20,6 +20,7 @@ using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
+using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Core.BL.Interfaces.Requests;
 using Covenant.Documents.Services;
 using FluentValidation;
@@ -31,7 +32,7 @@ namespace Covenant.Core.BL.Services.Requests;
 
 public class RequestService(
     ICompanyRepository companyRepository,
-    IAgencyRepository agencyRepository,
+    IAgencyService agencyService,
     ILocationRepository locationRepository,
     TimeProvider timeProvider,
     IRequestRepository requestRepository,
@@ -53,9 +54,9 @@ public class RequestService(
     private async Task<Result<Guid>> CreateRequest(RequestCreateModel model, bool submitForReview)
     {
         if (model.AgencyId == Guid.Empty)
-            model.AgencyId = currentUserService.GetAgencyId();
+            model.AgencyId = await companyRepository.GetAgencyId(model.CompanyProfileId);
         if (currentUserService.IsSales())
-            model.SalesRepresentativeId = currentUserService.GetAgencyPersonnelId();
+            model.SalesRepresentativeId = currentUserService.GetUserId();
         var rRequest = await MapRequest(model);
         if (!rRequest) return Result.Fail<Guid>(rRequest.Errors);
         var request = rRequest.Value;
@@ -134,8 +135,8 @@ public class RequestService(
             model.CompanyUserIds = [currentUserService.GetUserId()];
         var requestId = await CreateRequest(model, submitForReview: true);
         if (!requestId) return requestId;
-        var data = await notificationDataRepository.GetAgencyData(requestId.Value, NotificationType.NewRequest.Id);
-        if (data != null && data.EmailNotification)
+        var data = await notificationDataRepository.GetRequestAgencyData(requestId.Value);
+        if (data is not null)
         {
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnNewRequest/AgencyTemplate.cshtml", data);
             await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"New Request to review: {data.JobTitle}", message));
@@ -222,9 +223,9 @@ public class RequestService(
                 requestComission = new RequestComission(request.Id, model.SalesRepresentativeId.Value);
                 await requestRepository.Create(requestComission);
             }
-            else if (requestComission.AgencyPersonnelId != model.SalesRepresentativeId.Value)
+            else if (requestComission.SalesRepresentativeId != model.SalesRepresentativeId.Value)
             {
-                requestComission.ChangeAgencyPersonnel(model.SalesRepresentativeId.Value);
+                requestComission.ChangeSalesRepresentative(model.SalesRepresentativeId.Value);
             }
         }
         var requestCompanyUsers = await requestRepository.GetRequestCompanyUsers(request.Id);
@@ -359,8 +360,8 @@ public class RequestService(
 
     private async Task SendCancellationNotification(Guid requestId)
     {
-        var data = await notificationDataRepository.GetAgencyData(requestId, NotificationType.RequestHasBeenCanceledNotifyAgency.Id);
-        if (data != null && data.EmailNotification)
+        var data = await notificationDataRepository.GetRequestAgencyData(requestId);
+        if (data is not null)
         {
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnRequestCancel/AgencyTemplate.cshtml", data);
             await emailService.SendEmail(new EmailParams(data.AgencyEmail, $"Request {data.JobTitle} was canceled", message));
@@ -532,10 +533,10 @@ public class RequestService(
         }));
     }
 
-    public async Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter)
+    public async Task<AgencyRequestsPagedResponse> GetRequestsForAgency(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter)
     {
-        var paged = await requestRepository.GetRequestsForAgency(agencyId, filter);
-        var summary = await requestRepository.GetRequestSourcesSummaryForAgency(agencyId, filter);
+        var paged = await requestRepository.GetRequestsForAgency(agencyIds, filter);
+        var summary = await requestRepository.GetRequestSourcesSummaryForAgency(agencyIds, filter);
         return new AgencyRequestsPagedResponse
         {
             PageIndex = paged.PageIndex,
@@ -559,7 +560,7 @@ public class RequestService(
         }
         model.JobPositions = await companyRepository.GetJobPositions(companyProfileId);
         model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
-        model.Personnel = await agencyRepository.GetAllPersonnel(currentUserService.GetAgencyId());
+        model.Personnel = await agencyService.GetAgencyPersonnel([await companyRepository.GetAgencyId(companyProfileId)]);
         model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
         return model;
     }

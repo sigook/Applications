@@ -41,7 +41,7 @@ import ContactPersonForm from '@/modules/agency/recruiting/clients/components/Co
 import type { AgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/types';
 import type { AgencyRequestPersonItem } from '@/modules/agency/recruiting/requests/types';
 
-const props = defineProps<{ companyProfileId: string; activeUsers: AgencyRequestPersonItem[] }>();
+const { companyProfileId, activeUsers } = defineProps<{ companyProfileId: string; activeUsers: AgencyRequestPersonItem[] }>();
 const emit = defineEmits<{
   (e: 'selectContact', item: AgencyCompanyContactPerson): void;
   (e: 'removeContact', item: AgencyCompanyContactPerson): void;
@@ -52,20 +52,19 @@ const isCreating = ref(false);
 const data = ref<AgencyCompanyContactPerson[]>([]);
 
 function isActive(item: AgencyCompanyContactPerson) {
-  return props.activeUsers.some(x => x.id === item.id);
+  return activeUsers.some(x => x.id === item.id);
 }
 
-function loadContactPersons() {
+async function loadContactPersons() {
   isLoading.value = true;
-  getAgencyCompanyContactPerson(props.companyProfileId)
-    .then(response => {
-      isLoading.value = false;
-      data.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyCompanyContactPerson(companyProfileId);
+    isLoading.value = false;
+    data.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onContactCreated(contact: AgencyCompanyContactPerson) {
@@ -74,5 +73,5 @@ function onContactCreated(contact: AgencyCompanyContactPerson) {
   emit('selectContact', contact);
 }
 
-loadContactPersons();
+void loadContactPersons();
 </script>

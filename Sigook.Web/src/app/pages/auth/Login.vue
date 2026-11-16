@@ -79,7 +79,7 @@ function targetUrl(): string {
 }
 
 if (securityStore.user) {
-  router.replace(targetUrl());
+  void router.replace(targetUrl());
 }
 
 const onSubmit = handleSubmit(async (values) => {
@@ -87,7 +87,7 @@ const onSubmit = handleSubmit(async (values) => {
   errorCode.value = '';
   try {
     await securityStore.signInWithPassword(values.email, values.password);
-    router.push(targetUrl());
+    void router.push(targetUrl());
   } catch (e) {
     if (isAxiosError(e) && e.response?.status === 400) {
       const data = e.response.data as TokenErrorResponse;
@@ -105,7 +105,7 @@ async function resend(): Promise<void> {
     await resendConfirmationLink(email.value);
     showAlertSuccess('Confirmation email sent. Check your inbox.');
   } catch {
-    await showAlertError('Could not send the confirmation email. Try again later.');
+    showAlertError('Could not send the confirmation email. Try again later.');
   }
 }
 

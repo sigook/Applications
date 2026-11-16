@@ -1,3 +1,4 @@
+using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Requests;
@@ -35,7 +36,7 @@ public class CancelRequestServiceTest
         requestRepository.Setup(c => c.GetRequestCancellationDetail(request.Id)).ReturnsAsync(new RequestCancellationDetail());
         var service = new RequestService(
             Mock.Of<ICompanyRepository>(),
-            Mock.Of<IAgencyRepository>(),
+            Mock.Of<IAgencyService>(),
             Mock.Of<ILocationRepository>(),
             new FakeTimeProvider(),
             requestRepository.Object,

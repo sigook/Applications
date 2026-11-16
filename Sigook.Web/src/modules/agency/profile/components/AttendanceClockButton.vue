@@ -89,10 +89,12 @@ const tooltip = computed(() => {
   return 'Clock in';
 });
 
-function load() {
-  getAttendanceToday()
-    .then(response => { attendance.value = response; })
-    .catch(showAlertError);
+async function load() {
+  try {
+    attendance.value = await getAttendanceToday();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function onClick() {
@@ -102,26 +104,27 @@ function onClick() {
     showConfirm.value = true;
     return;
   }
-  toggle();
+  void toggle();
 }
 
-function toggle() {
+async function toggle() {
   isSaving.value = true;
-  toggleAttendance()
-    .then(response => {
-      attendance.value = response;
-      showConfirm.value = false;
-    })
-    .catch(showAlertError)
-    .finally(() => { isSaving.value = false; });
+  try {
+    attendance.value = await toggleAttendance();
+    showConfirm.value = false;
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isSaving.value = false;
+  }
 }
 
 onMounted(() => {
-  load();
+  void load();
   timer = setInterval(() => { now.value = dayjs(); }, 30000);
 });
 
-onUnmounted(() => clearInterval(timer));
+onUnmounted(() => { clearInterval(timer); });
 </script>
 
 <style scoped lang="scss">

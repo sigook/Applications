@@ -28,7 +28,7 @@ public class AgenciesController(IAgencyService agencyService, IAgencyRepository 
     [ProducesResponseType(typeof(PaginatedList<AgencyModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAllAgencies([FromQuery] GetAgenciesFilter filter)
     {
-        var data = await agencyRepository.GetAgencies(User.GetAgencyId(), filter);
+        var data = await agencyRepository.GetAgencies(User.GetAgencyIds(), filter);
         return Ok(data);
     }
 

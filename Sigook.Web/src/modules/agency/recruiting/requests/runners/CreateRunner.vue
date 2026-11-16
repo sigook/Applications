@@ -28,7 +28,7 @@
       </section>
       <footer class="modal-card-foot">
         <b-button @click="emit('close')">Cancel</b-button>
-        <b-button type="is-primary" native-type="submit" :loading="props.isSaving">Add Runner</b-button>
+        <b-button type="is-primary" native-type="submit" :loading="isSaving">Add Runner</b-button>
       </footer>
     </form>
   </div>
@@ -45,11 +45,11 @@ import type { ApplicantSearchResult } from '@/modules/agency/recruiting/requests
 import { RunnerType } from '@/modules/agency/recruiting/requests/runners/types';
 import type { CreateRunnerModel } from '@/modules/agency/recruiting/requests/runners/types';
 
-const props = defineProps<{ requestId: string; isSaving?: boolean }>();
+const { requestId, isSaving } = defineProps<{ requestId: string; isSaving?: boolean }>();
 const emit = defineEmits<{ (e: 'create', model: CreateRunnerModel): void; (e: 'close'): void }>();
 
 const searchText = ref('');
-const { results, isSearching, search } = useDebouncedSearch((term) => searchAgencyRunnerProspects(props.requestId, term));
+const { results, isSearching, search } = useDebouncedSearch((term) => searchAgencyRunnerProspects(requestId, term));
 
 const schema = yup.object({
   type: yup.number().required(),
@@ -78,7 +78,7 @@ function onSelect(item: ApplicantSearchResult | null) {
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(
+  void form.handleSubmit(
     values => {
       emit('create', {
         workerProfileId: values.workerProfileId,

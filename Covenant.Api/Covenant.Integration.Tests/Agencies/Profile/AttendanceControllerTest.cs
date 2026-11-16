@@ -281,13 +281,12 @@ public class AttendanceControllerTest(CustomWebApplicationFactory<AttendanceCont
         {
             context.Agencies.AddRange(Agency, OtherAgency);
             context.Users.AddRange(AdminUser, PunchUser, ReportUser, EditUser, ForeignUser, AccidentUser);
-            context.AgencyPersonnel.AddRange(
-                AgencyPersonnel.CreatePrimary(Agency.Id, AdminUser.Id, "Admin"),
-                AgencyPersonnel.CreatePrimary(Agency.Id, PunchUser.Id, "Punch User"),
-                AgencyPersonnel.CreatePrimary(Agency.Id, ReportUser.Id, "Report User"),
-                AgencyPersonnel.CreatePrimary(Agency.Id, EditUser.Id, "Edit User"),
-                AgencyPersonnel.CreatePrimary(OtherAgency.Id, ForeignUser.Id, "Foreign User"),
-                AgencyPersonnel.CreatePrimary(Agency.Id, AccidentUser.Id, "Accident User"));
+            TestAgencyMembers.Add(Agency.Id, AdminUser.With(u => u.UpdateName("Admin")).Id);
+            TestAgencyMembers.Add(Agency.Id, PunchUser.With(u => u.UpdateName("Punch User")).Id);
+            TestAgencyMembers.Add(Agency.Id, ReportUser.With(u => u.UpdateName("Report User")).Id);
+            TestAgencyMembers.Add(Agency.Id, EditUser.With(u => u.UpdateName("Edit User")).Id);
+            TestAgencyMembers.Add(OtherAgency.Id, ForeignUser.With(u => u.UpdateName("Foreign User")).Id);
+            TestAgencyMembers.Add(Agency.Id, AccidentUser.With(u => u.UpdateName("Accident User")).Id);
             context.UserAttendances.AddRange(
                 Closed(ReportUser, new DateTime(2026, 9, 28, 8, 0, 0), new DateTime(2026, 9, 28, 18, 30, 0)),
                 UserAttendance.Start(ReportUser.Id, new DateTime(2026, 10, 1, 9, 0, 0)),

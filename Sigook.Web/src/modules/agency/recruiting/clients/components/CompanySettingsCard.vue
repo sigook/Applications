@@ -38,8 +38,8 @@ import DetailCard from '@/shared/detail-page/DetailCard.vue';
 
 type SettingKey = keyof CompanyProfileSettingsUpdate;
 
-const props = defineProps<{ company: T }>();
-const emit = defineEmits<{ (e: 'update:company', value: T): void }>();
+const { company } = defineProps<{ company: T }>();
+const emit = defineEmits<(e: 'update:company', value: T) => void>();
 
 const actions: Record<SettingKey, (id: string, model: CompanyProfileSettingsUpdate) => Promise<void>> = {
   requiresPermissionToSeeRequests: updatePermissionToSeeRequests,
@@ -48,50 +48,50 @@ const actions: Record<SettingKey, (id: string, model: CompanyProfileSettingsUpda
 };
 
 const isLoading = ref(false);
-const overtime = ref(String(props.company.overtimeStartsAfter ?? ''));
+const overtime = ref(String(company.overtimeStartsAfter));
 
-watch(() => props.company.overtimeStartsAfter, (value) => {
-  overtime.value = String(value ?? '');
+watch(() => company.overtimeStartsAfter, (value) => {
+  overtime.value = String(value);
 });
 
 const isSavingPaymentTerms = ref(false);
-const paymentTermDays = ref(String(props.company.paymentTermDays ?? ''));
+const paymentTermDays = ref(String(company.paymentTermDays));
 
-watch(() => props.company.paymentTermDays, (value) => {
-  paymentTermDays.value = String(value ?? '');
+watch(() => company.paymentTermDays, (value) => {
+  paymentTermDays.value = String(value);
 });
 
-function savePaymentTerms() {
+async function savePaymentTerms() {
   const days = Number(paymentTermDays.value);
-  const previous = props.company;
-  emit('update:company', { ...props.company, paymentTermDays: days });
+  const previous = company;
+  emit('update:company', { ...company, paymentTermDays: days });
   isSavingPaymentTerms.value = true;
-  updatePaymentTerms(props.company.id, { paymentTermDays: days })
-    .then(() => showAlertSuccess('Updated'))
-    .catch((error) => {
-      emit('update:company', previous);
-      paymentTermDays.value = String(previous.paymentTermDays ?? '');
-      showAlertError(error);
-    })
-    .finally(() => {
-      isSavingPaymentTerms.value = false;
-    });
+  try {
+    await updatePaymentTerms(company.id, { paymentTermDays: days });
+    showAlertSuccess('Updated');
+  } catch (error) {
+    emit('update:company', previous);
+    paymentTermDays.value = String(previous.paymentTermDays);
+    showAlertError(error);
+  } finally {
+    isSavingPaymentTerms.value = false;
+  }
 }
 
-function update<K extends SettingKey>(key: K, value: CompanyProfileSettingsUpdate[K]) {
-  const previous = props.company;
-  const updated = { ...props.company, [key]: value };
+async function update<K extends SettingKey>(key: K, value: CompanyProfileSettingsUpdate[K]) {
+  const previous = company;
+  const updated = { ...company, [key]: value };
   emit('update:company', updated);
   isLoading.value = true;
-  actions[key](props.company.id, updated)
-    .then(() => showAlertSuccess('Updated'))
-    .catch((error) => {
-      emit('update:company', previous);
-      showAlertError(error);
-    })
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    await actions[key](company.id, updated);
+    showAlertSuccess('Updated');
+  } catch (error) {
+    emit('update:company', previous);
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>
 

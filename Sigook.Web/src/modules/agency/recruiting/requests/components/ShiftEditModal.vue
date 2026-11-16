@@ -6,7 +6,7 @@
         <shift-form v-if="shift" :current-shift="shift" :is-update="true" @updateModel="(val) => shift = val" />
       </div>
       <div class="column is-12 mt-5">
-        <b-button type="is-primary" @click="saveShift(shift)">Save</b-button>
+        <b-button type="is-primary" @click="shift && saveShift(shift)">Save</b-button>
       </div>
     </div>
   </div>
@@ -19,7 +19,7 @@ import { getAgencyRequestShift, updateAgencyRequestShift } from "@/modules/agenc
 import ShiftForm from "@/shared/request-detail/ShiftsForm.vue";
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 
-const emit = defineEmits<{ (e: 'onUpdateShift', displayShift: string | undefined): void }>();
+const emit = defineEmits<(e: 'onUpdateShift', displayShift: string | undefined) => void>();
 
 const route = useRoute();
 
@@ -27,31 +27,29 @@ const isLoading = ref(false);
 const shift = ref<RequestShiftModel | null>(null);
 const requestId = route.params.id;
 
-function getRequestShift() {
+async function getRequestShift() {
   isLoading.value = true;
-  getAgencyRequestShift(requestId as string)
-    .then(response => {
-      isLoading.value = false;
-      shift.value = response;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyRequestShift(requestId as string);
+    isLoading.value = false;
+    shift.value = response;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function saveShift(model: RequestShiftModel) {
+async function saveShift(model: RequestShiftModel) {
   isLoading.value = true;
-  updateAgencyRequestShift(requestId as string, model)
-    .then(response => {
-      isLoading.value = false;
-      emit('onUpdateShift', response.displayShift);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await updateAgencyRequestShift(requestId as string, model);
+    isLoading.value = false;
+    emit('onUpdateShift', response.displayShift);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-getRequestShift();
+void getRequestShift();
 </script>

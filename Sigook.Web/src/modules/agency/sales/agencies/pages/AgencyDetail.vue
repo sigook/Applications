@@ -38,8 +38,8 @@ const visitedTabs = ref<string[]>(['Requests']);
 const agency = ref<AgencyDetail | null>(null);
 const isLoading = ref(true);
 
-loadAgency();
-if (route.query && route.query.tab) {
+void loadAgency();
+if (route.query.tab) {
   currentTab.value = route.query.tab as string;
   if (!visitedTabs.value.includes(route.query.tab as string)) {
     visitedTabs.value.push(route.query.tab as string);
@@ -50,24 +50,22 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: `/sales/agencies/${route.params.id}`,
+  void router.push({
+    path: `/sales/agencies/${String(route.params.id)}`,
     query: {
       tab: tab,
     },
   });
 }
 
-function loadAgency() {
+async function loadAgency() {
   isLoading.value = false;
-  getAgency(route.params.id as string)
-    .then((a) => {
-      agency.value = a;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    agency.value = await getAgency(route.params.id as string);
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

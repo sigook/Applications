@@ -18,21 +18,22 @@ import { downloadFile } from "@/shared/utils/downloadFile";
 import { downloadAgencyReport, type ReportQueryParams } from '@/shared/api/reportApi';
 import type { GridParams } from '@/shared/types/common';
 
-const props = defineProps<{
+const { url, params, fileName } = defineProps<{
   url: string;
   params?: ReportQueryParams | GridParams;
   fileName?: string;
 }>();
 
-const emit = defineEmits<{ (e: 'onDataLoading', loading: boolean): void }>();
+const emit = defineEmits<(e: 'onDataLoading', loading: boolean) => void>();
 
-function downloadReport() {
+async function downloadReport() {
   emit('onDataLoading', true);
-  downloadAgencyReport(props.url, props.params)
-    .then(file => {
-      emit('onDataLoading', false);
-      downloadFile(file, `${props.fileName}_${new Date().toLocaleDateString()}`);
-    })
-    .catch(() => emit('onDataLoading', false));
+  try {
+    const file = await downloadAgencyReport(url, params);
+    emit('onDataLoading', false);
+    downloadFile(file, `${fileName}_${new Date().toLocaleDateString()}`);
+  } catch {
+    emit('onDataLoading', false);
+  }
 }
 </script>

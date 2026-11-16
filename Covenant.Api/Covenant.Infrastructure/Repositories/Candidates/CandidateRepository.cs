@@ -39,13 +39,13 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             })
             .ToListAsync();
 
-    public async Task<PaginatedList<CandidateListModel>> GetCandidates(Guid agencyId, GetCandidatesFilter filter)
+    public async Task<PaginatedList<CandidateListModel>> GetCandidates(IEnumerable<Guid> agencyIds, GetCandidatesFilter filter)
     {
-        var query = GetAllCandidates(agencyId, filter);
+        var query = GetAllCandidates(agencyIds, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<CandidateListModel> GetAllCandidates(Guid agencyId, GetCandidatesFilter filter)
+    public IQueryable<CandidateListModel> GetAllCandidates(IEnumerable<Guid> agencyIds, GetCandidatesFilter filter)
     {
         var candidates = Context.Candidates
             .AsNoTracking()
@@ -82,15 +82,15 @@ public class CandidateRepository(CovenantContext context, IOptions<FilesConfigur
             Dnu = c.Dnu,
             NotesCount = c.Notes.Count(n => !n.Note.IsDeleted)
         });
-        var predicateNew = ApplyFilterCandidates(agencyId, filter);
+        var predicateNew = ApplyFilterCandidates(agencyIds, filter);
         query = query.Where(predicateNew);
         query = ApplySortCandidates(query, filter);
         return query;
     }
 
-    private Expression<Func<CandidateListModel, bool>> ApplyFilterCandidates(Guid agencyId, GetCandidatesFilter filter)
+    private Expression<Func<CandidateListModel, bool>> ApplyFilterCandidates(IEnumerable<Guid> agencyIds, GetCandidatesFilter filter)
     {
-        Expression<Func<CandidateListModel, bool>> predicate = c => c.AgencyId == agencyId;
+        Expression<Func<CandidateListModel, bool>> predicate = c => agencyIds.Contains(c.AgencyId);
         if (!string.IsNullOrWhiteSpace(filter.Phone))
         {
             var phoneWithoutBlankSpaces = filter.Phone.RemoveWhitespace();

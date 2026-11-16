@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const { requestId, expanded, size } = defineProps<{
   requestId: string;
   expanded?: boolean;
   size?: string;

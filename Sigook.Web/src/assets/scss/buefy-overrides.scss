@@ -159,6 +159,29 @@ $visible-sticky-grid: '.table-wrapper.has-sticky-header:not(.tab-item[tabindex="
   }
 }
 
+@include fit-viewport-grid {
+  .logged-content:has(.page-scroll) {
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    padding-bottom: 12px;
+
+    *:has(.page-scroll) {
+      display: flex;
+      flex-direction: column;
+      flex: 1 1 auto;
+      min-height: 0;
+      width: 100%;
+    }
+
+    .page-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow: auto;
+    }
+  }
+}
+
 @include mobile {
   .b-tabs > .tabs {
     overflow-x: auto;

@@ -1,19 +1,19 @@
 <template>
   <section class="approval-status">
     <div class="approval-status-header">
-      <span class="approval-status-icon" :class="props.approved ? 'is-success' : 'is-warning'">
-        <b-icon :icon="props.approved ? 'check-circle-outline' : 'clock-outline'" size="is-small" />
+      <span class="approval-status-icon" :class="approved ? 'is-success' : 'is-warning'">
+        <b-icon :icon="approved ? 'check-circle-outline' : 'clock-outline'" size="is-small" />
       </span>
-      <h3>{{ props.approved ? 'Approved to work' : 'Pending approval' }}</h3>
+      <h3>{{ approved ? 'Approved to work' : 'Pending approval' }}</h3>
     </div>
-    <p v-if="props.approved">You can apply to open job requests.</p>
+    <p v-if="approved">You can apply to open job requests.</p>
     <p v-else>Your agency reviews your profile before you can apply to jobs. Complete the pending items to speed it up.</p>
-    <router-link v-if="props.approved" to="/worker-requests" class="approval-status-link">See job requests</router-link>
+    <router-link v-if="approved" to="/worker-requests" class="approval-status-link">See job requests</router-link>
   </section>
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ approved: boolean }>();
+const { approved } = defineProps<{ approved: boolean }>();
 </script>
 
 <style lang="scss" scoped>

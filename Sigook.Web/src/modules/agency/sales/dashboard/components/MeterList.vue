@@ -28,9 +28,9 @@ import { scaleLinear } from 'd3-scale';
 import { max as d3max } from 'd3-array';
 import type { SalesMeter } from '@/modules/agency/sales/dashboard/types';
 
-const props = defineProps<{ title: string; items: readonly SalesMeter[] }>();
+const { title, items } = defineProps<{ title: string; items: readonly SalesMeter[] }>();
 
-const max = computed<number>(() => d3max(props.items, (item) => item.count) ?? 0);
+const max = computed<number>(() => d3max(items, (item) => item.count) ?? 0);
 
 // `|| 1` reproduces the old ratioOf guard: when max <= 0 every fill is 0%.
 const widthScale = computed(() =>

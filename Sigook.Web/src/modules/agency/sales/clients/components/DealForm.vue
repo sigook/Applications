@@ -98,7 +98,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, onMounted, ref, useTemplateRef } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
@@ -117,22 +117,22 @@ import SearchSelect from '@/shared/ui/SearchSelect.vue';
 const MINIMUM_SEARCH_LENGTH = 3;
 const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
-const props = defineProps<{
+const { deal, initialClient } = defineProps<{
   deal?: Deal | null;
   initialClient?: SalesClientReference | null;
 }>();
 
-const isEditing = computed(() => !!props.deal);
-const hasDocument = computed(() => !!props.deal?.documentId);
+const isEditing = computed(() => !!deal);
+const hasDocument = computed(() => !!deal?.documentId);
 
 const clientOptions = computed(() => {
   const options = clients.value.map((c) => ({ value: c.id, label: c.value }));
   if (
-    props.initialClient &&
+    initialClient &&
     !clientSearchTerm.value.trim() &&
-    !options.some((o) => o.value === props.initialClient?.id)
+    !options.some((o) => o.value === initialClient.id)
   ) {
-    options.unshift({ value: props.initialClient.id, label: props.initialClient.fullName });
+    options.unshift({ value: initialClient.id, label: initialClient.fullName });
   }
   return options;
 });
@@ -143,16 +143,15 @@ const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
 const clientSearchTerm = ref('');
 
-function loadClients(term: string): void {
+async function loadClients(term: string): Promise<void> {
   isLoadingClients.value = true;
-  getAgencyCompaniesList(term || undefined)
-    .then((result) => {
-      clients.value = result;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoadingClients.value = false;
-    });
+  try {
+    clients.value = await getAgencyCompaniesList(term || undefined);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoadingClients.value = false;
+  }
 }
 
 function onClientSearch(term: string): void {
@@ -162,7 +161,7 @@ function onClientSearch(term: string): void {
     clients.value = [];
     return;
   }
-  loadClients(normalized);
+  void loadClients(normalized);
 }
 
 interface DealFormValues {
@@ -208,25 +207,25 @@ function onFileSelected(file: File | null): void {
   if (fileError.value) documentFile.value = null;
 }
 
-const datePicker = ref<ComponentPublicInstance | null>(null);
+const datePicker = useTemplateRef<ComponentPublicInstance>('datePicker');
 const { reveal } = useDropdownReveal();
 
 function onPickerActive(active: boolean): void {
-  reveal(datePicker.value?.$el as HTMLElement | undefined, active);
+  void reveal(datePicker.value?.$el as HTMLElement | undefined, active);
 }
 
 onMounted(() => {
-  if (!props.deal) {
-    if (props.initialClient) form.hydrate({ companyProfileId: props.initialClient.id });
+  if (!deal) {
+    if (initialClient) form.hydrate({ companyProfileId: initialClient.id });
     return;
   }
   form.hydrate({
-    title: props.deal.title,
-    companyProfileId: props.deal.companyProfileId,
-    date: new Date(props.deal.date),
-    value: props.deal.value,
-    type: props.deal.type,
-    status: props.deal.status,
+    title: deal.title,
+    companyProfileId: deal.companyProfileId,
+    date: new Date(deal.date),
+    value: deal.value,
+    type: deal.type,
+    status: deal.status,
   });
 });
 
@@ -236,51 +235,49 @@ function resetForm(): void {
   fileError.value = '';
 }
 
-function submit(): Promise<boolean> {
+async function submit(): Promise<boolean> {
   form.markInteracted();
-  return new Promise<boolean>((resolve) => {
-    form.handleSubmit(
-      async (values) => {
-        const amount = Number(values.value ?? 0);
-        const dealDate = new Date(values.date as Date);
-        try {
-          const file = documentFile.value;
-          if (props.deal) {
-            await updateDeal(props.deal.companyProfileId, props.deal.id, {
-              title: values.title.trim(),
-              date: dealDate.toISOString(),
-              value: amount,
-              type: values.type,
-              status: values.status,
-              documentId: props.deal.documentId ?? null,
-              fileName: file ? generateFileName('Deal', file.name) : null,
-            }, file);
-            showAlertSuccess('Deal updated');
-          } else {
-            await createDeal(values.companyProfileId as string, {
-              title: values.title.trim(),
-              date: dealDate.toISOString(),
-              value: amount,
-              type: values.type,
-              status: values.status,
-              documentId: null,
-              fileName: file ? generateFileName('Deal', file.name) : null,
-            }, file);
-            showAlertSuccess('Deal created');
-            resetForm();
-          }
-          resolve(true);
-        } catch (error) {
-          await showAlertError(error);
-          resolve(false);
+  const ok = await form.handleSubmit(
+    async (values) => {
+      const amount = Number(values.value ?? 0);
+      const dealDate = new Date(values.date as Date);
+      try {
+        const file = documentFile.value;
+        if (deal) {
+          await updateDeal(deal.companyProfileId, deal.id, {
+            title: values.title.trim(),
+            date: dealDate.toISOString(),
+            value: amount,
+            type: values.type,
+            status: values.status,
+            documentId: deal.documentId ?? null,
+            fileName: file ? generateFileName('Deal', file.name) : null,
+          }, file);
+          showAlertSuccess('Deal updated');
+        } else {
+          await createDeal(values.companyProfileId as string, {
+            title: values.title.trim(),
+            date: dealDate.toISOString(),
+            value: amount,
+            type: values.type,
+            status: values.status,
+            documentId: null,
+            fileName: file ? generateFileName('Deal', file.name) : null,
+          }, file);
+          showAlertSuccess('Deal created');
+          resetForm();
         }
-      },
-      () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-        resolve(false);
+        return true;
+      } catch (error) {
+        showAlertError(error);
+        return false;
       }
-    )();
-  });
+    },
+    () => {
+      showAlertError('Please make sure all required fields are filled out correctly');
+    }
+  )();
+  return ok ?? false;
 }
 
 defineExpose({ submit });

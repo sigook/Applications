@@ -3,7 +3,7 @@ export interface CompanyContactPersonModel {
   companyProfileId?: string;
   title: string;
   firstName: string;
-  middleName: string;
+  middleName: string | null;
   lastName: string;
   position: string;
   mobileNumber: string;

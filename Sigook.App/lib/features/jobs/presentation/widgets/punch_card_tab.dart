@@ -339,9 +339,7 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 thickness: 1,
                 color: Colors.grey.shade300,
               ),
-              Expanded(
-                child: _buildStamp('CLOCK OUT', _punchStatus.clockOut),
-              ),
+              Expanded(child: _buildStamp('CLOCK OUT', _punchStatus.clockOut)),
             ],
           ),
         ),
@@ -408,7 +406,10 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
                 const SizedBox(height: 2),
                 Text(
                   _punchRejectedMessage!,
-                  style: const TextStyle(fontSize: 13, color: AppTheme.textDark),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textDark,
+                  ),
                 ),
                 if (_punchRejectedReference != null) ...[
                   const SizedBox(height: 4),
@@ -948,93 +949,111 @@ class _PunchCardTabState extends ConsumerState<PunchCardTab> {
   }
 
   void _showSuccessSnackBar(String workerName, bool finish) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.check_circle, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    finish
-                        ? 'Clocked Out Successfully!'
-                        : 'Clocked In Successfully!',
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 16,
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.check_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      finish
+                          ? 'Clocked Out Successfully!'
+                          : 'Clocked In Successfully!',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                  Text(workerName, style: const TextStyle(fontSize: 14)),
-                ],
+                    Text(workerName, style: const TextStyle(fontSize: 14)),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: AppTheme.successGreen,
+          duration: const Duration(seconds: 3),
+          persist: false,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        backgroundColor: AppTheme.successGreen,
-        duration: const Duration(seconds: 3),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+      );
   }
 
   void _showErrorSnackBar(String message, {SnackBarAction? action}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Text(message, style: const TextStyle(fontSize: 14)),
-            ),
-          ],
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(message, style: const TextStyle(fontSize: 14)),
+              ),
+            ],
+          ),
+          action: action,
+          backgroundColor: AppTheme.errorRed,
+          duration: const Duration(seconds: 4),
+          persist: false,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        action: action,
-        backgroundColor: AppTheme.errorRed,
-        duration: const Duration(seconds: 4),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+      );
   }
 
   void _showClockOutRestrictionError() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Row(
-          children: [
-            const Icon(Icons.access_time, color: Colors.white),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Text(
-                    'Too Soon to Clock Out',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'You must wait at least 3 minutes after clocking in before you can clock out.',
-                    style: const TextStyle(fontSize: 13),
-                  ),
-                ],
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.access_time, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text(
+                      'Too Soon to Clock Out',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'You must wait at least 3 minutes after clocking in before you can clock out.',
+                      style: const TextStyle(fontSize: 13),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
+          backgroundColor: AppTheme.warningOrange,
+          duration: const Duration(seconds: 5),
+          persist: false,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
-        backgroundColor: AppTheme.warningOrange,
-        duration: const Duration(seconds: 5),
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-    );
+      );
   }
 
   String _workerReference() {

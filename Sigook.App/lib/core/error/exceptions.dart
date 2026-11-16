@@ -18,15 +18,6 @@ class NetworkException implements Exception {
   String toString() => 'NetworkException: $message';
 }
 
-class CacheException implements Exception {
-  final String message;
-
-  CacheException([this.message = 'Cache error occurred']);
-
-  @override
-  String toString() => 'CacheException: $message';
-}
-
 class ParseException implements Exception {
   final String message;
 

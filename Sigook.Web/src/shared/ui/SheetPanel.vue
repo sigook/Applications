@@ -30,21 +30,19 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue';
+import { computed, useTemplateRef, watch } from 'vue';
 import { useBodyScrollLock } from '@/shared/composables/useBodyScrollLock';
 import { useFocusTrap } from '@/shared/composables/useFocusTrap';
 
-const props = defineProps<{
+const { modelValue } = defineProps<{
   modelValue: boolean;
   title: string;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-}>();
+const emit = defineEmits<(e: 'update:modelValue', value: boolean) => void>();
 
-const panel = ref<HTMLElement | null>(null);
-const open = computed(() => props.modelValue);
+const panel = useTemplateRef<HTMLElement>('panel');
+const open = computed(() => modelValue);
 const { lock, unlock } = useBodyScrollLock();
 
 useFocusTrap(open, panel);

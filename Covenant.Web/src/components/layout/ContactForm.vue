@@ -117,7 +117,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, useTemplateRef } from 'vue';
 import Vue3Recaptcha2 from 'vue3-recaptcha2';
 import Cleave from 'cleave.js';
 import { useForm } from 'vee-validate';
@@ -128,16 +128,12 @@ import type { Province } from '@/services/types/application.types';
 import { useToast } from '@/composables/useToast';
 
 // Props
-const props = withDefaults(defineProps<{
+const { title = '', subject, useDynamicTitle = false, titleSuffix = '' } = defineProps<{
   title?: string;
   subject: string;
   useDynamicTitle?: boolean;
   titleSuffix?: string;
-}>(), {
-  title: '',
-  useDynamicTitle: false,
-  titleSuffix: ''
-});
+}>();
 
 const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY;
 const { showSuccess, showError } = useToast();
@@ -198,7 +194,7 @@ onMounted(async () => {
 });
 
 // --- LÓGICA CLEAVE.JS (MÁSCARA TELÉFONO) ---
-const phoneInput = ref<HTMLElement | null>(null);
+const phoneInput = useTemplateRef<HTMLInputElement>('phoneInput');
 
 onMounted(() => {
   if (phoneInput.value) {
@@ -247,9 +243,9 @@ const handleSubmit = veeHandleSubmit(async (formValues) => {
 
   try {
     // Build title: use dynamic title if enabled, otherwise use static title prop
-    const emailTitle = props.useDynamicTitle
-      ? `${formValues.name} ${props.titleSuffix}`
-      : props.title;
+    const emailTitle = useDynamicTitle
+      ? `${formValues.name} ${titleSuffix}`
+      : title;
 
     await contactService.sendContactEmail({
       title: emailTitle,
@@ -259,7 +255,7 @@ const handleSubmit = veeHandleSubmit(async (formValues) => {
       company: formValues.company,
       location: formValues.location,
       message: formValues.message,
-      subject: props.subject,
+      subject,
       captchaResponse: captchaToken.value,
       emailSetting: 4 // CovenantNotification
     });
@@ -281,7 +277,7 @@ const resetForm = () => {
 
   // Clear phone input manually (since we're not using v-model)
   if (phoneInput.value) {
-    (phoneInput.value as HTMLInputElement).value = '';
+    phoneInput.value.value = '';
   }
 
   // Reiniciar Recaptcha

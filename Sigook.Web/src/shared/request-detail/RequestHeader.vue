@@ -1,7 +1,7 @@
 <template>
   <detail-header :title="`${numberId} · ${title}`" :meta="subtitle" :org-name="orgName" :org-link="orgLink"
-    :logo="logo" :logo-icon="logoIcon" :status-label="statusLabel" :status-variant="statusVariant" :chips="headerChips"
-    :kpis="headerKpis">
+    :logo="logo" :logo-icon="logoIcon" :status-label="statusLabel" :status-variant="statusVariant" :chips="flagChips"
+    :meta-chips="metaChips" :kpis="headerKpis">
     <template v-for="(_, name) in $slots" #[name]="scope">
       <slot :name="name" v-bind="scope ?? {}" />
     </template>
@@ -18,7 +18,7 @@ import type { DetailChip, DetailKpi } from '@/shared/detail-page/types';
 import type { RequestChipVariant, RequestKpi } from '@/shared/request-detail/types';
 import DetailHeader from '@/shared/detail-page/DetailHeader.vue';
 
-const props = defineProps<{
+const { isAsap, isDirectHiring, chips, workersTotal, kpis, workersWorking } = defineProps<{
   numberId: number;
   title: string;
   subtitle?: string;
@@ -36,23 +36,24 @@ const props = defineProps<{
   kpis: RequestKpi[];
 }>();
 
-const headerChips = computed<DetailChip[]>(() => [
-  ...(props.isAsap ? [{ label: 'ASAP', variant: 'is-warning' as const }] : []),
-  ...(props.isDirectHiring ? [{ label: 'Direct hiring', variant: 'is-info' as const }] : []),
-  ...(props.chips ?? []).map((label) => ({ label })),
+const flagChips = computed<DetailChip[]>(() => [
+  ...(isAsap ? [{ label: 'ASAP', variant: 'is-warning' as const, icon: 'lightning-bolt' }] : []),
+  ...(isDirectHiring ? [{ label: 'Direct hiring', variant: 'is-info' as const, icon: 'account-check' }] : []),
 ]);
 
+const metaChips = computed<DetailChip[]>(() => (chips ?? []).map((label) => ({ label })));
+
 const headerKpis = computed<DetailKpi[]>(() => {
-  if (props.workersTotal === undefined) return props.kpis;
-  const isSpots = props.workersWorking === undefined;
+  if (workersTotal === undefined) return kpis;
+  const isSpots = workersWorking === undefined;
   const workers: DetailKpi = {
     key: 'workers',
     label: isSpots ? 'Spots' : 'Workers',
-    value: isSpots ? String(props.workersTotal) : `${props.workersWorking} / ${props.workersTotal}`,
+    value: isSpots ? String(workersTotal) : `${workersWorking} / ${workersTotal}`,
     progress: isSpots
       ? undefined
-      : props.workersTotal ? Math.min(100, Math.round(((props.workersWorking ?? 0) / props.workersTotal) * 100)) : 0,
+      : workersTotal ? Math.min(100, Math.round((workersWorking / workersTotal) * 100)) : 0,
   };
-  return [workers, ...props.kpis];
+  return [workers, ...kpis];
 });
 </script>

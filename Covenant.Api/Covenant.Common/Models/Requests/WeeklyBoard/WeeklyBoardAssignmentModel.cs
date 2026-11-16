@@ -4,6 +4,7 @@ namespace Covenant.Common.Models.Requests.WeeklyBoard;
 
 public class WeeklyBoardAssignmentModel
 {
+    public Guid AgencyId { get; set; }
     public Guid RecruiterId { get; set; }
     public string RecruiterName { get; set; }
     public Guid RequestId { get; set; }

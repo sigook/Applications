@@ -5,5 +5,5 @@
 <script setup lang="ts">
 import mgr from '@/app/security/securityService';
 
-mgr.signinSilentCallback();
+void mgr.signinSilentCallback();
 </script>

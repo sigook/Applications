@@ -48,11 +48,11 @@ import {
   ComplianceDocumentTarget,
 } from '@/shared/request-detail/requestApplicant';
 
-const props = defineProps<{ items?: RequestComplianceItem[] }>();
+const { items: initialItems } = defineProps<{ items?: RequestComplianceItem[] }>();
 
-const emit = defineEmits<{ (e: 'save', items: RequestComplianceItem[]): void }>();
+const emit = defineEmits<(e: 'save', items: RequestComplianceItem[]) => void>();
 
-const items = ref<RequestComplianceItem[]>((props.items ?? []).map((item) => ({ ...item })));
+const items = ref<RequestComplianceItem[]>((initialItems ?? []).map((item) => ({ ...item })));
 const newItemName = ref('');
 const newItemMandatory = ref(true);
 const newItemTarget = ref<ComplianceDocumentTarget>(ComplianceDocumentTarget.None);

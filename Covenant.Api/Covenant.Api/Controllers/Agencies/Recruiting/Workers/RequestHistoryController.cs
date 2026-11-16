@@ -23,5 +23,5 @@ public class RequestHistoryController(IRequestRepository requestRepository) : Co
     [HttpGet]
     [ProducesResponseType(typeof(PaginatedList<WorkerRequestHistoryModel>), StatusCodes.Status200OK)]
     public async Task<ActionResult> Get(Guid workerProfileId, [FromQuery] GetWorkerRequestHistoryFilter filter) =>
-        Ok(await requestRepository.GetWorkerRequestHistory(User.GetAgencyId(), workerProfileId, filter));
+        Ok(await requestRepository.GetWorkerRequestHistory(User.GetAgencyIds(), workerProfileId, filter));
 }

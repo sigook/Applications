@@ -27,8 +27,8 @@ public class ClientsListController(IMediator mediator, ICompanyRepository compan
     [ProducesResponseType(typeof(PaginatedList<CompanyProfileListModel>), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get([FromQuery] GetCompanyForAgencyFilter filter)
     {
-        filter.SalesPersonnelId = null;
-        return Ok(await companyRepository.GetCompaniesProfileForAgency(User.GetAgencyId(), filter));
+        filter.SalesUserId = null;
+        return Ok(await companyRepository.GetCompaniesProfileForAgency(User.GetAgencyIds(), filter));
     }
 
     /// <summary>Generates and downloads an Excel report of the current agency's company profiles.</summary>
@@ -38,8 +38,8 @@ public class ClientsListController(IMediator mediator, ICompanyRepository compan
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile([FromQuery] GetCompanyForAgencyFilter filter)
     {
-        filter.SalesPersonnelId = null;
-        var data = companyRepository.GetAllCompaniesProfileForAgency(User.GetAgencyId(), filter).ToList();
+        filter.SalesUserId = null;
+        var data = companyRepository.GetAllCompaniesProfileForAgency(User.GetAgencyIds(), filter).ToList();
         var file = await mediator.Send(new GenerateAgencyCompanyProfileReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }
@@ -51,7 +51,7 @@ public class ClientsListController(IMediator mediator, ICompanyRepository compan
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFileWithDetails([FromQuery] GetCompanyForAgencyFilter filter)
     {
-        var data = await companyRepository.GetCompaniesWithDetailsForAgency(User.GetAgencyId(), filter);
+        var data = await companyRepository.GetCompaniesWithDetailsForAgency(User.GetAgencyIds(), filter);
         var file = await mediator.Send(new GenerateAgencyCompanyProfileWithDetailsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }

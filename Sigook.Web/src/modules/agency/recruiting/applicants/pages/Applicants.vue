@@ -5,7 +5,7 @@
 
     <RequestGroupFilters v-model:filter="serverParams" :status-options="statusOptions" @search="loadApplicants" />
 
-    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" :has-groups="groups.length > 0"
+    <RequestGroupsToolbar v-model:only-mine="serverParams.onlyMine" v-model:agency-ids="serverParams.agencyIds" :has-groups="groups.length > 0"
       export-url="/api/agency/recruiting/applicants/File" :export-params="serverParams" export-file-name="Applicants"
       @search="loadApplicants" @expand-all="expandAll" @collapse-all="collapseAll"
       @loading="(value: boolean) => isLoading = value" />
@@ -25,88 +25,87 @@
       </b-button>
     </BulkSelectionBar>
 
-    <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
+    <div class="page-scroll">
+      <p v-if="!groups.length && !isLoading" class="container has-text-centered p-4">No records available</p>
 
-    <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
-      :fill="{ value: group.confirmedApplicants, total: group.workersQuantity, label: 'confirmed' }"
-      :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
-      <template #menu>
-        <b-dropdown-item aria-role="listitem" @click="showAddApplicant(group.requestId)">Add Applicant</b-dropdown-item>
-        <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
-      </template>
-
-      <SigookGrid :data="group.applicants" :paginated="false" :fit-viewport="false" detailed detail-key="id"
-        v-model:opened-detailed="openedApplicants" checkable :checked-rows="checkedRows(group.requestId)"
-        @update:checked-rows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
-        <b-table-column field="name" label="Applicant" v-slot="props">
-          <span class="is-block">
-            {{ props.row.name }}
-            <b-tooltip label="Candidate" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
-            </b-tooltip>
-            <b-tooltip label="Worker" type="is-dark" append-to-body>
-              <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
-            </b-tooltip>
-          </span>
-          <i class="fz-2 is-lowercase">
-            <copy-link kind="email" :value="props.row.email" />
-          </i>
-        </b-table-column>
-        <b-table-column field="status" label="Status" width="140" v-slot="props">
-          <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
-        </b-table-column>
-        <b-table-column field="compliance" label="Compliance" width="180" v-slot="props">
-          <div class="applicants-compliance">
-            <span class="applicants-compliance-bar">
-              <span :class="{ 'is-complete': !props.row.mandatoryPending }"
-                :style="{ width: `${compliancePercent(props.row)}%` }"></span>
-            </span>
-            <span class="fz-1">{{ props.row.complianceCompleted }}/{{ props.row.complianceTotal }}</span>
-          </div>
-        </b-table-column>
-        <b-table-column field="comments" label="Comments" width="260" v-slot="props">
-          <div class="applicants-comments">
-            <span class="applicants-comments-text" :title="props.row.comments">{{ props.row.comments }}</span>
-            <b-button type="is-ghost" size="is-small" icon-right="pencil" @click="showComments(props.row)" />
-          </div>
-        </b-table-column>
-        <b-table-column field="createdBy" label="Added By" width="180" v-slot="props">
-          <div class="is-capitalized" v-if="props.row.createdBy">{{ emailName(props.row.createdBy) }}</div>
-          <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
-        </b-table-column>
-        <b-table-column field="actions" width="60" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
-              @click="showCandidateDetail(props.row.candidateId)">
-              Edit Candidate
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
-              @click="convertToWorker(props.row.candidateId)">
-              Convert to Worker
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId"
-              @click="openWorker(props.row.workerProfileId)">
-              Open Worker
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId" @click="showAddRunner(props.row)">
-              Add Runner
-            </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
-              Delete
-            </b-dropdown-item>
-          </b-dropdown>
-        </b-table-column>
-
-        <template #detail="props">
-          <ApplicantComplianceDetail :request-id="props.row.requestId" :applicant-id="props.row.id"
-            :name="props.row.name" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
-            @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
+      <RequestGroup v-for="group in groups" :key="group.requestId" :group="group" :count-label="countLabel(group)"
+        :fill="{ value: group.confirmedApplicants, total: group.workersQuantity, label: 'confirmed' }"
+        :open="isRequestOpen(group.requestId)" @update:open="(value: boolean) => setRequestOpen(group.requestId, value)">
+        <template #menu>
+          <b-dropdown-item aria-role="listitem" @click="showAddApplicant(group.requestId)">Add Applicant</b-dropdown-item>
+          <b-dropdown-item aria-role="listitem" @click="openRequest(group.requestId)">Open Request</b-dropdown-item>
         </template>
-      </SigookGrid>
-    </RequestGroup>
+
+        <SigookGrid :data="group.applicants" :paginated="false" :fit-viewport="false" detailed detail-key="id"
+          v-model:opened-detailed="openedApplicants" checkable :checked-rows="checkedRows(group.requestId)"
+          @update:checked-rows="(rows: AgencyApplicant[]) => onCheck(group.requestId, rows)" @cellclick="onCellClick">
+          <b-table-column field="name" label="Applicant" v-slot="props">
+            <span class="is-block">
+              {{ props.row.name }}
+              <HoverTooltip label="Candidate">
+                <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
+              </HoverTooltip>
+              <HoverTooltip label="Worker">
+                <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
+              </HoverTooltip>
+            </span>
+            <i class="fz-2 is-lowercase">
+              <copy-link kind="email" :value="props.row.email" />
+            </i>
+          </b-table-column>
+          <b-table-column field="status" label="Status" width="140" v-slot="props">
+            <b-tag :type="statusTagType(props.row.status)">{{ statusLabel(props.row.status) }}</b-tag>
+          </b-table-column>
+          <b-table-column field="compliance" label="Compliance" width="180" v-slot="props">
+            <div class="applicants-compliance">
+              <span class="applicants-compliance-bar">
+                <span :class="{ 'is-complete': !props.row.mandatoryPending }"
+                  :style="{ width: `${compliancePercent(props.row)}%` }"></span>
+              </span>
+              <span class="fz-1">{{ props.row.complianceCompleted }}/{{ props.row.complianceTotal }}</span>
+            </div>
+          </b-table-column>
+          <b-table-column field="comments" label="Comments" width="260" v-slot="props">
+            <div class="applicants-comments">
+              <span class="applicants-comments-text" :title="props.row.comments">{{ props.row.comments }}</span>
+              <b-button type="is-ghost" size="is-small" icon-right="pencil" @click="showComments(props.row)" />
+            </div>
+          </b-table-column>
+          <b-table-column field="createdBy" label="Added By" width="180" v-slot="props">
+            <div class="is-capitalized" v-if="props.row.createdBy">{{ emailName(props.row.createdBy) }}</div>
+            <i class="fz-2">{{ dateMonth(props.row.createdAt) }}</i>
+          </b-table-column>
+          <b-table-column field="actions" width="60" v-slot="props">
+            <RowActionsDropdown>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="showCandidateDetail(props.row.candidateId)">
+                Edit Candidate
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
+                @click="convertToWorker(props.row.candidateId)">
+                Convert to Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId"
+                @click="openWorker(props.row.workerProfileId)">
+                Open Worker
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" v-if="props.row.workerProfileId" @click="showAddRunner(props.row)">
+                Add Runner
+              </b-dropdown-item>
+              <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
+                Delete
+              </b-dropdown-item>
+            </RowActionsDropdown>
+          </b-table-column>
+
+          <template #detail="props">
+            <ApplicantComplianceDetail :request-id="props.row.requestId" :applicant-id="props.row.id"
+              :name="props.row.name" :status="props.row.status" :worker-profile-id="props.row.workerProfileId"
+              @loaded="(value) => onComplianceLoaded(props.row, value)" @status-changed="loadApplicants" />
+          </template>
+        </SigookGrid>
+      </RequestGroup>
+    </div>
 
     <RequestGroupsPagination :page="serverParams.pageIndex ?? 1" :total="totalRequests"
       :per-page="serverParams.pageSize ?? PAGE_SIZE" @change="onPageChange" />
@@ -133,6 +132,8 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -216,7 +217,7 @@ const statusOptions: CatalogItem<RequestApplicantStatus>[] =
 const statusLabel = requestApplicantStatusLabel;
 const statusTagType = requestApplicantStatusTagType;
 
-loadApplicants();
+void loadApplicants();
 
 function countLabel(group: AgencyRequestApplicants): string {
   return group.applicants.length === group.totalApplicants
@@ -236,33 +237,27 @@ function clearSelection() {
   selection.value = {};
 }
 
-function bulkChangeStatus(status: RequestApplicantStatus) {
+async function bulkChangeStatus(status: RequestApplicantStatus) {
   const applicants = selectedApplicants.value;
   if (!applicants.length) return;
   if (status === RequestApplicantStatus.Cancelled) {
-    showAlertConfirm('Are you sure', `You want to cancel ${applicants.length} applicants`)
-      .then((response) => {
-        if (response) sendBulkStatus(applicants, status);
-      })
-      .catch((error) => showAlertError(error));
-    return;
+    if (!(await showAlertConfirm('Are you sure', `You want to cancel ${applicants.length} applicants`))) return;
   }
-  sendBulkStatus(applicants, status);
+  await sendBulkStatus(applicants, status);
 }
 
-function sendBulkStatus(applicants: AgencyApplicant[], status: RequestApplicantStatus) {
+async function sendBulkStatus(applicants: AgencyApplicant[], status: RequestApplicantStatus) {
   isBulkUpdating.value = true;
-  changeAgencyApplicantsStatus({ applicantIds: applicants.map((applicant) => applicant.id), status })
-    .then((result) => {
-      isBulkUpdating.value = false;
-      const names = new Map(applicants.map((applicant) => [applicant.id, applicant.name]));
-      reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.applicantId, reason: s.reason })), names, 'applicants');
-      loadApplicants();
-    })
-    .catch((error) => {
-      isBulkUpdating.value = false;
-      showAlertError(error);
-    });
+  try {
+    const result = await changeAgencyApplicantsStatus({ applicantIds: applicants.map((applicant) => applicant.id), status });
+    isBulkUpdating.value = false;
+    const names = new Map(applicants.map((applicant) => [applicant.id, applicant.name]));
+    reportBulkResult(result.updated, result.skipped.map((s) => ({ id: s.applicantId, reason: s.reason })), names, 'applicants');
+    await loadApplicants();
+  } catch (error) {
+    isBulkUpdating.value = false;
+    showAlertError(error);
+  }
 }
 
 // The checklist reports its state after every change, so the row's progress
@@ -297,7 +292,7 @@ function compliancePercent(row: AgencyApplicant): number {
 
 function onCellClick(row: AgencyApplicant, column: TableColumnRef) {
   if (column.field === 'name' && row.workerProfileId) {
-    router.push(`/recruiting/workers/${row.workerProfileId}`);
+    void router.push(`/recruiting/workers/${row.workerProfileId}`);
     return;
   }
   if (column.field === 'compliance' || column.field === 'status') {
@@ -313,28 +308,27 @@ function toggleCompliance(row: AgencyApplicant) {
 
 function onPageChange(page: number) {
   serverParams.value.pageIndex = page;
-  loadApplicants();
+  void loadApplicants();
 }
 
-function loadApplicants() {
+async function loadApplicants() {
   isLoading.value = true;
   clearSelection();
   agencyStore.updateAgencyApplicantsFilter({ ...serverParams.value });
-  getAgencyApplicants(serverParams.value)
-    .then((response) => {
-      groups.value = response.items;
-      totalRequests.value = response.totalItems;
-      totalApplicants.value = response.totalApplicants;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getAgencyApplicants(serverParams.value);
+    groups.value = response.items;
+    totalRequests.value = response.totalItems;
+    totalApplicants.value = response.totalApplicants;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openRequest(requestId: string) {
-  router.push(`/recruiting/requests/${requestId}`);
+  void router.push(`/recruiting/requests/${requestId}`);
 }
 
 function showAddApplicant(requestId: string) {
@@ -342,19 +336,18 @@ function showAddApplicant(requestId: string) {
   modalAddApplicant.value = true;
 }
 
-function addApplicant(model: CreateRequestApplicantModel) {
+async function addApplicant(model: CreateRequestApplicantModel) {
   if (!addApplicantRequestId.value) return;
   modalAddApplicant.value = false;
   isLoading.value = true;
-  postAgencyRequestApplicant(addApplicantRequestId.value, model)
-    .then(() => {
-      isLoading.value = false;
-      loadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyRequestApplicant(addApplicantRequestId.value, model);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showComments(row: AgencyApplicant) {
@@ -362,20 +355,19 @@ function showComments(row: AgencyApplicant) {
   modalComments.value = true;
 }
 
-function saveComments(comments: string) {
+async function saveComments(comments: string) {
   const applicant = currentApplicant.value;
   if (!applicant) return;
   modalComments.value = false;
   isLoading.value = true;
-  updateAgencyRequestApplicant(applicant.requestId, applicant.id, { comments })
-    .then(() => {
-      applicant.comments = comments;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyRequestApplicant(applicant.requestId, applicant.id, { comments });
+    applicant.comments = comments;
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showCandidateDetail(candidateId: string) {
@@ -385,11 +377,11 @@ function showCandidateDetail(candidateId: string) {
 
 function onCandidateUpdated() {
   modalCandidateDetail.value = false;
-  loadApplicants();
+  void loadApplicants();
 }
 
 function openWorker(workerProfileId: string) {
-  router.push(`/recruiting/workers/${workerProfileId}`);
+  void router.push(`/recruiting/workers/${workerProfileId}`);
 }
 
 function showAddRunner(row: AgencyApplicant) {
@@ -397,50 +389,43 @@ function showAddRunner(row: AgencyApplicant) {
   modalAddRunner.value = true;
 }
 
-function addRunner(type: RunnerType) {
+async function addRunner(type: RunnerType) {
   const applicant = currentApplicant.value;
   if (!applicant?.workerProfileId) return;
   modalAddRunner.value = false;
   isLoading.value = true;
-  createAgencyRunner(applicant.requestId, { workerProfileId: applicant.workerProfileId, type })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Runner added');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createAgencyRunner(applicant.requestId, { workerProfileId: applicant.workerProfileId, type });
+    isLoading.value = false;
+    showAlertSuccess('Runner added');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function convertToWorker(candidateId: string) {
+async function convertToWorker(candidateId: string) {
   isLoading.value = true;
-  convertCandidateToWorker(candidateId)
-    .then(() => {
-      isLoading.value = false;
-      loadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await convertCandidateToWorker(candidateId);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function removeApplicant(row: AgencyApplicant) {
-  showAlertConfirm('Are you sure', `You want to remove ${row.name} from request ${row.requestNumberId}`)
-    .then((response) => {
-      if (!response) return;
-      isLoading.value = true;
-      deleteAgencyRequestApplicant(row.requestId, row.id)
-        .then(() => {
-          isLoading.value = false;
-          loadApplicants();
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    })
-    .catch((error) => showAlertError(error));
+async function removeApplicant(row: AgencyApplicant) {
+  if (!(await showAlertConfirm('Are you sure', `You want to remove ${row.name} from request ${row.requestNumberId}`))) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyRequestApplicant(row.requestId, row.id);
+    isLoading.value = false;
+    await loadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

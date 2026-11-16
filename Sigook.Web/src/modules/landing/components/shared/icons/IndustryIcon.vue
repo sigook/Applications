@@ -20,7 +20,7 @@ export type IndustryIconName =
 <script setup lang="ts">
 import LandingIcon from '@/modules/landing/components/shared/icons/LandingIcon.vue'
 
-defineProps<{
+const { name } = defineProps<{
   name: IndustryIconName
 }>()
 </script>

@@ -4,29 +4,34 @@
 
 ```
 lib/
+├── main_common.dart               mainCommon(): env validation, crash reporting, runApp(MyApp)
+├── main_local.dart / main_staging.dart / main_production.dart   Entry points per environment
+│
 ├── core/                          Shared infrastructure (no business logic)
-│   ├── config/                    Environment, feature flags
+│   ├── config/                    EnvironmentConfig (String.fromEnvironment)
+│   ├── constants/                 ErrorMessages, AuthErrorCodes, ClockType
 │   ├── error/                     Failures, exceptions
 │   ├── network/                   ApiClient (Dio), interceptors, NetworkInfo
-│   ├── providers/                 core_providers (networkInfo, secureStorage, apiClient)
+│   ├── pages/                     Full-screen pages shared across features (DocumentPreviewPage)
+│   ├── providers/                 core_providers (networkInfo, secureStorage, apiClient), analytics_providers
 │   ├── routing/                   app_router (go_router)
-│   ├── services/                  FilePicker, FileNaming, Analytics, CrashReporting
+│   ├── services/                  FilePicker, FileNaming, FileOpener, Location, Analytics, CrashReporting
 │   ├── theme/                     AppTheme (colors, text styles)
 │   ├── usecases/                  UseCase<T, Params> base class, NoParams
-│   └── widgets/                   Reusable UI: cards, inputs, feedback, display, navigation
+│   ├── utils/                     String extensions, geo, map links, phone formatter, enum converters
+│   └── widgets/                   Reusable UI: buttons, cards, inputs, feedback, display, navigation
 │
 └── features/
     ├── auth/                      Authentication (sign-in, logout, token refresh)
     ├── catalog/                   Read-only catalog data (availabilities, languages, etc.)
-    ├── history/                   Worker assignment history
-    ├── jobs/                      Job listing, details, apply, timesheets
+    ├── activity/                  Activity screen, split into sub-features: history/, hours/ (timesheets), pay_stubs/
+    ├── jobs/                      Job listing, details, apply, punch card
     ├── profile/                   Worker profile — split into sub-features (see below)
     ├── comments/                  Agency comments on the worker (read-only section)
     ├── legal/                     Terms and privacy policy pages
     ├── registration/              Multi-step worker registration form
     ├── app_update/                Forced-update gate: GET /mobileapp/version, blocks the whole UI (MyApp builder) when the build is below MinimumVersion; re-checks on resume
     ├── about/                     Static info page
-    ├── settings/                  Language settings
     ├── splash/                    Splash screen
     └── welcome/                   Welcome / onboarding page
 ```
@@ -341,7 +346,7 @@ Neither platform has flavors: `android/app/build.gradle.kts` declares no `produc
 - Start the emulator first (`emulator -avd sigook_pixel`); `mobile_list_available_devices` returns an empty list otherwise. Every other tool takes `device: "sigook_pixel"` (the AVD name, not `emulator-5554`).
 - Package ids: `com.sigook.sigook` (debug / production), `com.sigook.beta` (beta track).
 - `mobile_list_elements_on_screen` returns Flutter widgets only through their semantics `label`; widgets without a `Semantics` label show up as bare `View`/`Button` with coordinates. Tap at the element's centre (`at` + `size / 2`) with `mobile_click_on_screen_at_coordinates`.
-- Keep the tree readable: every icon-only `IconButton` takes a `tooltip`; an icon-only or image-only `InkWell` / `GestureDetector` is wrapped in `Semantics(button: true, label: ...)`; a tappable card or option row gets `Semantics(button: true)` (plus `selected:` when it is a choice); `CustomTextField` / `CustomDropdown` wrap the control in `Semantics(label:)` and exclude the visual label text. Do not add `textField: true` to that wrapper: Android maps a text field's label to `hintText`, which the tools do not surface, and it duplicates the `EditText` node.
+- Keep the tree readable: every icon-only `IconButton` takes a `tooltip`; an icon-only or image-only `InkWell` / `GestureDetector` is wrapped in `Semantics(button: true, label: ...)`; a tappable card or option row gets `Semantics(button: true)` (plus `selected:` when it is a choice); `CustomTextField` wraps the control in `Semantics(label:)` and excludes the visual label text. Do not add `textField: true` to that wrapper: Android maps a text field's label to `hintText`, which the tools do not surface, and it duplicates the `EditText` node.
 - `mobile_take_screenshot` is downscaled; its result text gives the multiplier to map screenshot pixels to screen coordinates. `mobile_save_screenshot` only writes under the repo or `%LOCALAPPDATA%\Temp`.
 - An installed debug build may still point at `.env.local` (`10.0.2.2:5000`): "No internet connection" on the jobs page means the local API is not running, not an emulator network issue.
 

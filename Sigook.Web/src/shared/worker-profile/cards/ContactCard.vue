@@ -16,17 +16,17 @@
         <dl class="contact-fields">
           <div class="profile-field">
             <dt class="profile-field-label">Address</dt>
-            <dd v-if="props.worker.location" class="is-capitalized">{{ address }}</dd>
+            <dd v-if="worker.location" class="is-capitalized">{{ address }}</dd>
             <dd v-else class="profile-empty">—</dd>
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Mobile</dt>
-            <dd v-if="props.worker.mobileNumber"><copy-link kind="phone" :value="props.worker.mobileNumber" /></dd>
+            <dd v-if="worker.mobileNumber"><copy-link kind="phone" :value="worker.mobileNumber" /></dd>
             <dd v-else class="profile-empty">—</dd>
           </div>
-          <div v-if="props.worker.phone" class="profile-field">
+          <div v-if="worker.phone" class="profile-field">
             <dt class="profile-field-label">Phone</dt>
-            <dd><copy-link kind="phone" :value="props.worker.phone" :ext="props.worker.phoneExt" /></dd>
+            <dd><copy-link kind="phone" :value="worker.phone" :ext="worker.phoneExt" /></dd>
           </div>
         </dl>
       </div>
@@ -40,13 +40,13 @@
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Phone</dt>
-            <dd v-if="props.worker.contactEmergencyPhone"><copy-link kind="phone" :value="props.worker.contactEmergencyPhone" /></dd>
+            <dd v-if="worker.contactEmergencyPhone"><copy-link kind="phone" :value="worker.contactEmergencyPhone" /></dd>
             <dd v-else class="profile-empty">—</dd>
           </div>
           <div class="profile-field">
             <dt class="profile-field-label">Health problems / allergies</dt>
-            <dd v-if="props.worker.haveAnyHealthProblem">
-              {{ [props.worker.healthProblem, props.worker.otherHealthProblem].filter(Boolean).join(' · ') || 'Yes' }}
+            <dd v-if="worker.haveAnyHealthProblem">
+              {{ [worker.healthProblem, worker.otherHealthProblem].filter(Boolean).join(' · ') || 'Yes' }}
             </dd>
             <dd v-else>None</dd>
           </div>
@@ -55,8 +55,8 @@
     </div>
 
     <b-modal custom-content-class="card" v-model="isModalOpen" width="800px">
-      <contact-information-form v-if="activeForm === 'contact'" :data="props.worker" @closeModal="onSaved" />
-      <emergency-information-form v-else-if="activeForm === 'emergency'" :data="props.worker" @closeModal="onSaved" />
+      <contact-information-form v-if="activeForm === 'contact'" :data="worker" @closeModal="onSaved" />
+      <emergency-information-form v-else-if="activeForm === 'emergency'" :data="worker" @closeModal="onSaved" />
     </b-modal>
   </profile-card>
 </template>
@@ -71,14 +71,14 @@ import EmergencyInformationForm from '@/shared/worker-profile/forms/WorkEmergenc
 
 type ContactForm = 'contact' | 'emergency';
 
-const props = defineProps<{ worker: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'updateProfile'): void }>();
+const { worker } = defineProps<{ worker: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'updateProfile') => void>();
 
 const isModalOpen = ref(false);
 const activeForm = ref<ContactForm | null>(null);
 
 const address = computed(() => {
-  const location = props.worker.location;
+  const location = worker.location;
   if (!location) {
     return '';
   }
@@ -87,7 +87,7 @@ const address = computed(() => {
 });
 
 const emergencyName = computed(() =>
-  [props.worker.contactEmergencyName, props.worker.contactEmergencyLastName].filter(Boolean).join(' '),
+  [worker.contactEmergencyName, worker.contactEmergencyLastName].filter(Boolean).join(' '),
 );
 
 function open(form: ContactForm) {

@@ -15,7 +15,3 @@ export function getAgenciesList(filter: AgencyListFilter): Promise<PaginatedList
 export function createAgency(model: CreateAgencyModel): Promise<{ id: string }> {
   return api.post<{ id: string }>('/api/agency/sales/agencies', model);
 }
-
-export function updateAgency(agency: AgencyDetail): Promise<void> {
-  return api.put('/api/agency/sales/agencies', agency);
-}

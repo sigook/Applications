@@ -1,7 +1,7 @@
 <template>
   <section class="profile-card">
     <header class="profile-card-header">
-      <h3 class="profile-card-title">{{ props.title }}</h3>
+      <h3 class="profile-card-title">{{ title }}</h3>
       <div v-if="$slots.actions" class="profile-card-actions">
         <slot name="actions" />
       </div>
@@ -11,7 +11,7 @@
 </template>
 
 <script setup lang="ts">
-const props = defineProps<{ title: string }>();
+const { title } = defineProps<{ title: string }>();
 </script>
 
 <style lang="scss" scoped>

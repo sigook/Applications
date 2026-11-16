@@ -5,7 +5,7 @@ dayjs.extend(relativeTime);
 
 dayjs.locale('en');
 
-export default function (date: string | null): string {
+export default function (date: string | null | undefined): string {
     if (!date) return "";
 
     return dayjs(date).fromNow();

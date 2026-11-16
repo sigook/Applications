@@ -16,7 +16,6 @@ public interface IAgencyService
     Task<Result<Guid>> CreateCompany(CompanyProfileDetailModel model);
     Task<Result> UpdateCompany(Guid companyProfileId, CompanyProfileDetailModel model);
     Task<Result<Guid>> CreateCompanyContactPerson(Guid profileId, CompanyProfileContactPersonModel model);
-    Task<Result> UpdateCompanyContactPerson(Guid id, CompanyProfileContactPersonModel model);
     Task<Result<Guid>> CreateCompanyJobPosition(Guid profileId, CompanyProfileJobPositionRateModel model);
     Task<Result> UpdateCompanyJobPosition(Guid id, Guid profileId, CompanyProfileJobPositionRateModel model);
     Task<Result> DeleteCompanyJobPosition(Guid id);
@@ -33,12 +32,11 @@ public interface IAgencyService
     Task<Result> AddUpdateWorkerHoliday(Guid workerProfileId, WorkerProfileHolidayModel model);
     Task<Result> CreateHoliday(WorkerProfileHolidayModel model);
     string[] GetAssignableRoles();
-    Task<IEnumerable<AgencyPersonnelModel>> GetAgencyPersonnel(Guid agencyId);
-    Task<AgencyPersonnelModel> GetAgencyPersonnel(Guid agencyId, Guid id);
-    Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model, Guid? agencyId = null);
+    Task<List<AgencyPersonnelModel>> GetAgencyPersonnel(IEnumerable<Guid> agencyIds);
+    Task<AgencyPersonnelModel> GetAgencyPersonnel(IEnumerable<Guid> agencyIds, Guid id);
+    Task<Result> CreateAgencyPersonnel(AgencyPersonnelModel model);
     Task<Result> UpdateAgencyPersonnel(Guid id, AgencyPersonnelModel model);
-    Task<Result> DeleteAgencyPersonnel(Guid agencyId, Guid id);
-    Task SetPrimaryPersonnelAgency(Guid userId, Guid personnelId);
+    Task<Result> DeleteAgencyPersonnel(Guid id);
     Task<Result> UpdateAgencyProfile(Guid agencyId, AgencyModel model);
     Task<Result<Guid>> CreateAgencyLocation(Guid agencyId, LocationModel model);
     Task<Result> UpdateAgencyLocation(Guid agencyId, Guid id, LocationModel model);

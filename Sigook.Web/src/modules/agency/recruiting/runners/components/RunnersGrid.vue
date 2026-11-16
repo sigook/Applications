@@ -27,7 +27,7 @@
           </b-select>
         </template>
         <template v-slot="props">
-          <b-tag>{{ RUNNER_TYPE_LABELS[props.row.type] }}</b-tag>
+          <b-tag>{{ RUNNER_TYPE_LABELS[props.row.type as RunnerType] }}</b-tag>
         </template>
       </b-table-column>
 
@@ -111,17 +111,14 @@ interface DetailPanelHandle {
   reload: () => void;
 }
 
-const props = withDefaults(defineProps<{
+const { fetch, data, sortMap, checkable, canEdit = true, emptyText = 'No runners yet' } = defineProps<{
   fetch?: (params: AgencyRunnerFilter) => Promise<PaginatedList<T>>;
   data?: T[];
   sortMap?: Record<string, number>;
   checkable?: boolean;
   canEdit?: boolean;
   emptyText?: string;
-}>(), {
-  canEdit: true,
-  emptyText: 'No runners yet',
-});
+}>();
 
 const params = defineModel<AgencyRunnerFilter>('params');
 const checkedRows = defineModel<T[]>('checkedRows', { default: () => [] });
@@ -136,7 +133,7 @@ const grid = useTemplateRef<GridHandle>('grid');
 const openedRunners = ref<string[]>([]);
 const panels = new Map<string, DetailPanelHandle>();
 
-const isServer = computed(() => !!props.fetch);
+const isServer = computed(() => !!fetch);
 const statusOptions: CatalogItem<RunnerStatus>[] = RUNNER_STATUSES.map((s) => ({ id: s, value: RUNNER_STATUS_LABELS[s] }));
 
 const statusesSelected = computed<CatalogItem<RunnerStatus>[]>({
@@ -174,7 +171,7 @@ function onAction(row: T, action: RunnerAction) {
 function onCellClick(row: T, column: TableColumnRef) {
   if (column.field === 'actions') return;
   if (column.field === 'name') {
-    router.push(`/recruiting/workers/${row.workerProfileId}`);
+    void router.push(`/recruiting/workers/${row.workerProfileId}`);
     return;
   }
   openedRunners.value = openedRunners.value.includes(row.id)
@@ -190,7 +187,7 @@ function registerPanel(id: string, panel: unknown) {
 // A change made from a modal must show in the open detail rows too, so every
 // mounted panel reloads besides the list that owns the grid.
 function onUpdated() {
-  panels.forEach((panel) => panel.reload());
+  panels.forEach((panel) => { panel.reload(); });
   grid.value?.reload();
   emit('updated');
 }

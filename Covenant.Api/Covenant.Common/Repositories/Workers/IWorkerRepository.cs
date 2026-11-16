@@ -15,8 +15,8 @@ public interface IWorkerRepository : IBaseRepository
     Task<PaginatedList<WorkerCommentModel>> GetComments(Expression<Func<WorkerComment, bool>> condition, Pagination pagination);
     Task<WorkerProfileBasicInfoModel> GetWorkerProfileBasicInfo(Guid workerProfileId);
     Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition);
-    Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);
-    IQueryable<WorkerProfileListModel> GetAllWorkersProfile(Guid agencyId, GetWorkerProfileFilter filter);
+    Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter);
+    IQueryable<WorkerProfileListModel> GetAllWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter);
     Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm);
     Task<List<CovenantFileModel>> GetOtherDocuments(Guid profileId);
     Task<WorkerProfileOtherDocument> GetOtherDocument(Guid otherDocumentId);
@@ -25,7 +25,7 @@ public interface IWorkerRepository : IBaseRepository
     Task<bool> InfoIsAlreadyTaken(Expression<Func<WorkerProfile, bool>> expression);
     Task<bool> SocialInsuranceIsAlreadyTaken(string socialInsurance, Guid? excludeProfileId = null);
     Task<List<WorkerProfileHolidayModel>> GetWorkerProfileHoliday(Guid workerProfileId);
-    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(Guid agencyId, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter);
+    Task<PaginatedList<PayStubHistoryModel>> GetWageHistory(IEnumerable<Guid> agencyIds, Guid workerProfileId, GetWorkerPayStubHistoryFilter filter);
     Task<PaginatedList<WorkerProfileNoteListModel>> GetWorkerProfileNotes(Guid workerProfileId, Pagination pagination);
     Task<List<WorkerContactInfoModel>> GetWorkersAvailableToInvite(Guid agencyId, Guid cityId);
     Task<IEnumerable<WorkerSINExpiredModel>> GetWorkersSinExpired(DateTime date);

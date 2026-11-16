@@ -4,7 +4,7 @@
       {{ label }} <span v-if="required" class="has-text-danger">*</span>
     </template>
     <b-input type="tel" title="phone" :name="name" :disabled="disabled" :placeholder="placeholder"
-      v-model="phone" maxlength="12" />
+      v-model="phone" maxlength="12" :has-counter="false" />
   </b-field>
 </template>
 
@@ -23,31 +23,26 @@ function formatPhone(raw: string): string {
   return `${a} ${b}-${c}`;
 }
 
-const props = withDefaults(defineProps<{
+const { name = 'mobileNumber', label = 'Mobile Number', defaultValue = '', disabled, required, placeholder } = defineProps<{
   name?: string;
   label?: string;
   model?: string;
-  defaultValue?: string;
+  defaultValue?: string | null;
   disabled?: boolean;
   required?: boolean;
   placeholder?: string;
-}>(), {
-  name: 'mobileNumber',
-  label: 'Mobile Number',
-  model: '',
-  defaultValue: '',
-});
+}>();
 
-const emit = defineEmits<{ (e: 'formattedPhone', v: string | null): void }>();
+const emit = defineEmits<(e: 'formattedPhone', v: string | null) => void>();
 
 const schema = computed(() => ({
-  phone: phoneSchema(props.required),
+  phone: phoneSchema(required),
 }));
 
 const { errors: formErrors, defineField, setFieldValue, validate } = useForm({
   validationSchema: schema,
   initialValues: {
-    phone: formatPhone(props.defaultValue || ''),
+    phone: formatPhone(defaultValue || ''),
   },
 });
 
@@ -64,7 +59,7 @@ watch(phone, (val) => {
   emit('formattedPhone', formatted || null);
 });
 
-watch(() => props.defaultValue, (val) => {
+watch(() => defaultValue, (val) => {
   const formatted = formatPhone(val || '');
   if (formatted !== phone.value) {
     setFieldValue('phone', formatted);

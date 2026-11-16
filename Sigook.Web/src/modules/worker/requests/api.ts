@@ -16,7 +16,7 @@ export function workerRequestApplySelf(requestId: string, model: WorkerRequestAp
 }
 
 export function requestApplyByEmail(numberId: number, email: string): Promise<void> {
-  return api.post<void>('/api/worker/requests/Apply', { numberId, email });
+  return api.post('/api/worker/requests/Apply', { numberId, email });
 }
 
 // TimeSheet

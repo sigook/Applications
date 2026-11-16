@@ -30,16 +30,13 @@ import { INTERACTION_TYPE_ICONS, INTERACTION_TYPE_LABELS } from '@/modules/agenc
 import type { CompanyInteraction } from '@/modules/agency/sales/clients/types';
 import { relativeTime } from '@/modules/agency/sales/dashboard/format';
 
-withDefaults(
-  defineProps<{
-    items: readonly CompanyInteraction[];
-    asOf: string;
-    loading?: boolean;
-  }>(),
-  { loading: false }
-);
+const { items, asOf, loading = false } = defineProps<{
+  items: readonly CompanyInteraction[];
+  asOf: string;
+  loading?: boolean;
+}>();
 
-const emit = defineEmits<{ (e: 'edit', interaction: CompanyInteraction): void }>();
+const emit = defineEmits<(e: 'edit', interaction: CompanyInteraction) => void>();
 </script>
 
 <style scoped lang="scss">

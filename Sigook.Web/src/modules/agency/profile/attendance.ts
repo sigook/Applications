@@ -29,7 +29,7 @@ export function formatHours(hours: number | null | undefined): string {
   return (hours ?? 0).toFixed(2);
 }
 
-export function formatElapsed(from: dayjs.ConfigType, to: dayjs.ConfigType = undefined): string {
+export function formatElapsed(from: dayjs.ConfigType, to?: dayjs.ConfigType): string {
   const minutes = Math.max(0, dayjs(to).diff(dayjs(from), 'minute'));
   const h = Math.floor(minutes / 60).toString().padStart(2, '0');
   const m = (minutes % 60).toString().padStart(2, '0');

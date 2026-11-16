@@ -8,6 +8,8 @@ public interface IIdentityRepository : IBaseRepository
     Task<bool> IsInactive(Guid userId);
     Task RevokeTokens(Guid userId);
     Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds);
+    Task<IReadOnlyList<AgencyMemberModel>> GetAgencyMembers(IEnumerable<Guid> agencyIds);
+    Task<IReadOnlyList<AgencyMemberModel>> GetUsersAgencies(IEnumerable<Guid> userIds);
     Task<List<PasswordResetCode>> GetPendingResetCodes(Guid userId);
     Task<PasswordResetCode> GetLatestPendingResetCode(Guid userId);
     Task<int> CountResetCodesSince(Guid userId, DateTimeOffset since);

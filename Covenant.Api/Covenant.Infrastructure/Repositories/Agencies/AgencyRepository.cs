@@ -56,62 +56,24 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         Context.AgencyLocations.Where(w => w.AgencyId == agencyId && w.LocationId == id)
             .Select(AgencyExtensionsMapping.SelectLocation).AsNoTracking().SingleOrDefaultAsync();
 
-    public async Task<IEnumerable<AgencyPersonnelModel>> GetAllPersonnel(Guid agencyId) =>
-        await Context.AgencyPersonnel.Where(c => c.AgencyId == agencyId)
-            .OrderBy(c => c.Name)
-            .Select(s => new AgencyPersonnelModel
+    public Task<List<AgencyPersonnelModel>> GetPersonnel(IEnumerable<Guid> userIds) =>
+        Context.Users.Where(u => userIds.Contains(u.Id))
+            .OrderBy(u => u.Name ?? u.Email)
+            .ThenBy(u => u.Id)
+            .Select(u => new AgencyPersonnelModel
             {
-                Id = s.Id,
-                UserId = s.UserId,
-                Name = s.Name,
-                Email = s.User.Email
-            }).ToListAsync();
+                Id = u.Id,
+                UserId = u.Id,
+                Name = u.Name,
+                Email = u.Email
+            }).AsNoTracking().ToListAsync();
 
-    public Task<AgencyPersonnel> GetPersonnel(Guid id) =>
-        Context.AgencyPersonnel.Where(c => c.Id == id)
-            .Include(i => i.User)
-            .SingleOrDefaultAsync();
+    public async Task<bool> PersonnelHasRequests(Guid userId) =>
+        await Context.RequestRecruiters.AnyAsync(r => r.RecruiterId == userId)
+        || await Context.RequestComissions.AnyAsync(c => c.SalesRepresentativeId == userId);
 
-    public Task<List<AgencyPersonnel>> GetPersonnelByUserId(Guid id) =>
-        Context.AgencyPersonnel.Where(c => c.UserId == id)
-            .Include(i => i.User).ToListAsync();
-
-    public Task<List<AgencyPersonnel>> GetPersonnels(IEnumerable<Guid> ids) =>
-        Context.AgencyPersonnel.Where(c => ids.Contains(c.Id))
-            .Include(i => i.User).ToListAsync();
-
-    public Task<AgencyPersonnelModel> GetPersonnel(Guid agencyId, Guid id) =>
-        Context.AgencyPersonnel.Where(c => c.AgencyId == agencyId && c.Id == id)
-            .Select(s => new AgencyPersonnelModel
-            {
-                Id = s.Id,
-                UserId = s.UserId,
-                Name = s.Name,
-                Email = s.User.Email
-            }).SingleOrDefaultAsync();
-
-    public async Task<bool> PersonnelHasRequests(Guid personnelId) =>
-        await Context.RequestRecruiters.AnyAsync(r => r.RecruiterId == personnelId)
-        || await Context.RequestComissions.AnyAsync(c => c.AgencyPersonnelId == personnelId);
-
-    public Task<bool> PersonnelHasCompanies(Guid personnelId) =>
-        Context.CompanyProfiles.AnyAsync(c => c.SalesRepresentativeId == personnelId);
-
-    public async Task<IEnumerable<PersonnelAgencyModel>> GetPersonnelAgency(Guid userId)
-    {
-        var result = Context.AgencyPersonnel
-            .Where(c => c.UserId == userId)
-            .Select(s => new PersonnelAgencyModel
-            {
-                Id = s.Id,
-                Name = s.Agency.FullName,
-                Email = s.Agency.User.Email,
-                AgencyId = s.Agency.Id,
-                IsPrimary = s.IsPrimary,
-                Logo = s.Agency.Logo == null ? null : $"{filesConfiguration.FilesPath}{s.Agency.Logo.FileName}"
-            });
-        return await result.ToListAsync();
-    }
+    public Task<bool> PersonnelHasCompanies(Guid userId) =>
+        Context.CompanyProfiles.AnyAsync(c => c.SalesRepresentativeId == userId);
 
     public async Task<Location> GetBillingLocation(Guid agencyId)
     {
@@ -122,26 +84,12 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         return agencyLocation?.Location;
     }
 
-    public async Task<AgencyUserContextModel> GetAgencyContextForUser(Guid userId)
-    {
-        var personnel = await Context.AgencyPersonnel.Where(p => p.UserId == userId)
-            .OrderByDescending(p => p.IsPrimary)
-            .Select(p => new { p.Id, p.AgencyId })
-            .FirstOrDefaultAsync();
-        if (personnel is null) return null;
-        var agencies = await Context.Agencies
-            .Where(a => a.Id == personnel.AgencyId || a.AgencyParentId == personnel.AgencyId)
-            .Select(a => new { a.Id, a.AgencyType })
+    public Task<List<AgencyOptionModel>> GetAgencyOptions(IEnumerable<Guid> agencyIds) =>
+        Context.Agencies.Where(a => agencyIds.Contains(a.Id))
+            .OrderBy(a => a.FullName)
+            .ThenBy(a => a.Id)
+            .Select(a => new AgencyOptionModel { Id = a.Id, Name = a.FullName })
             .ToListAsync();
-        var isMaster = agencies.Any(a => a.Id == personnel.AgencyId && a.AgencyType == AgencyType.Master);
-        var childIds = isMaster ? agencies.Where(a => a.Id != personnel.AgencyId).Select(a => a.Id) : [];
-        return new AgencyUserContextModel
-        {
-            AgencyId = personnel.AgencyId,
-            AgencyPersonnelId = personnel.Id,
-            AgencyIds = [personnel.AgencyId, .. childIds]
-        };
-    }
 
     public async Task<Agency> GetAgencyMasterByLocation(CityModel city)
     {
@@ -167,18 +115,18 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
         return agencyLocation?.Agency;
     }
 
-    public async Task<PaginatedList<AgencyModel>> GetAgencies(Guid agencyId, GetAgenciesFilter filter)
+    public async Task<PaginatedList<AgencyModel>> GetAgencies(IEnumerable<Guid> agencyIds, GetAgenciesFilter filter)
     {
-        var query = GetAllAgencies(agencyId, filter);
+        var query = GetAllAgencies(agencyIds, filter);
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<AgencyModel> GetAllAgencies(Guid agencyId, GetAgenciesFilter filter)
+    public IQueryable<AgencyModel> GetAllAgencies(IEnumerable<Guid> agencyIds, GetAgenciesFilter filter)
     {
         var agencies = Context.Agencies
             .Include(a => a.User)
             .Include(a => a.Locations).ThenInclude(l => l.Location).ThenInclude(l => l.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
-            .Where(a => a.AgencyParentId == agencyId);
+            .Where(a => a.AgencyParentId.HasValue && agencyIds.Contains(a.AgencyParentId.Value));
 
         var query = agencies.Select(a => new AgencyModel
         {
@@ -215,13 +163,13 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
             AgencyType = a.AgencyType
         });
 
-        var predicate = ApplyFilterAgencies(agencyId, filter);
+        var predicate = ApplyFilterAgencies(agencyIds, filter);
         query = query.Where(predicate);
         query = ApplySortAgencies(query, filter);
         return query;
     }
 
-    private Expression<Func<AgencyModel, bool>> ApplyFilterAgencies(Guid agencyId, GetAgenciesFilter filter)
+    private Expression<Func<AgencyModel, bool>> ApplyFilterAgencies(IEnumerable<Guid> agencyIds, GetAgenciesFilter filter)
     {
         Expression<Func<AgencyModel, bool>> predicate = PredicateBuilder.New<AgencyModel>(true);
         predicate = predicate
@@ -255,25 +203,22 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
     public Task<UserAttendance> GetUserAttendance(Guid userId, DateTime date) =>
         Context.UserAttendances.FirstOrDefaultAsync(a => a.UserId == userId && a.Date == date.Date);
 
-    public Task<UserAttendance> GetUserAttendanceForAgency(Guid id, Guid agencyId) =>
-        UserAttendancesOf(agencyId).FirstOrDefaultAsync(a => a.Id == id);
+    public Task<UserAttendance> GetUserAttendanceOfUsers(Guid id, IEnumerable<Guid> userIds) =>
+        UserAttendancesOf(userIds).FirstOrDefaultAsync(a => a.Id == id);
 
-    public Task<List<UserAttendance>> GetUserAttendancesForAgency(Guid agencyId, DateTime date) =>
-        UserAttendancesOf(agencyId).Where(a => a.Date == date.Date).ToListAsync();
+    public Task<List<UserAttendance>> GetUserAttendancesOfUsers(IEnumerable<Guid> userIds, DateTime date) =>
+        UserAttendancesOf(userIds).Where(a => a.Date == date.Date).ToListAsync();
 
-    public Task<List<UserAttendanceListModel>> GetUserAttendanceReport(Guid agencyId, GetUserAttendanceReportFilter filter)
+    public Task<List<UserAttendanceListModel>> GetUserAttendanceReport(IEnumerable<Guid> userIds, GetUserAttendanceReportFilter filter)
     {
-        var query = UserAttendancesOf(agencyId).Where(a => a.Date >= filter.From.Date && a.Date <= filter.To.Date);
+        var query = UserAttendancesOf(userIds).Where(a => a.Date >= filter.From.Date && a.Date <= filter.To.Date);
         if (filter.UserId.HasValue) query = query.Where(a => a.UserId == filter.UserId.Value);
         return query
             .Select(a => new UserAttendanceListModel
             {
                 Id = a.Id,
                 UserId = a.UserId,
-                Name = Context.AgencyPersonnel
-                    .Where(p => p.AgencyId == agencyId && p.UserId == a.UserId)
-                    .Select(p => p.Name)
-                    .FirstOrDefault(),
+                Name = a.User.Name,
                 Date = a.Date,
                 ClockIn = a.ClockIn,
                 ClockOut = a.ClockOut,
@@ -288,6 +233,6 @@ public class AgencyRepository(CovenantContext context, IOptions<FilesConfigurati
             .ToListAsync();
     }
 
-    private IQueryable<UserAttendance> UserAttendancesOf(Guid agencyId) =>
-        Context.UserAttendances.Where(a => Context.AgencyPersonnel.Any(p => p.AgencyId == agencyId && p.UserId == a.UserId));
+    private IQueryable<UserAttendance> UserAttendancesOf(IEnumerable<Guid> userIds) =>
+        Context.UserAttendances.Where(a => userIds.Contains(a.UserId));
 }

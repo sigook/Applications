@@ -16,7 +16,7 @@ public class NotificationService(
         if (currentUserService.IsSales() && !currentUserService.IsAdmin()) return new NotificationsModel();
         return new NotificationsModel
         {
-            PendingReviewRequests = await requestRepository.GetPendingReviewRequests(currentUserService.GetAgencyId())
+            PendingReviewRequests = await requestRepository.GetPendingReviewRequests(currentUserService.GetAgencyIds())
         };
     }
 

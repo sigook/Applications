@@ -31,6 +31,7 @@ public class SalesServiceInteractionTest
     public SalesServiceInteractionTest()
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyIds()).Returns([_agencyId]);
         _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
         _sut = new SalesService(
             Mock.Of<IRequestService>(),
@@ -165,8 +166,8 @@ public class SalesServiceInteractionTest
         _currentUserService.Setup(i => i.IsSales()).Returns(true);
         GetCompanyInteractionsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
-            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetInteractions(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
         await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter { OwnerId = Guid.NewGuid() });
         Assert.Equal(_userId, captured.OwnerId);
@@ -178,8 +179,8 @@ public class SalesServiceInteractionTest
         _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         GetCompanyInteractionsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
-            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetInteractions(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
         await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter());
         Assert.Null(captured.OwnerId);
@@ -192,8 +193,8 @@ public class SalesServiceInteractionTest
         var otherUserId = Guid.NewGuid();
         GetCompanyInteractionsFilter captured = null;
         _companyRepository
-            .Setup(r => r.GetInteractions(_agencyId, _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
-            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
+            .Setup(r => r.GetInteractions(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), _companyProfileId, It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetCompanyInteractionsFilter>((_, _, f) => captured = f)
             .ReturnsAsync(new PaginatedList<CompanyInteractionListModel>());
         await _sut.GetInteractions(_companyProfileId, new GetCompanyInteractionsFilter { OwnerId = otherUserId });
         Assert.Equal(otherUserId, captured.OwnerId);

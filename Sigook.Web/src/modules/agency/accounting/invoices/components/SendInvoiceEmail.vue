@@ -83,13 +83,13 @@ const defaultBody = `<p>Good Morning,</p>
         <p>We thank you in advance for your continued business, should you have any further requirements or if you have any questions please do not hesitate to contact us.</p>
         <p>Regards,</p>`;
 
-const props = defineProps<{ invoice: AgencyInvoiceListItem }>();
-const emit = defineEmits<{(e: 'sent'): void}>();
+const { invoice } = defineProps<{ invoice: AgencyInvoiceListItem }>();
+const emit = defineEmits<(e: 'sent') => void>();
 
 const form = useStickyForm({
   schema: emailSchema,
   initialValues: {
-    subject: `Invoice ${props.invoice.invoiceNumber} - ${props.invoice.companyFullName}`,
+    subject: `Invoice ${invoice.invoiceNumber} - ${invoice.companyFullName}`,
     body: defaultBody,
   },
 });
@@ -106,7 +106,7 @@ const newEmail = reactive({
 
 async function loadInvoiceRecipients() {
   try {
-    invoiceRecipients.value = await getCompanyInvoiceRecipients(props.invoice.companyProfileId);
+    invoiceRecipients.value = await getCompanyInvoiceRecipients(invoice.companyProfileId);
   } catch (error) {
     showAlertError(error);
   }
@@ -140,25 +140,26 @@ function removeFile(file: File) {
 
 function sendEmail() {
   form.markInteracted(['subject', 'body']);
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isLoading.value = true;
-    sendInvoiceEmail({
-      invoiceId: props.invoice.id,
-      recipients: invoiceRecipients.value.map(recipient => recipient.email),
-      subject: values.subject,
-      body: values.body,
-      attachments: newEmail.attachments
-    }).then(() => {
+    try {
+      await sendInvoiceEmail({
+        invoiceId: invoice.id,
+        recipients: invoiceRecipients.value.map(recipient => recipient.email),
+        subject: values.subject,
+        body: values.body,
+        attachments: newEmail.attachments
+      });
       isLoading.value = false;
       emit('sent');
-    }).catch(error => {
+    } catch (error) {
       isLoading.value = false;
       showAlertError(error);
-    });
+    }
   })();
 }
 
-loadInvoiceRecipients();
+void loadInvoiceRecipients();
 </script>
 
 <style scoped>

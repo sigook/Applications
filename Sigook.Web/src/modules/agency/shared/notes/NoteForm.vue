@@ -15,8 +15,8 @@ import { reactive } from 'vue';
 import type { NoteFormModel } from '@/modules/agency/shared/notes/types';
 import ColorPicker from "@/modules/agency/shared/notes/ColorPicker.vue";
 
-const props = defineProps<{ currentNote?: NoteFormModel }>();
-const emit = defineEmits<{ (e: 'onSave', note: NoteFormModel): void }>();
+const { currentNote } = defineProps<{ currentNote?: NoteFormModel }>();
+const emit = defineEmits<(e: 'onSave', note: NoteFormModel) => void>();
 
 const keyLocalstorage = "sigook_current_note_editing";
 const defaultColor = "#fefefe";
@@ -53,12 +53,12 @@ function onEditingNote(value: string) {
   localStorage.setItem(keyLocalstorage, value);
 }
 
-if (props.currentNote) {
-  newNote.id = props.currentNote.id;
-  newNote.color = props.currentNote.color ?? defaultColor;
-  newNote.note = props.currentNote.note;
-  newNote.createdAt = props.currentNote.createdAt;
-  newNote.createdBy = props.currentNote.createdBy;
+if (currentNote) {
+  newNote.id = currentNote.id;
+  newNote.color = currentNote.color ?? defaultColor;
+  newNote.note = currentNote.note;
+  newNote.createdAt = currentNote.createdAt;
+  newNote.createdBy = currentNote.createdBy;
 } else {
   const currentNoteEditing = localStorage.getItem(keyLocalstorage);
   if (currentNoteEditing) {

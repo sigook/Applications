@@ -77,8 +77,8 @@ interface SinModel extends SinForm {
   socialInsuranceFile: CovenantFileModel;
 }
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   socialInsurance: yup.string()
@@ -139,11 +139,11 @@ async function saveWorkerSin(values: SinForm) {
     };
     const formData = new FormData();
     formData.append('data', JSON.stringify(payload));
-    if (fileObjects.sinFile) {
-      const fn = payload.socialInsuranceFile.fileName;
+    const fn = payload.socialInsuranceFile.fileName;
+    if (fileObjects.sinFile && fn) {
       formData.append(fn, fileObjects.sinFile, fn);
     }
-    await createWorkerSin(props.data.id, formData);
+    await createWorkerSin(data.id, formData);
     emit('closeModal', true);
   } catch (error) {
     showAlertError(error);
@@ -154,22 +154,22 @@ async function saveWorkerSin(values: SinForm) {
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     if (sin.socialInsuranceExpire && !values.dueDate) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
     }
-    saveWorkerSin(values);
+    await saveWorkerSin(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-if (props.data && props.data.socialInsurance !== null && props.data.socialInsurance !== "") {
-  sin.socialInsurance = props.data.socialInsurance;
-  sin.socialInsuranceExpire = props.data.socialInsuranceExpire;
-  sin.socialInsuranceFile = props.data.socialInsuranceFile ?? { fileName: '', description: '' };
-  sin.dueDate = props.data.dueDate ? new Date(props.data.dueDate) : null;
+if (data.socialInsurance !== null && data.socialInsurance !== "") {
+  sin.socialInsurance = data.socialInsurance;
+  sin.socialInsuranceExpire = data.socialInsuranceExpire;
+  sin.socialInsuranceFile = data.socialInsuranceFile ?? { fileName: '', description: '' };
+  sin.dueDate = data.dueDate ? new Date(data.dueDate) : null;
   form.hydrate({
     socialInsurance: sin.socialInsurance || '',
     dueDate: sin.dueDate,

@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Constants;
 using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities.Companies;
@@ -15,8 +16,8 @@ public class ClientsTestData : ITestData
     public User OtherSales { get; } = FakeData.FakeUser($"other.sales.{Guid.NewGuid():N}@clients.com");
     public Agency Agency { get; } = FakeData.FakeAgency();
     public Agency ForeignAgency { get; } = FakeData.FakeAgency();
-    public AgencyPersonnel SalesPersonnel { get; }
-    public AgencyPersonnel OtherSalesPersonnel { get; }
+    public AgencyMemberModel SalesPersonnel { get; }
+    public AgencyMemberModel OtherSalesPersonnel { get; }
     public CompanyProfile Company { get; }
     public CompanyProfile OtherCompany { get; }
     public CompanyProfile SalesCompany { get; }
@@ -25,12 +26,12 @@ public class ClientsTestData : ITestData
 
     public ClientsTestData()
     {
-        SalesPersonnel = AgencyPersonnel.CreatePrimary(Agency.Id, Sales.Id, "Sales Rep");
-        OtherSalesPersonnel = AgencyPersonnel.CreatePrimary(Agency.Id, OtherSales.Id, "Other Rep");
+        SalesPersonnel = TestAgencyMembers.Add(Agency.Id, Sales.With(u => u.UpdateName("Sales Rep")).Id);
+        OtherSalesPersonnel = TestAgencyMembers.Add(Agency.Id, OtherSales.With(u => u.UpdateName("Other Rep")).Id);
         Company = Client("Alpha Client");
         OtherCompany = Client("Beta Client");
-        SalesCompany = Client("Gamma Sales Client").With(c => c.UpdateDetails(null, null, SalesPersonnel.Id));
-        OtherSalesCompany = Client("Delta Other Sales Client").With(c => c.UpdateDetails(null, null, OtherSalesPersonnel.Id));
+        SalesCompany = Client("Gamma Sales Client").With(c => c.UpdateDetails(null, null, Sales.Id));
+        OtherSalesCompany = Client("Delta Other Sales Client").With(c => c.UpdateDetails(null, null, OtherSales.Id));
         ForeignCompany = FakeData.FakeCompanyProfileForAgency(ForeignAgency.Id, "Foreign Client", companyEmail: $"foreign.{Guid.NewGuid():N}@clients.com");
     }
 
@@ -51,7 +52,7 @@ public class ClientsTestData : ITestData
     {
         context.Agencies.AddRange(Agency, ForeignAgency);
         context.Users.AddRange(Recruiter, Sales, OtherSales);
-        context.AgencyPersonnel.AddRange(AgencyPersonnel.CreatePrimary(Agency.Id, Recruiter.Id, "Recruiter"), SalesPersonnel, OtherSalesPersonnel);
+        TestAgencyMembers.Add(Agency.Id, Recruiter.With(u => u.UpdateName("Recruiter")).Id);
         context.AddRange(Company, OtherCompany, SalesCompany, OtherSalesCompany, ForeignCompany);
         context.SaveChanges();
     }

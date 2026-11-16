@@ -43,9 +43,9 @@ public class SubcontractorRepository(CovenantContext context) : BaseRepository<C
                       }).ToList()
          }).ToListAsync();
 
-    public async Task<PaginatedList<PayrollSubContractorListModel>> GetPayrollsSubcontractor(Guid agencyId, Pagination pagination)
+    public async Task<PaginatedList<PayrollSubContractorListModel>> GetPayrollsSubcontractor(IEnumerable<Guid> agencyIds, Pagination pagination)
     {
-        var query = from ps in Context.ReportSubcontractors.Where(rs => rs.WorkerProfile.AgencyId == agencyId)
+        var query = from ps in Context.ReportSubcontractors.Where(rs => agencyIds.Contains(rs.WorkerProfile.AgencyId))
                     select new { ps.WeekEnding, ps.TotalNet };
         var data = query
             .GroupBy(a => a.WeekEnding.Date)
@@ -58,10 +58,10 @@ public class SubcontractorRepository(CovenantContext context) : BaseRepository<C
         return await data.ToPaginatedList(pagination);
     }
 
-    public async Task<int> DeleteReportsByWeekEnding(Guid agencyId, DateTime weekEnding)
+    public async Task<int> DeleteReportsByWeekEnding(IEnumerable<Guid> agencyIds, DateTime weekEnding)
     {
         var reports = await Context.ReportSubcontractors
-            .Where(rs => rs.WorkerProfile.AgencyId == agencyId && rs.WeekEnding.Date == weekEnding.Date)
+            .Where(rs => agencyIds.Contains(rs.WorkerProfile.AgencyId) && rs.WeekEnding.Date == weekEnding.Date)
             .ToListAsync();
         if (reports.Count == 0) return 0;
 

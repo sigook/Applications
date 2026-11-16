@@ -27,7 +27,7 @@ export function useRequestStatus(request: Ref<RequestStatusSource | null>) {
 
   const statusLabel = computed(() => {
     if (!request.value) return '';
-    const label = RequestStatusLabels[request.value.status as RequestStatus] ?? '';
+    const label = (RequestStatusLabels[request.value.status] as string | undefined) ?? '';
     return isBooking.value ? `${label} · Booking` : label;
   });
 

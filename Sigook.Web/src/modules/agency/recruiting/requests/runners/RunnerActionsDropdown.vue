@@ -25,6 +25,6 @@
 import { RunnerStatus, canAddInterview } from '@/modules/agency/recruiting/requests/runners/types';
 import type { RunnerAction } from '@/modules/agency/recruiting/requests/runners/useRunnerActions';
 
-withDefaults(defineProps<{ status: RunnerStatus; canEdit?: boolean }>(), { canEdit: true });
+const { status, canEdit = true } = defineProps<{ status: RunnerStatus; canEdit?: boolean }>();
 const emit = defineEmits<{ (e: 'open', action: RunnerAction): void; (e: 'delete'): void }>();
 </script>

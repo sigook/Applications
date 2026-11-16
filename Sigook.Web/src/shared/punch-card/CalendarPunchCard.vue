@@ -94,7 +94,7 @@ import dayjs, { type Dayjs } from "dayjs";
 import { RequestStatus, WorkerRequestStatus } from "@/shared/constants/enums";
 import type { PunchCardDay, PunchCardWeek, PunchCardWorker } from '@/shared/punch-card/types';
 
-const props = defineProps<{
+const { startDate, worker, highlights } = defineProps<{
   highlights?: PunchCardDay[];
   workerProfileId?: string;
   requestId?: string;
@@ -103,7 +103,7 @@ const props = defineProps<{
   worker?: PunchCardWorker | null;
 }>();
 
-const emit = defineEmits<{ (e: 'onMonthChange', v: { startDate: string; endDate: string }): void }>();
+const emit = defineEmits<(e: 'onMonthChange', v: { startDate: string; endDate: string }) => void>();
 
 const { isMobile } = useBreakpoint();
 const calendar = ref<PunchCardWeek[]>([]);
@@ -172,7 +172,7 @@ function toMomentFormat(date: string | Date) {
 }
 
 function isAvailableToUpdate(date: string | Date) {
-  const start = dayjs(props.startDate).subtract(1, 'day');
+  const start = dayjs(startDate).subtract(1, 'day');
   const oneMonth = dayjs().add(1, 'month');
   if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
     return true;
@@ -192,9 +192,9 @@ function distributeWeekHours(week: PunchCardWeek) {
 }
 
 function isAvailableToUpdateWorker(date: string | Date) {
-  const endedAt = props.worker?.finishedAt ?? props.worker?.rejectedAt;
-  if (props.worker && props.worker.workerRequestStatus !== WorkerRequestStatus.Booked && endedAt) {
-    const start = dayjs(props.startDate).subtract(1, 'day');
+  const endedAt = worker?.finishedAt ?? worker?.rejectedAt;
+  if (worker && worker.workerRequestStatus !== WorkerRequestStatus.Booked && endedAt) {
+    const start = dayjs(startDate).subtract(1, 'day');
     const oneMonth = dayjs(endedAt).add(1, 'month');
     if (dayjs(date).toDate() > start.toDate() && dayjs(date).toDate() < oneMonth.toDate()) {
       return true;
@@ -205,7 +205,7 @@ function isAvailableToUpdateWorker(date: string | Date) {
 }
 
 function syncHighlightsWithCalendar() {
-  if (!props.highlights || !calendar.value.length) return;
+  if (!highlights || !calendar.value.length) return;
   for (let iWeek = 0; iWeek < calendar.value.length; iWeek++) {
     calendar.value[iWeek].totalHoursWeek = calendar.value[iWeek].days.reduce((acc: number, day) => {
       if (day.totalHoursApproved) return acc + day.totalHoursApproved;
@@ -213,9 +213,9 @@ function syncHighlightsWithCalendar() {
     }, 0);
     for (let iDay = 0; iDay < calendar.value[iWeek].days.length; iDay++) {
       const currentDay = toMomentFormat(calendar.value[iWeek].days[iDay].day);
-      const indexDay = props.highlights.findIndex((d) => toMomentFormat(d.day) === currentDay);
+      const indexDay = highlights.findIndex((d) => toMomentFormat(d.day) === currentDay);
       if (indexDay >= 0) {
-        calendar.value[iWeek].days[iDay] = props.highlights[indexDay];
+        calendar.value[iWeek].days[iDay] = highlights[indexDay];
       }
     }
   }
@@ -227,9 +227,9 @@ function syncHighlightsWithCalendar() {
   });
 }
 
-const hasEvents = computed(() => props.highlights && props.highlights.length > 0);
+const hasEvents = computed(() => highlights && highlights.length > 0);
 
-watch(() => props.highlights, () => {
+watch(() => highlights, () => {
   syncHighlightsWithCalendar();
 }, { immediate: true });
 

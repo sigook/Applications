@@ -88,7 +88,7 @@ interface ComplianceDraft {
   file: File | null;
 }
 
-const props = defineProps<{
+const { requestId, applicantId, status, workerProfileId } = defineProps<{
   requestId: string;
   applicantId: string;
   status: RequestApplicantStatus;
@@ -105,8 +105,8 @@ const identificationTypes = ref<IdentificationType[]>([]);
 const drafts = ref<Record<string, ComplianceDraft>>({});
 const checkedItems = ref<Record<string, boolean>>({});
 
-const isCandidate = computed(() => !props.workerProfileId);
-const canEdit = computed(() => props.status === RequestApplicantStatus.InProgress);
+const isCandidate = computed(() => !workerProfileId);
+const canEdit = computed(() => status === RequestApplicantStatus.InProgress);
 
 function emptyDraft(): ComplianceDraft {
   return { identificationNumber: '', identificationTypeId: null, socialInsuranceNumber: '', file: null };
@@ -125,36 +125,36 @@ function showUploadControls(item: ApplicantComplianceItem): boolean {
   return canEdit.value && !item.isCompleted && item.canUpload;
 }
 
-function loadItems() {
+async function loadItems() {
   isLoading.value = true;
-  getApplicantComplianceItems(props.requestId, props.applicantId)
-    .then(response => {
-      items.value = response;
-      for (const item of response) {
-        drafts.value[item.id] ??= emptyDraft();
-        checkedItems.value[item.id] = item.isCompleted;
-      }
-      if (response.some(isIdentification) && !identificationTypes.value.length) {
-        loadIdentificationTypes();
-      }
-      emit('loaded', {
-        mandatoryCompleted: response.every(item => !item.isMandatory || item.isCompleted),
-        itemsCount: response.length,
-        completedCount: response.filter(item => item.isCompleted).length,
-      });
-    })
-    .catch(error => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
+  try {
+    const response = await getApplicantComplianceItems(requestId, applicantId);
+    items.value = response;
+    for (const item of response) {
+      drafts.value[item.id] ??= emptyDraft();
+      checkedItems.value[item.id] = item.isCompleted;
+    }
+    if (response.some(isIdentification) && !identificationTypes.value.length) {
+      void loadIdentificationTypes();
+    }
+    emit('loaded', {
+      mandatoryCompleted: response.every(item => !item.isMandatory || item.isCompleted),
+      itemsCount: response.length,
+      completedCount: response.filter(item => item.isCompleted).length,
     });
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function loadIdentificationTypes() {
-  getIdentificationTypes()
-    .then(types => {
-      identificationTypes.value = types;
-    })
-    .catch(error => showAlertError(error));
+async function loadIdentificationTypes() {
+  try {
+    identificationTypes.value = await getIdentificationTypes();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function onFileSelected(item: ApplicantComplianceItem, file: File | null) {
@@ -174,7 +174,6 @@ function clearFile(item: ApplicantComplianceItem) {
 function blockedReason(item: ApplicantComplianceItem): string {
   if (item.isCompleted || !item.canUpload || !item.isMandatory) return '';
   const draft = drafts.value[item.id];
-  if (!draft) return '';
   if (item.existingFileUrl && !draft.file) return '';
   if (!draft.file) return 'Attach the document to complete this item';
   if (isIdentification(item) && (!draft.identificationNumber || !draft.identificationTypeId)) {
@@ -189,7 +188,7 @@ function blockedReason(item: ApplicantComplianceItem): string {
 function buildModel(item: ApplicantComplianceItem): CompleteApplicantComplianceItemModel {
   const model: CompleteApplicantComplianceItemModel = {};
   if (!item.canUpload) return model;
-  const draft = drafts.value[item.id];
+  const draft: ComplianceDraft | undefined = drafts.value[item.id];
   if (draft.file) model.fileName = generateFileName('Document', draft.file.name);
   if (isIdentification(item)) {
     if (draft.identificationNumber) model.identificationNumber = draft.identificationNumber;
@@ -202,44 +201,44 @@ function buildModel(item: ApplicantComplianceItem): CompleteApplicantComplianceI
 function onItemToggled(item: ApplicantComplianceItem, checked: boolean) {
   checkedItems.value[item.id] = checked;
   if (!checked) {
-    uncompleteItem(item);
+    void uncompleteItem(item);
     return;
   }
-  completeItem(item, buildModel(item), drafts.value[item.id].file);
+  void completeItem(item, buildModel(item), drafts.value[item.id].file);
 }
 
-function completeItem(item: ApplicantComplianceItem, model: CompleteApplicantComplianceItemModel, file?: File | null) {
+async function completeItem(item: ApplicantComplianceItem, model: CompleteApplicantComplianceItemModel, file?: File | null) {
   isLoading.value = true;
-  completeApplicantComplianceItem(props.requestId, props.applicantId, item.id, model, file)
-    .then(() => {
-      drafts.value[item.id] = emptyDraft();
-      emit('updated');
-      loadItems();
-    })
-    .catch(error => {
-      isLoading.value = false;
-      checkedItems.value[item.id] = item.isCompleted;
-      showAlertError(error);
-    });
+  try {
+    await completeApplicantComplianceItem(requestId, applicantId, item.id, model, file);
+    drafts.value[item.id] = emptyDraft();
+    emit('updated');
+  } catch (error) {
+    isLoading.value = false;
+    checkedItems.value[item.id] = item.isCompleted;
+    showAlertError(error);
+    return;
+  }
+  await loadItems();
 }
 
-function uncompleteItem(item: ApplicantComplianceItem) {
+async function uncompleteItem(item: ApplicantComplianceItem) {
   isLoading.value = true;
-  uncompleteApplicantComplianceItem(props.requestId, props.applicantId, item.id)
-    .then(() => {
-      emit('updated');
-      loadItems();
-    })
-    .catch(error => {
-      isLoading.value = false;
-      checkedItems.value[item.id] = item.isCompleted;
-      showAlertError(error);
-    });
+  try {
+    await uncompleteApplicantComplianceItem(requestId, applicantId, item.id);
+    emit('updated');
+  } catch (error) {
+    isLoading.value = false;
+    checkedItems.value[item.id] = item.isCompleted;
+    showAlertError(error);
+    return;
+  }
+  await loadItems();
 }
 
-watch(() => props.applicantId, () => loadItems());
+watch(() => applicantId, () => { void loadItems(); });
 
-loadItems();
+void loadItems();
 </script>
 
 <style scoped>

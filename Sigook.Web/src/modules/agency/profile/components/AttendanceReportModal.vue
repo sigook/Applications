@@ -126,10 +126,10 @@
         <b-taglist>
           <b-tag v-if="props.row.isMissingClockOut" type="is-danger is-light">Missing out</b-tag>
           <b-tag v-if="props.row.isWeekend" type="is-warning is-light">Weekend</b-tag>
-          <b-tooltip v-if="props.row.isEdited" type="is-dark" append-to-body
+          <HoverTooltip v-if="props.row.isEdited"
             :label="`${props.row.editedBy ?? ''}: ${props.row.editReason ?? ''}`">
             <b-tag type="is-info is-light">Edited</b-tag>
-          </b-tooltip>
+          </HoverTooltip>
         </b-taglist>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
@@ -159,6 +159,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { computed, ref, watch } from 'vue';
 import dayjs from 'dayjs';
 import { downloadAttendanceReport, getAttendanceReport } from '@/modules/agency/profile/api';
@@ -169,7 +170,7 @@ import type { AgencyPersonnelListItem, UserAttendanceListItem, UserAttendanceRep
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import AttendanceEditModal from '@/modules/agency/profile/components/AttendanceEditModal.vue';
 
-defineProps<{ users: AgencyPersonnelListItem[] }>();
+const { users, agencyIds } = defineProps<{ users: AgencyPersonnelListItem[]; agencyIds?: string }>();
 
 function thisWeek(): Date[] {
   const start = dayjs().subtract((dayjs().day() + 6) % 7, 'day').startOf('day');
@@ -217,7 +218,7 @@ function selectUser(row: UserAttendanceSummaryItem) {
 }
 
 const filter = computed<UserAttendanceReportFilter | null>(() => {
-  if (dates.value?.length !== 2) return null;
+  if (dates.value.length !== 2) return null;
   return {
     userId: userId.value || undefined,
     from: dayjs(dates.value[0]).format('YYYY-MM-DD'),
@@ -225,22 +226,29 @@ const filter = computed<UserAttendanceReportFilter | null>(() => {
   };
 });
 
-function load() {
+async function load() {
   if (!filter.value) return;
   isLoading.value = true;
-  getAttendanceReport(filter.value)
-    .then(response => { report.value = response; })
-    .catch(showAlertError)
-    .finally(() => { isLoading.value = false; });
+  try {
+    report.value = await getAttendanceReport(agencyIds, filter.value);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function exportReport() {
+async function exportReport() {
   if (!filter.value) return;
   isLoading.value = true;
-  downloadAttendanceReport(filter.value)
-    .then(blob => downloadFile(blob, `Attendance_${filter.value?.from}_${filter.value?.to}`))
-    .catch(showAlertError)
-    .finally(() => { isLoading.value = false; });
+  try {
+    const blob = await downloadAttendanceReport(agencyIds, filter.value);
+    downloadFile(blob, `Attendance_${filter.value.from}_${filter.value.to}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function openEdit(row: UserAttendanceListItem) {
@@ -251,10 +259,10 @@ function openEdit(row: UserAttendanceListItem) {
 function onSaved() {
   showEdit.value = false;
   editing.value = null;
-  load();
+  void load();
 }
 
-watch(filter, load, { immediate: true });
+watch(filter, () => { void load(); }, { immediate: true });
 </script>
 
 <style scoped lang="scss">

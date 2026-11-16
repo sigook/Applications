@@ -43,12 +43,14 @@ Each environment keeps its own token file.
 | `get_import_instructions` | embedded | Workflow + source mapping, auto-detect by headers |
 | `read_export` | local | Reads a folder or zip: CSV rows as raw header/value maps + local path of every pdf/doc/docx. Zips extract once to `%LOCALAPPDATA%\Sigook.Mcp\exports\<hash>` |
 | `read_document` | local | Text of a pdf/docx/txt (`unpdf`, `mammoth`) so the harness can extract skills, address and experience from a resume. Scanned PDFs return empty text |
+| `read_documents` | local | Same as `read_document` for up to 20 files in one call, 6000 chars per document by default. A missing or unsupported file returns `{ path, error }` for that entry only |
 | `normalize_phone` | local | Any NA phone → `### ###-####` |
 | `find_request` | `GET agency/recruiting/requests?NumberId=` | Request id by number |
 | `resolve_city` | `GET location/province/{CA\|USA}`, `GET location/city/{provinceId}` | City id by name + state; accent/case-insensitive, suggests alternatives |
 | `list_sources` / `list_genders` / `list_skills` | `GET catalog/source`, `GET catalog/gender`, `GET catalog/skills` | Catalog ids and the skill vocabulary |
 | `find_candidates` | `GET agency/recruiting/candidates?Name=&Phone=` | Duplicate check |
 | `import_candidate` | all of the below, in one call | One row = one call: normalizes the phone, duplicate check by phone, city + source + request lookups (cached in `CatalogCache`), create with resume, apply to request, note. Reports each step so the harness retries only what failed |
+| `import_candidates` | same as `import_candidate` | Up to 25 rows per call, 4 at a time (`runGrouped`); rows with the same normalized phone run sequentially so the second finds the first. One result per row with its `row` index plus counts (created, existed, failed, incomplete). A thrown error fails only that row with `step: "error"` |
 | `create_candidate` | `POST agency/recruiting/candidates` (multipart `data` + resume) | Candidate with optional resume |
 | `add_candidate_document` | `POST .../candidates/{id}/documents` | Extra file |
 | `add_candidate_note` | `POST .../candidates/{id}/notes` | Free text |

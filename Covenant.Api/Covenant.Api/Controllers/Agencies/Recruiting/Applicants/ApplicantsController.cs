@@ -56,7 +56,7 @@ public class ApplicantsController(
     public async Task<IActionResult> GetFile(GetAgencyApplicantsFilter filter)
     {
         if (filter.OnlyMine) filter.Recruiter = User.GetNickname();
-        var data = requestRepository.GetAllAgencyApplicants(User.GetAgencyId(), filter).ToList();
+        var data = requestRepository.GetAllAgencyApplicants(User.GetAgencyIds(), filter).ToList();
         var file = await mediator.Send(new GenerateAgencyApplicantsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }

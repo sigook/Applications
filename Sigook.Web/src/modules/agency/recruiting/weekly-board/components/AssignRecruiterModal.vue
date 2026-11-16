@@ -60,7 +60,7 @@ import type { AgencyRequestListItem } from '@/modules/agency/recruiting/requests
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 import type { AssignRecruitersPayload, WeekDay, AssignPreset } from '@/modules/agency/recruiting/weekly-board/types';
 
-const props = defineProps<{
+const { days, preset, saving } = defineProps<{
   days: WeekDay[];
   preset?: AssignPreset;
   saving: boolean;
@@ -80,32 +80,41 @@ const personnel = ref<AgencyPersonnelListItem[]>([]);
 const filteredRecruiters = ref<AgencyPersonnelListItem[]>([]);
 const selectedRecruiters = ref<AgencyPersonnelListItem[]>([]);
 
-const selectedDays = ref<string[]>(props.preset?.workDate ? [props.preset.workDate] : []);
+const selectedDays = ref<string[]>(preset?.workDate ? [preset.workDate] : []);
 
 const canAssign = computed(
   () => !!selectedRequest.value && selectedDays.value.length > 0 && selectedRecruiters.value.length > 0
 );
 
+const eligibleRecruiters = computed(() => {
+  const agencyId = selectedRequest.value?.agencyId;
+  return agencyId ? personnel.value.filter(p => p.agencyIds.includes(agencyId)) : personnel.value;
+});
+
 function onRequestSelected(option: AgencyRequestListItem | null): void {
   selectedRequest.value = option;
+  const eligibleIds = new Set(eligibleRecruiters.value.map(r => r.id));
+  selectedRecruiters.value = selectedRecruiters.value.filter(r => eligibleIds.has(r.id));
+  onRecruiterTyping('');
 }
 
-function loadPersonnel(): void {
-  getAgencyPersonnel()
-    .then(response => {
-      personnel.value = response;
-      filteredRecruiters.value = response;
-      if (props.preset?.recruiterId) {
-        selectedRecruiters.value = response.filter(r => r.id === props.preset?.recruiterId);
-      }
-    })
-    .catch(error => showAlertError(error));
+async function loadPersonnel(): Promise<void> {
+  try {
+    const response = await getAgencyPersonnel();
+    personnel.value = response;
+    filteredRecruiters.value = response;
+    if (preset?.recruiterId) {
+      selectedRecruiters.value = response.filter(r => r.id === preset.recruiterId);
+    }
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function onRecruiterTyping(text: string): void {
   const term = (text || '').toLowerCase();
   const selectedIds = new Set(selectedRecruiters.value.map(s => s.id));
-  filteredRecruiters.value = personnel.value.filter(
+  filteredRecruiters.value = eligibleRecruiters.value.filter(
     p => !selectedIds.has(p.id) && p.name.toLowerCase().includes(term)
   );
 }
@@ -125,7 +134,7 @@ function submit(): void {
   });
 }
 
-loadPersonnel();
+void loadPersonnel();
 </script>
 
 <style scoped lang="scss">

@@ -6,13 +6,10 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { href = '#', ariaLabel = 'Scroll to next section' } = defineProps<{
   href?: string
   ariaLabel?: string
-}>(), {
-  href: '#',
-  ariaLabel: 'Scroll to next section',
-})
+}>()
 </script>
 
 <style scoped>

@@ -38,9 +38,9 @@ import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { CatalogItem } from '@/shared/types/common';
 import type { RequestGroupFilter } from '@/modules/agency/shared/request-groups/types';
 
-const props = defineProps<{ statusOptions: CatalogItem<number>[] }>();
+const { statusOptions } = defineProps<{ statusOptions: CatalogItem<number>[] }>();
 const filter = defineModel<F>('filter', { required: true });
-const emit = defineEmits<{ (e: 'search'): void }>();
+const emit = defineEmits<(e: 'search') => void>();
 
 const { results: companies, isSearching: isSearchingCompanies, search: searchCompanies } =
   useDebouncedSearch((term) => getAgencyCompaniesList(term));
@@ -56,25 +56,25 @@ function search(changes: Partial<RequestGroupFilter>) {
 }
 
 const statusesSelected = computed<CatalogItem<number>[]>({
-  get: () => props.statusOptions.filter((option) => filter.value.statuses?.includes(option.id)),
-  set: (options) => search({ statuses: options.length ? options.map((option) => option.id) : undefined }),
+  get: () => statusOptions.filter((option) => filter.value.statuses?.includes(option.id)),
+  set: (options) => { search({ statuses: options.length ? options.map((option) => option.id) : undefined }); },
 });
 
 const startAtSelected = computed<Date[]>({
   get: () => filter.value.startAtFrom && filter.value.startAtTo
     ? [new Date(filter.value.startAtFrom), new Date(filter.value.startAtTo)]
     : [],
-  set: (dates) => search({
+  set: (dates) => { search({
     startAtFrom: dates[0]?.toISOString() ?? null,
     startAtTo: dates[1]?.toISOString() ?? null,
-  }),
+  }); },
 });
 
 function onInputEntered(event: KeyboardEvent) {
   if (event.key === 'Enter') search({});
 }
 
-function onNumberIdChanged(value: string | number) {
+function onNumberIdChanged(value: string | number | null) {
   patch({ numberId: value === '' || value === null ? null : Number(value) });
 }
 

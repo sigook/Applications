@@ -18,7 +18,7 @@ Intermediary that connects Companies with Workers and operates the platform: rec
 | `Regular` | 2 | Standard independent agency |
 | `BusinessPartner` | 3 | Business partner with limited access |
 
-An Agency has physical locations (`AgencyLocation`, with the billing address), internal personnel (`AgencyPersonnel`), and tax registration data (`BusinessNumber`, `HstNumber`). Sub-agencies hang under a `Master` agency via `Agency.AgencyParentId`.
+An Agency has physical locations (`AgencyLocation`, with the billing address), internal staff (users with an `agencyId` claim in the identity database), and tax registration data (`BusinessNumber`, `HstNumber`). Sub-agencies hang under a `Master` agency via `Agency.AgencyParentId`.
 
 There is no "agency" role anymore: agency staff authenticate with one of the platform roles below (`admin`, `recruiting`, `sales`), scoped to their agency.
 
@@ -35,7 +35,7 @@ Agency client that needs temporary or permanent staff. Defines job positions wit
 
 Job seeker using the Flutter mobile app. Entity: `Covenant.Common/Entities/Workers/WorkerProfile.cs`.
 
-A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via multiple `AgencyPersonnel` rows (the `agencyIds` claim).
+A worker **User** has exactly **one** `WorkerProfile`, bound to exactly one agency (`WorkerProfile.AgencyId` is non-nullable, and `WorkerId` has a single-column unique index); companies follow the same pattern (`CompanyProfile.CompanyId` unique). Only agency staff genuinely span agencies, via one `agencyId` claim per agency in the identity database (carried in the access token and exposed as `agencyIds`). Belonging to a `Master` agency does not grant access to its sub-agencies.
 
 Key flags on `WorkerProfile`:
 - `ApprovedToWork` — set by the agency after reviewing documents; gates applying/booking. The single source of the requirements is `WorkerRequirementService` (`Covenant.Core.BL/Services/Workers/`): profile photo, tax category (Canada only), SIN number + document (not expired when it expires), and at least one identification (number + file on the same slot, 1 or 2). The resume is optional. Subcontractors and contractors have no requirements. The same list is exposed as `missingRequirements` on `WorkerProfileDetailModel`, so Sigook.Web and Sigook.App only render it.
@@ -52,7 +52,7 @@ Prospect managed by the agency that does NOT yet have a user account (`Covenant.
 
 ## Authorization Model — 7 Roles
 
-`superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker` — constants in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`; always reference the constants, never literals). There are no `agency` / `agency.personnel` roles and no "Account Manager" role: agency staff carry `admin`, `recruiting` or `sales`, scoped to their agency through `AgencyPersonnel`. Who sees what, role groups and the sales scoping rule: `.docs/business/ROLES_PERMISSIONS.md`.
+`superadmin`, `admin`, `recruiting`, `sales`, `company`, `company.user`, `worker` — constants in `Covenant.Api/Covenant.Common/Constants/CovenantConstants.cs` (`CovenantConstants.Role`; always reference the constants, never literals). There are no `agency` / `agency.personnel` roles and no "Account Manager" role: agency staff carry `admin`, `recruiting` or `sales`, scoped to their agencies through `agencyId` identity claims. Who sees what, role groups and the sales scoping rule: `.docs/business/ROLES_PERMISSIONS.md`.
 
 ---
 

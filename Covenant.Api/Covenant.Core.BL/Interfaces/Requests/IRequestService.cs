@@ -28,7 +28,7 @@ public interface IRequestService
     Task<Result> FinishAllWorkers(Guid requestId, FinishAssignmentModel model);
     Task<Result<IEnumerable<RequestSourceDetailModel>>> GetRequestSources(Guid requestId);
     Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources);
-    Task<AgencyRequestsPagedResponse> GetRequestsForAgency(Guid agencyId, GetRequestForAgencyFilter filter);
+    Task<AgencyRequestsPagedResponse> GetRequestsForAgency(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter);
     Task<ShiftModel> GetRequestShift(Guid requestId);
     Task<RequestLookupModel> GetLookup(Guid companyProfileId, Guid? requestId);
     Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId);

@@ -138,3 +138,6 @@ app.*.symbols
 
 # IDE specific
 .claude/
+# IDE
+.idea/
+*.iml

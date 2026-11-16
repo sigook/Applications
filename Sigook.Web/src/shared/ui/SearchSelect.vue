@@ -25,18 +25,23 @@ interface Option {
   label: string;
 }
 
-const props = withDefaults(
-  defineProps<{
-    modelValue: V | null;
-    options: readonly Option[];
-    placeholder?: string;
-    size?: string;
-    loading?: boolean;
-    remote?: boolean;
-    minSearchLength?: number;
-  }>(),
-  { placeholder: 'Search…', loading: false, remote: false, minSearchLength: 0 }
-);
+const {
+  modelValue,
+  options,
+  placeholder = 'Search…',
+  size,
+  loading = false,
+  remote = false,
+  minSearchLength = 0,
+} = defineProps<{
+  modelValue: V | null;
+  options: readonly Option[];
+  placeholder?: string;
+  size?: string;
+  loading?: boolean;
+  remote?: boolean;
+  minSearchLength?: number;
+}>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: V | null): void;
@@ -51,45 +56,45 @@ const isFocused = ref(false);
 let debounceTimer: ReturnType<typeof setTimeout> | undefined;
 
 function syncFromModel(): void {
-  if (props.modelValue === null) {
+  if (modelValue === null) {
     selectedLabel.value = '';
     search.value = '';
     return;
   }
-  const match = props.options.find((o) => o.value === props.modelValue);
+  const match = options.find((o) => o.value === modelValue);
   if (match) selectedLabel.value = match.label;
   search.value = selectedLabel.value;
 }
 
-watch(() => props.modelValue, syncFromModel, { immediate: true });
+watch(() => modelValue, syncFromModel, { immediate: true });
 watch(
-  () => props.options,
+  () => options,
   () => {
-    if (!isFocused.value && props.modelValue !== null) syncFromModel();
+    if (!isFocused.value && modelValue !== null) syncFromModel();
   }
 );
 
 const belowThreshold = computed(() => {
   const length = search.value.trim().length;
-  return props.remote && length < props.minSearchLength;
+  return remote && length < minSearchLength;
 });
 
 // A partial term never reached the server, so there is nothing to show. An empty term keeps
 // what is already loaded: clicking an option blurs the input (which resets the term) before
 // the click lands, and emptying the list there would unmount the option mid-click.
 const filtered = computed(() => {
-  if (props.remote) {
+  if (remote) {
     const hasPartialTerm = belowThreshold.value && search.value.trim().length > 0;
-    return hasPartialTerm ? [] : [...props.options];
+    return hasPartialTerm ? [] : [...options];
   }
   const term = search.value.trim().toLowerCase();
-  return props.options.filter((o) => o.label.toLowerCase().includes(term));
+  return options.filter((o) => o.label.toLowerCase().includes(term));
 });
 
 function emitSearch(term: string): void {
-  if (!props.remote) return;
+  if (!remote) return;
   clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => emit('search', term), SEARCH_DEBOUNCE_MS);
+  debounceTimer = setTimeout(() => { emit('search', term); }, SEARCH_DEBOUNCE_MS);
 }
 
 // Fires for programmatic changes too (selecting an option writes its label), so it only mirrors text.
@@ -120,7 +125,7 @@ function onFocus(): void {
   search.value = '';
   // The parent owns the list: for an empty term it either clears stale results (with a
   // minimum search length) or fetches the unfiltered list (without one).
-  if (props.remote) {
+  if (remote) {
     clearTimeout(debounceTimer);
     emit('search', '');
   }
@@ -132,5 +137,5 @@ function onBlur(): void {
   syncFromModel();
 }
 
-onBeforeUnmount(() => clearTimeout(debounceTimer));
+onBeforeUnmount(() => { clearTimeout(debounceTimer); });
 </script>

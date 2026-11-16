@@ -66,7 +66,7 @@
         </template>
         <template v-slot="props">
           <b-tag :type="`${WorkerRequestStatusTagTypes[props.row.workerRequestStatus as WorkerRequestStatus]} is-light`" rounded>
-            {{ WorkerRequestStatusLabels[props.row.workerRequestStatus] }}
+            {{ WorkerRequestStatusLabels[props.row.workerRequestStatus as WorkerRequestStatus] }}
           </b-tag>
         </template>
       </b-table-column>
@@ -78,13 +78,13 @@
         </template>
         <template v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
+            <HoverTooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]">
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="requestStatusClass(props.row.requestStatus)"></div>
               </div>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </template>
       </b-table-column>
@@ -93,6 +93,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { dateMonth } from '@/shared/format';
@@ -104,7 +105,7 @@ import { RequestStatus, RequestStatusLabels, WorkerRequestStatus, WorkerRequestS
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import { requestStatusClass } from '@/shared/request-detail/useRequestStatus';
 
-const props = defineProps<{ workerId: string }>();
+const { workerId } = defineProps<{ workerId: string }>();
 
 const router = useRouter();
 const { requestBase, companyBase } = useModuleBase();
@@ -133,14 +134,14 @@ const statusesSelected = ref<CatalogItem<RequestStatus>[]>([]);
 const workerStatusesSelected = ref<CatalogItem<WorkerRequestStatus>[]>([]);
 const startWorkingDatesSelected = ref<Date[]>([]);
 const serverParams = ref<WorkerRequestHistoryFilter>({
-  profileId: props.workerId,
+  profileId: workerId,
   sortBy: 0,
   isDescending: true,
 });
 
 function onCellClick(row: WorkerRequestHistoryItem, column: TableColumnRef) {
   if (column.field === 'companyFullName') return;
-  router.push(`${requestBase.value}/${row.id}`);
+  void router.push(`${requestBase.value}/${row.id}`);
 }
 
 function onStatusChange() {

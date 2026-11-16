@@ -22,14 +22,14 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
     validate,
     validateField,
   } = useForm<T>({
-    validationSchema: options.schema as unknown as FormSchema<T>,
+    validationSchema: options.schema,
     initialValues: options.initialValues as FormValues<T>,
   });
 
-  const fieldNames = Object.keys(options.initialValues) as Array<keyof T & string>;
+  const fieldNames = Object.keys(options.initialValues) as (keyof T & string)[];
   const fields = {} as { [K in keyof T]: Ref<T[K]> };
   for (const name of fieldNames) {
-    const { value } = useField<T[typeof name]>(name as string);
+    const { value } = useField<T[typeof name]>(name);
     (fields as Record<string, unknown>)[name] = value;
   }
 
@@ -38,7 +38,7 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
 
   for (const name of fieldNames) {
     watch((fields as Record<string, Ref<unknown>>)[name], () => {
-      if (!suppressTracking) interacted[name as string] = true;
+      if (!suppressTracking) interacted[name] = true;
     });
   }
 
@@ -51,7 +51,7 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
   });
 
   function markInteracted(names?: string[]) {
-    const list = names || (fieldNames as string[]);
+    const list = names ?? fieldNames;
     for (const f of list) interacted[f] = true;
   }
 
@@ -63,14 +63,14 @@ export function useStickyForm<T extends GenericObject>(options: UseStickyFormOpt
     suppressTracking = true;
     setValues({ ...options.initialValues, ...newValues } as FormValues<T>);
     clearInteracted();
-    nextTick(() => { suppressTracking = false; });
+    void nextTick(() => { suppressTracking = false; });
   }
 
   function resetAll() {
     suppressTracking = true;
     resetForm();
     clearInteracted();
-    nextTick(() => { suppressTracking = false; });
+    void nextTick(() => { suppressTracking = false; });
   }
 
   return {

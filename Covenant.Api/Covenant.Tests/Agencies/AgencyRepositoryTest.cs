@@ -1,7 +1,5 @@
 using Covenant.Common.Configuration;
-using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities;
-using Covenant.Common.Enums;
 using Covenant.Infrastructure.Contexts;
 using Covenant.Infrastructure.Repositories.Agencies;
 using Covenant.Tests.Utils;
@@ -27,69 +25,27 @@ public class AgencyRepositoryTest
         _sut = new AgencyRepository(_context, mockFilesConfiguration.Object);
     }
 
-    private static Agency Agency(string name, string phone, AgencyType type, Guid? parentId = null) =>
-        new(name, phone) { Id = Guid.NewGuid(), AgencyType = type, AgencyParentId = parentId };
+    private static User StaffUser(string email, string name) =>
+        new User(CvnEmail.Create(email).Value, Guid.NewGuid()).With(u => u.UpdateName(name));
 
-    private async Task<AgencyPersonnel> SeedPersonnel(Guid agencyId, string email, params Agency[] agencies)
+    [Fact]
+    public async Task GetPersonnel_ReturnsOnlyRequestedUsersOrderedByName()
     {
-        var user = new User(CvnEmail.Create(email).Value, Guid.NewGuid());
-        var personnel = AgencyPersonnel.CreatePrimary(agencyId, user);
-        await _context.Agencies.AddRangeAsync(agencies);
-        await _context.AgencyPersonnel.AddAsync(personnel);
+        var zoe = StaffUser("zoe@test.com", "Zoe");
+        var ann = StaffUser("ann@test.com", "Ann");
+        var other = StaffUser("other@test.com", "Bob");
+        await _context.Users.AddRangeAsync(zoe, ann, other);
         await _context.SaveChangesAsync();
-        return personnel;
+
+        var result = await _sut.GetPersonnel([zoe.Id, ann.Id]);
+
+        Assert.Equal(["Ann", "Zoe"], result.Select(p => p.Name));
+        Assert.All(result, p => Assert.Equal(p.Id, p.UserId));
     }
 
     [Fact]
-    public async Task GetAgencyContextForUser_MasterAgency_ReturnsAllChildAgencies()
+    public async Task GetPersonnel_NoUsers_ReturnsEmpty()
     {
-        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
-        var child1 = Agency("Child Agency 1", "1234567891", AgencyType.Regular, master.Id);
-        var child2 = Agency("Child Agency 2", "1234567892", AgencyType.BusinessPartner, master.Id);
-        var personnel = await SeedPersonnel(master.Id, "master@test.com", master, child1, child2);
-
-        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
-
-        Assert.Equal(master.Id, result.AgencyId);
-        Assert.Equal(personnel.Id, result.AgencyPersonnelId);
-        Assert.Equal(3, result.AgencyIds.Count);
-        Assert.Equal(master.Id, result.AgencyIds[0]);
-        Assert.Contains(child1.Id, result.AgencyIds);
-        Assert.Contains(child2.Id, result.AgencyIds);
-    }
-
-    [Theory]
-    [InlineData(AgencyType.Regular)]
-    [InlineData(AgencyType.BusinessPartner)]
-    public async Task GetAgencyContextForUser_ChildAgency_ReturnsOnlyOwnAgency(AgencyType type)
-    {
-        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
-        var child = Agency("Child Agency", "1234567891", type, master.Id);
-        var personnel = await SeedPersonnel(child.Id, "child@test.com", master, child);
-
-        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
-
-        Assert.Equal(child.Id, result.AgencyId);
-        Assert.Equal(personnel.Id, result.AgencyPersonnelId);
-        Assert.Equal([child.Id], result.AgencyIds);
-    }
-
-    [Fact]
-    public async Task GetAgencyContextForUser_UserWithNoAgency_ReturnsNull()
-    {
-        var result = await _sut.GetAgencyContextForUser(Guid.NewGuid());
-
-        Assert.Null(result);
-    }
-
-    [Fact]
-    public async Task GetAgencyContextForUser_MasterAgencyWithNoChildren_ReturnsOnlyMasterAgency()
-    {
-        var master = Agency("Master Agency", "1234567890", AgencyType.Master);
-        var personnel = await SeedPersonnel(master.Id, "master@test.com", master);
-
-        var result = await _sut.GetAgencyContextForUser(personnel.UserId);
-
-        Assert.Equal([master.Id], result.AgencyIds);
+        Assert.Empty(await _sut.GetPersonnel([]));
     }
 }

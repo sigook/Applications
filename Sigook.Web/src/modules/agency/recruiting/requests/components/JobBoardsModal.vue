@@ -46,7 +46,7 @@ interface BoardSelection {
   externalUrl: string;
 }
 
-const props = defineProps<{
+const { requestId, numberId, currentBoards } = defineProps<{
   requestId: string;
   numberId: number;
   currentBoards: RequestJobBoard[];
@@ -62,7 +62,7 @@ const selection = reactive<Record<string, BoardSelection>>({});
 
 function hydrateSelection() {
   for (const board of availableBoards.value) {
-    const existing = props.currentBoards.find(c => c.sourceId === board.id);
+    const existing = currentBoards.find(c => c.sourceId === board.id);
     selection[board.id] = {
       active: !!existing,
       publishedAt: existing?.publishedAt ? new Date(existing.publishedAt) : null,
@@ -71,29 +71,33 @@ function hydrateSelection() {
   }
 }
 
-function onSave() {
+async function onSave() {
   const payload: SetRequestJobBoardItem[] = availableBoards.value
-    .filter(b => selection[b.id]?.active)
+    .filter(b => selection[b.id].active)
     .map(b => ({
       sourceId: b.id,
       publishedAt: selection[b.id].publishedAt?.toISOString() ?? null,
-      externalUrl: selection[b.id].externalUrl?.trim() || null,
+      externalUrl: selection[b.id].externalUrl.trim() || null,
     }));
-  setAgencyRequestSources(props.requestId, payload)
-    .then(() => {
-      showAlertSuccess('Job boards updated');
-      emit('saved');
-      emit('close');
-    })
-    .catch(showAlertError);
+  try {
+    await setAgencyRequestSources(requestId, payload);
+    showAlertSuccess('Job boards updated');
+    emit('saved');
+    emit('close');
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-getSourcesForRequests().then((sources) => {
+async function loadSources() {
+  const sources = await getSourcesForRequests();
   availableBoards.value = sources;
   hydrateSelection();
-});
+}
 
-watch(() => props.currentBoards, hydrateSelection);
+void loadSources();
+
+watch(() => currentBoards, hydrateSelection);
 </script>
 
 <style scoped lang="scss">

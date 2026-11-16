@@ -22,13 +22,13 @@ import type { LocationDetailModel } from '@/shared/types/common';
 import { formatLocation, mapsEmbedUrl, mapsUrl } from '@/shared/request-detail/requestDetail';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 
-const props = defineProps<{ location?: LocationDetailModel | null }>();
+const { location } = defineProps<{ location?: LocationDetailModel | null }>();
 
-const address = computed(() => formatLocation(props.location));
-const link = computed(() => mapsUrl(props.location));
-const embedUrl = computed(() => mapsEmbedUrl(props.location));
+const address = computed(() => formatLocation(location));
+const link = computed(() => mapsUrl(location));
+const embedUrl = computed(() => mapsEmbedUrl(location));
 const coordinates = computed(() => {
-  const { latitude, longitude } = props.location ?? {};
+  const { latitude, longitude } = location ?? {};
   if (latitude == null || longitude == null) return '';
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 });

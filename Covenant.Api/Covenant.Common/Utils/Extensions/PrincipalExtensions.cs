@@ -44,38 +44,21 @@ public static class PrincipalExtensions
         return id;
     }
 
-    public static Guid GetAgencyPersonnelId(this ClaimsPrincipal user)
-    {
-        if (!user.IsAgencyStaff()) return Guid.Empty;
-        string id = user.FindFirst(CovenantConstants.AgencyPersonnelId)?.Value;
-        if (string.IsNullOrEmpty(id)) return Guid.Empty;
-        Guid.TryParse(id, out Guid personnelId);
-        return personnelId;
-    }
-
     public static List<Guid> GetAgencyIds(this ClaimsPrincipal user)
     {
-        if (!user.IsAgencyStaff())
-        {
-            return [];
-        }
+        if (!user.IsAgencyStaff()) return [];
 
-        string agencyIdsString = user.FindFirst(CovenantConstants.AgencyIds)?.Value;
-
-        if (string.IsNullOrEmpty(agencyIdsString))
+        var agencyIdsClaim = user.FindFirst(CovenantConstants.AgencyIds);
+        if (agencyIdsClaim is null)
         {
-            // Fallback to single agency ID if AgencyIds claim is not present
             var agencyId = user.GetAgencyId();
             return agencyId != Guid.Empty ? [agencyId] : [];
         }
 
-        var agencyIds = agencyIdsString
+        return [.. agencyIdsClaim.Value
             .Split(',', StringSplitOptions.RemoveEmptyEntries)
             .Select(id => Guid.TryParse(id.Trim(), out Guid parsedId) ? parsedId : Guid.Empty)
-            .Where(id => id != Guid.Empty)
-            .ToList();
-
-        return agencyIds;
+            .Where(id => id != Guid.Empty)];
     }
 
     public static string GetNickname(this ClaimsPrincipal user) =>

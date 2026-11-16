@@ -26,26 +26,25 @@ import { createWorkerSkills } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { Skill } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const skills = ref<Skill[]>([]);
 const selectedSkills = ref<Skill[]>([]);
 const filteredSkills = ref<Skill[]>([]);
 
-function saveWorkerSkills() {
+async function saveWorkerSkills() {
   isLoading.value = true;
   const skillsToInsert = selectedSkills.value.map(skill => skill.skill);
-  createWorkerSkills(props.data.id, skillsToInsert)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerSkills(data.id, skillsToInsert);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function createTag(skill: string | Skill): Skill {
@@ -57,21 +56,18 @@ function createTag(skill: string | Skill): Skill {
   return skill;
 }
 
-function loadSkills() {
+async function loadSkills() {
   isLoading.value = true;
-  getSkills().then(response => {
-    isLoading.value = false;
-    skills.value = response;
-    filteredSkills.value = skills.value;
-  });
+  const response = await getSkills();
+  isLoading.value = false;
+  skills.value = response;
+  filteredSkills.value = skills.value;
 }
 
 function getFilteredSkills(text: string) {
   filteredSkills.value = skills.value.filter((option) => option.skill.toLowerCase().includes(text.toLowerCase()));
 }
 
-if (props.data != null) {
-  selectedSkills.value = props.data.skills;
-  loadSkills();
-}
+selectedSkills.value = data.skills;
+void loadSkills();
 </script>

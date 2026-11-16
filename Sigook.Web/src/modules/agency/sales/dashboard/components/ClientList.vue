@@ -32,18 +32,13 @@ import DashboardListRow from '@/modules/agency/sales/dashboard/components/Dashbo
 import type { SalesRecentClient } from '@/modules/agency/sales/dashboard/types';
 import { initialsOf, relativeTime } from '@/modules/agency/sales/dashboard/format';
 
-withDefaults(
-  defineProps<{
-    items: readonly SalesRecentClient[];
-    asOf: string;
-    loading?: boolean;
-  }>(),
-  { loading: false }
-);
-
-const emit = defineEmits<{
-  (e: 'select', client: SalesRecentClient): void;
+const { items, asOf, loading = false } = defineProps<{
+  items: readonly SalesRecentClient[];
+  asOf: string;
+  loading?: boolean;
 }>();
+
+const emit = defineEmits<(e: 'select', client: SalesRecentClient) => void>();
 </script>
 
 <style scoped lang="scss">

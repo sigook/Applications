@@ -19,7 +19,7 @@
         {{ props.row.postalCode }}
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
+        <RowActionsDropdown>
           <template #trigger>
             <b-button icon-right="dots-vertical" type="is-text" aria-label="Location actions" />
           </template>
@@ -33,7 +33,7 @@
           <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDelete(props.row)">
             Delete
           </b-dropdown-item>
-        </b-dropdown>
+        </RowActionsDropdown>
       </b-table-column>
     </SigookGrid>
 
@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { createAgencyCompanyLocation, deleteAgencyCompanyLocation, getAgencyCompanyLocation, updateAgencyCompanyLocation } from '@/modules/agency/recruiting/clients/api';
@@ -56,8 +57,8 @@ import type { AgencyCompanyLocationModel } from '@/modules/agency/recruiting/cli
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import LocationForm from '@/shared/company-profile/LocationForm.vue';
 
-const props = defineProps<{ profileId: string }>();
-const emit = defineEmits<{ (e: 'changed', count: number): void }>();
+const { profileId } = defineProps<{ profileId: string }>();
+const emit = defineEmits<(e: 'changed', count: number) => void>();
 
 const { isAdmin } = useAdmin();
 
@@ -68,14 +69,14 @@ const currentLocation = ref<AgencyCompanyLocationModel | null>(null);
 
 function saveLocation(location: AgencyCompanyLocationModel, id?: string) {
   return id
-    ? updateAgencyCompanyLocation(props.profileId, id, location)
-    : createAgencyCompanyLocation(props.profileId, location);
+    ? updateAgencyCompanyLocation(profileId, id, location)
+    : createAgencyCompanyLocation(profileId, location);
 }
 
 async function load() {
   isLoading.value = true;
   try {
-    locations.value = await getAgencyCompanyLocation(props.profileId);
+    locations.value = await getAgencyCompanyLocation(profileId);
     emit('changed', locations.value.length);
   } catch (error) {
     showAlertError(error);
@@ -100,17 +101,32 @@ async function onSaved() {
   currentLocation.value = null;
 }
 
-function onDelete(location: AgencyCompanyLocationModel) {
+async function onDelete(location: AgencyCompanyLocationModel) {
   if (!location.id) return;
   const id = location.id;
-  showAlertConfirm('Are you sure', 'You want to delete this location')
-    .then(async (confirmed) => {
-      if (!confirmed) return;
-      await deleteAgencyCompanyLocation(props.profileId, id);
-      await load();
-      showAlertSuccess('Deleted');
-    })
-    .catch(showAlertError);
+  try {
+    if (!(await showAlertConfirm('Are you sure', 'You want to delete this location'))) return;
+    await deleteAgencyCompanyLocation(profileId, id);
+    await load();
+    showAlertSuccess('Deleted');
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+async function saveTax(id: string, value: string, dialog: { close: () => void }) {
+  const parsed = parseFloat(value);
+  if (isNaN(parsed) || parsed < 0 || parsed > 100) {
+    showAlertError('Tax must be a number between 0 and 100');
+    return;
+  }
+  try {
+    await upsertLocationTax(id, { tax1: parsed });
+    showAlertSuccess('Saved');
+    dialog.close();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 async function configureTax(location: AgencyCompanyLocationModel) {
@@ -136,24 +152,11 @@ async function configureTax(location: AgencyCompanyLocationModel) {
     },
     closeOnConfirm: false,
     confirmText: 'Save',
-    onConfirm: async (value: string, dialog: { close: () => void }) => {
-      const parsed = parseFloat(value);
-      if (isNaN(parsed) || parsed < 0 || parsed > 100) {
-        showAlertError('Tax must be a number between 0 and 100');
-        return;
-      }
-      try {
-        await upsertLocationTax(id, { tax1: parsed });
-        showAlertSuccess('Saved');
-        dialog.close();
-      } catch (error) {
-        showAlertError(error);
-      }
-    },
+    onConfirm: (value: string, dialog: { close: () => void }) => saveTax(id, value, dialog),
   });
 }
 
-load();
+void load();
 </script>
 
 <style lang="scss" scoped>

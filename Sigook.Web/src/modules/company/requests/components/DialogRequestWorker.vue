@@ -19,7 +19,7 @@ import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError } from "@/shared/utils/toast";
 
-const emit = defineEmits<{ (e: 'sendAnotherWorker', comment: string): void }>();
+const emit = defineEmits<(e: 'sendAnotherWorker', comment: string) => void>();
 
 const schema = yup.object({
   comment: yup.string().required('Comment is required'),
@@ -34,7 +34,7 @@ const formErrors = form.errors;
 
 function send() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit((values) => {
     emit('sendAnotherWorker', values.comment);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');

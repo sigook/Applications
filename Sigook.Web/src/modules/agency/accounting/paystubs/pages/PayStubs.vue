@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadPayStubs" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/accounting/paystubs/file', fileName: 'PayStubs' }" focusable
         checkable v-model:checked-rows="checkedRows" @update:loading="(value) => isLoading = value">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/accounting/paystubs/create" icon-left="plus">
             Create
@@ -50,6 +53,7 @@
             <b-input v-model="serverParams.workerFullName" placeholder="Search..." icon="magnify" size="is-small"></b-input>
           </template>
           <template v-slot="props">
+            <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
             {{ props.row.workerFullName }}
           </template>
         </b-table-column>
@@ -67,10 +71,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="onDownloadPayStubPdf(props.row)">Download</b-dropdown-item>
             <b-dropdown-item v-if="props.row.pdfUrl || props.row.pdfGenerated" aria-role="listitem"
               @click="onRegeneratePayStubPdf(props.row)">
@@ -83,7 +84,7 @@
             <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeletePayStub(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
@@ -99,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -114,6 +116,8 @@ import {
   deleteAgencyPayStub,
 } from '@/modules/agency/accounting/paystubs/api';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import GeneratePayStubs from '@/modules/agency/accounting/paystubs/components/GeneratePayStubs.vue';
 import SkipPayrollNumber from '@/modules/agency/accounting/paystubs/components/SkipPayrollNumber.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
@@ -159,10 +163,10 @@ function onCreatedAtCleared() {
   onCreatedAtSelected();
 }
 
-function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<AgencyPayStubRow>> {
+async function loadPayStubs(params: AgencyPayStubFilter): Promise<PaginatedList<AgencyPayStubRow>> {
   agencyStore.updateAgencyPayStubFilter(params);
-  return getAgencyPayStubs(params)
-    .then((response) => ({ ...response, items: response.items.map((i) => ({ ...i, emailSending: false })) }));
+  const response = await getAgencyPayStubs(params);
+  return { ...response, items: response.items.map((i) => ({ ...i, emailSending: false })) };
 }
 
 function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
@@ -170,39 +174,37 @@ function onDownloadPayStubPdf(payStub: AgencyPayStubRow) {
     openFileUrl(payStub.pdfUrl);
     return;
   }
-  renderPayStubPdf(payStub, downloadPayStubPdf);
+  void renderPayStubPdf(payStub, downloadPayStubPdf);
 }
 
 function onRegeneratePayStubPdf(payStub: AgencyPayStubRow) {
-  renderPayStubPdf(payStub, regeneratePayStubPdf);
+  void renderPayStubPdf(payStub, regeneratePayStubPdf);
 }
 
-function renderPayStubPdf(payStub: AgencyPayStubRow, render: (payStubId: string) => Promise<Blob>) {
+async function renderPayStubPdf(payStub: AgencyPayStubRow, render: (payStubId: string) => Promise<Blob>) {
   isLoading.value = true;
-  render(payStub.id)
-    .then((response) => {
-      isLoading.value = false;
-      payStub.pdfGenerated = true;
-      downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    const response = await render(payStub.id);
+    isLoading.value = false;
+    payStub.pdfGenerated = true;
+    downloadPDF(response, `${payStub.payStubNumber} ${payStub.workerFullName}`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function onSendPayStubEmail(payStub: AgencyPayStubRow) {
+async function onSendPayStubEmail(payStub: AgencyPayStubRow) {
   payStub.emailSending = true;
-  sendPayStubEmail(payStub.id)
-    .then(() => {
-      payStub.emailSending = false;
-      payStub.emailSent = true;
-      showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
-    })
-    .catch((error) => {
-      payStub.emailSending = false;
-      showAlertError(error);
-    });
+  try {
+    await sendPayStubEmail(payStub.id);
+    payStub.emailSending = false;
+    payStub.emailSent = true;
+    showAlertSuccess(`Email to ${payStub.workerFullName} sent successfully`);
+  } catch (error) {
+    payStub.emailSending = false;
+    showAlertError(error);
+  }
 }
 
 function onSendSelectedEmails() {
@@ -213,21 +215,22 @@ function onSendSelectedEmails() {
     confirmText: 'Yes, send them',
     type: 'is-info',
     hasIcon: true,
-    onConfirm: () => {
-      isLoading.value = true;
-      const payStubIds = checkedRows.value.map((p) => p.id);
-      sendPayStubEmailBulk(payStubIds)
-        .then(() => {
-          isLoading.value = false;
-          checkedRows.value = [];
-          showAlertSuccess(`Sending ${count} pay stub(s). A summary will arrive on Teams.`);
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    },
+    onConfirm: () => sendSelectedEmails(count),
   });
+}
+
+async function sendSelectedEmails(count: number) {
+  isLoading.value = true;
+  const payStubIds = checkedRows.value.map((p) => p.id);
+  try {
+    await sendPayStubEmailBulk(payStubIds);
+    isLoading.value = false;
+    checkedRows.value = [];
+    showAlertSuccess(`Sending ${count} pay stub(s). A summary will arrive on Teams.`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onDeletePayStub(payStub: AgencyPayStubRow) {
@@ -242,19 +245,20 @@ function onDeletePayStub(payStub: AgencyPayStubRow) {
     confirmText: 'Yes, I read and I want to delete',
     type: 'is-danger',
     hasIcon: true,
-    onConfirm: () => {
-      isLoading.value = true;
-      deleteAgencyPayStub(payStub.id)
-        .then(() => {
-          isLoading.value = false;
-          grid.value?.reload();
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    },
+    onConfirm: () => deletePayStub(payStub),
   });
+}
+
+async function deletePayStub(payStub: AgencyPayStubRow) {
+  isLoading.value = true;
+  try {
+    await deleteAgencyPayStub(payStub.id);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onPayStubsGenerated() {

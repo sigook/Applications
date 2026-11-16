@@ -27,12 +27,11 @@ public class RequestsListController(IMediator mediator, IRequestService requestS
     [ProducesResponseType(typeof(AgencyRequestsPagedResponse), StatusCodes.Status200OK)]
     public async Task<IActionResult> Get(GetRequestForAgencyFilter pagination)
     {
-        var agencyId = User.GetAgencyId();
+        List<Guid> agencyIds = pagination.AgencyId is { } agencyId ? [agencyId] : User.GetAgencyIds();
         if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
-        if (pagination.AgencyId.HasValue) agencyId = pagination.AgencyId.Value;
         pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
-        pagination.SalesPersonnelId = null;
-        return Ok(await requestService.GetRequestsForAgency(agencyId, pagination));
+        pagination.SalesUserId = null;
+        return Ok(await requestService.GetRequestsForAgency(agencyIds, pagination));
     }
 
     /// <summary>Gets all requests for the current agency without pagination.</summary>
@@ -41,8 +40,8 @@ public class RequestsListController(IMediator mediator, IRequestService requestS
     [ProducesResponseType(typeof(IEnumerable<AgencyRequestListModel>), StatusCodes.Status200OK)]
     public IActionResult GetAll(GetRequestForAgencyFilter pagination)
     {
-        pagination.SalesPersonnelId = null;
-        var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
+        pagination.SalesUserId = null;
+        var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyIds(), pagination).ToList();
         return Ok(data);
     }
 
@@ -58,8 +57,8 @@ public class RequestsListController(IMediator mediator, IRequestService requestS
             pagination.Recruiter = User.GetNickname();
         }
         pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
-        pagination.SalesPersonnelId = null;
-        var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyId(), pagination).ToList();
+        pagination.SalesUserId = null;
+        var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyIds(), pagination).ToList();
         var file = await mediator.Send(new GenerateAgencyRequestsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
     }

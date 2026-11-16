@@ -26,5 +26,5 @@ public class GetCompanyForAgencyFilter : Pagination
     public GetCompanyForAgencySortBy SortBy { get; set; }
     public IEnumerable<CompanyStatus> CompanyStatuses { get; set; }
     public string SalesRepresentative { get; set; }
-    public Guid? SalesPersonnelId { get; set; }
+    public Guid? SalesUserId { get; set; }
 }

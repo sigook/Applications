@@ -5,6 +5,9 @@
     <div>
       <SigookGrid ref="grid" :fetch="loadAgencies" v-model:params="serverParams" :sort-map="sortMap"
         @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/sales/agencies/create" icon-left="plus">Create</b-button>
         </template>
@@ -60,6 +63,7 @@ import type { GridHandle } from '@/shared/types/common';
 import { agencyType } from '@/shared/format';
 import { appGlobals } from '@/app/globals';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';

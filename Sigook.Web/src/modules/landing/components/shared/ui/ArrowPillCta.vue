@@ -14,7 +14,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
+const {
+  to,
+  href,
+  type = 'button',
+  variant = 'glass',
+  hoverVariant = 'navy',
+  size = 'md',
+  showArrow = true,
+} = defineProps<{
   to?: string
   href?: string
   type?: 'button' | 'submit'
@@ -22,17 +30,11 @@ const props = withDefaults(defineProps<{
   hoverVariant?: 'navy' | 'cyan' | 'red'
   size?: 'sm' | 'md' | 'lg'
   showArrow?: boolean
-}>(), {
-  type: 'button',
-  variant: 'glass',
-  hoverVariant: 'navy',
-  size: 'md',
-  showArrow: true,
-})
+}>()
 
-const tag = computed(() => (props.to ? 'router-link' : props.href ? 'a' : 'button'))
+const tag = computed(() => (to ? 'router-link' : href ? 'a' : 'button'))
 const hostAttrs = computed(() =>
-  props.to ? { to: props.to } : props.href ? { href: props.href } : {},
+  to ? { to } : href ? { href } : {},
 )
 </script>
 

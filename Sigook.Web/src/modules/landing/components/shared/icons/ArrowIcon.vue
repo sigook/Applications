@@ -20,15 +20,10 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { width = 52, height = 20, color = 'white', strokeWidth = 2 } = defineProps<{
   width?: number
   height?: number
   color?: string
   strokeWidth?: number
-}>(), {
-  width: 52,
-  height: 20,
-  color: 'white',
-  strokeWidth: 2,
-})
+}>()
 </script>

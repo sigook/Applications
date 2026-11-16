@@ -83,7 +83,7 @@
                 <div class="column is-6 is-4-desktop" v-if="isAdmin">
                   <b-field label="Sales Representative">
                     <b-autocomplete :data="filteredSalesRepresentative" placeholder="Sales Rep." v-model="salesRepresentative"
-                      open-on-focus :custom-formatter="(option) => `${option.name} - ${option.email}`"
+                      open-on-focus :custom-formatter="(option: AgencyPersonnelListItem) => `${option.name} - ${option.email}`"
                       @select="onSalesRepresentativeSelected">
                     </b-autocomplete>
                   </b-field>
@@ -279,7 +279,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as yup from 'yup';
 import dayjs from 'dayjs';
@@ -417,11 +417,11 @@ const roleHasRates = computed(() =>
 const showLocationModal = ref(false);
 const showComplianceModal = ref(false);
 const sourceRequest = ref<AgencyRequestDetail | null>(null);
-const isDuplicate = computed(() => !!(route.meta as Record<string, unknown>).isDuplicate && !!sourceRequest.value);
+const isDuplicate = computed(() => !!(route.meta).isDuplicate && !!sourceRequest.value);
 const isUpdate = computed(() => !!sourceRequest.value && !isDuplicate.value);
 const isReview = computed(() =>
   isUpdate.value && hasRecruitingAccess.value && sourceRequest.value?.status === RequestStatus.PendingReview);
-const companyUserTagInput = ref<InstanceType<typeof BTaginput> | null>(null);
+const companyUserTagInput = useTemplateRef<InstanceType<typeof BTaginput>>('companyUserTagInput');
 
 const submitLabel = computed(() => {
   if (isReview.value) return 'Save & Approve';
@@ -446,7 +446,7 @@ const filteredCompanyJobPositions = computed(() => {
 
 const filteredLocations = computed(() => {
   const search = (branchOffice.value || '').toLowerCase();
-  return locations.value.filter((l) => l.formattedAddress.toLowerCase().includes(search));
+  return locations.value.filter((l) => (l.formattedAddress ?? '').toLowerCase().includes(search));
 });
 
 const filteredSalesRepresentative = computed(() =>
@@ -563,7 +563,7 @@ async function init(): Promise<void> {
 
   const jobPositionRecord = companyJobPositions.value.find((cjp) => cjp.id === agencyRequest.jobPositionId);
   if (jobPositionRecord) {
-    form.setFieldValue('jobPosition', jobPositionRecord.jobPosition);
+    form.setFieldValue('jobPosition', jobPositionRecord.jobPosition ?? '');
     jobPositionSelected.value = jobPositionRecord;
   }
   const locationByAddress = locations.value.find((l) => l.address === agencyRequest.jobLocation?.address);
@@ -572,7 +572,7 @@ async function init(): Promise<void> {
   }
   const locationRecord = locations.value.find((l) => l.id === request.value.locationId);
   if (locationRecord) {
-    form.setFieldValue('branchOffice', locationRecord.formattedAddress);
+    form.setFieldValue('branchOffice', locationRecord.formattedAddress ?? '');
     locationSelected.value = locationRecord;
   }
   const salesRecord = salesRepresentatives.value.find((sr) => sr.id === agencyRequest.salesRepresentativeId);
@@ -596,7 +596,7 @@ async function init(): Promise<void> {
     startAt: isDuplicate.value ? null : new Date(agencyRequest.startAt as string),
   });
 }
-init();
+void init();
 
 function onJobPositionSelected(option: AgencyCompanyJobPosition | null) {
   jobPositionSelected.value = option;
@@ -636,11 +636,11 @@ function onSalesRepresentativeSelected(option: AgencyPersonnelListItem | null) {
 
 function validateAutocompleteSelections(): boolean {
   let valid = true;
-  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.jobPosition.toLowerCase() !== jobPosition.value.toLowerCase())) {
+  if (!directHiring.value && jobPosition.value && (!jobPositionSelected.value || jobPositionSelected.value.jobPosition?.toLowerCase() !== jobPosition.value.toLowerCase())) {
     form.setFieldError('jobPosition', 'Please select a role from the list');
     valid = false;
   }
-  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress.toLowerCase() !== branchOffice.value.toLowerCase())) {
+  if (branchOffice.value && (!locationSelected.value || locationSelected.value.formattedAddress?.toLowerCase() !== branchOffice.value.toLowerCase())) {
     form.setFieldError('branchOffice', 'Please select a location from the list');
     valid = false;
   }
@@ -653,8 +653,8 @@ function onSubmit() {
     'jobPosition', 'branchOffice', 'description', 'requirements',
     'incentive', 'incentiveDescription', 'startAt',
   ]);
-  form.handleSubmit((values) => {
-    if (!validateAutocompleteSelections()) {
+  void form.handleSubmit((values) => {
+    if (!validateAutocompleteSelections() || !values.startAt) {
       showAlertError(errorMessage);
       return;
     }
@@ -678,32 +678,30 @@ function onSubmit() {
       return;
     }
     if (isReview.value) {
-      approveRequest(payload);
+      void approveRequest(payload);
     } else if (isUpdate.value) {
-      updateRequest(payload);
+      void updateRequest(payload);
     } else {
-      createRequest(payload);
+      void createRequest(payload);
     }
   }, () => {
     showAlertError(errorMessage);
   })();
 }
 
-function createRequest(payload: CreateAgencyRequestModel) {
+async function createRequest(payload: CreateAgencyRequestModel) {
   isLoading.value = true;
-  const create = isDuplicate.value && sourceRequest.value
-    ? duplicateAgencyRequest(sourceRequest.value.id, payload)
-    : postAgencyRequest(payload);
-  create
-    .then((response: AgencyRequestDetail) => {
-      showAlertSuccess(isDuplicate.value ? 'Request duplicated' : 'Request created');
-      router.push(requestBase.value + '/' + response.id);
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    const response: AgencyRequestDetail = isDuplicate.value && sourceRequest.value
+      ? await duplicateAgencyRequest(sourceRequest.value.id, payload)
+      : await postAgencyRequest(payload);
+    showAlertSuccess(isDuplicate.value ? 'Request duplicated' : 'Request created');
+    void router.push(requestBase.value + '/' + response.id);
+    isLoading.value = false;
+  } catch (error) {
+    showAlertError(error);
+    isLoading.value = false;
+  }
 }
 
 function createRole(model: AgencyCompanyJobPosition): Promise<{ id: string }> {
@@ -742,7 +740,7 @@ async function onUpdateRolesModal(id?: string) {
   companyJobPositions.value = await getAgencyCompanyJobPositionsDropdown(companyProfileId.value);
   const role = companyJobPositions.value.find((cjp) => cjp.id === id);
   if (!role) return;
-  form.setFieldValue('jobPosition', role.jobPosition);
+  form.setFieldValue('jobPosition', role.jobPosition ?? '');
   onJobPositionSelected(role);
 }
 
@@ -751,33 +749,33 @@ async function onUpdateLocationModal() {
   locations.value = await getAgencyCompanyLocation(companyProfileId.value);
 }
 
-function updateRequest(payload: CreateAgencyRequestModel) {
+async function updateRequest(payload: CreateAgencyRequestModel) {
+  const requestId = request.value.id;
+  if (!requestId) return;
   isLoading.value = true;
-  updateAgencyRequest(request.value.id, payload)
-    .then((response: AgencyRequestDetail) => {
-      isLoading.value = false;
-      showAlertSuccess('Request updated');
-      router.push(requestBase.value + '/' + response.id);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response: AgencyRequestDetail = await updateAgencyRequest(requestId, payload);
+    isLoading.value = false;
+    showAlertSuccess('Request updated');
+    void router.push(requestBase.value + '/' + response.id);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function approveRequest(payload: CreateAgencyRequestModel) {
+async function approveRequest(payload: CreateAgencyRequestModel) {
   isLoading.value = true;
   const requestId = request.value.id as string;
-  approveAgencyRequest(requestId, payload)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Request approved');
-      router.push(requestBase.value + '/' + requestId);
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await approveAgencyRequest(requestId, payload);
+    isLoading.value = false;
+    showAlertSuccess('Request approved');
+    void router.push(requestBase.value + '/' + requestId);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function onSameBillingChecked(value: boolean) {

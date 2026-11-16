@@ -10,38 +10,37 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { useClickOutside } from '@/shared/composables/useClickOutside';
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 import ShiftDetail from '@/shared/request-detail/ShiftDetail.vue';
 
-const props = defineProps<{
+const { fetchShift, requestId } = defineProps<{
     displayShift?: string;
     requestId: string;
     fetchShift: (requestId: string) => Promise<RequestShiftModel>;
 }>();
 
-const root = ref<HTMLElement | null>(null);
+const root = useTemplateRef<HTMLElement>('root');
 const shift = ref<RequestShiftModel | null>(null);
 const showDetail = ref(false);
 const isLoading = ref(false);
 
 useClickOutside(root, showDetail, () => { showDetail.value = false; });
 
-function getRequestShift() {
+async function getRequestShift() {
     if (!showDetail.value) {
         isLoading.value = true;
         showDetail.value = true;
-        props.fetchShift(props.requestId)
-            .then(response => {
-                isLoading.value = false;
-                shift.value = response;
-            })
-            .catch(error => {
-                isLoading.value = false;
-                showAlertError(error);
-            });
+        try {
+            const response = await fetchShift(requestId);
+            isLoading.value = false;
+            shift.value = response;
+        } catch (error) {
+            isLoading.value = false;
+            showAlertError(error);
+        }
     } else {
         showDetail.value = false;
     }

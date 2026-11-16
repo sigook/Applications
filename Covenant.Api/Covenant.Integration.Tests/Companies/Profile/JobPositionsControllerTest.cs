@@ -29,14 +29,15 @@ public class JobPositionsControllerTest(CustomWebApplicationFactory<JobPositions
     {
         HttpResponseMessage response = await _client.GetAsync(RequestUri());
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyProfileJobPositionRateModel>>();
+        var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyJobPositionModel>>();
         Assert.NotEmpty(list);
         var entity = Startup.FakePosition;
         var model = list.Single(c =>
             c.Id == entity.Id &&
-            c.Rate == entity.Rate &&
             c.JobPosition == entity.JobPosition);
         Assert.NotNull(model);
+        var json = await response.Content.ReadAsStringAsync();
+        Assert.DoesNotContain("Rate\"", json, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -45,9 +46,9 @@ public class JobPositionsControllerTest(CustomWebApplicationFactory<JobPositions
         CompanyProfileJobPositionRate entity = Startup.FakePosition;
         HttpResponseMessage response = await _client.GetAsync($"{RequestUri()}/{entity.Id}");
         response.EnsureSuccessStatusCode();
-        var model = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
+        var model = await response.Content.ReadFromJsonAsync<CompanyJobPositionModel>();
         Assert.Equal(entity.Id, model.Id);
-        Assert.Equal(entity.Rate, model.Rate);
+        Assert.DoesNotContain("Rate\"", await response.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
         Assert.Equal(entity.Description, model.Description);
         Assert.Equal(entity.JobPosition, model.JobPosition);
         Assert.Equal(entity.Shift?.Sunday, model.Shift?.Sunday);
@@ -89,7 +90,7 @@ public class JobPositionsControllerTest(CustomWebApplicationFactory<JobPositions
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync(RequestUri(), model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadFromJsonAsync<CompanyProfileJobPositionRateModel>();
+        var detail = await response.Content.ReadFromJsonAsync<CompanyJobPositionModel>();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
         var entity = await context.CompanyProfileJobPositionRates.Include(c => c.Shift).SingleAsync(c => c.Id == detail.Id);
         Assert.Equal(model.JobPosition, entity.JobPosition);

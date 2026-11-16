@@ -8,6 +8,9 @@
       <SigookGrid ref="grid" :fetch="loadInvoices" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/accounting/invoices/file', fileName: 'Invoices' }" focusable
         @update:loading="(value) => isLoading = value" @loaded="(count) => totalItems = count">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/accounting/invoices/create" icon-left="plus">
             Create
@@ -44,6 +47,7 @@
             <b-input v-model="serverParams.companyFullName" placeholder="Company or Sales Rep..." icon="magnify" size="is-small"></b-input>
           </template>
           <template v-slot="props">
+            <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
             {{ props.row.companyFullName }}
             <p v-if="props.row.salesRepresentative" class="is-size-7 has-text-grey">{{ props.row.salesRepresentative }}</p>
           </template>
@@ -55,10 +59,10 @@
             </b-taginput>
           </template>
           <template v-slot="props">
-            <b-tooltip :label="statusTooltip(props.row)" :active="!!props.row.updatedByName" type="is-dark" position="is-top"
-              multilined append-to-body>
-              <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status] }}</b-tag>
-            </b-tooltip>
+            <HoverTooltip :label="statusTooltip(props.row)" :active="!!props.row.updatedByName"
+              multilined>
+              <b-tag :type="invoiceStatusTagType(props.row.status)">{{ INVOICE_STATUS_LABELS[props.row.status as InvoiceStatus] }}</b-tag>
+            </HoverTooltip>
           </template>
         </b-table-column>
         <b-table-column field="dueDate" label="Due Date (From - To)" searchable>
@@ -99,10 +103,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="onDownloadInvoicePdf(props.row)">Download</b-dropdown-item>
             <b-dropdown-item v-if="props.row.pdfUrl" aria-role="listitem" @click="onRegenerateInvoicePdf(props.row)">
               Regenerate PDF
@@ -122,7 +123,7 @@
             <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="openDeleteModal(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
@@ -143,6 +144,8 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { computed, ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -151,6 +154,8 @@ import { getAgencyInvoices, downloadInvoicePdf, regenerateInvoicePdf, downloadIn
 import { currency, dateMonth } from '@/shared/format';
 import { InvoiceStatus, INVOICE_STATUSES, INVOICE_STATUS_LABELS, invoiceStatusTagType } from '@/modules/agency/accounting/invoices/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import DeleteInvoice from '@/modules/agency/accounting/invoices/components/DeleteInvoice.vue';
 import SendInvoiceEmail from '@/modules/agency/accounting/invoices/components/SendInvoiceEmail.vue';
 import MarkInvoicePaidModal from '@/modules/agency/accounting/invoices/components/MarkInvoicePaidModal.vue';
@@ -204,7 +209,9 @@ const dateRanges = ref<Record<DateRangeKey, Date[]>>({
 
 function onDateRangeSelected(key: DateRangeKey) {
   const [fromKey, toKey] = dateRangeKeys[key];
-  const [from, to] = dateRanges.value[key];
+  const range = dateRanges.value[key];
+  const from = range.at(0);
+  const to = range.at(1);
   serverParams.value[fromKey] = from?.toISOString() ?? null;
   serverParams.value[toKey] = to?.toISOString() ?? null;
   grid.value?.search();
@@ -255,21 +262,23 @@ function onStatusUpdated() {
   grid.value?.reload();
 }
 
-function onDownloadPaymentsReport() {
+async function onDownloadPaymentsReport() {
   isLoading.value = true;
-  downloadInvoicesPaymentsReport(serverParams.value)
-    .then((file) => downloadFile(file, `Payments_${new Date().toLocaleDateString()}`))
-    .catch((error) => showAlertError(error))
-    .finally(() => { isLoading.value = false; });
+  try {
+    const file = await downloadInvoicesPaymentsReport(serverParams.value);
+    downloadFile(file, `Payments_${new Date().toLocaleDateString()}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
+async function loadInvoices(params: AgencyInvoiceFilter): Promise<PaginatedList<AgencyInvoiceListItem>> {
   agencyStore.updateAgencyInvoiceFilter(params);
-  return getAgencyInvoices(params)
-    .then((response) => {
-      total.value = response.total;
-      return response.detail;
-    });
+  const response = await getAgencyInvoices(params);
+  total.value = response.total;
+  return response.detail;
 }
 
 function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
@@ -277,24 +286,23 @@ function onDownloadInvoicePdf(invoice: AgencyInvoiceListItem) {
     openFileUrl(invoice.pdfUrl);
     return;
   }
-  renderInvoicePdf(invoice, downloadInvoicePdf);
+  void renderInvoicePdf(invoice, downloadInvoicePdf);
 }
 
 function onRegenerateInvoicePdf(invoice: AgencyInvoiceListItem) {
-  renderInvoicePdf(invoice, regenerateInvoicePdf);
+  void renderInvoicePdf(invoice, regenerateInvoicePdf);
 }
 
-function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
+async function renderInvoicePdf(invoice: AgencyInvoiceListItem, render: (invoiceId: string) => Promise<Blob>) {
   isLoading.value = true;
-  render(invoice.id)
-    .then((response) => {
-      downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    const response = await render(invoice.id);
+    downloadPDF(response, `${invoice.invoiceNumber} ${invoice.companyFullName}`);
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
 function openSendEmailModal(invoice: AgencyInvoiceListItem) {

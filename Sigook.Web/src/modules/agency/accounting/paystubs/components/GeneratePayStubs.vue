@@ -20,39 +20,36 @@ import { getWorkersReadyForPayStub, generatePayStubs } from "@/modules/agency/ac
 import type { WorkerReadyForPayStubModel } from '@/modules/agency/accounting/paystubs/types';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const emit = defineEmits<{(e: 'pay-stubs-generated'): void}>();
+const emit = defineEmits<(e: 'pay-stubs-generated') => void>();
 
 const isLoading = ref(false);
 const rows = ref<WorkerReadyForPayStubModel[]>([]);
 const selectedWorkers = ref<WorkerReadyForPayStubModel[]>([]);
 
-function loadWorkers() {
+async function loadWorkers() {
   isLoading.value = true;
-  getWorkersReadyForPayStub()
-    .then((response) => {
-      rows.value = response;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    rows.value = await getWorkersReadyForPayStub();
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function submitGeneratePayStubs() {
+async function submitGeneratePayStubs() {
   isLoading.value = true;
   const workerIds = selectedWorkers.value.map(worker => worker.workerId);
-  generatePayStubs(workerIds)
-    .then(() => {
-      isLoading.value = false;
-      emit("pay-stubs-generated");
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-      loadWorkers();
-    });
+  try {
+    await generatePayStubs(workerIds);
+    isLoading.value = false;
+    emit("pay-stubs-generated");
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    await loadWorkers();
+  }
 }
 
-loadWorkers();
+void loadWorkers();
 </script>

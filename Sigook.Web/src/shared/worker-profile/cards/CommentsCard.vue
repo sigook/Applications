@@ -1,11 +1,11 @@
 <template>
-  <profile-card :title="props.title">
-    <template v-if="!props.readonly" #actions>
+  <profile-card :title="title">
+    <template v-if="!readonly" #actions>
       <b-button type="is-ghost" size="is-small" class="profile-link" icon-left="plus" @click="isModalOpen = true">Add comment</b-button>
     </template>
 
-    <ul v-if="props.comments.items.length" class="comment-list">
-      <li v-for="item in props.comments.items" :key="item.id" class="comment-row">
+    <ul v-if="comments.items.length" class="comment-list">
+      <li v-for="item in comments.items" :key="item.id" class="comment-row">
         <div class="comment-meta">
           <b-rate :model-value="item.rate" disabled size="is-small" />
           <span class="comment-date">{{ dateMonth(item.createdAt) }}</span>
@@ -15,11 +15,11 @@
     </ul>
     <p v-else class="profile-empty">No comments yet</p>
 
-    <b-pagination v-if="props.comments.totalItems > props.pageSize" :model-value="props.pageIndex"
-      :total="props.comments.totalItems" :per-page="props.pageSize" size="is-small" rounded
+    <b-pagination v-if="comments.totalItems > pageSize" :model-value="pageIndex"
+      :total="comments.totalItems" :per-page="pageSize" size="is-small" rounded
       @change="(page: number) => emit('changePage', page)" />
 
-    <b-modal v-if="!props.readonly" custom-content-class="card" v-model="isModalOpen" width="500px">
+    <b-modal v-if="!readonly" custom-content-class="card" v-model="isModalOpen" width="500px">
       <dialog-comment @createComment="create" />
     </b-modal>
   </profile-card>
@@ -33,7 +33,7 @@ import type { WorkerCommentList } from '@/shared/worker-profile/types';
 import ProfileCard from '@/shared/worker-profile/cards/ProfileCard.vue';
 import DialogComment from '@/shared/worker-profile/forms/DialogWorkerComment.vue';
 
-const props = withDefaults(defineProps<{
+const { workerProfileId, readonly = false, title = 'Comments & rating', createComment } = defineProps<{
   workerProfileId: string;
   comments: WorkerCommentList;
   pageIndex: number;
@@ -41,7 +41,7 @@ const props = withDefaults(defineProps<{
   readonly?: boolean;
   title?: string;
   createComment?: (workerProfileId: string, model: { comment: string; rate: number }) => Promise<unknown>;
-}>(), { readonly: false, title: 'Comments & rating' });
+}>();
 const emit = defineEmits<{
   (e: 'commentCreated'): void;
   (e: 'changePage', page: number): void;
@@ -50,20 +50,21 @@ const emit = defineEmits<{
 
 const isModalOpen = ref(false);
 
-function create(data: { comment: string; rating: number }) {
+async function create(data: { comment: string; rating: number }) {
   isModalOpen.value = false;
   if (!data.comment || !data.rating) {
     showAlertError('All fields are required');
     return;
   }
-  if (!props.createComment) return;
+  if (!createComment) return;
   emit('loading', true);
-  props.createComment(props.workerProfileId, { comment: data.comment, rate: data.rating })
-    .then(() => emit('commentCreated'))
-    .catch((error) => {
-      emit('loading', false);
-      showAlertError(error);
-    });
+  try {
+    await createComment(workerProfileId, { comment: data.comment, rate: data.rating });
+    emit('commentCreated');
+  } catch (error) {
+    emit('loading', false);
+    showAlertError(error);
+  }
 }
 
 function open() {

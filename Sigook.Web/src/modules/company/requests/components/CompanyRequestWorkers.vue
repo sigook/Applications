@@ -101,19 +101,19 @@
           </b-taginput>
         </template>
         <template v-slot="props">
-          <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus]">{{ props.row.status }}</b-tag>
+          <b-tag rounded :type="WorkerRequestStatusTagTypes[props.row.workerRequestStatus as WorkerRequestStatus]">{{ props.row.status }}</b-tag>
         </template>
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
         <b-field v-if="props.row.workerRequestStatus === WorkerRequestStatus.Booked" grouped>
-          <b-tooltip label="End assignment" type="is-dark" position="is-top" append-to-body>
+          <HoverTooltip label="End assignment">
             <b-button size="is-small" type="is-primary" outlined rounded icon-right="flag-checkered"
               @click="onShowModalFinish(props.row)"></b-button>
-          </b-tooltip>
-          <b-tooltip label="Reject" type="is-dark" position="is-top" append-to-body class="ml-2">
+          </HoverTooltip>
+          <HoverTooltip label="Reject" class="ml-2">
             <b-button size="is-small" type="is-danger" outlined rounded icon-right="close"
               @click="confirmDelete(props.row)"></b-button>
-          </b-tooltip>
+          </HoverTooltip>
         </b-field>
       </b-table-column>
       <template v-if="!directHiring" #detail="props">
@@ -156,6 +156,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, computed, useTemplateRef } from 'vue';
 import EditTextarea from "@/shared/ui/EditTextarea.vue";
 import { showAlertError } from "@/shared/utils/toast";
@@ -184,7 +185,7 @@ import { useBreakpoint } from '@/shared/composables/useBreakpoint';
 import type { CompanyRequestDetail, CompanyRequestWorker, CompanyRequestWorkerFilter } from '@/modules/company/requests/types';
 import type { GridHandle } from '@/shared/types/common';
 
-const props = defineProps<{ request: CompanyRequestDetail }>();
+const { request } = defineProps<{ request: CompanyRequestDetail }>();
 
 const { isTouch } = useBreakpoint();
 const grid = useTemplateRef<GridHandle>('grid');
@@ -205,24 +206,24 @@ const startWorkingDatesSelected = ref<Date[]>([]);
 const modalRejectWorker = ref(false);
 const modalFinish = ref(false);
 const currentWorker = ref<CompanyRequestWorker | null>(null);
-const directHiring = computed(() => isDirectHiring(props.request));
+const directHiring = computed(() => isDirectHiring(request));
 const serverParams = ref<CompanyRequestWorkerFilter>({
   sortBy: 2,
-  requestId: props.request.id,
+  requestId: request.id,
   pageIndex: 1,
   pageSize: 30,
 });
 
-function loadWorkers(params: CompanyRequestWorkerFilter) {
-  return getRequestWorkers(params)
-    .then((response) => ({
-      ...response,
-      items: response.items.map((i) => ({
-        ...i,
-        status: WorkerRequestStatusLabels[i.workerRequestStatus],
-        actions: null,
-      })),
-    }));
+async function loadWorkers(params: CompanyRequestWorkerFilter) {
+  const response = await getRequestWorkers(params);
+  return {
+    ...response,
+    items: response.items.map((i) => ({
+      ...i,
+      status: WorkerRequestStatusLabels[i.workerRequestStatus],
+      actions: null,
+    })),
+  };
 }
 
 function onSearch() {
@@ -283,42 +284,43 @@ function onShowModalFinish(worker: CompanyRequestWorker) {
   modalFinish.value = true;
 }
 
-function onFinishWorker(model: FinishAssignmentModel) {
+async function onFinishWorker(model: FinishAssignmentModel) {
   modalFinish.value = false;
   isLoading.value = true;
-  finishCompanyRequestWorker(serverParams.value.requestId, currentWorker.value?.workerProfileId ?? '', model)
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    }).catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
-    });
+  try {
+    await finishCompanyRequestWorker(serverParams.value.requestId, currentWorker.value?.workerProfileId ?? '', model);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function onRejectWorker(comments: string) {
+async function onRejectWorker(comments: string) {
+  const worker = currentWorker.value;
+  if (!worker) return;
   modalRejectWorker.value = false;
   isLoading.value = true;
-  rejectCompanyRequestWorker(serverParams.value.requestId, currentWorker.value.workerProfileId, { comments })
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    }).catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError((error as { data?: unknown }).data);
-    });
+  try {
+    await rejectCompanyRequestWorker(serverParams.value.requestId, worker.workerProfileId, { comments });
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function downloadTimeSheetDocument() {
+async function downloadTimeSheetDocument() {
   isLoading.value = true;
-  getCompanyRequestTimeSheetFile(serverParams.value.requestId)
-    .then((response) => {
-      isLoading.value = false;
-      downloadFile(response, `TimeSheet_${serverParams.value.requestId}`);
-    })
-    .catch((error: unknown) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    const response = await getCompanyRequestTimeSheetFile(serverParams.value.requestId);
+    isLoading.value = false;
+    downloadFile(response, `TimeSheet_${serverParams.value.requestId}`);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

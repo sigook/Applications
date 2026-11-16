@@ -43,8 +43,7 @@ public class WorkersController(
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult> GetById([FromServices] IRequestRepository repository, Guid requestId, Guid id)
     {
-        Guid agencyId = User.GetAgencyId();
-        var model = await repository.GetWorkerRequestByAgencyId(agencyId, requestId, id);
+        var model = await repository.GetWorkerRequestByAgencyId(User.GetAgencyIds(), requestId, id);
         if (model is null) return NotFound();
         return Ok(model);
     }

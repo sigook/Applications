@@ -26,7 +26,7 @@ export const useSecurityStore = defineStore('security', {
         if (typeof data.profile.role === 'string') {
           roles = [data.profile.role];
         } else {
-          roles = data.profile.role as string[];
+          roles = data.profile.role;
         }
       }
       this.userRoles = roles;
@@ -44,11 +44,13 @@ export const useSecurityStore = defineStore('security', {
             if (this.user) this.setUser(null);
             return null;
           }
-          return await this.silentSignin().catch(async () => {
+          try {
+            return await this.silentSignin();
+          } catch {
             await mgr.removeUser();
             this.setUser(null);
             return null;
-          });
+          }
         }
         const userProfile = current as unknown as UserProfile;
         if (this.user?.access_token !== userProfile.access_token) {
@@ -75,17 +77,16 @@ export const useSecurityStore = defineStore('security', {
       this.setUser(null);
     },
     silentSignin(): Promise<UserProfile | null> {
-      if (!silentRenewPromise) {
-        silentRenewPromise = mgr.signinSilent()
-          .then((user) => {
-            const userProfile = user as unknown as UserProfile | null;
-            this.setUser(userProfile);
-            return userProfile;
-          })
-          .finally(() => {
-            silentRenewPromise = null;
-          });
-      }
+      silentRenewPromise ??= (async () => {
+        try {
+          const user = await mgr.signinSilent();
+          const userProfile = user as unknown as UserProfile | null;
+          this.setUser(userProfile);
+          return userProfile;
+        } finally {
+          silentRenewPromise = null;
+        }
+      })();
       return silentRenewPromise;
     },
   },

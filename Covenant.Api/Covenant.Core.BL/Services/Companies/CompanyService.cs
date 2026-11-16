@@ -293,7 +293,7 @@ public class CompanyService(
         await companyRepository.Create(entity);
         await companyRepository.SaveChangesAsync();
         var data = await notificationDataRepository.GetAgencyData(entity.AgencyId);
-        if (data != null && data.EmailNotification)
+        if (data is not null)
         {
             data.CompanyFullName = entity.FullName;
             var message = await razorViewToStringRenderer.RenderViewToStringAsync("/Views/Notifications/OnNewCompany/AgencyTemplate.cshtml", data);
@@ -463,6 +463,24 @@ public class CompanyService(
         return Result.Fail("User not found");
     }
 
+    public async Task<Result> UpdateCompanyUserEmail(Guid userId, string newEmail)
+    {
+        var email = CvnEmail.Create(newEmail);
+        if (!email) return email;
+        var companyUser = await companyRepository.GetCompanyUser(userId);
+        if (companyUser is null) return Result.Fail("User not found");
+        var user = await userRepository.GetUserById(userId);
+        if (user is null) return Result.Fail("User not found");
+        if (string.Equals(user.Email, email.Value, StringComparison.OrdinalIgnoreCase)) return Result.Ok();
+        if (await userRepository.GetUserByEmail(email.Value) is not null) return Result.Fail("This email is already in use");
+        var emailUpdated = await userAccountService.UpdateUserEmail(new UpdateEmailModel(userId) { NewEmail = email.Value });
+        if (!emailUpdated) return emailUpdated;
+        user.UpdateEmail(email.Value);
+        userRepository.Update(user);
+        await userRepository.SaveChangesAsync();
+        return Result.Ok();
+    }
+
     public Task<CompanyDeletionCheckModel> CheckCompanyDeletion(Guid companyProfileId) =>
         companyRepository.GetDeletionCheck(companyProfileId);
 
@@ -566,6 +584,17 @@ public class CompanyService(
             var headerNames = string.Join('|', hve.InvalidHeaders.SelectMany(ih => ih.Names));
             return Result.Fail<ResultGenerateDocument<byte[]>>($"There are missing the next headers in your excel file: {headerNames}");
         }
+    }
+
+    public async Task<Result> UpdateContactPerson(Guid id, CompanyProfileContactPersonModel model)
+    {
+        var email = CvnEmail.CreateOptional(model.Email);
+        if (!email) return Result.Fail(email.Errors);
+        var entity = await companyRepository.GetContactPerson(id);
+        if (entity is null) return Result.Fail("Contact person not found");
+        entity.Update(model.Title, model.FirstName, model.MiddleName, model.LastName, model.Position, model.MobileNumber, model.OfficeNumber, model.OfficeNumberExt, email.Value);
+        await companyRepository.SaveChangesAsync();
+        return Result.Ok();
     }
 
     public async Task<Result> CreateContact(CompanyProfileContactPersonModel model)

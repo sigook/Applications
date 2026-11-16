@@ -10,7 +10,7 @@
             <b-button icon-right="chevron-down" icon-left="dots-vertical">Actions</b-button>
           </template>
           <slot name="dropdown-actions"></slot>
-          <b-dropdown-item v-if="props.export" aria-role="listitem" @click="onExport">
+          <b-dropdown-item v-if="gridExport" aria-role="listitem" @click="onExport">
             <b-icon icon="file-excel"></b-icon>
             <span>Export</span>
           </b-dropdown-item>
@@ -73,7 +73,26 @@ defineOptions({ inheritAttrs: false });
 const PAGE_SIZE_OPTIONS = [30, 60, 90];
 const DEFAULT_PAGE_SIZE = 30;
 
-const props = withDefaults(defineProps<{
+const {
+  fetch: fetchPage,
+  data,
+  refresh,
+  sortMap,
+  export: gridExport,
+  paginated = true,
+  emptyText = 'No records available',
+  fitViewport = true,
+  focusable,
+  defaultSort,
+  rowClass = () => '',
+  detailed,
+  detailKey,
+  showDetailIcon = true,
+  hasDetailedVisible = () => true,
+  checkable,
+  checkboxPosition = 'left',
+  isRowCheckable = () => true,
+} = defineProps<{
   fetch?: (params: P) => Promise<PaginatedList<T>>;
   data?: T[];
   refresh?: () => unknown;
@@ -92,16 +111,7 @@ const props = withDefaults(defineProps<{
   checkable?: boolean;
   checkboxPosition?: 'left' | 'right';
   isRowCheckable?: (row: T) => boolean;
-}>(), {
-  paginated: true,
-  emptyText: 'No records available',
-  fitViewport: true,
-  showDetailIcon: true,
-  hasDetailedVisible: () => true,
-  checkboxPosition: 'left',
-  isRowCheckable: () => true,
-  rowClass: () => '',
-});
+}>();
 
 const params = defineModel<P>('params');
 const checkedRows = defineModel<T[]>('checkedRows', { default: () => [] });
@@ -122,23 +132,23 @@ const serverTotal = ref(0);
 const pageIndex = ref(params.value?.pageIndex ?? 1);
 const pageSize = ref(params.value?.pageSize ?? DEFAULT_PAGE_SIZE);
 
-const isServer = computed(() => !!props.fetch);
-const canRefresh = computed(() => isServer.value || !!props.refresh);
-const hasDropdown = computed(() => !!props.export || !!slots['dropdown-actions']);
+const isServer = computed(() => !!fetchPage);
+const canRefresh = computed(() => isServer.value || !!refresh);
+const hasDropdown = computed(() => !!gridExport || !!slots['dropdown-actions']);
 const showToolbar = computed(() => canRefresh.value || hasDropdown.value || !!slots.actions || !!slots.filters);
 const showMobileCards = computed(() => isTouch.value && !!slots['mobile-card']);
-const tableData = computed<T[]>(() => (isServer.value ? rows.value : props.data ?? []));
+const tableData = computed<T[]>(() => (isServer.value ? rows.value : data ?? []));
 const totalRows = computed(() => (isServer.value ? serverTotal.value : tableData.value.length));
 
 const mobileRows = computed<T[]>(() => {
-  if (isServer.value || !props.paginated) return tableData.value;
+  if (isServer.value || !paginated) return tableData.value;
   const start = (pageIndex.value - 1) * pageSize.value;
   return tableData.value.slice(start, start + pageSize.value);
 });
 
 const tableDefaultSort = computed<string | [string, string] | undefined>(() => {
-  if (!isServer.value || !props.sortMap) return props.defaultSort;
-  const map = props.sortMap;
+  if (!isServer.value || !sortMap) return defaultSort;
+  const map = sortMap;
   const field = Object.keys(map).find((key) => map[key] === params.value?.sortBy);
   return field ? [field, params.value?.isDescending ? 'desc' : 'asc'] : undefined;
 });
@@ -152,21 +162,26 @@ function patchParams(patch: GridParams): P {
 }
 
 function reload(patch: GridParams = {}) {
-  if (!props.fetch) {
-    props.refresh?.();
+  if (!fetchPage) {
+    refresh?.();
     return;
   }
-  const next = patchParams(patch);
+  void fetchRows(fetchPage, patchParams(patch));
+}
+
+async function fetchRows(load: NonNullable<typeof fetchPage>, next: P) {
   emit('update:loading', true);
-  props.fetch(next)
-    .then((response) => {
-      rows.value = response.items;
-      serverTotal.value = response.totalItems;
-      checkedRows.value = [];
-      emit('loaded', response.totalItems);
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => emit('update:loading', false));
+  try {
+    const response = await load(next);
+    rows.value = response.items;
+    serverTotal.value = response.totalItems;
+    checkedRows.value = [];
+    emit('loaded', response.totalItems);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    emit('update:loading', false);
+  }
 }
 
 function onPageChange(page: number) {
@@ -186,7 +201,7 @@ function search() {
 
 function onSort(field: string, order: string) {
   if (!isServer.value) return;
-  const sortBy = props.sortMap?.[field];
+  const sortBy = sortMap?.[field];
   reload({ ...(sortBy !== undefined ? { sortBy } : {}), isDescending: order !== 'asc' });
 }
 
@@ -205,14 +220,18 @@ function onRowClick(row: T) {
   emit('click', row);
 }
 
-function onExport() {
-  if (!props.export) return;
-  const { url, fileName } = props.export;
+async function onExport() {
+  if (!gridExport) return;
+  const { url, fileName } = gridExport;
   emit('update:loading', true);
-  downloadAgencyReport(url, { ...params.value })
-    .then((file) => downloadFile(file, `${fileName}_${new Date().toLocaleDateString()}`))
-    .catch((error) => showAlertError(error))
-    .finally(() => emit('update:loading', false));
+  try {
+    const file = await downloadAgencyReport(url, { ...params.value });
+    downloadFile(file, `${fileName}_${new Date().toLocaleDateString()}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    emit('update:loading', false);
+  }
 }
 
 onMounted(() => {

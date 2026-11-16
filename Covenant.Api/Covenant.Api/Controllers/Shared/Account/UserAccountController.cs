@@ -41,6 +41,16 @@ public class UserAccountController(
         return Ok(new { Email = email });
     }
 
+    /// <summary>Gets the email and display name of the current authenticated user.</summary>
+    [HttpGet]
+    [ProducesResponseType<AccountModel>(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<IActionResult> GetAccount()
+    {
+        if (!User.TryGetUserId(out Guid userId)) return Unauthorized();
+        return Ok(await userRepository.GetAccount(userId));
+    }
+
     /// <summary>Deactivates the current authenticated user account.</summary>
     [HttpPatch(DeactivateRoute)]
     [ProducesResponseType(StatusCodes.Status200OK)]

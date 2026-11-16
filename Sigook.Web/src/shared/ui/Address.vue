@@ -69,7 +69,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue';
+import { computed, reactive, ref, useTemplateRef, watch } from 'vue';
 import { useForm } from 'vee-validate';
 import * as yup from 'yup';
 import { useSecurityStore } from '@/app/stores/security';
@@ -88,13 +88,11 @@ import { appGlobals } from '@/app/globals';
 import type { BAutocomplete } from 'buefy';
 import type { City, Country, LocationDetailModel, Province, ProvinceSettings } from '@/shared/types/common';
 
-const props = withDefaults(defineProps<{
+const { model, requirePostalCode = true } = defineProps<{
   model?: LocationDetailModel | null;
   enableProvinceSettings?: boolean;
   requirePostalCode?: boolean;
-}>(), {
-  requirePostalCode: true,
-});
+}>();
 
 const addressSchema = yup.object({
   country: yup.mixed().required('Country is required'),
@@ -106,7 +104,7 @@ const addressSchema = yup.object({
     .min(6, 'Address must be at least 6 characters')
     .max(100, 'Address must be at most 100 characters')
     .matches(appGlobals.$regexAddress, 'Invalid address format'),
-  postalCode: postalCodeSchema(props.requirePostalCode),
+  postalCode: postalCodeSchema(requirePostalCode),
 });
 const emit = defineEmits<{
   (e: 'isCanada', v: boolean): void;
@@ -129,8 +127,8 @@ const { errors: formErrors, defineField, setFieldError, validate } = useForm<{
     country: null,
     province: '',
     city: '',
-    address: props.model?.address || '',
-    postalCode: props.model?.postalCode || '',
+    address: model?.address || '',
+    postalCode: model?.postalCode || '',
   },
 });
 
@@ -164,7 +162,7 @@ function markAllInteracted() {
 }
 
 const isLoading = ref(false);
-const localModel = ref<LocationDetailModel | null>(JSON.parse(JSON.stringify(props.model)));
+const localModel = ref<LocationDetailModel | null>(JSON.parse(JSON.stringify(model)));
 const countries = ref<Country[]>([]);
 const provinces = ref<Province[]>([]);
 const provinceSelected = ref<Province | null>(null);
@@ -173,39 +171,36 @@ const citySelected = ref<City | null>(null);
 const loadingProvinces = ref(false);
 const loadingCities = ref(false);
 const showProvinceSettingsModal = ref(false);
-const autoCompleteCities = ref<InstanceType<typeof BAutocomplete> | null>(null);
+const autoCompleteCities = useTemplateRef<InstanceType<typeof BAutocomplete>>('autoCompleteCities');
 
-function loadCountries() {
+async function loadCountries() {
   emit('isLoading', true);
-  fetchCountries().then((r) => {
-    countries.value = r;
-    emit('isLoading', false);
-  });
+  const r = await fetchCountries();
+  countries.value = r;
+  emit('isLoading', false);
 }
 
-function getProvincesByCountry(c: Country | null) {
-  if (!c || !c.id) return;
+async function getProvincesByCountry(c: Country | null) {
+  if (!c?.id) return;
   loadingProvinces.value = true;
-  fetchProvinces(c.id).then((r) => {
-    provinces.value = r;
-    loadingProvinces.value = false;
-  });
+  const r = await fetchProvinces(c.id);
+  provinces.value = r;
+  loadingProvinces.value = false;
 }
 
-function getCityByProvince(p: Province | null) {
-  if (!p || !p.id) return;
+async function getCityByProvince(p: Province | null) {
+  if (!p?.id) return;
   loadingCities.value = true;
-  fetchCities(p.id).then((response) => {
-    cities.value = response;
-    loadingCities.value = false;
-  });
+  const response = await fetchCities(p.id);
+  cities.value = response;
+  loadingCities.value = false;
 }
 
 // created()
-loadCountries();
+void loadCountries();
 if (localModel.value?.city?.province?.country) {
-  getProvincesByCountry(localModel.value.city.province.country);
-  getCityByProvince(localModel.value.city.province);
+  void getProvincesByCountry(localModel.value.city.province.country);
+  void getCityByProvince(localModel.value.city.province);
   country.value = localModel.value.city.province.country;
   province.value = localModel.value.city.province.value;
   provinceSelected.value = localModel.value.city.province;
@@ -216,18 +211,19 @@ if (localModel.value?.city?.province?.country) {
 function onCountrySelected(c: Country | null) {
   province.value = '';
   city.value = '';
-  getProvincesByCountry(c);
-  emit('isCanada', c.code === 'CA');
+  void getProvincesByCountry(c);
+  emit('isCanada', c?.code === 'CA');
 }
 
 function onProvinceSelected(p: Province | null) {
   provinceSelected.value = p;
   city.value = '';
-  getCityByProvince(p);
+  void getCityByProvince(p);
 }
 
 function onCitySelected(c: City | null) {
   citySelected.value = c;
+  if (!localModel.value) return;
   localModel.value.city = {
     ...citySelected.value,
     province: {
@@ -250,17 +246,20 @@ function addCity() {
     },
     closeOnConfirm: false,
     confirmText: 'Add',
-    onConfirm: async (value, dialog) => {
-      const payload = {
-        value,
-        province: { id: provinceSelected.value.id },
-      };
-      const newCity = await createCity(payload);
-      cities.value.push(newCity);
-      autoCompleteCities.value?.setSelected(newCity);
-      dialog.close();
-    },
+    onConfirm: (value, dialog) => addNewCity(value, dialog),
   });
+}
+
+async function addNewCity(value: string, dialog: { close: () => void }) {
+  if (!provinceSelected.value) return;
+  const payload = {
+    value,
+    province: { id: provinceSelected.value.id },
+  };
+  const newCity = await createCity(payload);
+  cities.value.push(newCity);
+  autoCompleteCities.value?.setSelected(newCity);
+  dialog.close();
 }
 
 async function validateAddress(): Promise<boolean> {
@@ -268,12 +267,12 @@ async function validateAddress(): Promise<boolean> {
   const result = await validate();
   let valid = result.valid;
 
-  if (province.value && (!provinceSelected.value || provinceSelected.value.value.toLowerCase() !== province.value.toLowerCase())) {
+  if (province.value && (provinceSelected.value?.value.toLowerCase() !== province.value.toLowerCase())) {
     setFieldError('province', 'Please select a province from the list');
     valid = false;
   }
 
-  if (city.value && (!citySelected.value || citySelected.value.value.toLowerCase() !== city.value.toLowerCase())) {
+  if (city.value && (citySelected.value?.value.toLowerCase() !== city.value.toLowerCase())) {
     setFieldError('city', 'Please select a city from the list');
     valid = false;
   }
@@ -286,15 +285,15 @@ function openProvinceSettings() {
 }
 
 function onProvinceSettingsSaved(settings: ProvinceSettings) {
-  provinceSelected.value.settings = settings;
-  if (localModel.value.city && localModel.value.city.province) {
+  if (provinceSelected.value) provinceSelected.value.settings = settings;
+  if (localModel.value?.city?.province) {
     localModel.value.city.province.settings = settings;
     emit('update:model', localModel.value);
   }
   showProvinceSettingsModal.value = false;
 }
 
-watch(() => props.model, (newVal) => {
+watch(() => model, (newVal) => {
   localModel.value = JSON.parse(JSON.stringify(newVal));
 }, { deep: true });
 

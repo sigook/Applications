@@ -75,6 +75,7 @@ import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agen
 import { lowercase } from '@/shared/format';
 import { CompanyStatus } from '@/shared/constants/enums';
 import DetailHeader from '@/shared/detail-page/DetailHeader.vue';
+import { useAgencyName } from '@/modules/agency/shared/useAgencyName';
 import CompanyDetailTab from '@/modules/agency/recruiting/clients/components/CompanyDetailTab.vue';
 import CompanyLocationsGrid from '@/modules/agency/recruiting/clients/components/CompanyLocationsGrid.vue';
 import Users from '@/modules/agency/recruiting/clients/components/UserList.vue';
@@ -98,6 +99,7 @@ const company = ref<AgencyCompanyProfileDetail | null>(null);
 const isLoading = ref(true);
 const showUpdateLogo = ref(false);
 const { statusLabel, statusVariant, industry, vaccinationChip, createdAt } = useCompanyDetail(company);
+const { agencyName } = useAgencyName();
 
 const initialTab = typeof route.query.tab === 'string' && route.query.tab !== 'Settings' ? route.query.tab : 'Detail';
 const currentTab = ref<string>(initialTab);
@@ -109,7 +111,13 @@ const requiresPayrollPermission = computed(() => !!company.value?.requiresPermis
 
 const isClient = computed(() => (company.value?.companyStatus as unknown as CompanyStatus) === CompanyStatus.Client);
 
+function agencyChip(): DetailChip[] {
+  const name = agencyName(company.value?.agencyId);
+  return name ? [{ label: name }] : [];
+}
+
 const chips = computed<DetailChip[]>(() => [
+  ...agencyChip(),
   ...vaccinationChip.value,
   ...(company.value?.requiresPermissionToSeeRequests ? [{ label: 'Needs permission to see requests' }] : []),
 ]);
@@ -146,7 +154,7 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({ path: `${companyBase.value}/${route.params.id}`, query: { tab } });
+  void router.push({ path: `${companyBase.value}/${String(route.params.id)}`, query: { tab } });
 }
 
 function onContactsChanged(count: number) {
@@ -157,31 +165,32 @@ function onLocationsChanged(count: number) {
   if (company.value?.summary) company.value.summary.locationsCount = count;
 }
 
-function loadCompany() {
-  getAgencyCompany(route.params.id as string)
-    .then((response) => {
-      company.value = response;
-    })
-    .catch(showAlertError)
-    .finally(() => {
-      isLoading.value = false;
-    });
+async function loadCompany() {
+  try {
+    company.value = await getAgencyCompany(route.params.id as string);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-function updateLogo(logo: File) {
+async function updateLogo(logo: File) {
   const current = company.value;
   if (!current) return;
   showUpdateLogo.value = false;
   isLoading.value = true;
-  updateAgencyCompanyProfileLogo(current.id, logo)
-    .then(() => loadCompany())
-    .catch((error: unknown) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    await updateAgencyCompanyProfileLogo(current.id, logo);
+  } catch (error) {
+    showAlertError(error);
+    isLoading.value = false;
+    return;
+  }
+  await loadCompany();
 }
 
-loadCompany();
+void loadCompany();
 </script>
 
 <style>

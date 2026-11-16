@@ -5,6 +5,7 @@ namespace Covenant.Common.Models.Accounting.PayStubs;
 public class PayStubListModel
 {
     public Guid Id { get; set; }
+    public Guid AgencyId { get; set; }
     public long NumberId { get; set; }
     public DateTime CreatedAt { get; set; }
     public decimal TotalPaid { get; set; }

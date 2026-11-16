@@ -18,6 +18,14 @@
         </b-field>
       </div>
 
+      <div v-if="agencies.length > 1" class="column is-12">
+        <b-field label="Agency *">
+          <b-select :model-value="agencyId" name="agency" expanded @update:modelValue="onAgencyChanged">
+            <option v-for="agency in agencies" :key="agency.id" :value="agency.id">{{ agency.name }}</option>
+          </b-select>
+        </b-field>
+      </div>
+
       <div class="column is-12">
         <b-field label="Full name *" :type="formErrors.fullName ? 'is-danger' : ''" :message="formErrors.fullName || ''">
           <b-input v-model="fullName" name="full name" placeholder="e.g. Acme Logistics"></b-input>
@@ -39,7 +47,7 @@
             name="industry"
             placeholder="Industry"
             selectable-footer
-            @active="(active) => onDropdownActive(industryPicker, active)"
+            @active="(active: boolean) => onDropdownActive(industryPicker, active)"
             @select="selectIndustry"
             @select-footer="onAddIndustry"
           >
@@ -82,8 +90,8 @@
             open-on-focus
             name="salesRepresentative"
             placeholder="Select"
-            :custom-formatter="(option) => `${option.name} - ${option.email}`"
-            @active="(active) => onDropdownActive(salesRepresentativePicker, active)"
+            :custom-formatter="(option: AgencyPersonnelListItem) => `${option.name} - ${option.email}`"
+            @active="(active: boolean) => onDropdownActive(salesRepresentativePicker, active)"
             @select="onSalesRepresentativeSelected"
           ></b-autocomplete>
         </b-field>
@@ -155,7 +163,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, useTemplateRef } from 'vue';
 import type { ComponentPublicInstance } from 'vue';
 import * as yup from 'yup';
 import UploadImage from '@/shared/ui/PreviewImage.vue';
@@ -168,6 +176,7 @@ import { usePubSub } from '@/shared/composables/usePubSub';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/shared/api/catalogApi';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
+import { useAgencyStore } from '@/modules/agency/store';
 import { createAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
 import type { CatalogItem, Industry } from '@/shared/types/common';
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
@@ -175,6 +184,9 @@ import type { CompanyProfileFormState } from '@/modules/agency/recruiting/client
 
 const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
+const agencyStore = useAgencyStore();
+const agencies = computed(() => agencyStore.agencies);
+const agencyId = ref<string | null>(agencies.value.at(0)?.id ?? null);
 
 const numericExt = yup
   .string()
@@ -232,15 +244,15 @@ const {
 const formErrors = form.errors;
 
 watch(form.fields.companyStatus, (v) => {
-  companyStatusValue.value = (v as number | null) ?? null;
+  companyStatusValue.value = (v) ?? null;
 });
 
-const industryPicker = ref<ComponentPublicInstance | null>(null);
-const salesRepresentativePicker = ref<ComponentPublicInstance | null>(null);
+const industryPicker = useTemplateRef<ComponentPublicInstance>('industryPicker');
+const salesRepresentativePicker = useTemplateRef<ComponentPublicInstance>('salesRepresentativePicker');
 const { reveal } = useDropdownReveal();
 
 function onDropdownActive(picker: ComponentPublicInstance | null, active: boolean): void {
-  reveal(picker?.$el as HTMLElement | undefined, active);
+  void reveal(picker?.$el as HTMLElement | undefined, active);
 }
 
 const statuses = ref<CatalogItem<number>[]>([]);
@@ -267,9 +279,25 @@ const filteredSalesRepresentative = computed(() => {
 async function init() {
   industryOptions.value = await getIndustries();
   statuses.value = await getCompanyStatus();
-  salesRepresentatives.value = await getAgencyPersonnel();
+  salesRepresentatives.value = await getAgencyPersonnel(agencyId.value ?? undefined);
 }
-init();
+void init();
+
+watch(agencies, (list) => {
+  const first = list.at(0);
+  if (!agencyId.value && first) void onAgencyChanged(first.id);
+});
+
+async function onAgencyChanged(value: string) {
+  agencyId.value = value;
+  salesRepresentativeSelected.value = null;
+  form.setFieldValue('salesRepresentative', '');
+  try {
+    salesRepresentatives.value = await getAgencyPersonnel(value);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
 
 function validateAutocompleteSelections(): boolean {
   let valid = true;
@@ -285,53 +313,51 @@ function validateAutocompleteSelections(): boolean {
   return valid;
 }
 
-function submit(): Promise<boolean> {
+async function submit(): Promise<boolean> {
   form.markInteracted();
-  return new Promise<boolean>((resolve) => {
-    form.handleSubmit(
-      async (values) => {
-        if (!validateAutocompleteSelections()) {
-          showAlertError('Please make sure all required fields are filled out correctly');
-          resolve(false);
-          return;
-        }
-        const payload: CompanyProfileFormState = {
-          ...company.value,
-          fullName: values.fullName,
-          companyStatus: values.companyStatus,
-          about: values.about,
-          phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,
-          faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
-          website: values.website,
-          salesRepresentativeId: salesRepresentativeSelected.value?.id || null,
-          industry: { ...company.value.industry, industry: industrySelected.value },
-          email: values.email,
-        };
-        if (displayPassword.value) payload.password = values.password;
-        try {
-          const created = await createAgencyCompany(payload);
-          if (logoFile.value) await updateAgencyCompanyProfileLogo(created.id, logoFile.value);
-          showAlertSuccess('Company created');
-          resolve(true);
-        } catch (error) {
-          showAlertError((error as { data?: unknown }).data);
-          resolve(false);
-        }
-      },
-      () => {
+  const ok = await form.handleSubmit(
+    async (values) => {
+      if (!validateAutocompleteSelections()) {
         showAlertError('Please make sure all required fields are filled out correctly');
-        resolve(false);
+        return false;
       }
-    )();
-  });
+      const payload: CompanyProfileFormState = {
+        ...company.value,
+        fullName: values.fullName,
+        companyStatus: values.companyStatus,
+        about: values.about,
+        phoneExt: values.phoneExt ? parseInt(values.phoneExt, 10) : null,
+        faxExt: values.faxExt ? parseInt(values.faxExt, 10) : null,
+        website: values.website,
+        salesRepresentativeId: salesRepresentativeSelected.value?.id || null,
+        industry: { ...company.value.industry, industry: industrySelected.value },
+        email: values.email,
+        agencyId: agencyId.value,
+      };
+      if (displayPassword.value) payload.password = values.password;
+      try {
+        const created = await createAgencyCompany(payload);
+        if (logoFile.value) await updateAgencyCompanyProfileLogo(created.id, logoFile.value);
+        showAlertSuccess('Company created');
+        return true;
+      } catch (error) {
+        showAlertError((error as { data?: unknown }).data);
+        return false;
+      }
+    },
+    () => {
+      showAlertError('Please make sure all required fields are filled out correctly');
+    }
+  )();
+  return ok ?? false;
 }
 
 function onSalesRepresentativeSelected(option: AgencyPersonnelListItem | null) {
-  salesRepresentativeSelected.value = option || null;
+  salesRepresentativeSelected.value = option ?? null;
 }
 
 function selectIndustry(option: Industry | null) {
-  industrySelected.value = option || null;
+  industrySelected.value = option ?? null;
 }
 
 function onAddIndustry() {
@@ -344,14 +370,16 @@ function onAddIndustry() {
     },
     closeOnConfirm: false,
     confirmText: 'Add',
-    onConfirm: async (value, dialog) => {
-      const newIndustry = await addIndustryApi({ value });
-      industryOptions.value.push(newIndustry);
-      industrySelected.value = newIndustry;
-      form.setFieldValue('industry', newIndustry.value);
-      dialog.close();
-    },
+    onConfirm: (value, dialog) => addIndustry(value, dialog),
   });
+}
+
+async function addIndustry(value: string, dialog: { close: () => void }) {
+  const newIndustry = await addIndustryApi({ value });
+  industryOptions.value.push(newIndustry);
+  industrySelected.value = newIndustry;
+  form.setFieldValue('industry', newIndustry.value);
+  dialog.close();
 }
 
 defineExpose({ submit });

@@ -39,18 +39,14 @@ export type PrimaryCardVariant = 'navy' | 'red'
 <script setup lang="ts">
 import { useRevealOnScroll } from '@/modules/landing/composables/useRevealOnScroll'
 
-withDefaults(defineProps<{
+const { variant = 'navy', eyebrow, title, list, showDivider = false, delay = 0 } = defineProps<{
   variant?: PrimaryCardVariant
   eyebrow?: string
   title?: string
   list?: readonly string[]
   showDivider?: boolean
   delay?: number
-}>(), {
-  variant: 'navy',
-  delay: 0,
-  showDivider: false,
-})
+}>()
 
 const { el: cardRef, visible } = useRevealOnScroll()
 </script>

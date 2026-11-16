@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadCandidates" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/recruiting/candidates/File', fileName: 'Candidates' }"
         @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total" @cellclick="onCellClick">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button icon-left="plus" @click="showCreateCandidate = true">Create</b-button>
         </template>
@@ -26,6 +29,7 @@
           </template>
           <template v-slot="props">
             <span class="is-block">
+              <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
               {{ props.row.name }}
               <b-icon v-if="props.row.hasVehicle" icon="car-back" size="is-small"></b-icon>
               <b-icon v-if="props.row.dnu" icon="alert" size="is-small" type="is-danger"></b-icon>
@@ -40,7 +44,7 @@
         <b-table-column field="phoneNumbers" label="Phone" searchable>
           <template v-slot:searchable>
             <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+              @update:modelValue="(v: string) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
           <template v-slot="props">
             <b-taginput size="is-small" v-model="props.row.phoneNumbers" :before-adding="formatPhone" placeholder="Add Phone"
@@ -147,10 +151,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="showCandidateDetail(props.row.id)">
               Edit
             </b-dropdown-item>
@@ -164,14 +165,14 @@
             <b-dropdown-item aria-role="listitem" @click="onDeleteCandidate(props.row.id)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
 
     <b-modal custom-content-class="card" v-model="showDocuments" @close="showDocuments = false" width="500px"
       :destroy-on-hide="true">
-      <modal-documents :candidateId="detailId" @close="showDocuments = false" />
+      <modal-documents v-if="detailId" :candidateId="detailId" @close="showDocuments = false" />
     </b-modal>
 
 
@@ -180,7 +181,7 @@
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showDetailCandidate" @close="showDetailCandidate = false" width="500px">
-      <detail-candidate :candidate-id="detailId" @onUpdateWorker="() => updateCandidate()"></detail-candidate>
+      <detail-candidate v-if="detailId" :candidate-id="detailId" @onUpdateWorker="() => updateCandidate()"></detail-candidate>
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="addFile" @close="addFile = false" width="500px">
@@ -189,11 +190,12 @@
     </b-modal>
 
     <b-modal custom-content-class="card" v-model="showRequestModal" width="500px">
-      <candidate-request :candidate-id="detailId" @onSelectRequest="onSelectRequest" />
+      <candidate-request v-if="detailId" :candidate-id="detailId" @onSelectRequest="onSelectRequest" />
     </b-modal>
   </div>
 </template>
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
@@ -222,6 +224,8 @@ import { getSources } from '@/shared/api/catalogApi';
 import { dateMonth, emailName } from '@/shared/format';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import {
@@ -272,16 +276,19 @@ const residencyListValue = residencyList;
 const sourceList = ref<Source[]>([]);
 const sourcesSelected = ref<Source[]>([]);
 
-getSources()
-  .then((sources) => {
+async function loadSources() {
+  try {
+    const sources = await getSources();
     sourceList.value = sources;
     if (serverParams.value.sources) {
       sourcesSelected.value = sources.filter((s) => serverParams.value.sources?.includes(s.value));
     }
-  })
-  .catch((error) => {
+  } catch (error) {
     showAlertError(error);
-  });
+  }
+}
+
+void loadSources();
 
 const getCandidateNotesFn = ({ userId, pagination }: NotesFetchPayload) => getCandidateNotes(userId, pagination);
 const addCandidateNoteFn = ({ userId, model }: NotesCreatePayload) => createCandidateNote(userId, model);
@@ -295,13 +302,13 @@ if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
 }
 
-function loadCandidates(params: AgencyCandidateFilter): Promise<PaginatedList<Candidate>> {
+async function loadCandidates(params: AgencyCandidateFilter): Promise<PaginatedList<Candidate>> {
   agencyStore.updateAgencyCandidateFilter(params);
-  return getAgencyCandidates(params)
-    .then((response) => ({
-      ...response,
-      items: response.items.map((c) => ({ ...c, notesCount: c.notesCount || 0 })),
-    }));
+  const response = await getAgencyCandidates(params);
+  return {
+    ...response,
+    items: response.items.map((c) => ({ ...c, notesCount: c.notesCount || 0 })),
+  };
 }
 
 function onCellClick(row: Candidate, column: TableColumnRef) {
@@ -355,114 +362,93 @@ function onSelectRequest() {
   grid.value?.reload();
 }
 
-function addCandidatePhoneNumberHandler(candidateId: string, phone: string) {
+async function addCandidatePhoneNumberHandler(candidateId: string, phone: string) {
   isLoading.value = true;
-  addCandidatePhoneNumber(candidateId, { phoneNumber: phone })
-    .then(() => {
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await addCandidatePhoneNumber(candidateId, { phoneNumber: phone });
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function deleteCandidateNumber(candidateId: string, number: CandidatePhoneNumberModel) {
+async function deleteCandidateNumber(candidateId: string, number: CandidatePhoneNumberModel) {
   isLoading.value = true;
-  deleteCandidatePhoneNumber(candidateId, number.id ?? '')
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteCandidatePhoneNumber(candidateId, number.id ?? '');
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function addCandidateSkills(id: string, model: CandidateSkillModel) {
+async function addCandidateSkills(id: string, model: CandidateSkillModel) {
   isLoading.value = true;
-  addCandidateSkill(id, model)
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await addCandidateSkill(id, model);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function onDeleteCandidateSkill(candidateId: string, skill: CandidateSkillModel) {
+async function onDeleteCandidateSkill(candidateId: string, skill: CandidateSkillModel) {
   isLoading.value = true;
-  deleteCandidateSkill(candidateId, skill.id ?? '')
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteCandidateSkill(candidateId, skill.id ?? '');
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function onDeleteCandidate(candidateId: string) {
-  showAlertConfirm('Are you sure', 'You want to delete this candidate')
-    .then((response) => {
-      if (response) {
-        isLoading.value = true;
-        deleteAgencyCandidate(candidateId)
-          .then(() => {
-            isLoading.value = false;
-            grid.value?.reload();
-          })
-          .catch((error) => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    })
-    .catch((error) => {
-      showAlertError(error);
-    });
-}
-
-function updateCandidateRecruiter(candidateId: string) {
-  showAlertConfirm('Do you want to manage this candidate?', '')
-    .then((response) => {
-      if (response) {
-        isLoading.value = true;
-        updateAgencyCandidateRecruiter(candidateId)
-          .then(() => {
-            isLoading.value = false;
-            grid.value?.reload();
-          })
-          .catch((error) => {
-            isLoading.value = false;
-            showAlertError(error);
-          });
-      }
-    })
-    .catch((error) => {
-      showAlertError(error);
-    });
-}
-
-function convertToWorker(candidateId: string) {
+async function onDeleteCandidate(candidateId: string) {
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this candidate'))) return;
   isLoading.value = true;
-  convertCandidateToWorker(candidateId)
-    .then(() => {
-      isLoading.value = false;
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteAgencyCandidate(candidateId);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+}
+
+async function updateCandidateRecruiter(candidateId: string) {
+  if (!(await showAlertConfirm('Do you want to manage this candidate?', ''))) return;
+  isLoading.value = true;
+  try {
+    await updateAgencyCandidateRecruiter(candidateId);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+}
+
+async function convertToWorker(candidateId: string) {
+  isLoading.value = true;
+  try {
+    await convertCandidateToWorker(candidateId);
+    isLoading.value = false;
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function goToApplicants(item: { id: string }) {
-  router.push({
+  void router.push({
     path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
   });

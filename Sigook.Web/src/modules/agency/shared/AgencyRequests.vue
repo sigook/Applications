@@ -15,7 +15,7 @@ import { ref } from 'vue';
 import TableRequests from "@/modules/agency/recruiting/requests/components/TableRequests.vue";
 import type { AgencyDetail } from '@/modules/agency/profile/types';
 
-defineProps<{ agency: AgencyDetail }>();
+const { agency } = defineProps<{ agency: AgencyDetail }>();
 
 const isLoading = ref(true);
 const tableConfig = ref({

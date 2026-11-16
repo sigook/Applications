@@ -14,6 +14,7 @@ public class WorkerProfileDetailModel :
     IWorkerRequirementsInformation
 {
     public Guid Id { get; set; }
+    public Guid AgencyId { get; set; }
     public long NumberId { get; set; }
     public CovenantFileModel ProfileImage { get; set; }
     public string FirstName { get; set; }

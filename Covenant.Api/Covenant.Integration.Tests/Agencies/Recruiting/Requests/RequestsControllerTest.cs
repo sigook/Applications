@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
@@ -485,7 +486,6 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
             });
             context.Agencies.Add(Data.FakeAgency);
             context.Users.Add(Data.FakeUserRecruiter);
-            context.AgencyPersonnel.Add(Data.FakeRecruiter);
             context.AddRange(Data.FakeCompany, Data.FakeRequest,
                 Data.FakeUpdateRequest, Data.FakeRequestIncreaseQuantity,
                 Data.FakeRequestReduceQuantity, Data.FakeRequestToCancel,
@@ -557,7 +557,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId) { Location = FakeData.FakeLocation() };
 
         public static readonly User FakeUserRecruiter = new User(CvnEmail.Create("re@rec.com").Value);
-        public static readonly AgencyPersonnel FakeRecruiter = AgencyPersonnel.CreatePrimary(AgencyId, FakeUserRecruiter.Id, FakeUserRecruiter.Email);
+        public static readonly AgencyMemberModel FakeRecruiter = TestAgencyMembers.Add(AgencyId, FakeUserRecruiter.With(u => u.UpdateName(FakeUserRecruiter.Email)).Id);
 
         static Data()
         {
@@ -571,7 +571,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
             FakeRequest.MarkInvitationSent(new DateTime(2021, 01, 01));
             FakeRequest.WorkerSalary = 50_000m;
             FakeRequest.UpdateIsAsap(true);
-            FakeRequest.AddRecruiter(FakeRecruiter, FakeRequest.CreatedAt);
+            FakeRequest.AddRecruiter(FakeRecruiter.UserId, FakeRequest.CreatedAt);
             FakeRequest.AddWorker(FakeWorkerProfile.Id, FakeRequest.CreatedAt.AddDays(1));
             var newShift = new Shift();
             newShift.AddMonday(TimeSpan.Parse("08:00"), TimeSpan.Parse("16:00"));

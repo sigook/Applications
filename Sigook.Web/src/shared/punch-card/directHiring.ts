@@ -3,5 +3,5 @@ interface RequestWithSalary {
 }
 
 export function isDirectHiring(request: RequestWithSalary | null | undefined): boolean {
-  return !!(request && request.workerSalary);
+  return !!(request?.workerSalary);
 }

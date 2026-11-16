@@ -23,7 +23,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { showAlertError } from "@/shared/utils/toast";
 import { compressFile } from '@/shared/utils/compressFile';
 import CropImage from "@/shared/ui/CropImage.vue";
@@ -33,7 +33,7 @@ import type { CovenantFileModel } from '@/shared/types/common';
 const ALLOWED_EXTENSIONS = ['jpeg', 'jpg', 'png', 'gif', 'svg'];
 const MAX_SIZE_KB = 10000;
 
-const props = defineProps<{
+const { editedImage, required } = defineProps<{
   editedImage?: CovenantFileModel | null;
   required?: boolean;
   name?: string;
@@ -47,17 +47,17 @@ const emit = defineEmits<{
 }>();
 
 const isLoading = ref(false);
-const localImage = ref<string | null>(props.editedImage ? props.editedImage.pathFile : null);
+const localImage = ref<string | null>(editedImage?.pathFile ?? null);
 const modalValidation = ref(false);
 const cropImage = ref<string>('');
 const hasImage = ref(false);
 const fileError = ref('');
-const fileInput = ref<HTMLInputElement | null>(null);
+const fileInput = useTemplateRef<HTMLInputElement>('fileInput');
 
-function validateFile(file: File): boolean {
+function validateFile(file: File | undefined): boolean {
   fileError.value = '';
   if (!file) {
-    if (props.required && !hasImage.value) {
+    if (required && !hasImage.value) {
       fileError.value = 'Image is required';
       return false;
     }
@@ -80,10 +80,11 @@ function fileFromEvent(evt: Event): File | undefined {
 }
 
 function showCrop(evt: Event) {
-  if ((document as Document & { documentMode?: number }).documentMode || /Edge/.test(navigator.userAgent)) {
-    showImage(fileFromEvent(evt));
+  const file = fileFromEvent(evt);
+  if (!file) return;
+  if ((document as Document & { documentMode?: number }).documentMode || navigator.userAgent.includes('Edge')) {
+    void showImage(file);
   } else {
-    const file = fileFromEvent(evt);
     cropImage.value = URL.createObjectURL(file);
     modalValidation.value = true;
   }
@@ -119,8 +120,10 @@ function cleanInput() {
 }
 
 function validateDimensions(evt: Event) {
+  const file = fileFromEvent(evt);
+  if (!file) return;
   const reader = new FileReader();
-  reader.readAsDataURL(fileFromEvent(evt));
+  reader.readAsDataURL(file);
   reader.onload = (e) => {
     const image = new Image();
     image.src = (e.target as FileReader).result as string;

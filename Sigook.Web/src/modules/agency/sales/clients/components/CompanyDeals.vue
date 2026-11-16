@@ -20,7 +20,7 @@
           </b-select>
         </template>
         <template v-slot="props">
-          {{ DEAL_TYPE_LABELS[props.row.type] }}
+          {{ DEAL_TYPE_LABELS[props.row.type as DealType] }}
         </template>
       </b-table-column>
       <b-table-column field="status" label="Status" sortable searchable>
@@ -30,7 +30,7 @@
             append-to-body />
         </template>
         <template v-slot="props">
-          {{ DEAL_STATUS_LABELS[props.row.status] }}
+          {{ DEAL_STATUS_LABELS[props.row.status as DealStatus] }}
         </template>
       </b-table-column>
       <b-table-column field="owner" label="Owner" :searchable="isAdmin">
@@ -67,7 +67,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from 'vue';
 import { deleteDeal, getDeals } from '@/modules/agency/sales/clients/api';
-import { DealSortBy, DealStatus, DEAL_TYPES, DEAL_STATUSES, DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
+import { DealSortBy, DealStatus, type DealType, DEAL_TYPES, DEAL_STATUSES, DEAL_TYPE_LABELS, DEAL_STATUS_LABELS } from '@/modules/agency/sales/clients/types';
 import type { Deal, DealFilter } from '@/modules/agency/sales/clients/types';
 import type { SalesClientReference } from '@/modules/agency/sales/dashboard/types';
 import type { CatalogItem, GridHandle, PaginatedList } from '@/shared/types/common';
@@ -77,7 +77,7 @@ import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/uti
 import DealModal from '@/modules/agency/sales/clients/components/DealModal.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = defineProps<{ company: SalesClientReference }>();
+const { company } = defineProps<{ company: SalesClientReference }>();
 
 const statusOptions: CatalogItem<DealStatus>[] = DEAL_STATUSES.map((s) => ({
   id: s,
@@ -106,10 +106,10 @@ const serverParams = ref<DealFilter>({
   dateTo: null,
 });
 
-loadOwners();
+void loadOwners();
 
 function loadDeals(params: DealFilter): Promise<PaginatedList<Deal>> {
-  return getDeals(props.company.id, params);
+  return getDeals(company.id, params);
 }
 
 function applyFilter(): void {
@@ -153,12 +153,12 @@ async function onDelete(deal: Deal): Promise<void> {
   if (!confirmed) return;
   isLoading.value = true;
   try {
-    await deleteDeal(props.company.id, deal.id);
+    await deleteDeal(company.id, deal.id);
     showAlertSuccess('Deal deleted');
     reload();
   } catch (error) {
     isLoading.value = false;
-    await showAlertError(error);
+    showAlertError(error);
   }
 }
 </script>

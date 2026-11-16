@@ -1,5 +1,6 @@
 import { api } from '@/app/security/apiService';
-import type { CompanyProfileDetail, CompanyProfileLocationDetail, CompanyProfileJobPositionRate, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
+import type { CompanyProfileDetail, CompanyProfileLocationDetail, CompanyJobPosition, CompanyUserModel, CreateCompanyUserModel, CreateJobPositionModel } from '@/shared/company-profile/types';
+import type { LocationDetailModel } from '@/shared/types/common';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
 // Profile
@@ -16,11 +17,11 @@ export function getProfileLocations(): Promise<CompanyProfileLocationDetail[]> {
   return api.get<CompanyProfileLocationDetail[]>('/api/company/profile/locations');
 }
 
-export function createProfileLocation(model: CompanyProfileLocationDetail): Promise<void> {
+export function createProfileLocation(model: LocationDetailModel): Promise<void> {
   return api.post('/api/company/profile/locations', model);
 }
 
-export function updateProfileLocation(id: string, model: CompanyProfileLocationDetail): Promise<void> {
+export function updateProfileLocation(id: string, model: LocationDetailModel): Promise<void> {
   return api.put(`/api/company/profile/locations/${id}`, model);
 }
 
@@ -29,8 +30,8 @@ export function deleteProfileLocation(id: string): Promise<void> {
 }
 
 // Job Positions
-export function getCompanyJobPositions(): Promise<CompanyProfileJobPositionRate[]> {
-  return api.get<CompanyProfileJobPositionRate[]>('/api/company/profile/jobpositions');
+export function getCompanyJobPositions(): Promise<CompanyJobPosition[]> {
+  return api.get<CompanyJobPosition[]>('/api/company/profile/jobpositions');
 }
 
 export function createCompanyJobPosition(model: CreateJobPositionModel): Promise<{ id: string }> {
@@ -54,6 +55,10 @@ export function updateCompanyUser(id: string, user: CompanyUserModel): Promise<v
   return api.put(`/api/company/profile/users/${id}`, user);
 }
 
+export function updateCompanyUserEmail(id: string, model: { newEmail: string }): Promise<void> {
+  return api.put(`/api/company/profile/users/${id}/Email`, model);
+}
+
 export function deleteCompanyUser(id: string): Promise<void> {
   return api.del(`/api/company/profile/users/${id}`);
 }
@@ -65,6 +70,10 @@ export function getContactPeople(): Promise<CompanyContactPersonModel[]> {
 
 export function saveContactPerson(model: CompanyContactPersonModel): Promise<void> {
   return api.post('/api/company/profile/contactpeople', model);
+}
+
+export function updateContactPerson(id: string, model: CompanyContactPersonModel): Promise<void> {
+  return api.put(`/api/company/profile/contactpeople/${id}`, model);
 }
 
 export function deleteContactPerson(id: string): Promise<void> {

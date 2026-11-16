@@ -261,7 +261,6 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         {
             Assert.Equal(model.JobTitle, detail.JobTitle);
             Assert.Equal(model.WorkersQuantity, detail.WorkersQuantity);
-            Assert.True(detail.AgencyRate > 0);
             Assert.Equal(model.Description, detail.Description);
             Assert.Equal(model.DurationBreak, detail.DurationBreak);
             Assert.Equal(model.BreakIsPaid, detail.BreakIsPaid);

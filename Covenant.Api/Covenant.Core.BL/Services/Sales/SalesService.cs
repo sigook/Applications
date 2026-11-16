@@ -38,40 +38,40 @@ public class SalesService(
     private const int RecentClientsLimit = 10;
     private const int RecentActivityLimit = 6;
 
-    private Guid? SalesScope => currentUserService.IsSales() ? currentUserService.GetAgencyPersonnelId() : null;
+    private Guid? SalesScope => currentUserService.IsSales() ? currentUserService.GetUserId() : null;
 
     private Guid? OwnerScope => currentUserService.IsAdmin() ? null : currentUserService.GetUserId();
 
     public async Task<AgencyRequestsPagedResponse> GetRequests(GetRequestForAgencyFilter filter)
     {
-        Guid agencyId = filter.AgencyId ?? currentUserService.GetAgencyId();
+        List<Guid> agencyIds = filter.AgencyId is { } agencyId ? [agencyId] : currentUserService.GetAgencyIds();
         ApplyScope(filter);
-        return await requestService.GetRequestsForAgency(agencyId, filter);
+        return await requestService.GetRequestsForAgency(agencyIds, filter);
     }
 
     public IEnumerable<AgencyRequestListModel> GetRequestsForReport(GetRequestForAgencyFilter filter)
     {
         ApplyScope(filter);
-        return requestRepository.GetAllRequestsForAgency(currentUserService.GetAgencyId(), filter);
+        return requestRepository.GetAllRequestsForAgency(currentUserService.GetAgencyIds(), filter);
     }
 
     public async Task<PaginatedList<CompanyProfileListModel>> GetCompanies(GetCompanyForAgencyFilter filter)
     {
-        filter.SalesPersonnelId = SalesScope;
-        return await companyRepository.GetCompaniesProfileForAgency(currentUserService.GetAgencyId(), filter);
+        filter.SalesUserId = SalesScope;
+        return await companyRepository.GetCompaniesProfileForAgency(currentUserService.GetAgencyIds(), filter);
     }
 
     public IEnumerable<CompanyProfileListModel> GetCompaniesForReport(GetCompanyForAgencyFilter filter)
     {
-        filter.SalesPersonnelId = SalesScope;
-        return companyRepository.GetAllCompaniesProfileForAgency(currentUserService.GetAgencyId(), filter);
+        filter.SalesUserId = SalesScope;
+        return companyRepository.GetAllCompaniesProfileForAgency(currentUserService.GetAgencyIds(), filter);
     }
 
     public async Task<PaginatedList<CompanyInteractionListModel>> GetInteractions(Guid companyProfileId, GetCompanyInteractionsFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
-        return await companyRepository.GetInteractions(agencyId, companyProfileId, filter);
+        return await companyRepository.GetInteractions(agencyIds, companyProfileId, filter);
     }
 
     public async Task<Result<Guid>> CreateInteraction(Guid companyProfileId, CreateCompanyInteractionModel model)
@@ -109,9 +109,9 @@ public class SalesService(
 
     public async Task<PaginatedList<DealListModel>> GetDeals(Guid companyProfileId, GetDealsFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
-        return await companyRepository.GetDeals(agencyId, companyProfileId, filter);
+        return await companyRepository.GetDeals(agencyIds, companyProfileId, filter);
     }
 
     public async Task<Result<Guid>> CreateDeal(Guid companyProfileId)
@@ -196,13 +196,13 @@ public class SalesService(
     {
         var validationResult = await dealsByStatusValidator.ValidateAsync(filter);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<DealsByStatusModel>();
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         filter.OwnerId = OwnerScope ?? filter.OwnerId;
         var statuses = (filter.Statuses ?? []).Distinct().Order().ToList();
         var window = filter.DateFrom.HasValue && filter.DateTo.HasValue
             ? GetDateWindow(filter.DateFrom.Value.Date, filter.DateTo.Value.Date)
             : GetPeriodWindow(SalesPeriod.Month, timeProvider.GetLocalNow());
-        var rows = await companyRepository.GetDealsByStatus(agencyId, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
+        var rows = await companyRepository.GetDealsByStatus(agencyIds, filter.OwnerId, window.FromUtc, window.ToUtcExclusive, statuses);
         var items = FillStatuses(rows, statuses.Count > 0 ? statuses : [.. Enum.GetValues<DealStatus>()]);
         return Result.Ok(new DealsByStatusModel
         {
@@ -215,13 +215,13 @@ public class SalesService(
 
     public async Task<SalesDashboardSummaryModel> GetDashboardSummary(GetSalesDashboardSummaryFilter filter)
     {
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         var ownerId = OwnerScope ?? filter.OwnerId;
         var now = timeProvider.GetLocalNow();
         var quarter = GetPeriodWindow(SalesPeriod.Quarter, now);
         var week = GetPeriodWindow(SalesPeriod.Week, now);
-        var pipeline = await companyRepository.GetDealsByStatus(agencyId, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);
-        var activity = await companyRepository.GetInteractionsByType(agencyId, ownerId, week.FromUtc, week.ToUtcExclusive);
+        var pipeline = await companyRepository.GetDealsByStatus(agencyIds, ownerId, quarter.FromUtc, quarter.ToUtcExclusive, []);
+        var activity = await companyRepository.GetInteractionsByType(agencyIds, ownerId, week.FromUtc, week.ToUtcExclusive);
         return new SalesDashboardSummaryModel
         {
             AsOf = now.UtcDateTime,
@@ -233,7 +233,7 @@ public class SalesService(
     }
 
     public Task<List<RecentClientModel>> GetRecentClients() =>
-        companyRepository.GetRecentInteractionClients(currentUserService.GetAgencyId(), OwnerScope, RecentClientsLimit);
+        companyRepository.GetRecentInteractionClients(currentUserService.GetAgencyIds(), OwnerScope, RecentClientsLimit);
 
     public async Task<List<CompanyInteractionListModel>> GetRecentInteractions()
     {
@@ -244,7 +244,7 @@ public class SalesService(
             IsDescending = true,
             SortBy = GetCompanyInteractionsSortBy.CreatedAt
         };
-        var result = await companyRepository.GetInteractions(currentUserService.GetAgencyId(), null, filter);
+        var result = await companyRepository.GetInteractions(currentUserService.GetAgencyIds(), null, filter);
         return result.Items;
     }
 
@@ -257,7 +257,7 @@ public class SalesService(
             IsDescending = true,
             SortBy = GetDealsSortBy.Date
         };
-        var result = await companyRepository.GetDeals(currentUserService.GetAgencyId(), null, filter);
+        var result = await companyRepository.GetDeals(currentUserService.GetAgencyIds(), null, filter);
         return result.Items;
     }
 
@@ -315,7 +315,7 @@ public class SalesService(
     private void ApplyScope(GetRequestForAgencyFilter filter)
     {
         filter.HasPermissionToSeeInternalRequests = currentUserService.IsAdmin();
-        filter.SalesPersonnelId = SalesScope;
+        filter.SalesUserId = SalesScope;
     }
 
     private async Task<Result<CompanyInteraction>> GetOwnedInteraction(Guid companyProfileId, Guid id)

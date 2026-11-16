@@ -97,45 +97,44 @@ function changeTab(tab: WorkerProfileTab) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({ path: '/worker-profile', query: { tab } });
+  void router.push({ path: '/worker-profile', query: { tab } });
 }
 
-function loadComments() {
-  getMyComments({ size: commentSize, pageIndex: commentPageIndex.value })
-    .then((data) => {
-      commentsData.value = data;
-    })
-    .catch((error) => showAlertError(error));
+async function loadComments() {
+  try {
+    commentsData.value = await getMyComments({ size: commentSize, pageIndex: commentPageIndex.value });
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 function changePageComments(page: number) {
   commentPageIndex.value = page;
-  loadComments();
+  void loadComments();
 }
 
-function loadProfile() {
+async function loadProfile() {
   isLoading.value = true;
-  getMyProfile()
-    .then((data) => {
-      worker.value = data;
-      workerStore.setWorkerProfile(data);
-      isLoading.value = false;
-      nextTick(() => {
-        observeSections();
-        const section = route.query.section;
-        if (isWorkerProfileSectionId(section)) {
-          selectSection(section);
-        }
-      });
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    const data = await getMyProfile();
+    worker.value = data;
+    workerStore.setWorkerProfile(data);
+    isLoading.value = false;
+    void nextTick(() => {
+      observeSections();
+      const section = route.query.section;
+      if (isWorkerProfileSectionId(section)) {
+        selectSection(section);
+      }
     });
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-loadProfile();
-loadComments();
+void loadProfile();
+void loadComments();
 </script>
 
 <style lang="scss" scoped>

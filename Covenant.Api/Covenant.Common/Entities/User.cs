@@ -14,8 +14,11 @@ public class User
 
     public Guid Id { get; private set; } = Guid.NewGuid();
     public string Email { get; private set; }
+    public string Name { get; private set; }
     public bool Enabled { get; private set; } = true;
     public DateTime LastModified { get; private set; }
+
+    public void UpdateName(string name) => Name = name;
 
     public void UpdateEmail(CvnEmail email)
     {

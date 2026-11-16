@@ -23,6 +23,7 @@ public class DeleteSubcontractorReportTest
     public DeleteSubcontractorReportTest()
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyIds()).Returns([_agencyId]);
         _sut = new AccountingService(
             _currentUserService.Object,
             Mock.Of<IPayStubRepository>(),
@@ -34,27 +35,27 @@ public class DeleteSubcontractorReportTest
     public async Task DeletesTheWeekScopedToTheCallerAgency()
     {
         _subcontractorRepository
-            .Setup(r => r.DeleteReportsByWeekEnding(_agencyId, WeekEnding))
+            .Setup(r => r.DeleteReportsByWeekEnding(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), WeekEnding))
             .ReturnsAsync(3);
 
         Result result = await _sut.DeleteSubcontractorReport("2026-09-05");
 
         Assert.True(result, result.StringErrors);
         Assert.Empty(result.Errors);
-        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(_agencyId, WeekEnding), Times.Once);
+        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), WeekEnding), Times.Once);
     }
 
     [Fact]
     public async Task PassesTheParsedDateThroughToTheRepository()
     {
         _subcontractorRepository
-            .Setup(r => r.DeleteReportsByWeekEnding(_agencyId, It.IsAny<DateTime>()))
+            .Setup(r => r.DeleteReportsByWeekEnding(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<DateTime>()))
             .ReturnsAsync(1);
 
         Result result = await _sut.DeleteSubcontractorReport("2026-09-05T13:45:00");
 
         Assert.True(result, result.StringErrors);
-        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(_agencyId, WeekEnding.AddHours(13).AddMinutes(45)), Times.Once);
+        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), WeekEnding.AddHours(13).AddMinutes(45)), Times.Once);
     }
 
     [Theory]
@@ -67,14 +68,14 @@ public class DeleteSubcontractorReportTest
 
         Assert.False(result);
         Assert.Contains("Invalid date format", result.StringErrors);
-        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(It.IsAny<Guid>(), It.IsAny<DateTime>()), Times.Never);
+        _subcontractorRepository.Verify(r => r.DeleteReportsByWeekEnding(It.IsAny<IEnumerable<Guid>>(), It.IsAny<DateTime>()), Times.Never);
     }
 
     [Fact]
     public async Task FailsWhenTheWeekHasNoReports()
     {
         _subcontractorRepository
-            .Setup(r => r.DeleteReportsByWeekEnding(_agencyId, WeekEnding))
+            .Setup(r => r.DeleteReportsByWeekEnding(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), WeekEnding))
             .ReturnsAsync(0);
 
         Result result = await _sut.DeleteSubcontractorReport("2026-09-05");

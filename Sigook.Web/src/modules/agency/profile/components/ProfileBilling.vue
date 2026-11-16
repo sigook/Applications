@@ -36,14 +36,15 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import { getAgencyLocations, createAgencyLocation, updateAgencyLocation, deleteAgencyLocation } from '@/modules/agency/profile/api';
 import AddressComponent from "@/shared/ui/Address.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import type { AgencyDetail, AgencyLocationDetail } from '@/modules/agency/profile/types';
 
-defineProps<{ agencyData?: AgencyDetail }>();
+const { agencyData } = defineProps<{ agencyData: AgencyDetail }>();
+const emit = defineEmits<(e: 'changed', locations: AgencyLocationDetail[]) => void>();
 
 function newLocation(): AgencyLocationDetail {
   return { address: '', city: null, postalCode: '', isBilling: false };
@@ -53,68 +54,70 @@ const isLoading = ref(true);
 const locations = ref<AgencyLocationDetail[]>([]);
 const showModal = ref(false);
 const locationBeingUpdate = ref<AgencyLocationDetail>(newLocation());
-const addressComponent = ref<InstanceType<typeof AddressComponent> | null>(null);
+const addressComponent = useTemplateRef<InstanceType<typeof AddressComponent>>('addressComponent');
 
 async function saveChanges() {
-  const addressValid = await addressComponent.value.validateAddress();
+  const addressValid = await addressComponent.value?.validateAddress();
   if (addressValid) {
     if (locationBeingUpdate.value.id) {
-      updateLocation(locationBeingUpdate.value);
+      await updateLocation(locationBeingUpdate.value);
     } else {
-      createLocation(locationBeingUpdate.value);
+      await createLocation(locationBeingUpdate.value);
     }
   }
 }
 
-function updateLocation(location: AgencyLocationDetail) {
+async function updateLocation(location: AgencyLocationDetail) {
+  if (!location.id) return;
   isLoading.value = true;
-  updateAgencyLocation(location.id, location)
-    .then(() => {
-      isLoading.value = false;
-      hideModal();
-      location.formattedAddress = getFormattedAddress(location);
-    }).catch(error => {
-      isLoading.value = false;
-      showAlertError(error.data);
-    });
+  try {
+    await updateAgencyLocation(agencyData.id, location.id, location);
+    isLoading.value = false;
+    hideModal();
+    location.formattedAddress = getFormattedAddress(location);
+    emit('changed', locations.value);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function createLocation(location: AgencyLocationDetail) {
+async function createLocation(location: AgencyLocationDetail) {
   isLoading.value = true;
-  createAgencyLocation(location).then(r => {
+  try {
+    const r = await createAgencyLocation(agencyData.id, location);
     location.id = r.id;
     location.formattedAddress = getFormattedAddress(location);
     locations.value.push(location);
+    emit('changed', locations.value);
     isLoading.value = false;
     hideModal();
-  }).catch(error => {
+  } catch (error) {
     isLoading.value = false;
-    showAlertError(error.data);
-  });
+    showAlertError((error as { data?: unknown }).data);
+  }
 }
 
-function getLocations() {
+async function getLocations() {
   isLoading.value = true;
-  getAgencyLocations().then(r => {
-    locations.value = r;
-    isLoading.value = false;
-  });
+  locations.value = await getAgencyLocations(agencyData.id);
+  emit('changed', locations.value);
+  isLoading.value = false;
 }
 
-function deleteLocation(location: AgencyLocationDetail) {
-  showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes')
-    .then(r => {
-      if (!r) return;
-      isLoading.value = true;
-      deleteAgencyLocation(location.id)
-        .then(() => {
-          isLoading.value = false;
-          locations.value = locations.value.filter(l => l.id !== location.id);
-        }).catch(e => {
-          isLoading.value = false;
-          showAlertError(e.data);
-        });
-    });
+async function deleteLocation(location: AgencyLocationDetail) {
+  const r = await showAlertConfirm('Are you sure', 'You want to delete this location', 'Yes');
+  if (!r || !location.id) return;
+  isLoading.value = true;
+  try {
+    await deleteAgencyLocation(agencyData.id, location.id);
+    isLoading.value = false;
+    locations.value = locations.value.filter(l => l.id !== location.id);
+    emit('changed', locations.value);
+  } catch (e) {
+    isLoading.value = false;
+    showAlertError((e as { data?: unknown }).data);
+  }
 }
 
 function addLocation() {
@@ -132,9 +135,8 @@ function hideModal() {
 }
 
 function getFormattedAddress(location: AgencyLocationDetail) {
-  if (!location) return "";
-  return `${location.address} ${location.city.value} ${location.province.code} ${location.postalCode}`;
+  return `${location.address} ${location.city?.value ?? ''} ${location.province?.code ?? ''} ${location.postalCode}`;
 }
 
-getLocations();
+void getLocations();
 </script>

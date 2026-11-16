@@ -105,8 +105,8 @@ export function usePunchCardCalendar(options: PunchCardCalendarOptions): PunchCa
   }
 
   function weekRange(week: PunchCardWeek) {
-    const first = week.days[0]
-    const last = week.days[week.days.length - 1]
+    const first = week.days.at(0)
+    const last = week.days.at(-1)
     if (!first || !last) return ''
     return `${dayjs(first.day).format('MMM D')} – ${dayjs(last.day).format('MMM D')}`
   }

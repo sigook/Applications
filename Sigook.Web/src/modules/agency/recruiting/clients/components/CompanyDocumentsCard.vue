@@ -42,8 +42,8 @@ import type { PaginatedList } from '@/shared/types/common';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import DocumentsForm from '@/modules/agency/recruiting/clients/components/DocumentsForm.vue';
 
-const props = defineProps<{ profileId: string }>();
-const emit = defineEmits<{ (e: 'changed', delta: number): void }>();
+const { profileId } = defineProps<{ profileId: string }>();
+const emit = defineEmits<(e: 'changed', delta: number) => void>();
 
 const size = 10;
 const currentPage = ref(1);
@@ -51,43 +51,40 @@ const isLoading = ref(false);
 const showModal = ref(false);
 const data = ref<PaginatedList<CompanyProfileDocumentModel> | null>(null);
 
-function load(page: number) {
+async function load(page: number) {
   isLoading.value = true;
-  getAgencyCompanyDocument(props.profileId, { size, page })
-    .then((response) => {
-      data.value = response;
-    })
-    .catch(showAlertError)
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    data.value = await getAgencyCompanyDocument(profileId, { size, page });
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function onCreated() {
   showModal.value = false;
   emit('changed', 1);
-  load(currentPage.value);
+  void load(currentPage.value);
 }
 
-function onDelete(id: string | undefined, index: number) {
+async function onDelete(id: string | undefined, index: number) {
   if (!id) return;
-  showAlertConfirm('Are you sure', 'You want to delete this document')
-    .then((confirmed) => {
-      if (!confirmed) return;
-      isLoading.value = true;
-      return deleteAgencyCompanyDocument(props.profileId, id).then(() => {
-        data.value?.items.splice(index, 1);
-        emit('changed', -1);
-        showAlertSuccess('Deleted');
-      });
-    })
-    .catch(showAlertError)
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    if (!(await showAlertConfirm('Are you sure', 'You want to delete this document'))) return;
+    isLoading.value = true;
+    await deleteAgencyCompanyDocument(profileId, id);
+    data.value?.items.splice(index, 1);
+    emit('changed', -1);
+    showAlertSuccess('Deleted');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
-load(currentPage.value);
+void load(currentPage.value);
 </script>
 
 <style lang="scss" scoped>

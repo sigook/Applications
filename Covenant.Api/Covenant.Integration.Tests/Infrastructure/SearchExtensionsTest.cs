@@ -116,11 +116,11 @@ public class SearchExtensionsTest
         await context.SaveChangesAsync();
 
         var workerResult = await new WorkerRepository(context, Options.Create(new FilesConfiguration()))
-            .GetAllWorkersProfile(agencyId, new GetWorkerProfileFilter { Skills = term })
+            .GetAllWorkersProfile([agencyId], new GetWorkerProfileFilter { Skills = term })
             .Select(wp => wp.Id)
             .ToListAsync();
         var candidateResult = await new CandidateRepository(context, Options.Create(new FilesConfiguration()))
-            .GetAllCandidates(agencyId, new GetCandidatesFilter { Skills = term })
+            .GetAllCandidates([agencyId], new GetCandidatesFilter { Skills = term })
             .Select(c => c.Id)
             .ToListAsync();
 

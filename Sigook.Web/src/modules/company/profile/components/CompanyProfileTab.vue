@@ -34,7 +34,7 @@ import CompanyLocationsCard from '@/shared/company-profile/CompanyLocationsCard.
 import CompanyMainContactCard from '@/shared/company-profile/CompanyMainContactCard.vue';
 import { getContactPeople, getProfileLocations } from '@/modules/company/profile/api';
 
-const props = defineProps<{ company: CompanyProfileDetail; locationsVersion?: number; contactsVersion?: number }>();
+const { company, locationsVersion, contactsVersion } = defineProps<{ company: CompanyProfileDetail; locationsVersion?: number; contactsVersion?: number }>();
 const emit = defineEmits<{
   (e: 'update:company', value: CompanyProfileDetail): void;
   (e: 'contactsLoaded', count: number): void;
@@ -58,15 +58,15 @@ const sections = computed<DetailSection[]>(() => [
 ]);
 
 const fields = computed<DetailFact[]>(() => [
-  { label: 'Company name', value: props.company.fullName || '—' },
-  { label: 'Industry', value: companyIndustryLabel(props.company) || '—' },
-  { label: 'Website', value: props.company.website || '—', href: companyWebsiteUrl(props.company.website) || undefined },
+  { label: 'Company name', value: company.fullName || '—' },
+  { label: 'Industry', value: companyIndustryLabel(company) || '—' },
+  { label: 'Website', value: company.website || '—', href: companyWebsiteUrl(company.website) || undefined },
   {
     label: 'Phone',
-    value: withExt(props.company.phone, props.company.phoneExt),
-    copy: { kind: 'phone', value: props.company.phone, ext: props.company.phoneExt },
+    value: withExt(company.phone, company.phoneExt),
+    copy: { kind: 'phone', value: company.phone, ext: company.phoneExt },
   },
-  { label: 'Fax', value: withExt(props.company.fax, props.company.faxExt) },
-  { label: 'Email', value: props.company.email || '—', copy: { kind: 'email', value: props.company.email } },
+  { label: 'Fax', value: withExt(company.fax, company.faxExt) },
+  { label: 'Email', value: company.email || '—', copy: { kind: 'email', value: company.email } },
 ]);
 </script>

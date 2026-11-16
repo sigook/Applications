@@ -46,7 +46,7 @@ public class RequestApplicantNotificationService(ISendGridService sendGridServic
         if (!request.Recruiters.Any()) return;
         await sendGridService.SendEmail(new SendGridModel
         {
-            Tos = request.Recruiters.Select(r => r.Recruiter.User.Email),
+            Tos = request.Recruiters.Select(r => r.Recruiter.Email),
             Template = Template,
             Data = data
         });

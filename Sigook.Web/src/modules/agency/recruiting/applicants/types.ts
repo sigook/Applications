@@ -4,6 +4,7 @@ import type { PaginatedList } from '@/shared/types/common';
 
 // Filter for GET /api/agency/recruiting/applicants. Mirrors GetAgencyApplicantsFilter.
 export interface AgencyApplicantsFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -55,6 +56,7 @@ export interface AgencyApplicant {
 // Mirrors AgencyRequestApplicantsModel.
 export interface AgencyRequestApplicants {
   requestId: string;
+  agencyId: string;
   numberId: number;
   companyFullName: string;
   jobTitle: string;

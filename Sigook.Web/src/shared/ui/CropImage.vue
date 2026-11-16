@@ -33,22 +33,23 @@
     </div>
 </template>
 <script setup lang="ts">
-import { ref, defineAsyncComponent, type Component } from 'vue';
+import { useTemplateRef, defineAsyncComponent, type Component } from 'vue';
 import type Cropper from 'cropperjs';
 import 'cropperjs/dist/cropper.css';
 
 const VueCropper = defineAsyncComponent(() => import("vue-cropperjs").then(m => (m as { default: Component }).default));
 
-defineProps<{ image?: string }>();
+const { image } = defineProps<{ image?: string }>();
 const emit = defineEmits<{
   (e: 'onCrop', file: File): void;
   (e: 'closeModal'): void;
 }>();
 
-const cropper = ref<Pick<Cropper, 'getCroppedCanvas' | 'rotate'> | null>(null);
+const cropper = useTemplateRef<Pick<Cropper, 'getCroppedCanvas' | 'rotate'>>('cropper');
 
 function uploadCroppedImage() {
-  cropper.value.getCroppedCanvas().toBlob((blob: Blob) => {
+  cropper.value?.getCroppedCanvas().toBlob((blob) => {
+    if (!blob) return;
     const parts = blob.type.split("/");
     const extension = parts[1];
     const file = new File([blob], "uploaded_file." + extension, { type: blob.type, lastModified: Date.now() });
@@ -57,7 +58,7 @@ function uploadCroppedImage() {
 }
 
 function rotate(rotationAngle: number) {
-  cropper.value.rotate(rotationAngle);
+  cropper.value?.rotate(rotationAngle);
 }
 
 function closeModal() {

@@ -22,7 +22,7 @@ import CopyLink from '@/shared/ui/CopyLink.vue';
 import type { RunnerDetail } from '@/modules/agency/recruiting/requests/runners/types';
 import RunnerDetailPanel from '@/modules/agency/recruiting/runners/components/RunnerDetailPanel.vue';
 
-defineProps<{ requestId: string; runnerId: string }>();
+const { requestId, runnerId } = defineProps<{ requestId: string; runnerId: string }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'close'): void }>();
 
 const detail = ref<RunnerDetail | null>(null);

@@ -60,7 +60,7 @@ public class RunnerService(
     }
 
     public Task<AgencyRunnersPagedResponse> GetAgencyRunners(GetAgencyRunnersFilter filter) =>
-        runnerRepository.GetAgencyRunners(currentUserService.GetAgencyId(), filter);
+        runnerRepository.GetAgencyRunners(currentUserService.GetAgencyIds(), filter);
 
     public async Task<Result<ChangeRunnersStatusResultModel>> ChangeRunnersStatus(ChangeRunnersStatusModel model)
     {

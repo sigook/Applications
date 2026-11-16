@@ -17,16 +17,16 @@
 import { ref, computed, watch } from 'vue';
 import dayjs from "dayjs";
 
-const props = defineProps<{ startWorking?: string | Date | null }>();
+const { startWorking } = defineProps<{ startWorking?: string | Date | null }>();
 const emit = defineEmits<{
   (e: 'update:startWorking', value: Date): void;
   (e: 'onSelectCalendar', value: Date): void;
 }>();
 
 const today = new Date();
-const localStartWorking = ref<Date>(props.startWorking ? new Date(props.startWorking) : dayjs().toDate());
+const localStartWorking = ref<Date>(startWorking ? new Date(startWorking) : dayjs().toDate());
 
-watch(() => props.startWorking, (newVal) => {
+watch(() => startWorking, (newVal) => {
   localStartWorking.value = newVal ? new Date(newVal) : dayjs().toDate();
 });
 
@@ -37,7 +37,7 @@ function bookWorker() {
   emit('onSelectCalendar', localStartWorking.value);
 }
 
-if (!props.startWorking) {
+if (!startWorking) {
   localStartWorking.value = dayjs().toDate();
 }
 </script>

@@ -32,7 +32,7 @@ import { RequestApplicantStatus } from '@/shared/request-detail/requestApplicant
 import { useApplicantStatusActions, type ApplicantStatusTarget } from '@/modules/agency/recruiting/applicants/useApplicantStatusActions';
 import ApplicantComplianceItems from '@/modules/agency/recruiting/applicants/components/ApplicantComplianceItems.vue';
 
-const props = defineProps<{
+const { requestId, applicantId, name, status, workerProfileId } = defineProps<{
   requestId: string;
   applicantId: string;
   name: string;
@@ -48,16 +48,16 @@ const emit = defineEmits<{
 
 // The status drives which buttons show, and a change is applied here before the
 // list that owns the row reloads, so the actions never lag a click behind.
-const currentStatus = ref<RequestApplicantStatus>(props.status);
+const currentStatus = ref<RequestApplicantStatus>(status);
 const mandatoryCompleted = ref(false);
 
 const target = computed<ApplicantStatusTarget>(() => ({
-  requestId: props.requestId,
-  applicantId: props.applicantId,
-  name: props.name,
+  requestId: requestId,
+  applicantId: applicantId,
+  name: name,
 }));
 
-const isCandidate = computed(() => !props.workerProfileId);
+const isCandidate = computed(() => !workerProfileId);
 const canCancel = computed(() =>
   currentStatus.value === RequestApplicantStatus.Pending || currentStatus.value === RequestApplicantStatus.InProgress);
 const canConfirm = computed(() =>
@@ -79,7 +79,7 @@ function onItemsLoaded(value: { mandatoryCompleted: boolean; itemsCount: number;
   emit('loaded', value);
 }
 
-watch(() => props.status, (value) => {
+watch(() => status, (value) => {
   currentStatus.value = value;
 });
 </script>

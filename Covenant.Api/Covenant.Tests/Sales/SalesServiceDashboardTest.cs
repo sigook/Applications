@@ -37,6 +37,7 @@ public class SalesServiceDashboardTest
     public SalesServiceDashboardTest()
     {
         _currentUserService.Setup(i => i.GetAgencyId()).Returns(_agencyId);
+        _currentUserService.Setup(i => i.GetAgencyIds()).Returns([_agencyId]);
         _currentUserService.Setup(i => i.GetUserId()).Returns(_userId);
         _timeProvider.SetUtcNow(Now);
         _sut = new SalesService(
@@ -56,12 +57,12 @@ public class SalesServiceDashboardTest
 
     private void SetupDeals(params DealStatusSummaryModel[] rows) =>
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
             .ReturnsAsync([.. rows]);
 
     private void SetupInteractions(params InteractionTypeSummaryModel[] rows) =>
         _companyRepository
-            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Setup(r => r.GetInteractionsByType(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
             .ReturnsAsync([.. rows]);
 
     [Fact]
@@ -69,8 +70,8 @@ public class SalesServiceDashboardTest
     {
         Guid? capturedOwner = null;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
             .ReturnsAsync([]);
 
         await _sut.GetDealsByStatus(new GetDealsByStatusFilter { OwnerId = Guid.NewGuid() });
@@ -84,8 +85,8 @@ public class SalesServiceDashboardTest
         _currentUserService.Setup(i => i.IsAdmin()).Returns(true);
         Guid? capturedOwner = Guid.NewGuid();
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
             .ReturnsAsync([]);
 
         await _sut.GetDealsByStatus(new GetDealsByStatusFilter());
@@ -100,8 +101,8 @@ public class SalesServiceDashboardTest
         var requestedOwner = Guid.NewGuid();
         Guid? capturedOwner = null;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedOwner = owner)
             .ReturnsAsync([]);
 
         await _sut.GetDealsByStatus(new GetDealsByStatusFilter { OwnerId = requestedOwner });
@@ -115,8 +116,8 @@ public class SalesServiceDashboardTest
         DateTime capturedFrom = default;
         DateTime capturedTo = default;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
             {
                 capturedFrom = from;
                 capturedTo = to;
@@ -137,8 +138,8 @@ public class SalesServiceDashboardTest
         DateTime capturedFrom = default;
         DateTime capturedTo = default;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
             {
                 capturedFrom = from;
                 capturedTo = to;
@@ -199,7 +200,7 @@ public class SalesServiceDashboardTest
 
         Assert.False(result);
         _companyRepository.Verify(
-            r => r.GetDealsByStatus(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
+            r => r.GetDealsByStatus(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
             Times.Never);
     }
 
@@ -210,7 +211,7 @@ public class SalesServiceDashboardTest
 
         Assert.False(result);
         _companyRepository.Verify(
-            r => r.GetDealsByStatus(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
+            r => r.GetDealsByStatus(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
             Times.Never);
     }
 
@@ -222,16 +223,16 @@ public class SalesServiceDashboardTest
         DateTime interactionsFrom = default;
         DateTime interactionsTo = default;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, _, from, to, _) =>
             {
                 dealsFrom = from;
                 dealsTo = to;
             })
             .ReturnsAsync([]);
         _companyRepository
-            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .Callback<Guid, Guid?, DateTime, DateTime>((_, _, from, to) =>
+            .Setup(r => r.GetInteractionsByType(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime>((_, _, from, to) =>
             {
                 interactionsFrom = from;
                 interactionsTo = to;
@@ -270,12 +271,12 @@ public class SalesServiceDashboardTest
         Guid? capturedDealsOwner = null;
         Guid? capturedInteractionsOwner = null;
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedDealsOwner = owner)
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => capturedDealsOwner = owner)
             .ReturnsAsync([]);
         _companyRepository
-            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .Callback<Guid, Guid?, DateTime, DateTime>((_, owner, _, _) => capturedInteractionsOwner = owner)
+            .Setup(r => r.GetInteractionsByType(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime>((_, owner, _, _) => capturedInteractionsOwner = owner)
             .ReturnsAsync([]);
 
         await _sut.GetDashboardSummary(new GetSalesDashboardSummaryFilter { OwnerId = Guid.NewGuid() });
@@ -292,22 +293,22 @@ public class SalesServiceDashboardTest
         Guid? interactionsOwner = Guid.NewGuid();
         Guid? clientsOwner = Guid.NewGuid();
         _companyRepository
-            .Setup(r => r.GetDealsByStatus(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
-            .Callback<Guid, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => dealsOwners.Add(owner))
+            .Setup(r => r.GetDealsByStatus(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime, List<DealStatus>>((_, owner, _, _, _) => dealsOwners.Add(owner))
             .ReturnsAsync([new DealStatusSummaryModel { Status = DealStatus.Sent, Count = 2, TotalValue = 500m }]);
         _companyRepository
-            .Setup(r => r.GetInteractionsByType(_agencyId, It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
-            .Callback<Guid, Guid?, DateTime, DateTime>((_, owner, _, _) => interactionsOwner = owner)
+            .Setup(r => r.GetInteractionsByType(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>()))
+            .Callback<IEnumerable<Guid>, Guid?, DateTime, DateTime>((_, owner, _, _) => interactionsOwner = owner)
             .ReturnsAsync([]);
         _companyRepository
-            .Setup(r => r.GetRecentInteractionClients(_agencyId, It.IsAny<Guid?>(), 10))
-            .Callback<Guid, Guid?, int>((_, owner, _) => clientsOwner = owner)
+            .Setup(r => r.GetRecentInteractionClients(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), 10))
+            .Callback<IEnumerable<Guid>, Guid?, int>((_, owner, _) => clientsOwner = owner)
             .ReturnsAsync([new RecentClientModel { Id = Guid.NewGuid(), FullName = "Acme" }]);
         _companyRepository
-            .Setup(r => r.GetInteractions(_agencyId, null, It.IsAny<GetCompanyInteractionsFilter>()))
+            .Setup(r => r.GetInteractions(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), null, It.IsAny<GetCompanyInteractionsFilter>()))
             .ReturnsAsync(new PaginatedList<CompanyInteractionListModel> { Items = [new CompanyInteractionListModel()] });
         _companyRepository
-            .Setup(r => r.GetDeals(_agencyId, null, It.IsAny<GetDealsFilter>()))
+            .Setup(r => r.GetDeals(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), null, It.IsAny<GetDealsFilter>()))
             .ReturnsAsync(new PaginatedList<DealListModel> { Items = [new DealListModel(), new DealListModel()] });
 
         var result = await _sut.GetDashboard(new GetDealsByStatusFilter { OwnerId = Guid.NewGuid() });
@@ -334,9 +335,9 @@ public class SalesServiceDashboardTest
 
         Assert.False(result);
         _companyRepository.Verify(
-            r => r.GetDealsByStatus(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
+            r => r.GetDealsByStatus(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid?>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<List<DealStatus>>()),
             Times.Never);
-        _companyRepository.Verify(r => r.GetRecentInteractionClients(It.IsAny<Guid>(), It.IsAny<Guid?>(), It.IsAny<int>()), Times.Never);
+        _companyRepository.Verify(r => r.GetRecentInteractionClients(It.IsAny<IEnumerable<Guid>>(), It.IsAny<Guid?>(), It.IsAny<int>()), Times.Never);
     }
 
     [Theory]
@@ -348,8 +349,8 @@ public class SalesServiceDashboardTest
         Guid? capturedOwner = Guid.NewGuid();
         var capturedTake = 0;
         _companyRepository
-            .Setup(r => r.GetRecentInteractionClients(_agencyId, It.IsAny<Guid?>(), It.IsAny<int>()))
-            .Callback<Guid, Guid?, int>((_, owner, take) =>
+            .Setup(r => r.GetRecentInteractionClients(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<int>()))
+            .Callback<IEnumerable<Guid>, Guid?, int>((_, owner, take) =>
             {
                 capturedOwner = owner;
                 capturedTake = take;
@@ -371,8 +372,8 @@ public class SalesServiceDashboardTest
         Guid? capturedCompany = Guid.NewGuid();
         GetCompanyInteractionsFilter capturedFilter = null;
         _companyRepository
-            .Setup(r => r.GetInteractions(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetCompanyInteractionsFilter>()))
-            .Callback<Guid, Guid?, GetCompanyInteractionsFilter>((_, company, filter) =>
+            .Setup(r => r.GetInteractions(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<GetCompanyInteractionsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetCompanyInteractionsFilter>((_, company, filter) =>
             {
                 capturedCompany = company;
                 capturedFilter = filter;
@@ -397,8 +398,8 @@ public class SalesServiceDashboardTest
         Guid? capturedCompany = Guid.NewGuid();
         GetDealsFilter capturedFilter = null;
         _companyRepository
-            .Setup(r => r.GetDeals(_agencyId, It.IsAny<Guid?>(), It.IsAny<GetDealsFilter>()))
-            .Callback<Guid, Guid?, GetDealsFilter>((_, company, filter) =>
+            .Setup(r => r.GetDeals(It.Is<IEnumerable<Guid>>(ids => ids.Contains(_agencyId)), It.IsAny<Guid?>(), It.IsAny<GetDealsFilter>()))
+            .Callback<IEnumerable<Guid>, Guid?, GetDealsFilter>((_, company, filter) =>
             {
                 capturedCompany = company;
                 capturedFilter = filter;

@@ -44,7 +44,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
@@ -70,7 +70,7 @@ const schema = yup.object({
     .matches(urlRegex, 'Invalid URL'),
 });
 
-const props = defineProps<{ model: CompanyProfileDetail }>();
+const { model } = defineProps<{ model: CompanyProfileDetail }>();
 const emit = defineEmits<{
   (e: 'update:model', value: CompanyProfileDetail): void;
   (e: 'save'): void;
@@ -79,33 +79,33 @@ const emit = defineEmits<{
 const form = useStickyForm<{ phoneExt: string; faxExt: string; website: string }>({
   schema,
   initialValues: {
-    phoneExt: props.model?.phoneExt != null ? String(props.model.phoneExt) : '',
-    faxExt: props.model?.faxExt != null ? String(props.model.faxExt) : '',
-    website: props.model?.website || '',
+    phoneExt: model.phoneExt != null ? String(model.phoneExt) : '',
+    faxExt: model.faxExt != null ? String(model.faxExt) : '',
+    website: model.website || '',
   },
 });
 const { phoneExt, faxExt, website } = form.fields;
 const formErrors = form.errors;
 
-const phoneComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const faxComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const phoneComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('phoneComponent');
+const faxComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('faxComponent');
 
-const localModel = ref<CompanyProfileDetail>(JSON.parse(JSON.stringify(props.model)));
+const localModel = ref<CompanyProfileDetail>(JSON.parse(JSON.stringify(model)));
 
-watch(() => props.model, (newVal) => {
+watch(() => model, (newVal) => {
   localModel.value = JSON.parse(JSON.stringify(newVal));
   form.hydrate({
-    phoneExt: newVal?.phoneExt != null ? String(newVal.phoneExt) : '',
-    faxExt: newVal?.faxExt != null ? String(newVal.faxExt) : '',
-    website: newVal?.website || '',
+    phoneExt: newVal.phoneExt != null ? String(newVal.phoneExt) : '',
+    faxExt: newVal.faxExt != null ? String(newVal.faxExt) : '',
+    website: newVal.website || '',
   });
 }, { deep: true });
 
 async function validateForm() {
   form.markInteracted();
-  const phoneValid = await phoneComponent.value.validatePhone();
-  const faxValid = await faxComponent.value.validatePhone();
-  form.handleSubmit((values) => {
+  const phoneValid = await phoneComponent.value?.validatePhone() ?? false;
+  const faxValid = await faxComponent.value?.validatePhone() ?? false;
+  await form.handleSubmit(async (values) => {
     if (!phoneValid || !faxValid) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
@@ -113,21 +113,20 @@ async function validateForm() {
     localModel.value.phoneExt = values.phoneExt ? parseInt(values.phoneExt, 10) : null;
     localModel.value.faxExt = values.faxExt ? parseInt(values.faxExt, 10) : null;
     localModel.value.website = values.website;
-    saveContactInformation();
+    await saveContactInformation();
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function saveContactInformation() {
+async function saveContactInformation() {
   emit('update:model', localModel.value);
-  updateAgencyCompanyContactInformation(localModel.value.id, localModel.value)
-    .then(() => {
-      emit('save');
-      showAlertSuccess("Updated");
-    })
-    .catch((error: unknown) => {
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyCompanyContactInformation(localModel.value.id, localModel.value);
+    emit('save');
+    showAlertSuccess("Updated");
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 </script>

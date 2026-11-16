@@ -28,18 +28,6 @@ void main() {
     });
   });
 
-  group('CacheException', () {
-    test('has default message', () {
-      final e = CacheException();
-      expect(e.message, isNotEmpty);
-    });
-
-    test('toString includes message', () {
-      final e = CacheException('cache failed');
-      expect(e.toString(), contains('cache failed'));
-    });
-  });
-
   group('ParseException', () {
     test('has default message', () {
       final e = ParseException();

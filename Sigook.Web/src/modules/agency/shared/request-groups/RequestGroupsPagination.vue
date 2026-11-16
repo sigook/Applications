@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{ page: number; total: number; perPage: number }>();
-const emit = defineEmits<{ (e: 'change', page: number): void }>();
+const { page, total, perPage } = defineProps<{ page: number; total: number; perPage: number }>();
+const emit = defineEmits<(e: 'change', page: number) => void>();
 </script>
 
 <style scoped lang="scss">

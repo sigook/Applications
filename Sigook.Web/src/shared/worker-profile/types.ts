@@ -24,6 +24,7 @@ export interface WorkerProfileJobExperienceDetail {
 
 export interface WorkerProfileDetail {
   id: string;
+  agencyId: string;
   numberId: number;
   profileImage: CovenantFileModel | null;
   firstName: string;
@@ -185,33 +186,33 @@ export interface WorkerCatalogItem {
 
 export interface WorkerBasicInformationModel {
   firstName: string;
-  middleName?: string;
+  middleName?: string | null;
   lastName: string;
-  secondLastName?: string;
+  secondLastName?: string | null;
   birthDay: string;
   gender: WorkerCatalogItem | null;
   hasVehicle: boolean;
 }
 
 export interface WorkerContactInformationModel {
-  mobileNumber: string;
-  phone?: string;
+  mobileNumber: string | null;
+  phone?: string | null;
   phoneExt?: number | null;
   location: {
-    address?: string;
+    address?: string | null;
     city?: WorkerCatalogItem | null;
     province?: WorkerCatalogItem | null;
-    postalCode?: string;
+    postalCode?: string | null;
   } | null;
 }
 
 export interface WorkerEmergencyInformationModel {
   haveAnyHealthProblem: boolean;
-  healthProblem?: string;
-  otherHealthProblem?: string;
-  contactEmergencyName?: string;
-  contactEmergencyLastName?: string;
-  contactEmergencyPhone?: string;
+  healthProblem?: string | null;
+  otherHealthProblem?: string | null;
+  contactEmergencyName?: string | null;
+  contactEmergencyLastName?: string | null;
+  contactEmergencyPhone?: string | null;
 }
 
 export interface WorkerOtherInformationModel {

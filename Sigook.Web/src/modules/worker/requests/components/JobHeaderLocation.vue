@@ -15,12 +15,12 @@
 import { computed } from 'vue';
 import type { WorkerRequestDetail } from '@/modules/worker/requests/types';
 
-const props = defineProps<{ request: WorkerRequestDetail }>();
+const { request } = defineProps<{ request: WorkerRequestDetail }>();
 
-const address = computed(() => [props.request.location, props.request.entrance].filter(Boolean).join(' - '));
+const address = computed(() => [request.location, request.entrance].filter(Boolean).join(' - '));
 
 const coordinates = computed(() => {
-  const { latitude, longitude } = props.request.jobLocation ?? {};
+  const { latitude, longitude } = request.jobLocation ?? {};
   if (latitude == null || longitude == null) return '';
   return `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`;
 });

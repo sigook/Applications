@@ -35,6 +35,19 @@ public class ContactPeopleController(ICompanyRepository companyRepository, IComp
         return Ok();
     }
 
+    /// <summary>Updates a contact person of the company.</summary>
+    /// <param name="id">Contact person identifier.</param>
+    /// <param name="model">Updated contact person data.</param>
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<IActionResult> UpdateContactPerson(Guid id, [FromBody] CompanyProfileContactPersonModel model)
+    {
+        var result = await companyService.UpdateContactPerson(id, model);
+        if (!result) return BadRequest(ModelState.AddErrors(result.Errors));
+        return Ok();
+    }
+
     /// <summary>Deletes a contact person by its identifier.</summary>
     /// <param name="id">Contact person identifier.</param>
     [HttpDelete("{id}")]

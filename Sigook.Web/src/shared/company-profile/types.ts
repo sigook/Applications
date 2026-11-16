@@ -46,6 +46,16 @@ export interface CompanyProfileJobPositionRate {
   displayShift?: string;
 }
 
+export interface CompanyJobPosition {
+  id: string;
+  jobPosition?: string;
+  overtimeStartsAfter?: number | null;
+  description?: string;
+  shift?: RequestShiftModel | null;
+  createdAt?: string | null;
+  displayShift?: string;
+}
+
 export interface JobPositionModel {
   id?: string;
   companyProfileId?: string;
@@ -103,9 +113,9 @@ export interface CompanyProfileDetail {
   numberId: number;
   companyId: string;
   fullName: string;
-  phone: string;
+  phone: string | null;
   phoneExt: number | null;
-  fax: string;
+  fax: string | null;
   faxExt: number | null;
   email: string;
   website: string;
@@ -119,9 +129,10 @@ export interface CompanyProfileDetail {
   vaccinationRequired: boolean | null;
   vaccinationRequiredComments: string;
   requiresPermissionToSeeRequests: boolean;
-  logo: CovenantFileModel;
-  industry: CompanyProfileIndustryDetail;
+  logo: CovenantFileModel | null;
+  industry: CompanyProfileIndustryDetail | null;
   salesRepresentativeId: string | null;
+  agencyId: string | null;
   overtimeStartsAfter: number;
   paymentTermDays: number;
 }
@@ -140,9 +151,9 @@ export interface CompanyProfileSummary {
 }
 
 export interface CompanyProfileIndustryDetail {
-  id: string;
+  id?: string;
   industry: CatalogItem | null;
-  otherIndustry: string | null;
+  otherIndustry?: string | null;
 }
 
 // Company Profile Location (matches CompanyProfileLocationDetailModel)

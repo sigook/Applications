@@ -1,3 +1,3 @@
-export default function(value: string | null): string {
-    return value ? value.split(/(?=[A-Z])/).join(" ") : value;
+export default function(value: string | null | undefined): string {
+    return value ? value.split(/(?=[A-Z])/).join(" ") : '';
 }

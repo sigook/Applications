@@ -1,18 +1,19 @@
 <template>
-  <span v-if="props.value" class="copy-link">
-    <a :href="`${KIND[props.kind].scheme}:${props.value}`" class="copy-link-text" @click.stop>
-      <b-icon v-if="props.icon" :icon="KIND[props.kind].icon" size="is-small" />{{ props.value }}<template v-if="props.ext"> Ext. {{ props.ext }}</template>
+  <span v-if="value" class="copy-link">
+    <a :href="`${KIND[kind].scheme}:${value}`" class="copy-link-text" @click.stop>
+      <b-icon v-if="icon" :icon="KIND[kind].icon" size="is-small" />{{ value }}<template v-if="ext"> Ext. {{ ext }}</template>
     </a>
-    <b-tooltip :label="copied ? 'Copied' : KIND[props.kind].copyLabel" type="is-dark" append-to-body>
-      <button type="button" class="copy-link-copy" :aria-label="`Copy ${props.value}`" @click.stop.prevent="copy">
+    <HoverTooltip :label="copied ? 'Copied' : KIND[kind].copyLabel">
+      <button type="button" class="copy-link-copy" :aria-label="`Copy ${value}`" @click.stop.prevent="copy">
         <b-icon :icon="copied ? 'check' : 'content-copy'" size="is-small" />
       </button>
-    </b-tooltip>
+    </HoverTooltip>
   </span>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { showAlertError } from '@/shared/utils/toast';
 import type { CopyLinkKind } from '@/shared/types/common';
 
@@ -21,7 +22,7 @@ const KIND: Record<CopyLinkKind, { scheme: string; icon: string; copyLabel: stri
   phone: { scheme: 'tel', icon: 'cellphone', copyLabel: 'Copy phone' },
 };
 
-const props = defineProps<{
+const { value, kind, icon, ext } = defineProps<{
   kind: CopyLinkKind;
   value?: string | null;
   ext?: string | number | null;
@@ -32,11 +33,11 @@ const copied = ref(false);
 let timer: ReturnType<typeof setTimeout> | undefined;
 
 async function copy() {
-  if (!props.value) {
+  if (!value) {
     return;
   }
   try {
-    await navigator.clipboard.writeText(props.value);
+    await navigator.clipboard.writeText(value);
     copied.value = true;
     clearTimeout(timer);
     timer = setTimeout(() => (copied.value = false), 1500);

@@ -171,17 +171,32 @@ const activeAssignments = ref<WorkerAssignmentListItem[]>([]);
 const isLoading = computed(() =>
   isProfileLoading.value || isActiveLoading.value || (!activeAssignments.value.length && isGridLoading.value));
 
-getWorkerHistory({ status: 'Active', pageIndex: 1, pageSize: 10 })
-  .then((page) => { activeAssignments.value = page.items; })
-  .catch((error) => showAlertError(error))
-  .finally(() => { isActiveLoading.value = false; });
+async function loadActiveAssignments() {
+  try {
+    const page = await getWorkerHistory({ status: 'Active', pageIndex: 1, pageSize: 10 });
+    activeAssignments.value = page.items;
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isActiveLoading.value = false;
+  }
+}
+
+async function loadProfile() {
+  try {
+    workerStore.setWorkerProfile(await getMyProfile());
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isProfileLoading.value = false;
+  }
+}
+
+void loadActiveAssignments();
 const missingRequirements = computed(() => currentUser.value.missingRequirements ?? []);
 
 if (isProfileLoading.value) {
-  getMyProfile()
-    .then((data) => workerStore.setWorkerProfile(data))
-    .catch((error) => showAlertError(error))
-    .finally(() => { isProfileLoading.value = false; });
+  void loadProfile();
 }
 
 function onSearch() {
@@ -199,10 +214,10 @@ function onRowClick(row: WorkerRequestListItem) {
   switch (row.status) {
     case appGlobals.$statusApply:
     case appGlobals.$statusBook:
-      router.push({ path: `/worker-requests/applied/${row.id}` });
+      void router.push({ path: `/worker-requests/applied/${row.id}` });
       break;
     default:
-      router.push({ path: `/worker-requests/${row.id}` });
+      void router.push({ path: `/worker-requests/${row.id}` });
   }
 }
 </script>

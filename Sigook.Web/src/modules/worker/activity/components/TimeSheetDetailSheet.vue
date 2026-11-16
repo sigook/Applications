@@ -51,21 +51,18 @@ interface DetailSection {
   rows: DetailRow[];
 }
 
-const props = defineProps<{
+const { modelValue, entry } = defineProps<{
   modelValue: boolean;
   entry: WorkerWeekTimeSheet | null;
 }>();
 
-const emit = defineEmits<{
-  (e: 'update:modelValue', value: boolean): void;
-}>();
+const emit = defineEmits<(e: 'update:modelValue', value: boolean) => void>();
 
 function spanHoursLabel(value: string): string {
   return `${hoursLabel(spanMinutes(value) / 60)} h`;
 }
 
 const sections = computed<DetailSection[]>(() => {
-  const entry = props.entry;
   if (!entry) return [];
 
   const result: DetailSection[] = [{

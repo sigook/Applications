@@ -78,7 +78,7 @@ import { computed } from 'vue';
 import { currency } from '@/shared/format';
 import type { InvoicePreviewModel } from '@/shared/types/invoice';
 
-defineProps<{ preview: InvoicePreviewModel }>();
+const { preview } = defineProps<{ preview: InvoicePreviewModel }>();
 
 const currentDate = computed(() =>
   new Date().toLocaleDateString('en-US', {

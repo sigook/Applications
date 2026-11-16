@@ -36,12 +36,12 @@ const schema = yup.object({
   comments: yup.string().nullable().transform((v) => (v === '' ? null : v)).max(5000, 'Max 5000 characters'),
 });
 
-const props = defineProps<{
+const { companyProfileId, vaccinationRequired, vaccinationComments } = defineProps<{
   companyProfileId: string;
   vaccinationRequired?: boolean | null;
   vaccinationComments?: string | null;
 }>();
-const emit = defineEmits<{ (e: 'updated', value: { required: boolean; comments: string | null }): void }>();
+const emit = defineEmits<(e: 'updated', value: { required: boolean; comments: string | null }) => void>();
 
 const form = useStickyForm<{ required: boolean; comments: string | null }>({
   schema,
@@ -57,25 +57,26 @@ const isLoading = ref(false);
 
 function saveVaccinationRequired() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isLoading.value = true;
-    updateCompanyVaccinationRequired(props.companyProfileId, {
-      required: required.value,
-      comments: values.comments,
-    }).then(() => {
+    try {
+      await updateCompanyVaccinationRequired(companyProfileId, {
+        required: required.value,
+        comments: values.comments,
+      });
       isLoading.value = false;
       emit('updated', { required: required.value, comments: values.comments });
-    }).catch(error => {
+    } catch (error) {
       isLoading.value = false;
       showAlertError(error);
-    });
+    }
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
 form.hydrate({
-  required: !!props.vaccinationRequired,
-  comments: props.vaccinationComments || '',
+  required: !!vaccinationRequired,
+  comments: vaccinationComments || '',
 });
 </script>

@@ -84,6 +84,7 @@ export interface WorkerTimeSheetHistoryItem {
 // Filter for paginated worker list (agency view)
 // Mirrors backend GetWorkerProfileFilter (Covenant.Common.Models.Workers)
 export interface AgencyWorkerFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -106,6 +107,7 @@ export interface AgencyWorkerFilter {
 // Item returned by GET /api/agency/recruiting/workers (paginated list)
 export interface AgencyWorkerListItem {
   id: string;
+  agencyId: string;
   fullName: string;
   email: string;
   approvedToWork: boolean;

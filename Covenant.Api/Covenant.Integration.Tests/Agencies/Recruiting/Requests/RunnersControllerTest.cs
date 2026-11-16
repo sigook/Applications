@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Recruiting.Requests;
 using Covenant.Common.Entities.Agencies;
@@ -333,8 +334,8 @@ public class RunnersControllerTest(CustomWebApplicationFactory<RunnersController
 
         public static readonly User FakeRecruiterUser = new(CvnEmail.Create("recruiter@mail.com").Value);
         public static readonly Guid UserId = FakeRecruiterUser.Id;
-        public static readonly AgencyPersonnel FakeRecruiter =
-            AgencyPersonnel.CreatePrimary(AgencyId, FakeRecruiterUser.Id, FakeRecruiterUser.Email);
+        public static readonly AgencyMemberModel FakeRecruiter =
+            TestAgencyMembers.Add(AgencyId, FakeRecruiterUser.With(u => u.UpdateName(FakeRecruiterUser.Email)).Id);
 
         public static readonly Request FakeRequest = FakeData.FakeRequest(AgencyId);
         public static readonly Request FakeRequestWithoutRunners = FakeData.FakeRequest(AgencyId);
@@ -413,7 +414,6 @@ public class RunnersControllerTest(CustomWebApplicationFactory<RunnersController
             });
             context.Agencies.Add(FakeData.FakeAgency(AgencyId));
             context.Users.Add(FakeRecruiterUser);
-            context.AgencyPersonnel.Add(FakeRecruiter);
             context.Requests.AddRange(FakeRequest, FakeRequestWithoutRunners);
             context.WorkerProfiles.AddRange(FakeWorkerSearch, FakeWorkerSearchTaken, FakeWorkerPost,
                 FakeWorkerDuplicated, FakeWorkerList, FakeWorkerFiltered, FakeWorkerDetail, FakeWorkerStatus, FakeWorkerHire,

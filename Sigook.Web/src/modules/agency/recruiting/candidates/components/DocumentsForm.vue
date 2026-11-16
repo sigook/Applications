@@ -50,7 +50,7 @@ import { generateFileName } from '@/shared/utils/fileNaming';
 import { UPLOAD_ACCEPT, validateUploadFile } from '@/shared/utils/fileValidation';
 import { addCandidateDocument } from '@/modules/agency/recruiting/candidates/api';
 
-const props = defineProps<{ candidateId: string }>();
+const { candidateId } = defineProps<{ candidateId: string }>();
 const emit = defineEmits<{ (e: 'created'): void; (e: 'close'): void }>();
 
 const schema = yup.object({
@@ -76,26 +76,25 @@ function onFileSelected(file: File | null) {
 function submit() {
   form.markInteracted();
   fileError.value = validateUploadFile(documentFile.value);
-  form.handleSubmit(
-    values => {
+  void form.handleSubmit(
+    async values => {
       if (fileError.value || !documentFile.value) {
         showAlertError('Please make sure all required fields are filled out correctly');
         return;
       }
       isLoading.value = true;
-      addCandidateDocument(props.candidateId, {
-        fileName: generateFileName('Candidate', documentFile.value.name),
-        description: values.description,
-      }, documentFile.value)
-        .then(() => {
-          showAlertSuccess('Document added');
-          emit('created');
-          emit('close');
-        })
-        .catch(error => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
+      try {
+        await addCandidateDocument(candidateId, {
+          fileName: generateFileName('Candidate', documentFile.value.name),
+          description: values.description,
+        }, documentFile.value);
+        showAlertSuccess('Document added');
+        emit('created');
+        emit('close');
+      } catch (error) {
+        isLoading.value = false;
+        showAlertError(error);
+      }
     },
     () => showAlertError('Please make sure all required fields are filled out correctly'),
   )();

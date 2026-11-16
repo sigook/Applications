@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadCompanies" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: exportUrl, fileName: 'Companies' }" focusable
         @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total" @cellclick="onCellClick">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" :to="companyDetailBase + '/create'" icon-left="plus">Create</b-button>
         </template>
@@ -26,6 +29,7 @@
           </template>
           <template v-slot="props">
             <router-link :to="{ path: companyDetailBase + '/' + props.row.id }">
+              <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
               {{ props.row.fullName }}
               <template v-for="(location, index) in props.row.locations">
                 <p v-if="index < 2" :key="location">
@@ -128,16 +132,12 @@
           </template>
           <template v-slot="props">
             <b-tag size="is-medium" rounded>
-              {{statuses.find(s => s.id === props.row.companyStatus).value}}
+              {{statuses.find(s => s.id === props.row.companyStatus)?.value}}
             </b-tag>
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown v-if="props.row.companyStatus === CompanyStatus.Client || isSuperAdmin" aria-role="list"
-            position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown v-if="props.row.companyStatus === CompanyStatus.Client || isSuperAdmin">
             <b-dropdown-item v-if="props.row.companyStatus === CompanyStatus.Client" aria-role="listitem"
               @click="router.push({ path: requestBase + '/create/' + props.row.id })">
               Create Request
@@ -146,7 +146,7 @@
               @click="onDeleteCompany(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
@@ -158,6 +158,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
@@ -178,6 +179,8 @@ import type { AgencyCompanyFilter, AgencyCompanyListItem } from '@/modules/agenc
 import type { CatalogItem, GridHandle, TableColumnRef } from '@/shared/types/common';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import NotesPopover from '@/modules/agency/shared/notes/NotesPopover.vue';
 import BulkData from '@/modules/agency/recruiting/candidates/components/BulkData.vue';
@@ -219,14 +222,18 @@ const deleteCompanyNote = ({ userId, id }: NotesDeletePayload) => deleteAgencyCo
 
 const isMobile = computed(() => appStore.isMobile);
 
-getCompanyStatus()
-  .then((result) => {
-    statuses.value = result as CatalogItem<CompanyStatus>[];
+async function loadStatuses() {
+  try {
+    statuses.value = await getCompanyStatus();
     if (serverParams.value.companyStatuses) {
       statusesSelected.value = statuses.value.filter((s) => serverParams.value.companyStatuses?.includes(s.id));
     }
-  })
-  .catch((error) => showAlertError(error));
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+void loadStatuses();
 if (serverParams.value.createdAtFrom && serverParams.value.createdAtTo) {
   createdAtDatesSelected.value[0] = new Date(serverParams.value.createdAtFrom);
   createdAtDatesSelected.value[1] = new Date(serverParams.value.createdAtTo);
@@ -272,7 +279,7 @@ function onCellClick(row: AgencyCompanyListItem, column: TableColumnRef) {
     case 'actions':
       break;
     default:
-      router.push({ path: `${companyDetailBase.value}/${row.id}` });
+      void router.push({ path: `${companyDetailBase.value}/${row.id}` });
   }
 }
 
@@ -297,20 +304,21 @@ async function onDeleteCompany(row: AgencyCompanyListItem) {
     isLoading.value = false;
     showAlertSuccess(`${check.fullName} was deleted`);
     grid.value?.reload();
-  } catch (error: unknown) {
+  } catch (error) {
     isLoading.value = false;
     showAlertError(error);
   }
 }
 
-function exportWithDetails() {
+async function exportWithDetails() {
   isLoading.value = true;
-  downloadAgencyReport('/api/agency/recruiting/clients/FileWithDetails', serverParams.value)
-    .then((file) => {
-      isLoading.value = false;
-      downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
-    })
-    .catch(() => (isLoading.value = false));
+  try {
+    const file = await downloadAgencyReport('/api/agency/recruiting/clients/FileWithDetails', serverParams.value);
+    isLoading.value = false;
+    downloadFile(file, `Companies_Details_${new Date().toLocaleDateString()}`);
+  } catch {
+    isLoading.value = false;
+  }
 }
 </script>
 <style lang="scss">

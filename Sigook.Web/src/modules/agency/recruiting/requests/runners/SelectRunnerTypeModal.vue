@@ -23,7 +23,7 @@
 import { ref } from 'vue';
 import { RunnerType } from '@/modules/agency/recruiting/requests/runners/types';
 
-defineProps<{ name?: string }>();
+const { name } = defineProps<{ name?: string }>();
 const emit = defineEmits<{ (e: 'select', type: RunnerType): void; (e: 'close'): void }>();
 
 const type = ref<RunnerType>(RunnerType.Active);

@@ -231,40 +231,50 @@ function dealsByStatusFilter(): DealsByStatusFilter {
   };
 }
 
-function loadDealsByStatus(): void {
+async function loadDealsByStatus(): Promise<void> {
   const request = ++dealsByStatusRequest;
-  getDealsByStatus(dealsByStatusFilter())
-    .then((result) => {
-      if (request === dealsByStatusRequest) dealsByStatus.value = result;
-    })
-    .catch((error) => showAlertError(error));
+  try {
+    const result = await getDealsByStatus(dealsByStatusFilter());
+    if (request === dealsByStatusRequest) dealsByStatus.value = result;
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-function loadDashboard(): Promise<void> {
+async function loadDashboard(): Promise<void> {
   const request = ++dealsByStatusRequest;
-  return getSalesDashboard(dealsByStatusFilter())
-    .then((result) => {
-      summary.value = result.summary;
-      interactions.value = [...result.recentInteractions];
-      clients.value = [...result.recentClients];
-      deals.value = [...result.recentDeals];
-      if (request === dealsByStatusRequest) dealsByStatus.value = result.dealsByStatus;
-    })
-    .catch((error) => showAlertError(error));
+  try {
+    const result = await getSalesDashboard(dealsByStatusFilter());
+    summary.value = result.summary;
+    interactions.value = [...result.recentInteractions];
+    clients.value = [...result.recentClients];
+    deals.value = [...result.recentDeals];
+    if (request === dealsByStatusRequest) dealsByStatus.value = result.dealsByStatus;
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-function onSaved(): void {
+async function onSaved(): Promise<void> {
   isRefreshing.value = true;
-  loadDashboard().finally(() => {
+  try {
+    await loadDashboard();
+  } finally {
     isRefreshing.value = false;
-  });
+  }
+}
+
+async function loadInitial(): Promise<void> {
+  isLoading.value = true;
+  try {
+    await Promise.allSettled([loadDashboard(), loadAgentName()]);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 onMounted(() => {
-  isLoading.value = true;
-  Promise.allSettled([loadDashboard(), loadAgentName()]).finally(() => {
-    isLoading.value = false;
-  });
+  void loadInitial();
 });
 </script>
 

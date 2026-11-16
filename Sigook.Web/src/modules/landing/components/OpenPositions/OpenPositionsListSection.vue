@@ -21,14 +21,14 @@
           class="op-list__item-wrap"
           :data-job-id="job.numberId"
         >
-          <button
-            type="button"
+          <a
+            :href="jobHref(job.numberId)"
             class="op-list__item"
             :class="{
               'op-list__item--active': isActive(job.numberId),
               'op-list__item--expanded-mobile': isExpanded(job.numberId),
             }"
-            @click="selectJob(job.numberId)"
+            @click.prevent="selectJob(job.numberId)"
             :aria-expanded="isExpanded(job.numberId)"
             :aria-controls="`op-detail-${job.numberId}`"
           >
@@ -43,7 +43,7 @@
                 <span class="op-list__item-salary">{{ job.salary }}</span>
               </template>
             </div>
-          </button>
+          </a>
 
           <div
             v-if="isExpanded(job.numberId)"
@@ -67,6 +67,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import JobDetail from '@/modules/landing/components/OpenPositions/JobDetail.vue'
 import { useJobs } from '@/modules/landing/composables/useJobs'
+import { useJobPostingSchema } from '@/modules/landing/composables/useJobPostingSchema'
 import type { JobViewModel, JobSearchFilter } from '@/modules/landing/types'
 
 const route = useRoute()
@@ -76,7 +77,6 @@ const { jobs, loading, error, fetchJobs } = useJobs()
 
 const query = ref('')
 const selectedId = ref<string>('')
-const urlSyncReady = ref(false)
 
 const expandedIds = ref<string[]>([])
 const isMobile = ref(
@@ -98,12 +98,12 @@ function readQueryParam(value: unknown): string | undefined {
 }
 
 function readJobIdFromRoute(): string | undefined {
-  return readQueryParam(route.query.jobId)
+  return readQueryParam(route.params.numberId) || undefined
 }
 
 function readFiltersFromRoute(): JobSearchFilter {
   return {
-    jobId: readQueryParam(route.query.jobId),
+    jobId: readJobIdFromRoute(),
     jobTitle: readQueryParam(route.query.jobTitle),
     location: readQueryParam(route.query.location),
   }
@@ -125,12 +125,22 @@ function showSalary(job: JobViewModel): boolean {
   return !!job.salary && job.salary !== '$0.00'
 }
 
+function jobHref(numberId: string): string {
+  return router.resolve({ name: 'open-positions', params: { numberId } }).href
+}
+
+function syncUrl(numberId: string): void {
+  if (readJobIdFromRoute() === numberId) return
+  void router.replace({ name: 'open-positions', params: { numberId }, query: route.query })
+}
+
 function toggleExpanded(numberId: string): void {
   if (expandedIds.value.includes(numberId)) {
     expandedIds.value = expandedIds.value.filter((id) => id !== numberId)
   } else {
     expandedIds.value = [...expandedIds.value, numberId]
     selectedId.value = numberId
+    syncUrl(numberId)
   }
 }
 
@@ -140,6 +150,7 @@ function selectJob(numberId: string): void {
     return
   }
   selectedId.value = numberId
+  syncUrl(numberId)
 }
 
 function resetFilters(): void {
@@ -160,20 +171,19 @@ watch(filtered, (list) => {
   }
 })
 
-watch(selectedId, (id) => {
-  if (!urlSyncReady.value || !id) return
-  if (readJobIdFromRoute() === id) return
-  router.replace({ query: { ...route.query, jobId: id } })
-})
-
 watch(
-  () => route.query.jobId,
-  (value) => {
-    const id = typeof value === 'string' ? value : Array.isArray(value) ? value[0] : undefined
+  () => route.params.numberId,
+  () => {
+    const id = readJobIdFromRoute()
     if (!id || id === selectedId.value) return
     if (jobs.value.some((j) => j.numberId === id)) selectedId.value = id
   },
 )
+
+useJobPostingSchema(() => {
+  const id = readJobIdFromRoute()
+  return id ? jobs.value.find((j) => j.numberId === id) : undefined
+})
 
 async function scrollToSelected(numberId: string): Promise<void> {
   await nextTick()
@@ -198,19 +208,13 @@ onMounted(async () => {
 
   const matched = !!initialJobId && jobs.value.some((j) => j.numberId === initialJobId)
   if (matched) {
-    selectedId.value = initialJobId as string
+    selectedId.value = initialJobId
   } else if (jobs.value.length > 0) {
     selectedId.value = jobs.value[0].numberId
   }
 
   if (isMobile.value && selectedId.value) {
     expandedIds.value = [selectedId.value]
-  }
-
-  urlSyncReady.value = true
-
-  if (selectedId.value && readJobIdFromRoute() !== selectedId.value) {
-    router.replace({ query: { ...route.query, jobId: selectedId.value } })
   }
 
   if (matched) await scrollToSelected(selectedId.value)
@@ -317,6 +321,7 @@ onUnmounted(() => {
     clamp(14px, 1.6vw, 18px) clamp(14px, 1.6vw, 18px)
     clamp(14px, 1.6vw, 18px) clamp(28px, 3vw, 36px);
   color: #fff;
+  text-decoration: none;
   cursor: pointer;
   width: 100%;
   font: inherit;

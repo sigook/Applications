@@ -6,7 +6,7 @@
           <b-button type="is-ghost" size="is-small" class="profile-link" icon-right="menu-down">Edit</b-button>
         </template>
         <b-dropdown-item aria-role="listitem" @click="open('basic')">Basic information</b-dropdown-item>
-        <b-dropdown-item v-if="props.showLoginEmail" aria-role="listitem" @click="open('email')">Login email</b-dropdown-item>
+        <b-dropdown-item v-if="showLoginEmail" aria-role="listitem" @click="open('email')">Login email</b-dropdown-item>
         <b-dropdown-item aria-role="listitem" @click="open('sin')">SIN/SSN</b-dropdown-item>
       </b-dropdown>
     </template>
@@ -18,24 +18,24 @@
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">Date of birth</dt>
-        <dd>{{ dateMonth(props.worker.birthDay) }}</dd>
+        <dd>{{ dateMonth(worker.birthDay) }}</dd>
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">Gender</dt>
-        <dd :class="{ 'profile-empty': !props.worker.gender }">{{ props.worker.gender?.value ?? '—' }}</dd>
+        <dd :class="{ 'profile-empty': !worker.gender }">{{ worker.gender?.value ?? '—' }}</dd>
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">Own vehicle</dt>
-        <dd>{{ props.worker.hasVehicle ? 'Yes' : 'No' }}</dd>
+        <dd>{{ worker.hasVehicle ? 'Yes' : 'No' }}</dd>
       </div>
-      <div v-if="props.showLoginEmail" class="profile-field">
+      <div v-if="showLoginEmail" class="profile-field">
         <dt class="profile-field-label">Login email</dt>
-        <dd><copy-link kind="email" :value="props.worker.email" /></dd>
+        <dd><copy-link kind="email" :value="worker.email" /></dd>
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">SIN/SSN</dt>
-        <dd v-if="props.worker.socialInsurance" class="profile-sin">
-          {{ showSin ? props.worker.socialInsurance : sin(props.worker.socialInsurance) }}
+        <dd v-if="worker.socialInsurance" class="profile-sin">
+          {{ showSin ? worker.socialInsurance : sin(worker.socialInsurance) }}
           <b-button type="is-ghost" size="is-small" class="profile-icon-button" :icon-left="showSin ? 'eye-off' : 'eye'"
             :aria-label="showSin ? 'Hide SIN/SSN' : 'Show SIN/SSN'" @click="showSin = !showSin" />
         </dd>
@@ -43,17 +43,17 @@
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">SIN/SSN expiry</dt>
-        <dd v-if="props.worker.socialInsuranceExpire && props.worker.dueDate">
-          {{ dateMonth(props.worker.dueDate) }}
+        <dd v-if="worker.socialInsuranceExpire && worker.dueDate">
+          {{ dateMonth(worker.dueDate) }}
           <span class="profile-status" :class="`is-${sinStatus.tone}`">{{ sinStatus.label }}</span>
         </dd>
         <dd v-else>Does not expire</dd>
       </div>
       <div class="profile-field">
         <dt class="profile-field-label">SIN/SSN file</dt>
-        <dd v-if="props.worker.socialInsuranceFile?.fileName">
-          <a :href="props.worker.socialInsuranceFile.pathFile" target="_blank" download>
-            {{ filename(props.worker.socialInsuranceFile.fileName) }}
+        <dd v-if="worker.socialInsuranceFile?.fileName">
+          <a :href="worker.socialInsuranceFile.pathFile" target="_blank" download>
+            {{ filename(worker.socialInsuranceFile.fileName) }}
           </a>
         </dd>
         <dd v-else class="profile-empty">—</dd>
@@ -61,9 +61,9 @@
     </dl>
 
     <b-modal custom-content-class="card" v-model="isModalOpen" width="500px">
-      <basic-information-form v-if="activeForm === 'basic'" :data="props.worker" @closeModal="onSaved" />
-      <email-form v-else-if="activeForm === 'email' && props.updateEmail" :data="props.worker" :save="props.updateEmail" @closeModal="onSaved" />
-      <sin-form v-else-if="activeForm === 'sin'" :data="props.worker" @closeModal="onSaved" />
+      <basic-information-form v-if="activeForm === 'basic'" :data="worker" @closeModal="onSaved" />
+      <email-form v-else-if="activeForm === 'email' && updateEmail" :data="worker" :save="updateEmail" @closeModal="onSaved" />
+      <sin-form v-else-if="activeForm === 'sin'" :data="worker" @closeModal="onSaved" />
     </b-modal>
   </profile-card>
 </template>
@@ -81,24 +81,24 @@ import SinForm from '@/shared/worker-profile/forms/WorkSinForm.vue';
 
 type PersonalForm = 'basic' | 'email' | 'sin';
 
-const props = withDefaults(defineProps<{
+const { worker, showLoginEmail = true } = defineProps<{
   worker: WorkerProfileDetail;
   showLoginEmail?: boolean;
   updateEmail?: (workerId: string, model: { newEmail: string }) => Promise<unknown>;
-}>(), { showLoginEmail: true });
-const emit = defineEmits<{ (e: 'updateProfile'): void }>();
+}>();
+const emit = defineEmits<(e: 'updateProfile') => void>();
 
 const showSin = ref(false);
 const isModalOpen = ref(false);
 const activeForm = ref<PersonalForm | null>(null);
 
 const fullName = computed(() =>
-  [props.worker.firstName, props.worker.middleName, props.worker.lastName, props.worker.secondLastName]
+  [worker.firstName, worker.middleName, worker.lastName, worker.secondLastName]
     .filter(Boolean)
     .join(' '),
 );
 
-const sinStatus = computed(() => expiryStatus(props.worker.dueDate));
+const sinStatus = computed(() => expiryStatus(worker.dueDate));
 
 function open(form: PersonalForm) {
   activeForm.value = form;

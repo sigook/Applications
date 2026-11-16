@@ -9,6 +9,7 @@
         <div class="worker-chips">
           <span v-if="worker.approvedToWork" class="worker-chip is-success">Approved to work</span>
           <span v-else class="worker-chip is-danger">Not approved</span>
+          <span v-if="agencyName(worker.agencyId)" class="worker-chip">{{ agencyName(worker.agencyId) }}</span>
           <span v-if="worker.isSubcontractor" class="worker-chip is-info">Subcontractor</span>
           <span v-if="worker.isContractor" class="worker-chip">Contractor</span>
           <span v-if="worker.dnu" class="worker-chip is-danger">DNU</span>
@@ -92,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick } from 'vue';
+import { ref, computed, nextTick, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -108,6 +109,7 @@ import requestHistory from '@/modules/agency/recruiting/workers/components/Agenc
 import timeSheetHistory from '@/modules/agency/recruiting/workers/components/TimeSheetHistory.vue';
 import notes from '@/modules/agency/recruiting/workers/components/Notes.vue';
 import WorkerProfileHeader from '@/shared/worker-profile/cards/WorkerProfileHeader.vue';
+import { useAgencyName } from '@/modules/agency/shared/useAgencyName';
 import ProfileIndex from '@/shared/worker-profile/cards/ProfileIndex.vue';
 import NeedsAttention from '@/shared/worker-profile/cards/NeedsAttention.vue';
 import PersonalCard from '@/shared/worker-profile/cards/PersonalCard.vue';
@@ -132,8 +134,9 @@ const commentPageIndex = ref(1);
 const currentTab = ref<string>('profile');
 const visitedTabs = ref<string[]>(['profile']);
 const worker = ref<WorkerProfileDetail | null>(null);
+const { agencyName } = useAgencyName();
 const commentsData = ref<WorkerCommentList | null>(null);
-const commentsCard = ref<InstanceType<typeof CommentsCard> | null>(null);
+const commentsCard = useTemplateRef<InstanceType<typeof CommentsCard>>('commentsCard');
 
 const { attentionItems, sections, completeness, missingLabels } = useWorkerProfileStatus(worker);
 const { activeSectionId, selectSection, observeSections } = useActiveWorkerSection(sections);
@@ -147,8 +150,8 @@ const hasDnuPermission = computed(() => {
   return true;
 });
 
-loadWorker();
-if (route.query && route.query.tab) {
+void loadWorker();
+if (route.query.tab) {
   currentTab.value = route.query.tab as string;
   if (!visitedTabs.value.includes(route.query.tab as string)) {
     visitedTabs.value.push(route.query.tab as string);
@@ -159,27 +162,25 @@ function changeTab(tab: string) {
   if (!visitedTabs.value.includes(tab)) {
     visitedTabs.value.push(tab);
   }
-  router.push({
-    path: `/recruiting/workers/${route.params.id}`,
+  void router.push({
+    path: `/recruiting/workers/${String(route.params.id)}`,
     query: { tab: tab },
   });
 }
 
-function updateComments() {
+async function updateComments() {
   if (!worker.value) return;
   isLoading.value = true;
-  getAgencyWorkerComments(worker.value.id, {
-    size: commentSize.value,
-    pageIndex: commentPageIndex.value,
-  })
-    .then((data) => {
-      commentsData.value = data;
-      isLoading.value = false;
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    commentsData.value = await getAgencyWorkerComments(worker.value.id, {
+      size: commentSize.value,
+      pageIndex: commentPageIndex.value,
     });
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function openCommentDialog() {
@@ -189,68 +190,56 @@ function openCommentDialog() {
 
 function changePageComments(page: number) {
   commentPageIndex.value = page;
-  updateComments();
+  void updateComments();
 }
 
-function loadWorker() {
+async function loadWorker() {
   isLoading.value = true;
-  getAgencyWorker(route.params.id as string)
-    .then((w) => {
-      isLoading.value = false;
-      worker.value = w;
-      updateComments();
-      nextTick(observeSections);
-    })
-    .catch((error) => {
-      showAlertError(error);
-      isLoading.value = false;
-    });
+  try {
+    const w = await getAgencyWorker(route.params.id as string);
+    isLoading.value = false;
+    worker.value = w;
+    void updateComments();
+    void nextTick(observeSections);
+  } catch (error) {
+    showAlertError(error);
+    isLoading.value = false;
+  }
 }
 
-function toggleWorkerProfileDNU() {
+async function toggleWorkerProfileDNU() {
   if (!worker.value) return;
   isLoading.value = true;
-  updateAgencyWorkerProfileDNU(worker.value.id)
-    .then(() => {
-      showAlertSuccess('Updated');
-      isLoading.value = false;
-      loadWorker();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-      loadWorker();
-    });
+  try {
+    await updateAgencyWorkerProfileDNU(worker.value.id);
+    showAlertSuccess('Updated');
+    isLoading.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+  await loadWorker();
 }
 
-function confirmDelete(w: WorkerProfileDetail) {
-  showAlertConfirm(
+async function confirmDelete(w: WorkerProfileDetail) {
+  if (!(await showAlertConfirm(
     'Are you sure?',
     'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
-  )
-    .then((response) => {
-      if (response) {
-        onUpdateApprovedToWork(w);
-      }
-    })
-    .catch((error) => {
-      showAlertError(error);
-    });
+  ))) return;
+  await onUpdateApprovedToWork(w);
 }
 
-function onUpdateApprovedToWork(w: WorkerProfileDetail) {
+async function onUpdateApprovedToWork(w: WorkerProfileDetail) {
   isLoading.value = true;
-  updateApprovedToWork(w.id)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      loadWorker();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-      loadWorker();
-    });
+  try {
+    await updateApprovedToWork(w.id);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
+  await loadWorker();
 }
 </script>
 

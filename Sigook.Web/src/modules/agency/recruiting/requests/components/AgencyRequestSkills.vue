@@ -17,37 +17,36 @@ import { postAgencyRequestSkill, deleteAgencyRequestSkill } from "@/modules/agen
 import type { AgencyRequestSkillModel } from '@/modules/agency/recruiting/requests/types';
 import SkillsForm from '@/shared/ui/FormSkillAdd.vue';
 
-const props = defineProps<{ requestId: string; canEdit?: boolean }>();
+const { requestId, canEdit } = defineProps<{ requestId: string; canEdit?: boolean }>();
 const skills = defineModel<AgencyRequestSkillModel[]>({ required: true });
 
 const isLoading = ref(false);
 
-function addSkill(item: { skill: string }) {
+async function addSkill(item: { skill: string }) {
   isLoading.value = true;
-  postAgencyRequestSkill(props.requestId, { skill: item.skill })
-    .then(response => {
-      isLoading.value = false;
-      skills.value = [...skills.value, { id: response.id, skill: item.skill }];
-    }).catch(error => {
-      isLoading.value = false;
-      skills.value = [...skills.value];
-      showAlertError(error);
-    });
+  try {
+    const response = await postAgencyRequestSkill(requestId, { skill: item.skill });
+    isLoading.value = false;
+    skills.value = [...skills.value, { id: response.id, skill: item.skill }];
+  } catch (error) {
+    isLoading.value = false;
+    skills.value = [...skills.value];
+    showAlertError(error);
+  }
 }
 
-function removeSkill(item: AgencyRequestSkillModel) {
+async function removeSkill(item: AgencyRequestSkillModel) {
   if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestSkill(props.requestId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      skills.value = skills.value.filter(x => x.id !== item.id);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      skills.value = [...skills.value];
-      showAlertError(error);
-    });
+  try {
+    await deleteAgencyRequestSkill(requestId, item.id);
+    isLoading.value = false;
+    skills.value = skills.value.filter(x => x.id !== item.id);
+  } catch (error) {
+    isLoading.value = false;
+    skills.value = [...skills.value];
+    showAlertError(error);
+  }
 }
 </script>
 

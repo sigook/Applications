@@ -36,7 +36,7 @@
         <b-table-column field="mobileNumber" label="Phone" searchable>
           <template v-slot:searchable>
             <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+              @update:modelValue="(v: string) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
           <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
         </b-table-column>
@@ -109,7 +109,7 @@ import type { GridHandle } from '@/shared/types/common';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-const props = defineProps<{ company: { id: string } }>();
+const { company } = defineProps<{ company: { id: string } }>();
 const router = useRouter();
 const grid = useTemplateRef<GridHandle>('grid');
 
@@ -127,11 +127,11 @@ const featuresSelected = ref<WorkerFeature[]>([]);
 const serverParams = ref<AgencyWorkerFilter>({
   sortBy: 0,
   isDescending: false,
-  companyProfileId: props.company.id,
+  companyProfileId: company.id,
 });
 
 function onCellClick(row: AgencyWorkerListItem) {
-  router.push(`/recruiting/workers/${row.id}`);
+  void router.push(`/recruiting/workers/${row.id}`);
 }
 
 function onCreatedAtSelected() {

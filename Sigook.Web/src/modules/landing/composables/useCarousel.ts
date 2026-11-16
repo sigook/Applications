@@ -32,7 +32,7 @@ export function useCarousel<T>(
   const { intervalMs = 5000, autoStart = true } = options
 
   const list = computed<readonly T[]>(() =>
-    typeof items === 'function' ? (items as () => readonly T[])() : items
+    typeof items === 'function' ? (items)() : items
   )
 
   const count = computed(() => list.value.length)

@@ -25,11 +25,11 @@ public interface IWorkerService
     Task<Result> AddCompanyComment(Guid workerProfileId, string comment, decimal rate);
     Task<Result> Unsubscribe(UnsubscribeModel model);
     Task<Result> AddNote(Guid workerProfileId, string note);
-    Task<Result> UpdateApprovedToWork(Guid agencyId, Guid workerProfileId);
+    Task<Result> UpdateApprovedToWork(IEnumerable<Guid> agencyIds, Guid workerProfileId);
     Task<Result> UpdateExternalId(Guid workerProfileId, string externalId);
     Task<Result> UpdateWcCode(Guid workerProfileId, string wcCode);
-    Task<Result> UpdateDnu(Guid agencyId, Guid workerProfileId);
-    Task<Result> UpdateContractor(Guid agencyId, Guid workerProfileId);
-    Task<Result> UpdateSubcontractor(Guid agencyId, Guid workerProfileId);
-    Task<Result> UpdateEmail(Guid agencyId, Guid workerProfileId, string newEmail);
+    Task<Result> UpdateDnu(IEnumerable<Guid> agencyIds, Guid workerProfileId);
+    Task<Result> UpdateContractor(IEnumerable<Guid> agencyIds, Guid workerProfileId);
+    Task<Result> UpdateSubcontractor(IEnumerable<Guid> agencyIds, Guid workerProfileId);
+    Task<Result> UpdateEmail(IEnumerable<Guid> agencyIds, Guid workerProfileId, string newEmail);
 }

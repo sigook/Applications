@@ -70,16 +70,16 @@ import dayjs from 'dayjs';
 import SheetPanel from '@/shared/ui/SheetPanel.vue';
 import { dateHHmm, hour } from '@/shared/format';
 import { maximumHoursPerDay } from '@/shared/constants/catalog';
-import type { PunchCardEditableDay, TimeSheetModel } from '@/shared/punch-card/types';
+import type { PunchCardEditableDay, CompanyTimeSheetModel } from '@/shared/punch-card/types';
 
-const props = defineProps<{
+const { modelValue, editableDay } = defineProps<{
   modelValue: boolean;
   editableDay: PunchCardEditableDay | null;
 }>();
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void;
-  (e: 'save', model: TimeSheetModel): void;
+  (e: 'save', model: CompanyTimeSheetModel): void;
   (e: 'post', hours: number): void;
   (e: 'delete'): void;
 }>();
@@ -99,11 +99,11 @@ maximumMissing.setHours(12);
 maximumMissing.setMinutes(0);
 maximumMissing.setSeconds(0);
 
-const localEditableDay = ref<PunchCardEditableDay | null>(cloneEditable(props.editableDay));
+const localEditableDay = ref<PunchCardEditableDay | null>(cloneEditable(editableDay));
 const newHours = ref<number | null>(null);
 const hoursError = ref('');
 
-watch(() => props.editableDay, (newVal) => {
+watch(() => editableDay, (newVal) => {
   localEditableDay.value = cloneEditable(newVal);
   newHours.value = null;
   hoursError.value = '';

@@ -32,10 +32,10 @@
             {{ dateMonth(props.row.scheduledDate) }} {{ dateHHmm(props.row.scheduledDate) }}
             <b-tag size="is-small" :type="props.row.status === InterviewStatus.Rescheduled ? 'is-warning' : 'is-info'"
               class="ml-1">
-              {{ INTERVIEW_STATUS_LABELS[props.row.status] }}
+              {{ INTERVIEW_STATUS_LABELS[props.row.status as InterviewStatus] }}
             </b-tag>
           </b-table-column>
-          <b-table-column field="type" label="Type" v-slot="props">{{ INTERVIEW_TYPE_LABELS[props.row.type] }}</b-table-column>
+          <b-table-column field="type" label="Type" v-slot="props">{{ INTERVIEW_TYPE_LABELS[props.row.type as InterviewType] }}</b-table-column>
           <b-table-column field="interviewer" label="Interviewer" v-slot="props">{{ props.row.interviewer }}</b-table-column>
           <b-table-column field="notes" label="Notes" v-slot="props">{{ props.row.notes }}</b-table-column>
           <b-table-column field="actions" v-slot="props">
@@ -65,6 +65,7 @@ import {
   INTERVIEW_TYPE_LABELS,
   INTERVIEW_STATUS_LABELS,
   InterviewStatus,
+  type InterviewType,
   canAddInterview,
   runnerStatusLabel,
   runnerStatusTagType,
@@ -73,30 +74,30 @@ import type { RunnerDetail } from '@/modules/agency/recruiting/requests/runners/
 import RunnerInterviewModal from '@/modules/agency/recruiting/requests/runners/RunnerInterviewModal.vue';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 
-const props = withDefaults(defineProps<{ requestId: string; runnerId: string; canEdit?: boolean }>(), { canEdit: true });
+const { requestId, runnerId, canEdit = true } = defineProps<{ requestId: string; runnerId: string; canEdit?: boolean }>();
 const emit = defineEmits<{ (e: 'updated'): void; (e: 'loaded', detail: RunnerDetail): void }>();
 
 const detail = ref<RunnerDetail | null>(null);
 const isLoading = ref(false);
 const showAddInterview = ref(false);
 
-function load() {
+async function load() {
   isLoading.value = true;
-  getAgencyRunner(props.requestId, props.runnerId)
-    .then((response) => {
-      detail.value = response;
-      emit('loaded', response);
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoading.value = false;
-    });
+  try {
+    const response = await getAgencyRunner(requestId, runnerId);
+    detail.value = response;
+    emit('loaded', response);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 function onInterviewAdded() {
   showAddInterview.value = false;
   emit('updated');
-  load();
+  void load();
 }
 
 function openReschedule(interviewId: string) {
@@ -108,24 +109,26 @@ function openReschedule(interviewId: string) {
       required: true,
     },
     confirmText: 'Reschedule',
-    onConfirm: (value: string, dialog: { close: () => void }) => {
-      isLoading.value = true;
-      rescheduleRunnerInterview(props.requestId, props.runnerId, interviewId, { newDate: new Date(value).toISOString() })
-        .then(() => {
-          dialog.close();
-          showAlertSuccess('Interview rescheduled');
-          emit('updated');
-          load();
-        })
-        .catch((error) => {
-          isLoading.value = false;
-          showAlertError(error);
-        });
-    },
+    onConfirm: (value: string, dialog: { close: () => void }) => reschedule(interviewId, value, dialog),
   });
 }
 
-load();
+async function reschedule(interviewId: string, value: string, dialog: { close: () => void }) {
+  isLoading.value = true;
+  try {
+    await rescheduleRunnerInterview(requestId, runnerId, interviewId, { newDate: new Date(value).toISOString() });
+    dialog.close();
+    showAlertSuccess('Interview rescheduled');
+    emit('updated');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    return;
+  }
+  await load();
+}
+
+void load();
 
 defineExpose({ reload: load });
 </script>

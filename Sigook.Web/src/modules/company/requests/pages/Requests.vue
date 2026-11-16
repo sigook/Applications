@@ -100,13 +100,13 @@
         </b-table-column>
         <b-table-column field="requestStatus" label="Status" v-slot="props">
           <div class="has-text-centered">
-            <b-tooltip :label="RequestStatusLabels[props.row.requestStatus]" type="is-dark" append-to-body>
+            <HoverTooltip :label="RequestStatusLabels[props.row.requestStatus as RequestStatus]">
               <div class="status-dot-container">
                 <b-icon v-if="props.row.requestStatus === RequestStatus.Filled" icon="check" size="is-small"
                   type="is-white" class="request-check"></b-icon>
                 <div class="dot-status" :class="getStatusClass(props.row)"></div>
               </div>
-            </b-tooltip>
+            </HoverTooltip>
           </div>
         </b-table-column>
       </SigookGrid>
@@ -127,6 +127,7 @@
 </template>
 
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useCompanyStore } from '@/modules/company/store';
@@ -179,13 +180,11 @@ const totalQuantity = computed(() => {
   return 0;
 });
 
-function loadRequests(params: CompanyRequestFilter) {
+async function loadRequests(params: CompanyRequestFilter) {
   companyStore.setCompanyRequestFilter(params);
-  return getRequests(params)
-    .then((response) => {
-      rows.value = response.items;
-      return response;
-    });
+  const response = await getRequests(params);
+  rows.value = response.items;
+  return response;
 }
 
 function onSearch() {
@@ -197,13 +196,13 @@ function onCellClick(row: CompanyRequestListItem, column: TableColumnRef) {
     case 'displayShift':
       break;
     case 'workersQuantityWorking':
-      router.push({
+      void router.push({
         path: `/company-requests/${row.id}`,
         query: { tab: 'Workers' },
       });
       break;
     default:
-      router.push(`/company-requests/${row.id}`);
+      void router.push(`/company-requests/${row.id}`);
   }
 }
 
@@ -219,11 +218,11 @@ function clearFilters() {
 }
 
 function goToRequest(row: CompanyRequestListItem) {
-  router.push(`/company-requests/${row.id}`);
+  void router.push(`/company-requests/${row.id}`);
 }
 
 function goToWorkers(row: CompanyRequestListItem) {
-  router.push({
+  void router.push({
     path: `/company-requests/${row.id}`,
     query: { tab: 'Workers' },
   });

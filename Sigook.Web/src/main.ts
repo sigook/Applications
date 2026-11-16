@@ -43,10 +43,12 @@ mgr.events.addUserLoaded((user) => {
 mgr.events.addUserUnloaded(() => {
   securityStore.setUser(null);
 });
-mgr.events.addAccessTokenExpired(() => {
-  securityStore.silentSignin().catch(() => {
+mgr.events.addAccessTokenExpired(async () => {
+  try {
+    await securityStore.silentSignin();
+  } catch {
     securityStore.setUser(null);
-  });
+  }
 });
 mgr.events.addSilentRenewError(() => {
   securityStore.setUser(null);

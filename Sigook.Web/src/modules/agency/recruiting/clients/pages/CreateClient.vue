@@ -42,13 +42,21 @@
                     </b-select>
                   </b-field>
                 </div>
+                <div v-if="!isUpdate && agencies.length > 1" class="column is-6">
+                  <b-field>
+                    <template #label>Agency <span class="has-text-danger">*</span></template>
+                    <b-select :model-value="agencyId" name="agency" expanded @update:modelValue="onAgencyChanged">
+                      <option v-for="agency in agencies" :key="agency.id" :value="agency.id">{{ agency.name }}</option>
+                    </b-select>
+                  </b-field>
+                </div>
                 <div class="column is-6">
                   <b-field :type="formErrors.salesRepresentative ? 'is-danger' : ''"
                     :message="formErrors.salesRepresentative || ''">
                     <template #label>Sales Representative <span class="has-text-danger">*</span></template>
                     <b-autocomplete :data="filteredSalesRepresentative" :placeholder="'Select'"
                       v-model="salesRepresentative" open-on-focus name="salesRepresentative"
-                      :custom-formatter="(option) => `${option.name} - ${option.email}`"
+                      :custom-formatter="(option: AgencyPersonnelListItem) => `${option.name} - ${option.email}`"
                       @select="onSalesRepresentativeSelected">
                     </b-autocomplete>
                   </b-field>
@@ -183,6 +191,7 @@ import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
 import { createAgencyCompany, getAgencyCompany, updateAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
+import { useAgencyStore } from '@/modules/agency/store';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import type { CatalogItem, Industry, PageBreadcrumb } from '@/shared/types/common';
 import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
@@ -193,6 +202,9 @@ const router = useRouter();
 const { isSalesView, companyBase } = useModuleBase();
 const { isAdmin } = useAdmin();
 const pubSub = usePubSub();
+const agencyStore = useAgencyStore();
+const agencies = computed(() => agencyStore.agencies);
+const agencyId = ref<string | null>(null);
 
 const crumbs = computed<PageBreadcrumb[]>(() => [
   { label: isSalesView.value ? 'Sales' : 'Recruiting' },
@@ -258,7 +270,7 @@ const {
 const formErrors = form.errors;
 
 watch(form.fields.companyStatus, (v) => {
-  companyStatusValue.value = (v as number | null) ?? null;
+  companyStatusValue.value = (v) ?? null;
 });
 
 const isLoading = ref(true);
@@ -288,12 +300,13 @@ async function init() {
   const companyProfileId = route.params.companyProfileId as string | undefined;
   let existing: AgencyCompanyProfileDetail | undefined;
   try {
-    [existing, statuses.value, industryOptions.value, salesRepresentatives.value] = await Promise.all([
+    [existing, statuses.value, industryOptions.value] = await Promise.all([
       companyProfileId ? getAgencyCompany(companyProfileId) : Promise.resolve(undefined),
       getCompanyStatus(),
       getIndustries(),
-      getAgencyPersonnel(),
     ]);
+    agencyId.value = existing?.agencyId ?? agencies.value.at(0)?.id ?? null;
+    salesRepresentatives.value = await getAgencyPersonnel(agencyId.value ?? undefined);
   } catch (error) {
     showAlertError(error);
     return;
@@ -315,7 +328,7 @@ async function init() {
     form.hydrate({
       fullName: existing.fullName || '',
       industry: industryValue || '',
-      companyStatus: existing.companyStatus ?? null,
+      companyStatus: existing.companyStatus,
       salesRepresentative: record ? `${record.name} - ${record.email}` : '',
       about: existing.about || '',
       phoneExt: existing.phoneExt != null ? String(existing.phoneExt) : '',
@@ -324,7 +337,7 @@ async function init() {
     });
   }
 }
-init();
+void init();
 
 function validateAutocompleteSelections(): boolean {
   let valid = true;
@@ -342,7 +355,7 @@ function validateAutocompleteSelections(): boolean {
 
 function validateForm() {
   form.markInteracted();
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     if (!validateAutocompleteSelections()) {
       showAlertError('Please make sure all required fields are filled out correctly');
       return;
@@ -359,11 +372,14 @@ function validateForm() {
       industry: { ...company.value.industry, industry: industrySelected.value },
       logo: {},
     };
-    if (!isUpdate.value) payload.email = values.email;
+    if (!isUpdate.value) {
+      payload.email = values.email;
+      payload.agencyId = agencyId.value;
+    }
     if (displayPassword.value) payload.password = values.password;
 
-    if (isUpdate.value) submitUpdateCompany(payload);
-    else submitCreateCompany(payload);
+    if (isUpdate.value) await submitUpdateCompany(payload);
+    else await submitCreateCompany(payload);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
@@ -379,7 +395,7 @@ async function submitCreateCompany(payload: CompanyProfileFormState) {
     const response = await createAgencyCompany(payload);
     await uploadLogo(response.id);
     showAlertSuccess('Company created');
-    router.push(companyBase.value + '/' + response.id);
+    void router.push(companyBase.value + '/' + response.id);
   } catch (error) {
     showAlertError((error as { data?: unknown }).data);
   } finally {
@@ -388,12 +404,14 @@ async function submitCreateCompany(payload: CompanyProfileFormState) {
 }
 
 async function submitUpdateCompany(payload: CompanyProfileFormState) {
+  const companyProfileId = company.value.companyProfileId;
+  if (!companyProfileId) return;
   isLoading.value = true;
   try {
-    await updateAgencyCompany(company.value.companyProfileId, payload);
-    await uploadLogo(company.value.companyProfileId);
+    await updateAgencyCompany(companyProfileId, payload);
+    await uploadLogo(companyProfileId);
     showAlertSuccess('Company updated');
-    router.push(companyBase.value + '/' + company.value.companyProfileId);
+    void router.push(companyBase.value + '/' + company.value.companyProfileId);
   } catch (error) {
     showAlertError((error as { data?: unknown }).data);
   } finally {
@@ -401,12 +419,36 @@ async function submitUpdateCompany(payload: CompanyProfileFormState) {
   }
 }
 
+watch(agencies, (list) => {
+  const first = list.at(0);
+  if (!isLoading.value && !isUpdate.value && !agencyId.value && first) void onAgencyChanged(first.id);
+});
+
+async function onAgencyChanged(value: string) {
+  agencyId.value = value;
+  salesRepresentativeSelected.value = null;
+  form.setFieldValue('salesRepresentative', '');
+  try {
+    salesRepresentatives.value = await getAgencyPersonnel(value);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
 function onSalesRepresentativeSelected(option: AgencyPersonnelListItem | null) {
-  salesRepresentativeSelected.value = option || null;
+  salesRepresentativeSelected.value = option ?? null;
 }
 
 function selectIndustry(option: Industry | null) {
-  industrySelected.value = option || null;
+  industrySelected.value = option ?? null;
+}
+
+async function confirmAddIndustry(value: string, dialog: { close: () => void }) {
+  const newIndustry = await addIndustryApi({ value });
+  industryOptions.value.push(newIndustry);
+  industrySelected.value = newIndustry;
+  form.setFieldValue('industry', newIndustry.value);
+  dialog.close();
 }
 
 function onAddIndustry() {
@@ -419,13 +461,7 @@ function onAddIndustry() {
     },
     closeOnConfirm: false,
     confirmText: 'Add',
-    onConfirm: async (value, dialog) => {
-      const newIndustry = await addIndustryApi({ value });
-      industryOptions.value.push(newIndustry);
-      industrySelected.value = newIndustry;
-      form.setFieldValue('industry', newIndustry.value);
-      dialog.close();
-    },
+    onConfirm: (value, dialog) => confirmAddIndustry(value, dialog),
   });
 }
 </script>

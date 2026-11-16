@@ -8,7 +8,7 @@
  */
 export interface IconShape {
   tag: 'path' | 'circle' | 'rect' | 'line' | 'polyline'
-  attrs: Record<string, string | number>
+  attrs: Record<string, string | number | undefined>
 }
 
 export interface IconDef {

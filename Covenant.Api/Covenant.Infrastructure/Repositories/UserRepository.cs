@@ -1,4 +1,5 @@
 using Covenant.Common.Entities;
+using Covenant.Common.Models.Identity;
 using Covenant.Common.Repositories;
 using Covenant.Infrastructure.Contexts;
 using Microsoft.EntityFrameworkCore;
@@ -10,6 +11,8 @@ public class UserRepository(CovenantContext context) : BaseRepository<CovenantCo
     public Task<User> GetUserById(Guid userId) => Context.Users.FirstOrDefaultAsync(c => c.Id == userId);
 
     public Task<string> GetUserEmail(Guid userId) => Context.Users.Where(c => c.Id == userId).Select(c => c.Email).AsNoTracking().SingleOrDefaultAsync();
+
+    public Task<AccountModel> GetAccount(Guid userId) => Context.Users.Where(c => c.Id == userId).Select(c => new AccountModel(c.Email, c.Name ?? c.Email)).AsNoTracking().SingleOrDefaultAsync();
 
     public Task<User> GetUserByEmail(string email) => Context.Users.SingleOrDefaultAsync(c => c.Email.ToLower().Equals(email.ToLower()));
 

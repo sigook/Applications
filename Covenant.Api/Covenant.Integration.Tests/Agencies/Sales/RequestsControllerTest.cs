@@ -1,3 +1,4 @@
+using Covenant.Common.Models.Identity;
 using ClosedXML.Excel;
 using Covenant.Api.Controllers.Agencies.Profile;
 using RecruitingRequestsController = Covenant.Api.Controllers.Agencies.Recruiting.Requests.RequestsListController;
@@ -141,10 +142,10 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         public static readonly User AdminUser = new User(CvnEmail.Create("admin@mail.com").Value);
         public static readonly User RecruiterUser = new User(CvnEmail.Create("recruiter@mail.com").Value);
 
-        public static readonly AgencyPersonnel SalesPersonnel = AgencyPersonnel.CreatePrimary(AgencyId, SalesUser.Id, "Sales Rep");
-        public static readonly AgencyPersonnel OtherSalesPersonnel = AgencyPersonnel.CreatePrimary(AgencyId, OtherSalesUser.Id, "Other Rep");
-        public static readonly AgencyPersonnel AdminPersonnel = AgencyPersonnel.CreatePrimary(AgencyId, AdminUser.Id, "Admin");
-        public static readonly AgencyPersonnel RecruiterPersonnel = AgencyPersonnel.CreatePrimary(AgencyId, RecruiterUser.Id, "Recruiter");
+        public static readonly AgencyMemberModel SalesPersonnel = TestAgencyMembers.Add(AgencyId, SalesUser.With(u => u.UpdateName("Sales Rep")).Id);
+        public static readonly AgencyMemberModel OtherSalesPersonnel = TestAgencyMembers.Add(AgencyId, OtherSalesUser.With(u => u.UpdateName("Other Rep")).Id);
+        public static readonly AgencyMemberModel AdminPersonnel = TestAgencyMembers.Add(AgencyId, AdminUser.With(u => u.UpdateName("Admin")).Id);
+        public static readonly AgencyMemberModel RecruiterPersonnel = TestAgencyMembers.Add(AgencyId, RecruiterUser.With(u => u.UpdateName("Recruiter")).Id);
 
         private static readonly CompanyName Name = CompanyName.Create("ACME").Value;
 
@@ -181,11 +182,10 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         {
             context.Agencies.Add(FakeAgency);
             context.Users.AddRange(SalesUser, OtherSalesUser, AdminUser, RecruiterUser);
-            context.AgencyPersonnel.AddRange(SalesPersonnel, OtherSalesPersonnel, AdminPersonnel, RecruiterPersonnel);
             context.AddRange(FakeCompany, OwnRequest, OtherSalesRequest, UnassignedRequest);
             context.RequestComissions.AddRange(
-                new RequestComission { RequestId = OwnRequest.Id, AgencyPersonnelId = SalesPersonnel.Id },
-                new RequestComission { RequestId = OtherSalesRequest.Id, AgencyPersonnelId = OtherSalesPersonnel.Id });
+                new RequestComission { RequestId = OwnRequest.Id, SalesRepresentativeId = SalesPersonnel.UserId },
+                new RequestComission { RequestId = OtherSalesRequest.Id, SalesRepresentativeId = OtherSalesPersonnel.UserId });
             context.SaveChanges();
         }
     }

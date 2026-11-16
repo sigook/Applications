@@ -23,7 +23,7 @@
 import type { DetailFact } from '@/shared/detail-page/types';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
+const { fields, columns } = defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
 </script>
 
 <style lang="scss" scoped>
@@ -62,6 +62,10 @@ defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
   }
 
   dd {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    column-gap: 6px;
     margin: 0;
     font-size: 0.9rem;
     color: $navy;
@@ -75,7 +79,6 @@ defineProps<{ fields: DetailFact[]; columns?: 2 | 3 }>();
 
 .button.detail-field-link {
   height: auto;
-  margin-left: 6px;
   padding: 0;
   font-size: 0.8rem;
   font-weight: 600;

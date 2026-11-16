@@ -39,29 +39,27 @@ import { computed } from 'vue';
 
 type SalesCardTone = 'primary' | 'green' | 'accent';
 
-const props = withDefaults(
-  defineProps<{
-    title: string;
-    titleTo?: string;
-    subtitle?: string;
-    icon?: string;
-    tone?: SalesCardTone;
-    actionIcon?: string;
-    actionLabel?: string;
-  }>(),
-  {
-    titleTo: '',
-    subtitle: '',
-    icon: '',
-    tone: 'primary',
-    actionIcon: '',
-    actionLabel: '',
-  }
-);
+const {
+  title,
+  titleTo = '',
+  subtitle = '',
+  icon = '',
+  tone = 'primary',
+  actionIcon = '',
+  actionLabel = '',
+} = defineProps<{
+  title: string;
+  titleTo?: string;
+  subtitle?: string;
+  icon?: string;
+  tone?: SalesCardTone;
+  actionIcon?: string;
+  actionLabel?: string;
+}>();
 
-const emit = defineEmits<{ (e: 'action'): void }>();
+const emit = defineEmits<(e: 'action') => void>();
 
-const toneClass = computed(() => `sd-tone-${props.tone}`);
+const toneClass = computed(() => `sd-tone-${tone}`);
 </script>
 
 <style scoped lang="scss">

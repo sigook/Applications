@@ -86,7 +86,7 @@ function firstParam(value: LocationQueryValue | LocationQueryValue[]): string | 
   return typeof single === 'string' && single ? single : null;
 }
 
-function apply() {
+async function apply() {
   const numberIdParam = firstParam(route.query.n);
   const email = firstParam(route.query.e);
 
@@ -103,18 +103,17 @@ function apply() {
     return;
   }
 
-  requestApplyByEmail(numberId, email)
-    .then(() => {
-      status.value = 'success';
-      window.sessionStorage.setItem(key, '1');
-    })
-    .catch(async (error: unknown) => {
-      errorMessage.value = (await getErrorMessage(error)) || defaultErrorMessage;
-      status.value = 'error';
-    });
+  try {
+    await requestApplyByEmail(numberId, email);
+    status.value = 'success';
+    window.sessionStorage.setItem(key, '1');
+  } catch (error) {
+    errorMessage.value = (await getErrorMessage(error)) || defaultErrorMessage;
+    status.value = 'error';
+  }
 }
 
-apply();
+void apply();
 </script>
 
 <style scoped>

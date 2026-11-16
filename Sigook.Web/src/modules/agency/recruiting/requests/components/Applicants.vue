@@ -19,12 +19,12 @@
           <template v-slot="props">
             <span class="is-block">
               {{ props.row.name }}
-              <b-tooltip label="Candidate" type="is-dark" append-to-body>
+              <HoverTooltip label="Candidate">
                 <b-icon v-if="props.row.candidateId" icon="account-hard-hat-outline" size="is-small"></b-icon>
-              </b-tooltip>
-              <b-tooltip label="Worker" type="is-dark" append-to-body>
+              </HoverTooltip>
+              <HoverTooltip label="Worker">
                 <b-icon v-if="props.row.workerProfileId" icon="badge-account-outline" size="is-small"></b-icon>
-              </b-tooltip>
+              </HoverTooltip>
             </span>
             <i class="fz-2 ellipsis-150 is-lowercase">
               <copy-link kind="email" :value="props.row.email" />
@@ -53,7 +53,7 @@
         <b-table-column field="phoneNumber" label="Phone" searchable>
           <template v-slot:searchable>
             <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small"
-              @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+              @update:modelValue="(v: string) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
           <template v-slot="props">
             <div v-if="props.row.phoneNumber">
@@ -86,10 +86,7 @@
           </b-button>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" v-if="props.row.candidateId"
               @click="showCandidateDetail(props.row.candidateId)">
               Edit Candidate
@@ -105,7 +102,7 @@
             <b-dropdown-item aria-role="listitem" @click="removeApplicant(props.row)">
               Delete
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
 
         <template #detail="props">
@@ -138,6 +135,8 @@
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
@@ -169,8 +168,8 @@ import DetailCandidate from '@/modules/agency/recruiting/candidates/components/D
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-defineProps<{ request?: AgencyRequestDetail | null }>();
-const emit = defineEmits<{ (e: 'changed'): void }>();
+const { request: _request } = defineProps<{ request?: AgencyRequestDetail | null }>();
+const emit = defineEmits<(e: 'changed') => void>();
 
 const route = useRoute();
 const router = useRouter();
@@ -234,7 +233,7 @@ function onCellClick(row: AgencyRequestApplicant, column: TableColumnRef) {
       break;
     default:
       if (row.workerProfileId) {
-        router.push(`/recruiting/workers/${row.workerProfileId}`);
+        void router.push(`/recruiting/workers/${row.workerProfileId}`);
       }
   }
 }
@@ -261,27 +260,29 @@ function reloadApplicants() {
   emit('changed');
 }
 
-function addApplicant(model: CreateRequestApplicantModel) {
+async function addApplicant(model: CreateRequestApplicantModel) {
   modalManageWorkers.value = false;
   isLoading.value = true;
-  postAgencyRequestApplicant(serverParams.value.requestId, model).then(() => {
+  try {
+    await postAgencyRequestApplicant(serverParams.value.requestId, model);
     isLoading.value = false;
     reloadApplicants();
-  }).catch((error) => {
+  } catch (error) {
     isLoading.value = false;
     showAlertError(error);
-  });
+  }
 }
 
-function removeApplicant(item: AgencyRequestApplicant) {
+async function removeApplicant(item: AgencyRequestApplicant) {
   isLoading.value = true;
-  deleteAgencyRequestApplicant(serverParams.value.requestId, item.id).then(() => {
+  try {
+    await deleteAgencyRequestApplicant(serverParams.value.requestId, item.id);
     isLoading.value = false;
     reloadApplicants();
-  }).catch((error) => {
+  } catch (error) {
     isLoading.value = false;
     showAlertError(error);
-  });
+  }
 }
 
 function showEditModal(item: AgencyRequestApplicant) {
@@ -289,20 +290,19 @@ function showEditModal(item: AgencyRequestApplicant) {
   modalComment.value = true;
 }
 
-function saveApplicantComment(comment: string) {
+async function saveApplicantComment(comment: string) {
   const applicant = currentItem.value;
   if (!applicant) return;
   modalComment.value = false;
   isLoading.value = true;
-  updateAgencyRequestApplicant(serverParams.value.requestId, applicant.id, { comments: comment })
-    .then(() => {
-      isLoading.value = false;
-      reloadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await updateAgencyRequestApplicant(serverParams.value.requestId, applicant.id, { comments: comment });
+    isLoading.value = false;
+    reloadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function showCandidateDetail(candidateId: string) {
@@ -320,36 +320,34 @@ function showAddRunner(item: AgencyRequestApplicant) {
   modalAddRunner.value = true;
 }
 
-function addRunner(type: RunnerType) {
+async function addRunner(type: RunnerType) {
   const applicant = runnerApplicant.value;
   if (!applicant?.workerProfileId) return;
   modalAddRunner.value = false;
   isLoading.value = true;
-  createAgencyRunner(serverParams.value.requestId, {
-    workerProfileId: applicant.workerProfileId,
-    type
-  })
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Runner added');
-      emit('changed');
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
+  try {
+    await createAgencyRunner(serverParams.value.requestId, {
+      workerProfileId: applicant.workerProfileId,
+      type
     });
+    isLoading.value = false;
+    showAlertSuccess('Runner added');
+    emit('changed');
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function convertToWorker(candidateId: string) {
+async function convertToWorker(candidateId: string) {
   isLoading.value = true;
-  convertCandidateToWorker(candidateId)
-    .then(() => {
-      isLoading.value = false;
-      reloadApplicants();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await convertCandidateToWorker(candidateId);
+    isLoading.value = false;
+    reloadApplicants();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

@@ -8,7 +8,7 @@
             :message="formErrors.applicant || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="applicant" :data="applicants" placeholder="Search by name, email or ID..."
               name="applicant" append-to-body :loading="isLoadingList" @typing="searchApplicants" @select="selectApplicant"
-              :custom-formatter="(option) => `#${option.numberId} | ${option.name} | ${option.email || 'No Email' } | ${option.type}`">
+              :custom-formatter="(option: ApplicantSearchResult) => `#${option.numberId} | ${option.name} | ${option.email || 'No Email' } | ${option.type}`">
               <template v-slot="props">
                 <div class="is-flex is-justify-content-space-between is-align-items-center">
                   <div>
@@ -38,8 +38,8 @@ import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { ApplicantSearchResult, CreateRequestApplicantModel } from '@/modules/agency/recruiting/requests/types';
 
-const props = defineProps<{ requestId?: string | null }>();
-const emit = defineEmits<{ (e: 'updateApplicants', value: { model: CreateRequestApplicantModel }): void }>();
+const { requestId: requestIdProp } = defineProps<{ requestId?: string | null }>();
+const emit = defineEmits<(e: 'updateApplicants', value: { model: CreateRequestApplicantModel }) => void>();
 
 const schema = yup.object({
   applicant: yup.string().required('Applicant is required'),
@@ -55,7 +55,7 @@ const formErrors = form.errors;
 const route = useRoute();
 
 const isLoading = ref(false);
-const requestId = props.requestId ?? (route.params.id as string);
+const requestId = requestIdProp ?? (route.params.id as string);
 const { results: applicants, isSearching: isLoadingList, search: searchApplicants } =
   useDebouncedSearch((term) => searchAgencyRequestApplicants(requestId, term));
 const model = reactive<CreateRequestApplicantModel>({

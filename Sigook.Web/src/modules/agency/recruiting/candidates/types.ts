@@ -71,6 +71,7 @@ export interface CandidateFilter {
 
 // Filter for GET /api/agency/recruiting/candidates. Mirrors backend GetCandidatesFilter.
 export interface AgencyCandidateFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -91,18 +92,18 @@ export interface AgencyCandidateFilter {
 // Body for POST/PUT /api/agency/recruiting/candidates. Mirrors backend CandidateCreateModel.
 export interface CreateCandidateModel {
   name: string;
-  email?: string;
-  address?: string;
-  postalCode?: string;
+  email?: string | null;
+  address?: string | null;
+  postalCode?: string | null;
   city?: City | null;
   gender?: { id: string; value?: string } | null;
   hasVehicle: boolean;
-  residencyStatus?: string;
+  residencyStatus?: string | null;
   sourceId?: string | null;
   dnu?: boolean;
   phoneNumbers?: CandidatePhoneNumberModel[];
   skills?: CandidateSkillModel[];
-  fileName?: string;
+  fileName?: string | null;
 }
 
 // Phone number payload for POST /api/agency/recruiting/candidates/{id}/PhoneNumbers.

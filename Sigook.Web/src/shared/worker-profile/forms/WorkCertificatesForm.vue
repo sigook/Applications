@@ -52,8 +52,8 @@ import { createWorkerCertificates } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CovenantFileModel } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   description: yup.string().required('Description is required').max(20, 'Max 20 characters'),
@@ -97,11 +97,11 @@ async function saveCertificates(values: { description: string }) {
     const allCertificates = [...certificates.value, newCert];
     const formData = new FormData();
     formData.append('data', JSON.stringify(allCertificates));
-    if (fileObjects.certificate) {
-      const fn = newCert.fileName;
+    const fn = newCert.fileName;
+    if (fileObjects.certificate && fn) {
       formData.append(fn, fileObjects.certificate, fn);
     }
-    await createWorkerCertificates(props.data.id, formData);
+    await createWorkerCertificates(data.id, formData);
     emit('closeModal', true);
   } catch (error) {
     showAlertError(error);
@@ -112,17 +112,15 @@ async function saveCertificates(values: { description: string }) {
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    saveCertificates(values);
+  void form.handleSubmit(async (values) => {
+    await saveCertificates(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-if (props.data != null) {
-  for (let i = 0; i < props.data.certificates.length; i++) {
-    certificates.value.push(props.data.certificates[i]);
-  }
+for (let i = 0; i < data.certificates.length; i++) {
+  certificates.value.push(data.certificates[i]);
 }
 </script>
 

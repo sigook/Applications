@@ -6,7 +6,7 @@ import type { RequestShiftModel } from '@/shared/request-detail/types';
 
 // Matches AgencyCompanyProfileDetailModel
 export interface AgencyCompanyProfileDetail extends CompanyProfileDetail {
-  summary: CompanyProfileSummary;
+  summary: CompanyProfileSummary | null;
 }
 
 // Matches CompanyProfileDocumentModel (extends CovenantFileModel)
@@ -57,6 +57,7 @@ export interface CompanyProfilePaymentTermsUpdate {
 
 // Filter for GET /api/agency/recruiting/clients. Mirrors backend GetCompanyForAgencyFilter.
 export interface AgencyCompanyFilter {
+  agencyIds?: string;
   pageIndex?: number;
   pageSize?: number;
   isDescending?: boolean;
@@ -78,6 +79,7 @@ export interface AgencyCompanyFilter {
 // Item returned by GET /api/agency/recruiting/clients.
 export interface AgencyCompanyListItem {
   id: string;
+  agencyId: string;
   fullName: string;
   email: string;
   numberId?: number;
@@ -112,8 +114,8 @@ export interface AgencyCompanyContactPerson {
   middleName?: string;
   lastName: string;
   position?: string;
-  mobileNumber?: string;
-  officeNumber?: string;
+  mobileNumber?: string | null;
+  officeNumber?: string | null;
   officeNumberExt?: number | null;
   email?: string | null;
 }
@@ -173,7 +175,9 @@ export interface UpdateIsAsapRequestsPayload {
   isAsap: boolean;
 }
 
-export interface CompanyProfileFormState extends Partial<CompanyProfileDetail> {
+export interface CompanyProfileFormState extends Partial<Omit<CompanyProfileDetail, 'industry' | 'companyStatus'>> {
+  industry?: Partial<CompanyProfileDetail['industry']>;
+  companyStatus?: CompanyProfileDetail['companyStatus'] | null;
   companyProfileId?: string | null;
   password?: string;
 }

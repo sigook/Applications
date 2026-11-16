@@ -17,11 +17,11 @@ export function getJobs(filter: JobSearchFilter = {}): Promise<JobViewModel[]> {
 }
 
 export function submitContactForm(contact: ContactForm): Promise<void> {
-  return api.post<void>('/api/website/contact', contact);
+  return api.post('/api/website/contact', contact);
 }
 
 export function submitCandidate(formData: FormData): Promise<void> {
-  return api.post<void>('/api/website/candidate', formData, {
+  return api.post('/api/website/candidate', formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });
 }

@@ -47,8 +47,8 @@ interface EmailForm {
   confirmEmail: string;
 }
 
-const props = defineProps<{ data?: WorkerProfileDetail; save: (workerId: string, model: { newEmail: string }) => Promise<unknown> }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { save, data } = defineProps<{ data: WorkerProfileDetail; save: (workerId: string, model: { newEmail: string }) => Promise<unknown> }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const schema = yup.object({
   newEmail: yup.string()
@@ -71,31 +71,28 @@ const { newEmail, confirmEmail } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const worker = ref<Partial<WorkerProfileDetail>>({});
+const worker = ref<WorkerProfileDetail>({ ...data });
 
-function updateWorkerEmail(values: EmailForm) {
+async function updateWorkerEmail(values: EmailForm) {
   isLoading.value = true;
-  props.save(worker.value.id, { newEmail: values.newEmail })
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await save(data.id, { newEmail: values.newEmail });
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    updateWorkerEmail(values);
+  void form.handleSubmit(async (values) => {
+    await updateWorkerEmail(values);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-if (props.data != null) {
-  worker.value = Object.assign({}, props.data);
-}
+worker.value = Object.assign({}, data);
 </script>

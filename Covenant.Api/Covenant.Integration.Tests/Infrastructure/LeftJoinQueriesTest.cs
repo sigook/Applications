@@ -25,8 +25,7 @@ public class LeftJoinQueriesTest
         var sut = new NotificationDataRepository(context);
         var id = Guid.NewGuid();
 
-        Assert.Null(await sut.GetAgencyData(id, id, 1));
-        Assert.Null(await sut.GetAgencyData(id, 1));
+        Assert.Null(await sut.GetRequestAgencyData(id));
         Assert.Null(await sut.GetCompanyData(id, 1));
         Assert.Null(await sut.GetCompanyData(id, id, 1));
         Assert.Null(await sut.GetWorkerData(id, id, 1));

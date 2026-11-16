@@ -10,6 +10,7 @@ import {
   getSkills,
 } from '@/shared/api/catalogApi';
 import type {
+  CovenantFileModel,
   Gender,
   IdentificationType,
   Availability,
@@ -44,6 +45,7 @@ export interface CreateWorkerState {
   skills: Skill[];
   languages: Language[];
   location: Record<string, unknown>;
+  profileImage?: CovenantFileModel | null;
   identificationType1File: WorkerDocumentForm | null;
   identificationType1: IdentificationType | null;
   identificationType2File: WorkerDocumentForm | null;
@@ -121,7 +123,7 @@ export function useCreateWorker() {
   function getFilteredSkills(text: string): void {
     if (text) {
       filteredSkills.value = skills.value.filter((option) =>
-        option.skill?.toLowerCase().includes(text.toLowerCase())
+        option.skill.toLowerCase().includes(text.toLowerCase())
       );
     } else {
       filteredSkills.value = skills.value;
@@ -131,7 +133,7 @@ export function useCreateWorker() {
   function getFilteredLanguages(text: string): void {
     if (text) {
       filteredLanguages.value = languages.value.filter((option) =>
-        option.value?.toLowerCase().includes(text.toLowerCase())
+        (option.value || '').toLowerCase().includes(text.toLowerCase())
       );
     } else {
       filteredLanguages.value = languages.value;

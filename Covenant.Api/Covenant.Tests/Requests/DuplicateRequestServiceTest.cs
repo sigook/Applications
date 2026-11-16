@@ -1,3 +1,4 @@
+using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Companies;
@@ -66,11 +67,11 @@ public class DuplicateRequestServiceTest
             City = new City { Province = new Province { Country = new Country { Code = "USA" } } }
         });
         var currentUserService = new Mock<ICurrentUserService>();
-        currentUserService.Setup(i => i.GetAgencyId()).Returns(Guid.NewGuid());
+        companyRepository.Setup(cr => cr.GetAgencyId(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
 
         _sut = new RequestService(
             companyRepository.Object,
-            Mock.Of<IAgencyRepository>(),
+            Mock.Of<IAgencyService>(),
             locationRepository.Object,
             new FakeTimeProvider(),
             _requestRepository.Object,

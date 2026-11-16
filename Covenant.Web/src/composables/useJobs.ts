@@ -17,8 +17,8 @@ export function useJobs() {
 
     try {
       jobs.value = await jobService.getJobs(filters)
-    } catch (err: any) {
-      error.value = err.message || 'Failed to fetch jobs. Please try again later.'
+    } catch (err) {
+      error.value = (err instanceof Error ? err.message : '') || 'Failed to fetch jobs. Please try again later.'
       jobs.value = []
     } finally {
       loading.value = false

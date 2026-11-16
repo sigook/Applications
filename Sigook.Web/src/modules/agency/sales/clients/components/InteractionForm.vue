@@ -82,21 +82,21 @@ import SearchSelect from '@/shared/ui/SearchSelect.vue';
 const MINIMUM_SEARCH_LENGTH = 3;
 const CLIENT_SEARCH_HINT = `Type at least ${MINIMUM_SEARCH_LENGTH} characters to search`;
 
-const props = defineProps<{
+const { interaction, initialClient } = defineProps<{
   interaction?: CompanyInteraction | null;
   initialClient?: SalesClientReference | null;
 }>();
 
-const isEditing = computed(() => !!props.interaction);
+const isEditing = computed(() => !!interaction);
 
 const clientOptions = computed(() => {
   const options = clients.value.map((c) => ({ value: c.id, label: c.value }));
   if (
-    props.initialClient &&
+    initialClient &&
     !clientSearchTerm.value.trim() &&
-    !options.some((o) => o.value === props.initialClient?.id)
+    !options.some((o) => o.value === initialClient.id)
   ) {
-    options.unshift({ value: props.initialClient.id, label: props.initialClient.fullName });
+    options.unshift({ value: initialClient.id, label: initialClient.fullName });
   }
   return options;
 });
@@ -107,16 +107,15 @@ const clients = ref<CatalogItem[]>([]);
 const isLoadingClients = ref(false);
 const clientSearchTerm = ref('');
 
-function loadClients(term: string): void {
+async function loadClients(term: string): Promise<void> {
   isLoadingClients.value = true;
-  getAgencyCompaniesList(term || undefined)
-    .then((result) => {
-      clients.value = result;
-    })
-    .catch((error) => showAlertError(error))
-    .finally(() => {
-      isLoadingClients.value = false;
-    });
+  try {
+    clients.value = await getAgencyCompaniesList(term || undefined);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoadingClients.value = false;
+  }
 }
 
 function onClientSearch(term: string): void {
@@ -126,7 +125,7 @@ function onClientSearch(term: string): void {
     clients.value = [];
     return;
   }
-  loadClients(normalized);
+  void loadClients(normalized);
 }
 
 interface InteractionFormValues {
@@ -156,61 +155,59 @@ const { companyProfileId, type, purpose, status, description } = form.fields;
 const formErrors = form.errors;
 
 onMounted(() => {
-  if (props.interaction) {
+  if (interaction) {
     form.hydrate({
-      companyProfileId: props.interaction.companyProfileId,
-      type: props.interaction.interactionType,
-      purpose: props.interaction.interactionPurpose,
-      status: props.interaction.interactionStatus,
-      description: props.interaction.description,
+      companyProfileId: interaction.companyProfileId,
+      type: interaction.interactionType,
+      purpose: interaction.interactionPurpose,
+      status: interaction.interactionStatus,
+      description: interaction.description,
     });
     return;
   }
-  if (props.initialClient) {
-    form.hydrate({ companyProfileId: props.initialClient.id });
+  if (initialClient) {
+    form.hydrate({ companyProfileId: initialClient.id });
   }
 });
 
 function resetForm(): void {
-  form.hydrate({ companyProfileId: props.initialClient?.id ?? null });
+  form.hydrate({ companyProfileId: initialClient?.id ?? null });
 }
 
-function submit(): Promise<boolean> {
+async function submit(): Promise<boolean> {
   form.markInteracted();
-  return new Promise<boolean>((resolve) => {
-    form.handleSubmit(
-      async (values) => {
-        try {
-          if (props.interaction) {
-            await updateCompanyInteraction(props.interaction.companyProfileId, props.interaction.id, {
-              description: values.description.trim(),
-              interactionPurpose: values.purpose,
-              interactionType: values.type,
-              interactionStatus: values.status,
-            });
-            showAlertSuccess('Interaction updated');
-          } else {
-            await createCompanyInteraction(values.companyProfileId as string, {
-              description: values.description.trim(),
-              interactionPurpose: values.purpose,
-              interactionType: values.type,
-              interactionStatus: values.status,
-            });
-            showAlertSuccess('Interaction logged');
-            resetForm();
-          }
-          resolve(true);
-        } catch (error) {
-          await showAlertError(error);
-          resolve(false);
+  const ok = await form.handleSubmit(
+    async (values) => {
+      try {
+        if (interaction) {
+          await updateCompanyInteraction(interaction.companyProfileId, interaction.id, {
+            description: values.description.trim(),
+            interactionPurpose: values.purpose,
+            interactionType: values.type,
+            interactionStatus: values.status,
+          });
+          showAlertSuccess('Interaction updated');
+        } else {
+          await createCompanyInteraction(values.companyProfileId as string, {
+            description: values.description.trim(),
+            interactionPurpose: values.purpose,
+            interactionType: values.type,
+            interactionStatus: values.status,
+          });
+          showAlertSuccess('Interaction logged');
+          resetForm();
         }
-      },
-      () => {
-        showAlertError('Please make sure all required fields are filled out correctly');
-        resolve(false);
+        return true;
+      } catch (error) {
+        showAlertError(error);
+        return false;
       }
-    )();
-  });
+    },
+    () => {
+      showAlertError('Please make sure all required fields are filled out correctly');
+    }
+  )();
+  return ok ?? false;
 }
 
 defineExpose({ submit });

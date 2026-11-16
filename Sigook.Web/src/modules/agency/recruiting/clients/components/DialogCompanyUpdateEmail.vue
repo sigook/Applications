@@ -3,9 +3,9 @@
     <b-loading v-model="isLoading"></b-loading>
 
     <b-message type="is-warning" has-icon>
-      Please note that if you change this email the worker will
+      Please note that if you change this email the user will
       not be able to login with the previous email anymore,
-      if necessary notify the worker about the change.
+      if necessary notify the user about the change.
     </b-message>
 
     <div class="columns is-multiline">
@@ -39,10 +39,9 @@ import { ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError } from "@/shared/utils/toast";
-import { updateAgencyCompanyEmail } from '@/modules/agency/recruiting/clients/api';
 
-const props = defineProps<{ companyProfileId: number | string }>();
-const emit = defineEmits<{ (e: 'closeModal', changed: boolean, newEmail: string): void }>();
+const { save } = defineProps<{ save: (email: string) => Promise<void> }>();
+const emit = defineEmits<(e: 'closeModal', changed: boolean, newEmail: string) => void>();
 
 const schema = yup.object({
   newEmail: yup.string().required('Email is required').email('Invalid email'),
@@ -63,23 +62,22 @@ const isLoading = ref(false);
 
 function validateAll() {
   form.markInteracted();
-  form.handleSubmit((values) => {
-    updateEmail(values.newEmail);
+  void form.handleSubmit(async (values) => {
+    await updateEmail(values.newEmail);
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();
 }
 
-function updateEmail(email: string) {
+async function updateEmail(email: string) {
   isLoading.value = true;
-  updateAgencyCompanyEmail(String(props.companyProfileId), { newEmail: email })
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true, email);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await save(email);
+    isLoading.value = false;
+    emit('closeModal', true, email);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>

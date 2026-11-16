@@ -2,13 +2,13 @@
   <section class="worker-card worker-needs-attention">
     <div class="worker-card-header">
       <h3>Needs attention</h3>
-      <span v-if="props.items.length" class="worker-count is-warning">{{ props.items.length }}</span>
+      <span v-if="items.length" class="worker-count is-warning">{{ items.length }}</span>
     </div>
-    <p v-if="!props.items.length" class="worker-needs-attention-empty">
+    <p v-if="!items.length" class="worker-needs-attention-empty">
       <b-icon icon="check-circle-outline" size="is-small" />
       Nothing pending
     </p>
-    <button v-for="item in props.items" :key="item.key" type="button" class="worker-attention-item"
+    <button v-for="item in items" :key="item.key" type="button" class="worker-attention-item"
       :class="`is-${item.severity}`" @click="emit('select', item.sectionId)">
       <b-icon :icon="item.severity === 'danger' ? 'alert-circle-outline' : 'clock-outline'" size="is-small" />
       <span class="worker-attention-text">
@@ -22,8 +22,8 @@
 <script setup lang="ts">
 import type { WorkerAttentionItem, WorkerProfileSectionId } from '@/shared/worker-profile/types';
 
-const props = defineProps<{ items: WorkerAttentionItem[] }>();
-const emit = defineEmits<{ (e: 'select', id: WorkerProfileSectionId): void }>();
+const { items } = defineProps<{ items: WorkerAttentionItem[] }>();
+const emit = defineEmits<(e: 'select', id: WorkerProfileSectionId) => void>();
 </script>
 
 <style lang="scss" scoped>

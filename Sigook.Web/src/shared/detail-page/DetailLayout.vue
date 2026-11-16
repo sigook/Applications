@@ -25,9 +25,9 @@
 import { nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import type { DetailSection } from '@/shared/detail-page/types';
 
-const props = defineProps<{ sections: DetailSection[]; ariaLabel?: string; railFirst?: boolean }>();
+const { sections } = defineProps<{ sections: DetailSection[]; ariaLabel?: string; railFirst?: boolean }>();
 
-const activeId = ref(props.sections[0]?.id ?? '');
+const activeId = ref(sections[0]?.id ?? '');
 let observer: IntersectionObserver | null = null;
 
 function selectSection(id: string) {
@@ -38,8 +38,8 @@ function selectSection(id: string) {
 function observeSections() {
   if (!observer) return;
   observer.disconnect();
-  nextTick(() => {
-    props.sections.forEach((section) => {
+  void nextTick(() => {
+    sections.forEach((section) => {
       const element = document.getElementById(section.id);
       if (element) observer?.observe(element);
     });
@@ -50,12 +50,12 @@ onMounted(() => {
   if (typeof IntersectionObserver === 'undefined') return;
   observer = new IntersectionObserver((entries) => {
     const visible = entries.find((entry) => entry.isIntersecting);
-    if (visible && props.sections.some((section) => section.id === visible.target.id)) activeId.value = visible.target.id;
+    if (visible && sections.some((section) => section.id === visible.target.id)) activeId.value = visible.target.id;
   }, { rootMargin: '-80px 0px -70% 0px' });
   observeSections();
 });
 
-watch(() => props.sections.map((section) => section.id).join('|'), observeSections);
+watch(() => sections.map((section) => section.id).join('|'), observeSections);
 
 onBeforeUnmount(() => observer?.disconnect());
 </script>

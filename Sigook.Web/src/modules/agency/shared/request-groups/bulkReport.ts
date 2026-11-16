@@ -15,5 +15,5 @@ export function reportBulkResult(updated: number, skipped: SkippedItem[], names:
   const detail = skipped
     .map((item) => `<li><strong>${escapeHtml(names.get(item.id) ?? noun)}</strong>: ${escapeHtml(item.reason)}</li>`)
     .join('');
-  showAlertSummary(`${updated} updated, ${skipped.length} skipped`, `<ul class="bulk-skipped">${detail}</ul>`);
+  void showAlertSummary(`${updated} updated, ${skipped.length} skipped`, `<ul class="bulk-skipped">${detail}</ul>`);
 }

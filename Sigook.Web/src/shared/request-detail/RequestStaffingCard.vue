@@ -24,8 +24,8 @@
 import type { RequestStaffingItem } from '@/shared/request-detail/types';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 
-defineProps<{ items: RequestStaffingItem[] }>();
-const emit = defineEmits<{ (e: 'action', key: string): void }>();
+const { items } = defineProps<{ items: RequestStaffingItem[] }>();
+const emit = defineEmits<(e: 'action', key: string) => void>();
 
 const icons: Record<string, string> = {
   start: 'clock-outline',

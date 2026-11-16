@@ -14,48 +14,44 @@ const scope = "openid profile api1 roles offline_access";
 
 const authHttp = axios.create({ baseURL: authority });
 
-export function requestPasswordToken(email: string, password: string): Promise<TokenResponse> {
-  return authHttp
-    .post<TokenResponse>(
-      "/connect/token",
-      qs.stringify({
-        grant_type: "password",
-        client_id: clientId,
-        scope,
-        username: email,
-        password,
-      }),
-      { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
-    )
-    .then((r) => r.data);
+export async function requestPasswordToken(email: string, password: string): Promise<TokenResponse> {
+  const response = await authHttp.post<TokenResponse>(
+    "/connect/token",
+    qs.stringify({
+      grant_type: "password",
+      client_id: clientId,
+      scope,
+      username: email,
+      password,
+    }),
+    { headers: { "Content-Type": "application/x-www-form-urlencoded" } },
+  );
+  return response.data;
 }
 
-export function fetchUserInfo(tokenType: string, accessToken: string): Promise<UserInfoResponse> {
-  return authHttp
-    .get<UserInfoResponse>("/connect/userinfo", {
-      headers: { Authorization: `${tokenType} ${accessToken}` },
-    })
-    .then((r) => r.data);
+export async function fetchUserInfo(tokenType: string, accessToken: string): Promise<UserInfoResponse> {
+  const response = await authHttp.get<UserInfoResponse>("/connect/userinfo", {
+    headers: { Authorization: `${tokenType} ${accessToken}` },
+  });
+  return response.data;
 }
 
-export function requestPasswordResetCode(email: string): Promise<void> {
-  return authHttp.post("/Password/forgot", { email }).then(() => undefined);
+export async function requestPasswordResetCode(email: string): Promise<void> {
+  await authHttp.post("/Password/forgot", { email });
 }
 
-export function resetPasswordWithCode(payload: ResetPasswordWithCodePayload): Promise<void> {
-  return authHttp.post("/Password/reset", payload).then(() => undefined);
+export async function resetPasswordWithCode(payload: ResetPasswordWithCodePayload): Promise<void> {
+  await authHttp.post("/Password/reset", payload);
 }
 
-export function confirmEmail(payload: ConfirmEmailPayload): Promise<void> {
-  return authHttp.post("/Account/ConfirmEmail", payload).then(() => undefined);
+export async function confirmEmail(payload: ConfirmEmailPayload): Promise<void> {
+  await authHttp.post("/Account/ConfirmEmail", payload);
 }
 
-export function createPassword(payload: CreatePasswordPayload): Promise<void> {
-  return authHttp.post("/Account/CreatePassword", payload).then(() => undefined);
+export async function createPassword(payload: CreatePasswordPayload): Promise<void> {
+  await authHttp.post("/Account/CreatePassword", payload);
 }
 
-export function resendConfirmationLink(email: string): Promise<void> {
-  return authHttp
-    .post("/Account/ResendConfirmationLink", undefined, { params: { userName: email } })
-    .then(() => undefined);
+export async function resendConfirmationLink(email: string): Promise<void> {
+  await authHttp.post("/Account/ResendConfirmationLink", undefined, { params: { userName: email } });
 }

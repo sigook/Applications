@@ -153,7 +153,7 @@ import { getCountries, getProvinces } from '@/shared/api/locationApi'
 import type { Province } from '@/shared/types/common'
 import ArrowIcon from '@/modules/landing/components/shared/icons/ArrowIcon.vue'
 
-withDefaults(defineProps<{ size?: 'default' | 'compact' }>(), { size: 'default' })
+const { size = 'default' } = defineProps<{ size?: 'default' | 'compact' }>()
 
 const schema = yup.object({
   firstName: yup.string().required('First name is required').max(50, 'Max 50 characters'),

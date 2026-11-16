@@ -2,7 +2,7 @@
   <div class="hover-actions">
     <b-loading v-model="isLoading"></b-loading>
     <div class="worker-profile-image">
-      <img v-if="props.data.profileImage" :src="props.data.profileImage.pathFile">
+      <img v-if="data.profileImage" :src="data.profileImage.pathFile">
       <button class="actions btn-icon-sm" type="button" @click="showEditModal = true" title="Edit">
         <b-icon icon="pencil" size="is-small"></b-icon>
       </button>
@@ -12,7 +12,7 @@
         <h2 class="has-text-centered fz1 mb-4">Profile Photo</h2>
         <upload-image v-if="profileImage"
           @imageSelected="(profileImg: File) => profileImageFile = profileImg"
-          :edited-image="props.data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
+          :edited-image="data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
           @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
         </upload-image>
         <div class="mt-4">
@@ -34,8 +34,8 @@ import UploadImage from '@/shared/ui/PreviewImage.vue';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CovenantFileModel } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'updateProfile', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'updateProfile', value: boolean) => void>();
 
 const pubSub = usePubSub();
 
@@ -68,7 +68,7 @@ async function createWorkerImageHandler() {
     const formData = new FormData();
     formData.append(generatedFileName, fileToUpload, generatedFileName);
 
-    await createWorkerImage(props.data.id, formData);
+    await createWorkerImage(data.id, formData);
 
     isLoading.value = false;
     showEditModal.value = false;
@@ -79,9 +79,7 @@ async function createWorkerImageHandler() {
   }
 }
 
-if (props.data != null) {
-  profileImage.value = Object.assign({}, props.data.profileImage);
-}
+profileImage.value = Object.assign({}, data.profileImage);
 </script>
 
 <style lang="scss" scoped>

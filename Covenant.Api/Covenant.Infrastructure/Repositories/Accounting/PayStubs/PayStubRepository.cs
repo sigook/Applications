@@ -358,6 +358,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                     select new PayStubListModel
                     {
                         Id = ps.Id,
+                        AgencyId = ps.WorkerProfile.AgencyId,
                         NumberId = ps.WorkerProfile.NumberId,
                         PayStubNumberId = ps.PayStubNumberId,
                         PayStubNumber = ps.PayStubNumber,

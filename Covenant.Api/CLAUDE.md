@@ -13,7 +13,7 @@ Controllers:     Covenant.Api/Controllers/{Portal}/{Menu}/{Feature}/     folder 
                  Covenant.Api/Controllers/Shared/Account/               (the caller's own account, bearer: UserAccount = api/account/* + PATCH /identity; UserNotification = api/usernotification)
                  Covenant.Api/Controllers/Shared/Jobs/                  (machine-to-machine, called by Sigook.Functions: ScheduleTasks = api/jobs/scheduletasks, Deductions = api/jobs/deductions)
                  Covenant.Api/Controllers/Agencies/                       (Notifications = api/agency/notifications, the sidebar bell)
-                 Covenant.Api/Controllers/Agencies/Profile/               (own agency: AgencyProfile = api/agency/profile, Locations, Personnel, PersonnelAgencies, Attendance)
+                 Covenant.Api/Controllers/Agencies/Profile/               (own agency: AgencyProfile = api/agency/profile, Locations, Personnel, Attendance)
                  Covenant.Api/Controllers/Agencies/Recruiting/Requests/   (RequestsList = lists/Excel, Requests = detail/CRUD, Applicants, Runners, Workers, TimeSheets, WorkerTimeSheets, WorkerNotes, WorkersReport, Notes, Shift, Skills, ReportTo, RequestedBy → api/agency/recruiting/requests[/{requestId}/…])
                  Covenant.Api/Controllers/Agencies/Recruiting/Applicants/ (cross-request applicants board)
                  Covenant.Api/Controllers/Agencies/Recruiting/WeeklyBoard/

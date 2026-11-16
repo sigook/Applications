@@ -837,37 +837,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.ToTable("AgencyLocations", (string)null);
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyPersonnel", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("AgencyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("AgencyId", "UserId")
-                        .IsUnique();
-
-                    b.ToTable("AgencyPersonnel", (string)null);
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyWsibGroup", b =>
                 {
                     b.Property<Guid>("AgencyId")
@@ -2048,12 +2017,12 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("RequestId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid>("AgencyPersonnelId")
+                    b.Property<Guid>("SalesRepresentativeId")
                         .HasColumnType("uuid");
 
                     b.HasKey("RequestId");
 
-                    b.HasIndex("AgencyPersonnelId");
+                    b.HasIndex("SalesRepresentativeId");
 
                     b.ToTable("RequestComissions", (string)null);
                 });
@@ -2850,6 +2819,9 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Email")
@@ -3621,25 +3593,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Navigation("Location");
                 });
 
-            modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyPersonnel", b =>
-                {
-                    b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
-                        .WithMany()
-                        .HasForeignKey("AgencyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Covenant.Common.Entities.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Agency");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Covenant.Common.Entities.Agencies.AgencyWsibGroup", b =>
                 {
                     b.HasOne("Covenant.Common.Entities.Agencies.Agency", "Agency")
@@ -3796,7 +3749,7 @@ namespace Covenant.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("LogoId");
 
-                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "SalesRepresentative")
+                    b.HasOne("Covenant.Common.Entities.User", "SalesRepresentative")
                         .WithMany()
                         .HasForeignKey("SalesRepresentativeId");
 
@@ -4093,21 +4046,21 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestComission", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "AgencyPersonnel")
-                        .WithMany()
-                        .HasForeignKey("AgencyPersonnelId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("Covenant.Common.Entities.Requests.Request", "Request")
                         .WithOne("RequestComission")
                         .HasForeignKey("Covenant.Common.Entities.Requests.RequestComission", "RequestId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("AgencyPersonnel");
+                    b.HasOne("Covenant.Common.Entities.User", "SalesRepresentative")
+                        .WithMany()
+                        .HasForeignKey("SalesRepresentativeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Request");
+
+                    b.Navigation("SalesRepresentative");
                 });
 
             modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestCompanyUser", b =>
@@ -4172,7 +4125,7 @@ namespace Covenant.Infrastructure.Migrations
 
             modelBuilder.Entity("Covenant.Common.Entities.Requests.RequestRecruiter", b =>
                 {
-                    b.HasOne("Covenant.Common.Entities.Agencies.AgencyPersonnel", "Recruiter")
+                    b.HasOne("Covenant.Common.Entities.User", "Recruiter")
                         .WithMany()
                         .HasForeignKey("RecruiterId")
                         .OnDelete(DeleteBehavior.Cascade)

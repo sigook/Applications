@@ -404,13 +404,12 @@ public class Request
         return Result.Ok();
     }
 
-    public Result AddRecruiter(AgencyPersonnel recruiter, DateTime now, DateTime? workDate = null)
+    public Result AddRecruiter(Guid recruiterId, DateTime now, DateTime? workDate = null)
     {
-        ArgumentNullException.ThrowIfNull(recruiter);
         DateTime? day = workDate?.Date;
         if (_recruiters.Count(a => a.WorkDate == day) >= MaximumNumberOfRecruiters) return Result.Fail($"The maximum number of recruiters is {MaximumNumberOfRecruiters}");
-        if (_recruiters.Any(a => a.RecruiterId == recruiter.Id && a.WorkDate == day)) return Result.Fail();
-        _recruiters.Add(new RequestRecruiter(Id, recruiter.Id, now, day));
+        if (_recruiters.Any(a => a.RecruiterId == recruiterId && a.WorkDate == day)) return Result.Fail();
+        _recruiters.Add(new RequestRecruiter(Id, recruiterId, now, day));
         UpdatedAt = now;
         return Result.Ok();
     }

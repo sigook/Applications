@@ -79,18 +79,26 @@ public class UserAdministrationService(
         _ => Task.CompletedTask
     };
 
-    public async Task<Result> AddAgencyClaim(Guid userId, Guid agencyId)
+    public async Task<Result> UpdateAgencyClaims(Guid userId, IEnumerable<Guid> add, IEnumerable<Guid> remove)
     {
         var user = await userManager.FindByIdAsync(userId.ToString());
         if (user is null) return Result.Fail(UserNotFound);
 
-        var claims = await userManager.GetClaimsAsync(user);
-        if (claims.Any(c => c.Value.Equals(agencyId.ToString(), StringComparison.InvariantCultureIgnoreCase)))
+        var current = (await userManager.GetClaimsAsync(user)).Where(c => c.Type == CovenantConstants.AgencyId).ToList();
+        var removeValues = remove.Select(id => id.ToString()).ToHashSet(StringComparer.OrdinalIgnoreCase);
+        var toRemove = current.Where(c => removeValues.Contains(c.Value)).ToList();
+        if (toRemove.Count > 0)
         {
-            return Result.Fail(ResultError.Create(nameof(agencyId), "The user already exists in this agency"));
+            var removed = await userManager.RemoveClaimsAsync(user, toRemove);
+            if (!removed.Succeeded) return ToResult(removed);
         }
 
-        return ToResult(await userManager.AddClaimAsync(user, IdentityClaims.AgencyId(agencyId)));
+        var toAdd = add
+            .Distinct()
+            .Where(id => !current.Any(c => c.Value.Equals(id.ToString(), StringComparison.OrdinalIgnoreCase)))
+            .Select(IdentityClaims.AgencyId)
+            .ToList();
+        return toAdd.Count == 0 ? Result.Ok() : ToResult(await userManager.AddClaimsAsync(user, toAdd));
     }
 
     public async Task<Result<bool>> RemoveClaimOrDeleteUser(Guid userId, Guid claimValue)
@@ -165,6 +173,12 @@ public class UserAdministrationService(
 
     public Task<IReadOnlyList<UserRoleModel>> GetUsersRoles(IEnumerable<Guid> userIds) =>
         identityRepository.GetUsersRoles(userIds.Distinct().ToList());
+
+    public Task<IReadOnlyList<AgencyMemberModel>> GetAgencyMembers(IEnumerable<Guid> agencyIds) =>
+        identityRepository.GetAgencyMembers(agencyIds.Distinct().ToList());
+
+    public Task<IReadOnlyList<AgencyMemberModel>> GetUsersAgencies(IEnumerable<Guid> userIds) =>
+        identityRepository.GetUsersAgencies(userIds.Distinct().ToList());
 
     private static Result ToResult(IdentityResult result) =>
         result.Succeeded ? Result.Ok() : Result.Fail(Errors(result));

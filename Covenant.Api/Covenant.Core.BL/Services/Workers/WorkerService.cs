@@ -78,10 +78,10 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result> UpdateApprovedToWork(Guid agencyId, Guid workerProfileId)
+    public async Task<Result> UpdateApprovedToWork(IEnumerable<Guid> agencyIds, Guid workerProfileId)
     {
         var entity = await workerRepository.GetProfile(p => p.Id == workerProfileId);
-        if (entity is null || entity.AgencyId != agencyId) return Result.Fail(ApiResources.WorkerNotFound);
+        if (entity is null || !agencyIds.Contains(entity.AgencyId)) return Result.Fail(ApiResources.WorkerNotFound);
         var result = entity.UpdateApprovedToWork(workerRequirementService.GetMissing(entity));
         if (!result) return result;
         workerRepository.Update(entity);
@@ -109,9 +109,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result> UpdateDnu(Guid agencyId, Guid workerProfileId)
+    public async Task<Result> UpdateDnu(IEnumerable<Guid> agencyIds, Guid workerProfileId)
     {
-        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && agencyIds.Contains(w.AgencyId));
         if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
         entity.UpdateDnu();
         workerRepository.Update(entity);
@@ -119,9 +119,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result> UpdateContractor(Guid agencyId, Guid workerProfileId)
+    public async Task<Result> UpdateContractor(IEnumerable<Guid> agencyIds, Guid workerProfileId)
     {
-        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && agencyIds.Contains(w.AgencyId));
         if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
         var result = entity.UpdateContractor(workerRequirementService.GetMissingDocuments(entity));
         if (!result) return result;
@@ -130,9 +130,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result> UpdateSubcontractor(Guid agencyId, Guid workerProfileId)
+    public async Task<Result> UpdateSubcontractor(IEnumerable<Guid> agencyIds, Guid workerProfileId)
     {
-        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && w.AgencyId == agencyId);
+        var entity = await workerRepository.GetProfile(w => w.Id == workerProfileId && agencyIds.Contains(w.AgencyId));
         if (entity is null) return Result.Fail(ApiResources.WorkerNotFound);
         var result = entity.UpdateSubcontractor(workerRequirementService.GetMissingDocuments(entity));
         if (!result) return result;
@@ -141,9 +141,9 @@ public class WorkerService(
         return Result.Ok();
     }
 
-    public async Task<Result> UpdateEmail(Guid agencyId, Guid workerProfileId, string newEmail)
+    public async Task<Result> UpdateEmail(IEnumerable<Guid> agencyIds, Guid workerProfileId, string newEmail)
     {
-        var profile = await workerRepository.GetProfile(c => c.Id == workerProfileId && c.AgencyId == agencyId);
+        var profile = await workerRepository.GetProfile(c => c.Id == workerProfileId && agencyIds.Contains(c.AgencyId));
         if (profile is null) return Result.Fail(ApiResources.WorkerNotFound);
         return await userAccountService.UpdateUserEmail(new UpdateEmailModel(profile.WorkerId) { NewEmail = newEmail });
     }
@@ -313,9 +313,9 @@ public class WorkerService(
 
     public Task<PaginatedList<WorkerCommentModel>> GetAgencyComments(Guid workerProfileId, Pagination pagination)
     {
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         return workerRepository.GetComments(
-            c => c.WorkerProfileId == workerProfileId && c.WorkerProfile.AgencyId == agencyId, pagination);
+            c => c.WorkerProfileId == workerProfileId && agencyIds.Contains(c.WorkerProfile.AgencyId), pagination);
     }
 
     public Task<PaginatedList<WorkerCommentModel>> GetMyComments(Pagination pagination)

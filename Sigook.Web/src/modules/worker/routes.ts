@@ -56,8 +56,8 @@ const routesWorker: RouteRecordRaw[] = [
       role: [worker],
     },
   },
-  { path: "/worker-request/:id", redirect: (to) => `/worker-requests/${to.params.id}` },
-  { path: "/worker-request-applied/:id", redirect: (to) => `/worker-requests/applied/${to.params.id}` },
+  { path: "/worker-request/:id", redirect: (to) => `/worker-requests/${String(to.params.id)}` },
+  { path: "/worker-request-applied/:id", redirect: (to) => `/worker-requests/applied/${String(to.params.id)}` },
   {
     path: "/worker-activity",
     component: WorkerActivity,

@@ -19,12 +19,17 @@
         <copy-link kind="email" :value="props.row.email" />
       </b-table-column>
       <b-table-column field="actions" v-slot="props">
-        <b-button type="is-ghost" icon-left="delete-outline" aria-label="Delete contact"
-          @click="removeLine(props.row.id)" />
+        <div class="buttons is-flex-wrap-nowrap">
+          <b-button type="is-info" outlined rounded icon-right="pencil" title="Edit" aria-label="Edit contact"
+            @click="openEditContactModal(props.row)" />
+          <b-button type="is-danger" outlined rounded icon-right="delete" aria-label="Delete contact"
+            @click="removeLine(props.row.id)" />
+        </div>
       </b-table-column>
     </SigookGrid>
     <b-modal custom-content-class="card" v-model="showModal">
       <div class="p-3">
+        <h2 class="has-text-centered fz1 mb-4">{{ editingId ? 'Edit contact' : 'New contact' }}</h2>
         <div class="columns is-multiline">
           <div class="column is-6">
             <b-field label="Title" :type="formErrors.title ? 'is-danger' : ''"
@@ -68,11 +73,11 @@
           </div>
           <div class="column is-6 is-4-desktop">
             <PhoneInput ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone: string) => mobileNumber = phone" />
+              model="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
           </div>
           <div class="column is-6 is-4-desktop">
             <PhoneInput ref="officeComponent" :required="false" :defaultValue="officeNumber"
-              model="Office Number" @formattedPhone="(phone: string) => officeNumber = phone" />
+              model="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
           </div>
           <div class="column is-6 is-4-desktop">
             <b-field label="Extension" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
@@ -90,17 +95,17 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import PhoneInput from "@/shared/ui/PhoneInput.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
-import { getContactPeople, deleteContactPerson, saveContactPerson } from '@/modules/company/profile/api';
+import { getContactPeople, deleteContactPerson, saveContactPerson, updateContactPerson } from '@/modules/company/profile/api';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
-const emit = defineEmits<{ (e: 'loaded', count: number): void }>();
+const emit = defineEmits<(e: 'loaded', count: number) => void>();
 
 const numericExt = yup
   .string()
@@ -154,11 +159,29 @@ const titleOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Mx', 'Master', 'Madam'];
 const isLoading = ref(false);
 const showModal = ref(false);
 const contactPeople = ref<CompanyContactPersonModel[]>([]);
-const mobileComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
-const officeComponent = ref<InstanceType<typeof PhoneInput> | null>(null);
+const editingId = ref<string | null>(null);
+const mobileComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('mobileComponent');
+const officeComponent = useTemplateRef<InstanceType<typeof PhoneInput>>('officeComponent');
 
 function openAddContactModal() {
+  editingId.value = null;
   form.resetAll();
+  showModal.value = true;
+}
+
+function openEditContactModal(contact: CompanyContactPersonModel) {
+  editingId.value = contact.id ?? null;
+  form.hydrate({
+    title: contact.title,
+    firstName: contact.firstName,
+    middleName: contact.middleName ?? '',
+    lastName: contact.lastName,
+    email: contact.email,
+    position: contact.position,
+    mobileNumber: contact.mobileNumber,
+    officeNumber: contact.officeNumber,
+    officeNumberExt: contact.officeNumberExt?.toString() ?? '',
+  });
   showModal.value = true;
 }
 
@@ -176,29 +199,30 @@ async function validateForm() {
   form.markInteracted();
   const phoneValid = await mobileComponent.value?.validatePhone();
   const officeValid = await officeComponent.value?.validatePhone();
-  form.handleSubmit((values) => {
+  await form.handleSubmit(async (values) => {
     if (!phoneValid || !officeValid) return;
     isLoading.value = true;
     const contact = {
       ...values,
       officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
     };
-    saveContactPerson(contact)
-      .then(async () => {
-        isLoading.value = false;
-        showModal.value = false;
-        form.resetAll();
-        await getContactPersons();
-        showAlertSuccess('Profile updated');
-      })
-      .catch((error: unknown) => {
-        isLoading.value = false;
-        showAlertError((error as { data?: unknown }).data);
-      });
+    try {
+      if (editingId.value) {
+        await updateContactPerson(editingId.value, contact);
+      } else {
+        await saveContactPerson(contact);
+      }
+      isLoading.value = false;
+      showModal.value = false;
+      form.resetAll();
+      await getContactPersons();
+      showAlertSuccess('Profile updated');
+    } catch (error) {
+      isLoading.value = false;
+      showAlertError((error as { data?: unknown }).data);
+    }
   })();
 }
 
-(async () => {
-  await getContactPersons();
-})();
+void getContactPersons();
 </script>

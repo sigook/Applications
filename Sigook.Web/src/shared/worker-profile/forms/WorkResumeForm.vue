@@ -38,16 +38,16 @@ import { createWorkerResume } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CovenantFileModel } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const selectedResumeFile = ref<File | null>(null);
 const fileObjects = reactive<{ resume: File | null }>({ resume: null });
 const resume = ref<CovenantFileModel>({ fileName: '', description: '' });
 
-if (props.data != null && props.data.resume) {
-  resume.value = { ...props.data.resume };
+if (data.resume) {
+  resume.value = { ...data.resume };
 }
 
 function handleResumeFileSelected(file: File | null) {
@@ -73,11 +73,11 @@ async function saveResume() {
   try {
     const formData = new FormData();
     formData.append('data', JSON.stringify(resume.value));
-    if (fileObjects.resume) {
-      const fn = resume.value.fileName;
+    const fn = resume.value.fileName;
+    if (fileObjects.resume && fn) {
       formData.append(fn, fileObjects.resume, fn);
     }
-    await createWorkerResume(props.data.id, formData);
+    await createWorkerResume(data.id, formData);
     emit('closeModal', true);
   } catch (error) {
     showAlertError(error);
@@ -86,8 +86,8 @@ async function saveResume() {
   }
 }
 
-function validateAll() {
-  saveResume();
+async function validateAll() {
+  await saveResume();
 }
 </script>
 

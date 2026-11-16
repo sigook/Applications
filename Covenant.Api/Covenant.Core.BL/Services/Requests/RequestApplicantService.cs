@@ -90,10 +90,10 @@ public class RequestApplicantService(
         requestRepository.GetRequestApplicants(requestId, filter);
 
     public Task<AgencyApplicantsPagedResponse> GetAgencyApplicants(GetAgencyApplicantsFilter filter) =>
-        requestRepository.GetAgencyApplicants(currentUserService.GetAgencyId(), filter);
+        requestRepository.GetAgencyApplicants(currentUserService.GetAgencyIds(), filter);
 
     public Task<List<ApplicantSearchResultModel>> Search(Guid requestId, string searchTerm) =>
-        requestRepository.SearchApplicants(currentUserService.GetAgencyId(), requestId, searchTerm);
+        requestRepository.SearchApplicants(requestId, searchTerm);
 
     public async Task<Result> Delete(Guid applicantId)
     {
@@ -136,9 +136,9 @@ public class RequestApplicantService(
     {
         var validationResult = await changeApplicantsStatusValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<ChangeApplicantsStatusResultModel>();
-        var agencyId = currentUserService.GetAgencyId();
+        var agencyIds = currentUserService.GetAgencyIds();
         var applicants = (await requestRepository.GetRequestApplicants(ra => model.ApplicantIds.Contains(ra.Id)
-            && ra.Request.CompanyProfile.AgencyId == agencyId)).ToList();
+            && agencyIds.Contains(ra.Request.CompanyProfile.AgencyId))).ToList();
         var pendingItems = model.Status == RequestApplicantStatus.Confirmed
             ? await PendingMandatoryItems(applicants)
             : [];

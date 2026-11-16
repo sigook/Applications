@@ -30,8 +30,8 @@ export interface TimeSheetListItem {
 export interface TimeSheetModel {
   hours: string;
   timeIn: string;
-  missingHours: string | number;
-  missingHoursOvertime: string | number;
+  missingHours?: string | number;
+  missingHoursOvertime?: string | number;
   deductionsOthers?: number;
   bonusOrOthers?: number;
   deductionsOthersDescription?: string;
@@ -42,6 +42,10 @@ export interface TimeSheetModel {
   reimbursements?: number;
   reimbursementsDescription?: string;
 }
+
+export type CompanyTimeSheetListItem = Omit<TimeSheetListItem, 'missingRateWorker' | 'missingRateAgency' | 'reimbursements' | 'reimbursementsDescription'>;
+
+export type CompanyTimeSheetModel = Omit<TimeSheetModel, 'missingRateWorker' | 'missingRateAgency' | 'reimbursements' | 'reimbursementsDescription'>;
 
 export interface PunchCardDay extends Partial<Omit<TimeSheetListItem, 'id' | 'day' | 'totalHoursApproved'>> {
   id: string | null;

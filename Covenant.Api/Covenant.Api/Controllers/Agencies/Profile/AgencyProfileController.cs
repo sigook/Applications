@@ -31,6 +31,12 @@ public class AgencyProfileController(IAgencyRepository agencyRepository, IAgency
         return Ok(agency);
     }
 
+    /// <summary>Gets the agencies the caller has access to, for the agency filter of the grids.</summary>
+    [HttpGet("agencies")]
+    [ProducesResponseType(typeof(IEnumerable<AgencyOptionModel>), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAgencies() =>
+        Ok(await agencyRepository.GetAgencyOptions(User.GetAgencyIds()));
+
     /// <summary>Updates the profile of the current agency.</summary>
     /// <param name="model">Updated agency data.</param>
     [HttpPut]

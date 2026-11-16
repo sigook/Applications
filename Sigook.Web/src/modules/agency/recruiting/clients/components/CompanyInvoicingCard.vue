@@ -45,7 +45,7 @@ import type { InvoiceRecipientModel } from '@/modules/agency/recruiting/clients/
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-const props = defineProps<{ profileId: string }>();
+const { profileId } = defineProps<{ profileId: string }>();
 
 const maxNotes = 500;
 const toolbar = [
@@ -73,60 +73,69 @@ const isSavingRecipient = ref(false);
 
 const notesLength = computed(() => (notes.value || '').replace(/(<([^>]+)>)/gi, '').length);
 
-function saveNotes() {
+async function saveNotes() {
   if (notesLength.value > maxNotes) {
     showAlertError(`Notes can't be greater than ${maxNotes} characters.`);
     return;
   }
   isSavingNotes.value = true;
-  postInvoiceNotes(props.profileId, { htmlNotes: notes.value })
-    .then(() => showAlertSuccess('Updated'))
-    .catch(showAlertError)
-    .finally(() => {
-      isSavingNotes.value = false;
-    });
+  try {
+    await postInvoiceNotes(profileId, { htmlNotes: notes.value });
+    showAlertSuccess('Updated');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isSavingNotes.value = false;
+  }
 }
 
 function addRecipient() {
   form.markInteracted(['name', 'email']);
-  form.handleSubmit((values) => {
+  void form.handleSubmit(async (values) => {
     isSavingRecipient.value = true;
-    postCompanyInvoiceRecipient(props.profileId, values)
-      .then((response) => {
-        recipients.value.push({ id: response.id, name: values.name, email: values.email });
-        form.resetAll();
-      })
-      .catch(showAlertError)
-      .finally(() => {
-        isSavingRecipient.value = false;
-      });
+    try {
+      const response = await postCompanyInvoiceRecipient(profileId, values);
+      recipients.value.push({ id: response.id, name: values.name, email: values.email });
+      form.resetAll();
+    } catch (error) {
+      showAlertError(error);
+    } finally {
+      isSavingRecipient.value = false;
+    }
   })();
 }
 
-function removeRecipient(recipient: InvoiceRecipientModel, index: number) {
+async function removeRecipient(recipient: InvoiceRecipientModel, index: number) {
   if (!recipient.id) return;
   const id = recipient.id;
-  showAlertConfirm('Are you sure', `Remove ${recipient.email} from invoice recipients`)
-    .then((confirmed) => {
-      if (!confirmed) return;
-      return deleteCompanyInvoiceRecipient(props.profileId, id).then(() => {
-        recipients.value.splice(index, 1);
-      });
-    })
-    .catch(showAlertError);
+  try {
+    if (!(await showAlertConfirm('Are you sure', `Remove ${recipient.email} from invoice recipients`))) return;
+    await deleteCompanyInvoiceRecipient(profileId, id);
+    recipients.value.splice(index, 1);
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
-getInvoiceNotes(props.profileId)
-  .then((response) => {
+async function loadInvoiceNotes() {
+  try {
+    const response = await getInvoiceNotes(profileId);
     notes.value = response.htmlNotes ?? '';
-  })
-  .catch(showAlertError);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
 
-getCompanyInvoiceRecipients(props.profileId)
-  .then((response) => {
-    recipients.value = response;
-  })
-  .catch(showAlertError);
+async function loadRecipients() {
+  try {
+    recipients.value = await getCompanyInvoiceRecipients(profileId);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+void loadInvoiceNotes();
+void loadRecipients();
 </script>
 
 <style lang="scss" scoped>

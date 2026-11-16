@@ -1,6 +1,7 @@
 import type { GridParams } from '@/shared/types/common';
 
 export interface RequestGroupFilter extends GridParams {
+  agencyIds?: string;
   name?: string;
   numberId?: number | null;
   jobTitle?: string;
@@ -13,6 +14,7 @@ export interface RequestGroupFilter extends GridParams {
 
 export interface RequestGroupSummary {
   requestId: string;
+  agencyId: string;
   numberId: number;
   companyFullName: string;
   jobTitle: string;

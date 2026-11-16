@@ -5,9 +5,9 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { variant = 'cyan' } = defineProps<{
   variant?: 'cyan' | 'red' | 'white'
-}>(), { variant: 'cyan' })
+}>()
 </script>
 
 <style scoped>

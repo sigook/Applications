@@ -38,7 +38,9 @@ public interface ICompanyService
     Task<InvoiceSummaryModel> GetCompanyInvoice(Guid invoiceId);
     Task<Result> CreateCompanyUser(CompanyUserModel model, Guid? companyProfileId = null);
     Task<Result> CreateContact(CompanyProfileContactPersonModel model);
+    Task<Result> UpdateContactPerson(Guid id, CompanyProfileContactPersonModel model);
     Task<Result> DeleteCompanyUser(Guid userId, Guid? companyProfileId = null);
+    Task<Result> UpdateCompanyUserEmail(Guid userId, string newEmail);
     Task<Result<ResultGenerateDocument<byte[]>>> BulkCompany(Guid agencyId, Stream file);
     Task<CompanyDeletionCheckModel> CheckCompanyDeletion(Guid companyProfileId);
     Task<Result> DeleteCompanyProfile(Guid companyProfileId);

@@ -38,7 +38,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onMounted, onUnmounted, useTemplateRef } from 'vue'
 import LandingSectionHeader from '@/modules/landing/components/shared/sections/LandingSectionHeader.vue'
 
 interface Step {
@@ -75,7 +75,7 @@ const STEPS: readonly Step[] = [
   },
 ]
 
-const stepRefs = ref<HTMLElement[]>([])
+const stepRefs = useTemplateRef<HTMLElement[]>('stepRefs')
 const visibleSteps = ref<boolean[]>(STEPS.map(() => false))
 let observer: IntersectionObserver | null = null
 
@@ -84,14 +84,14 @@ onMounted(() => {
   observer = new IntersectionObserver(
     (entries) => {
       for (const entry of entries) {
-        const idx = stepRefs.value.indexOf(entry.target as HTMLElement)
+        const idx = stepRefs.value?.indexOf(entry.target as HTMLElement) ?? -1
         if (idx === -1) continue
         if (entry.isIntersecting) visibleSteps.value[idx] = true
       }
     },
     { threshold: 0.20, rootMargin: '0px 0px -10% 0px' }
   )
-  for (const el of stepRefs.value) if (el) observer.observe(el)
+  for (const el of stepRefs.value ?? []) observer.observe(el)
 })
 
 onUnmounted(() => observer?.disconnect())

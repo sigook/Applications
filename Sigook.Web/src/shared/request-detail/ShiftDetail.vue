@@ -30,43 +30,43 @@
     </Teleport>
 </template>
 <script setup lang="ts">
-import { ref, watch, computed, onMounted, onScopeDispose } from 'vue';
+import { ref, watch, computed, onMounted, onScopeDispose, useTemplateRef } from 'vue';
 import { hourminutes } from '@/shared/format';
 import type { RequestShiftModel } from '@/shared/request-detail/types';
 
 const GUTTER = 8;
 
-const props = defineProps<{
+const { isLoading, anchor, shift } = defineProps<{
   shift?: RequestShiftModel | null;
   isLoading?: boolean;
   anchor?: HTMLElement | null;
 }>();
 
-const panel = ref<HTMLElement | null>(null);
-const localIsLoading = ref<boolean>(!!props.isLoading);
+const panel = useTemplateRef<HTMLElement>('panel');
+const localIsLoading = ref<boolean>(!!isLoading);
 const top = ref(0);
 const left = ref(0);
 
 const floatingStyle = computed(() =>
-  props.anchor ? { top: `${top.value}px`, left: `${left.value}px` } : undefined,
+  anchor ? { top: `${top.value}px`, left: `${left.value}px` } : undefined,
 );
 
 function reposition(): void {
-  if (!props.anchor) return;
-  const rect = props.anchor.getBoundingClientRect();
+  if (!anchor) return;
+  const rect = anchor.getBoundingClientRect();
   const width = panel.value?.offsetWidth ?? 0;
   top.value = rect.bottom + 4;
   left.value = Math.max(GUTTER, Math.min(rect.left, window.innerWidth - width - GUTTER));
 }
 
-watch(() => props.isLoading, (newVal) => {
+watch(() => isLoading, (newVal) => {
   localIsLoading.value = !!newVal;
 });
 
-watch(() => props.shift, () => requestAnimationFrame(reposition));
+watch(() => shift, () => requestAnimationFrame(reposition));
 
 onMounted(() => {
-  if (!props.anchor) return;
+  if (!anchor) return;
   reposition();
   window.addEventListener('scroll', reposition, true);
   window.addEventListener('resize', reposition);

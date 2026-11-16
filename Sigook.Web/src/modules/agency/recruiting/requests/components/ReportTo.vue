@@ -30,41 +30,39 @@ import ContactList from '@/modules/agency/recruiting/requests/components/Contact
 import type { AgencyCompanyContactPerson } from '@/modules/agency/recruiting/clients/types';
 import type { AgencyRequestPersonItem } from '@/modules/agency/recruiting/requests/types';
 
-const props = defineProps<{ requestId: string; companyProfileId: string; canEdit?: boolean }>();
+const { requestId, companyProfileId, canEdit } = defineProps<{ requestId: string; companyProfileId: string; canEdit?: boolean }>();
 const contacts = defineModel<AgencyRequestPersonItem[]>({ required: true });
 
 const showModal = ref(false);
 const isLoading = ref(false);
 
-function addReportTo(item: AgencyCompanyContactPerson) {
+async function addReportTo(item: AgencyCompanyContactPerson) {
   const id = item.id;
   if (!id) return;
   isLoading.value = true;
-  postAgencyRequestReportTo(props.requestId, id)
-    .then(() => {
-      isLoading.value = false;
-      contacts.value = [...contacts.value, { ...item, id }];
-      showModal.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await postAgencyRequestReportTo(requestId, id);
+    isLoading.value = false;
+    contacts.value = [...contacts.value, { ...item, id }];
+    showModal.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
-function removeReportTo(item: { id?: string }) {
+async function removeReportTo(item: { id?: string }) {
   if (!item.id) return;
   isLoading.value = true;
-  deleteAgencyRequestReportTo(props.requestId, item.id)
-    .then(() => {
-      isLoading.value = false;
-      contacts.value = contacts.value.filter(x => x.id !== item.id);
-      showModal.value = false;
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await deleteAgencyRequestReportTo(requestId, item.id);
+    isLoading.value = false;
+    contacts.value = contacts.value.filter(x => x.id !== item.id);
+    showModal.value = false;
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 </script>
 

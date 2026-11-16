@@ -42,7 +42,7 @@ import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { WorkerRequestFinishReason, WorkerRequestFinishReasonLabels } from '@/shared/constants/enums';
 import type { FinishAssignmentModel } from '@/shared/request-detail/types';
 
-const props = defineProps<{
+const { startWorking } = defineProps<{
   subject: string;
   startWorking?: string | null;
 }>();
@@ -53,7 +53,7 @@ const emit = defineEmits<{
 }>();
 
 const today = new Date();
-const minDate = props.startWorking ? dayjs(props.startWorking).startOf('day').toDate() : undefined;
+const minDate = startWorking ? dayjs(startWorking).startOf('day').toDate() : undefined;
 const reasons = Object.values(WorkerRequestFinishReason)
   .filter((value): value is WorkerRequestFinishReason => typeof value === 'number')
   .map(id => ({ id, value: WorkerRequestFinishReasonLabels[id] }));
@@ -73,7 +73,7 @@ const errors = form.errors;
 
 function submit() {
   form.markInteracted();
-  form.handleSubmit(values => {
+  void form.handleSubmit(values => {
     emit('submit', {
       lastDay: dayjs(values.lastDay).startOf('day').toISOString(),
       reason: values.reason as WorkerRequestFinishReason,

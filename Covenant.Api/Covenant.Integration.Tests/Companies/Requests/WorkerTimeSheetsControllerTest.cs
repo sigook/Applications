@@ -46,16 +46,17 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
     {
         HttpResponseMessage response = await _client.GetAsync(_requestUri());
         response.EnsureSuccessStatusCode();
-        var list = await response.Content.ReadFromJsonAsync<IEnumerable<TimeSheetListModel>>();
+        var list = await response.Content.ReadFromJsonAsync<IEnumerable<CompanyTimeSheetListModel>>();
         Assert.NotEmpty(list);
         foreach (TimeSheet entity in Data.TimeSheets)
         {
-            TimeSheetListModel model = list.Single(s => s.Id == entity.Id);
+            CompanyTimeSheetListModel model = list.Single(s => s.Id == entity.Id);
             AssertModelEntity(model, entity);
         }
+        Assert.DoesNotContain("missingRate", await response.Content.ReadAsStringAsync(), StringComparison.OrdinalIgnoreCase);
     }
 
-    private static void AssertModelEntity(TimeSheetListModel model, TimeSheet entity)
+    private static void AssertModelEntity(CompanyTimeSheetListModel model, TimeSheet entity)
     {
         Assert.Equal(model.Id, entity.Id);
         Assert.Equal(model.Day, entity.Date);
@@ -70,8 +71,6 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
         Assert.Equal(model.Comment, entity.Comment);
         Assert.Equal(model.MissingHours, entity.MissingHours);
         Assert.Equal(model.MissingHoursOvertime, entity.MissingHoursOvertime);
-        Assert.Equal(model.MissingRateWorker, entity.MissingRateWorker);
-        Assert.Equal(model.MissingRateAgency, entity.MissingRateAgency);
         Assert.Equal(model.DeductionsOthers, entity.DeductionsOthers);
         Assert.Equal(model.DeductionsOthersDescription, entity.DeductionsOthersDescription);
         Assert.Equal(model.BonusOrOthersDescription, entity.BonusOrOthersDescription);
@@ -82,14 +81,14 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
     [Fact]
     public async Task Post()
     {
-        var model = new TimeSheetModel
+        var model = new CompanyTimeSheetModel
         {
             TimeIn = Data.FakeNow.AddDays(5),
             Hours = TimeSpan.FromHours(8)
         };
         HttpResponseMessage response = await _client.PostAsJsonAsync(_requestUri(), model);
         response.EnsureSuccessStatusCode();
-        var detail = await response.Content.ReadFromJsonAsync<TimeSheetListModel>();
+        var detail = await response.Content.ReadFromJsonAsync<CompanyTimeSheetListModel>();
         var context = _factory.Services.GetService<CovenantContext>();
         TimeSheet entity = await context.TimeSheets.SingleAsync(s => s.Id == detail.Id);
         Assert.Equal(model.TimeIn.Date, entity.Date);
@@ -102,7 +101,7 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
     public async Task Put()
     {
         TimeSheet timeSheet = Data.FakeTimeSheet;
-        var model = new TimeSheetModel
+        var model = new CompanyTimeSheetModel
         {
             TimeIn = timeSheet.TimeIn,
             Hours = TimeSpan.FromHours(2),
@@ -123,8 +122,9 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
         Assert.Equal(model.Hours.TotalHours, entity.TotalHoursApproved);
         Assert.Equal(model.MissingHours, entity.MissingHours);
         Assert.Equal(model.MissingHoursOvertime, entity.MissingHoursOvertime);
-        Assert.Equal(default, entity.MissingRateAgency);
-        Assert.Equal(default, entity.MissingRateWorker);
+        Assert.Equal(Data.FakeMissingRateAgency, entity.MissingRateAgency);
+        Assert.Equal(Data.FakeMissingRateWorker, entity.MissingRateWorker);
+        Assert.Equal(Data.FakeReimbursements, entity.Reimbursements);
         Assert.Equal(model.DeductionsOthers, entity.DeductionsOthers);
         Assert.Equal(model.BonusOrOthers, entity.BonusOrOthers);
         Assert.Equal(model.DeductionsOthersDescription, entity.DeductionsOthersDescription);
@@ -213,7 +213,12 @@ public class WorkerTimeSheetsControllerTest(CustomWebApplicationFactory<WorkerTi
         private static readonly WorkerRequest FakeWorkerRequest =
             WorkerRequest.AgencyBook(WorkerProfile.Id, Request.Id);
 
-        public static readonly TimeSheet FakeTimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value;
+        public const decimal FakeMissingRateWorker = 18;
+        public const decimal FakeMissingRateAgency = 25;
+        public const decimal FakeReimbursements = 40;
+        public static readonly TimeSheet FakeTimeSheet = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(1), TimeSpan.FromHours(8), now: FakeNow).Value
+            .With(t => t.UpdateMissing(TimeSpan.Zero, TimeSpan.Zero, FakeMissingRateWorker, FakeMissingRateAgency))
+            .With(t => t.AddReimbursements(FakeReimbursements, "Parking"));
         public static readonly TimeSheet TimeSheetForDelete = TimeSheet.CreateTimeSheet(FakeWorkerRequest, FakeNow.AddDays(2), TimeSpan.FromHours(8), now: FakeNow).Value;
         public static readonly TimeSheet TimeSheetReportedByWorker = TimeSheet.WorkerClockIn(FakeWorkerRequest.Id, FakeNow.AddDays(3), false, FakeNow.AddDays(3)).Value;
 

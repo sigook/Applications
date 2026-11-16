@@ -209,10 +209,10 @@ prefixes are lowercase and without hyphens; action templates keep their own casi
 |---|---|---|
 | `Controllers/Identity/` | `/connect/*`, `/Account`, `/Password`, `/External`, `/` | `AuthorizationController` (OpenIddict passthrough: `/connect/authorize`, `/connect/token`, `/connect/userinfo`, `/connect/endsession`), `AccountController` (`POST /Account/ConfirmEmail`, `/Account/CreatePassword`, `/Account/ResendConfirmationLink`; legacy email links redirect to Sigook.Web), `ExternalController` (Microsoft 365 sign-in), `PasswordController` (`POST /Password/forgot` + `/Password/reset`), `HomeController` (`/` and `/Home/InvalidUser`, both redirect to Sigook.Web). All excluded from the OpenAPI document |
 | `Controllers/Shared/` | `api/catalog`, `api/location`, `api/emailpreferences`, `api/website` | any role or anonymous: `CatalogController`, `LocationController`, `EmailPreferencesController`, `WebsiteController` (public marketing endpoints). Files are never served by the API: every environment reads them straight from its blob container through `FilesConfiguration:FilesPath`, and uploads are multipart on each domain endpoint |
-| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`POST api/account/ChangeEmail`, `GET api/account/GetEmail`, `PATCH /identity` to deactivate — kept because installed Sigook.App builds call them), `UserNotificationController` |
+| `Controllers/Shared/Account/` | `api/account`, `api/usernotification` | the caller's own account, any role, bearer auth: `UserAccountController` (`GET api/account` = caller's email + name, `POST api/account/ChangeEmail`, `PATCH /identity` to deactivate; `GET api/account/GetEmail` is legacy, kept only for older installed Sigook.App builds — the current App and Sigook.Web use `GET api/account`), `UserNotificationController` (notification preferences for worker and company users only; agency staff have none) |
 | `Controllers/Shared/Jobs/` | `api/jobs/scheduletasks`, `api/jobs/deductions` | machine-to-machine, called by Sigook.Functions: `ScheduleTasksController`, `DeductionsController` (CRA table import) |
 | `Controllers/Agencies/` | `api/agency/notifications` | `NotificationsController` (sidebar bell) |
-| `Controllers/Agencies/Profile/` | `api/agency/profile[/locations\|personnel\|personnel/agencies\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `PersonnelAgenciesController` (agencies the caller belongs to), `AttendanceController` (staff clock in/out) |
+| `Controllers/Agencies/Profile/` | `api/agency/profile[/agencies\|locations\|personnel\|attendance]` | the caller's own agency: `AgencyProfileController`, `LocationsController`, `PersonnelController`, `AttendanceController` (staff clock in/out) |
 | `Controllers/Agencies/Recruiting/Requests/` | `api/agency/recruiting/requests[/{requestId}/…]` | `RequestsListController` (lists + Excel, Policy `Recruiting`), `RequestsController` (detail/CRUD), `ApplicantsController`, `RunnersController` (Policy `Recruiting`), `WorkersController`, `TimeSheetsController`, `WorkerTimeSheetsController`, `WorkerNotesController`, `WorkersReportController`, `NotesController`, `ShiftController`, `SkillsController`, `ReportToController`, `RequestedByController` |
 | `Controllers/Agencies/Recruiting/Applicants/` | `api/agency/recruiting/applicants` | `ApplicantsController` (cross-request applicants board) |
 | `Controllers/Agencies/Recruiting/Runners/` | `api/agency/recruiting/runners` | `RunnersController` (cross-request runners board: grouped list, bulk status, Excel) |
@@ -530,11 +530,21 @@ Local development connects to the **staging** Service Bus — services and contr
 
 Claims are injected per-request by action filters in `Covenant.Api/Authorization/`:
 
-- `AgencyIdFilter` — resolves the caller's `agencyId`, `agencyIds` (master agency + children) and
-  `agencyPersonnelId` claims for agency staff in one pass (`IAgencyRepository.GetAgencyContextForUser`,
-  two queries), replacing whatever the token carried; repositories filter with them. Read via
-  `GetAgencyId()` / `GetAgencyIds()` / `GetAgencyPersonnelId()` in
-  `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs`.
+- `AgencyIdFilter` — for agency staff. The accessible agencies are the `agencyId` claims of the
+  access token (one per agency, copied from the identity
+  database's `UserClaim` rows by `AuthorizationController.CreatePrincipal`; a master agency does not
+  expand to its children).
+  - `agencyIds` = the accessible agencies, or only those also listed in the `?agencyIds=` query
+    (repeatable or comma separated) when the request sends it. Foreign ids are dropped, so an empty
+    intersection lists nothing. Every list, report, dashboard and by-id lookup filters with it; grids
+    send the query, detail calls do not and therefore see every accessible agency.
+  - `agencyId` = the `?agencyId=` query when it is accessible, otherwise the first accessible one. Used only where one agency is needed: Agency Profile (profile, locations), sub-agency creation, candidate creation and the default agency of a new
+    client.
+  - Records keep their own agency: a new request takes its client's agency, the request form lists the
+    personnel of the client's agency, and applicant/runner search uses the request's agency. A new
+    client may send `agencyId` in the body; it must be one of `agencyIds`.
+  - Read via `GetAgencyId()` / `GetAgencyIds()` in
+    `Covenant.Common/Utils/Extensions/PrincipalExtensions.cs` or `ICurrentUserService`.
 - `CompanyIdFilter` — same idea for company users.
 
 Scoping rules:

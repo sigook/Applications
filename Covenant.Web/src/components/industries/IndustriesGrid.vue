@@ -123,8 +123,8 @@
   
   // Guardamos refs de los elementos DOM
   const cardRefs = new Map<number, HTMLElement>()
-  const setCardRef = (el: any, id: number) => {
-    if (el) cardRefs.set(id, el)
+  const setCardRef = (el: unknown, id: number) => {
+    if (el instanceof HTMLElement) cardRefs.set(id, el)
   }
 
   const toggleCard = (id: number): void => {

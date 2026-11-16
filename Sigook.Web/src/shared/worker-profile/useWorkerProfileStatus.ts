@@ -12,7 +12,7 @@ import type {
 const EXPIRING_SOON_DAYS = 30;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-const WORKER_REQUIREMENTS: Record<WorkerRequirement, { label: string; detail: string; sectionId: WorkerProfileSectionId }> = {
+const WORKER_REQUIREMENTS: Partial<Record<WorkerRequirement, { label: string; detail: string; sectionId: WorkerProfileSectionId }>> = {
   ProfileImage: { label: 'Profile photo', detail: 'Upload a profile photo', sectionId: 'personal' },
   TaxCategory: { label: 'Tax category', detail: 'The agency must set the tax category', sectionId: 'personal' },
   SocialInsuranceNumber: { label: 'Social Insurance number', detail: 'Add the SIN/SSN number', sectionId: 'personal' },
@@ -124,7 +124,7 @@ export function useWorkerProfileStatus(worker: Ref<WorkerProfileDetail | null>) 
     }
     const items: WorkerAttentionItem[] = w.missingRequirements.map((requirement) => {
       const info = WORKER_REQUIREMENTS[requirement];
-      return { key: `requirement-${requirement}`, severity: 'danger', title: `${info.label} missing`, detail: info.detail, sectionId: info.sectionId };
+      return { key: `requirement-${requirement}`, severity: 'danger', title: `${info?.label ?? requirement} missing`, detail: info?.detail ?? '', sectionId: info?.sectionId ?? 'personal' };
     });
 
     if (w.socialInsurance && w.socialInsuranceExpire && w.dueDate && daysUntil(w.dueDate) >= 0) {
@@ -154,7 +154,7 @@ export function useWorkerProfileStatus(worker: Ref<WorkerProfileDetail | null>) 
       return [];
     }
     const pending = (id: WorkerProfileSectionId) => attentionItems.value.filter((i) => i.sectionId === id).length;
-    const requirementsMet = (id: WorkerProfileSectionId) => !w.missingRequirements.some((r) => WORKER_REQUIREMENTS[r].sectionId === id);
+    const requirementsMet = (id: WorkerProfileSectionId) => !w.missingRequirements.some((r) => WORKER_REQUIREMENTS[r]?.sectionId === id);
     return [
       { id: 'personal', label: 'Personal', isComplete: !!(w.firstName && w.lastName && w.birthDay) && requirementsMet('personal'), pendingCount: pending('personal') },
       { id: 'contact', label: 'Contact & emergency', isComplete: !!(w.mobileNumber && w.location && w.contactEmergencyPhone), pendingCount: pending('contact') },

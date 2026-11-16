@@ -15,6 +15,7 @@
             </span>
           </span>
           <span class="request-group-tags">
+            <AgencyBadge :agency-id="group.agencyId" />
             <span v-if="group.isAsap || group.isDirectHiring" class="request-flags">
               <span v-if="group.isAsap" class="request-flag request-flag--asap">Asap</span>
               <span v-if="group.isDirectHiring" class="request-flag request-flag--dh">DH</span>
@@ -45,9 +46,10 @@
 
 <script setup lang="ts">
 import { dateMonth } from '@/shared/format';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import type { RequestGroupFill, RequestGroupSummary } from '@/modules/agency/shared/request-groups/types';
 
-defineProps<{
+const { group, countLabel, fill } = defineProps<{
   group: RequestGroupSummary;
   countLabel: string;
   fill?: RequestGroupFill | null;

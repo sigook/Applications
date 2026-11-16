@@ -39,7 +39,23 @@
 <script setup lang="ts">
 import EyebrowPill from '@/shared/ui/EyebrowPill.vue'
 
-withDefaults(defineProps<{
+const {
+  eyebrow,
+  heading,
+  headingAccent,
+  subtitle,
+  eyebrowVariant = 'white',
+  headingMaxWidth = '780px',
+  subtitleMaxWidth = '560px',
+  marginBottom,
+  eyebrowMarginBottom,
+  headingSize,
+  headingLineHeight,
+  headingMarginBottom,
+  subtitleColor,
+  subtitleTextShadow,
+  subtitleMarginTop,
+} = defineProps<{
   eyebrow: string
   heading: string
   headingAccent?: string
@@ -55,11 +71,7 @@ withDefaults(defineProps<{
   subtitleColor?: string
   subtitleTextShadow?: string
   subtitleMarginTop?: string
-}>(), {
-  eyebrowVariant: 'white',
-  headingMaxWidth: '780px',
-  subtitleMaxWidth: '560px',
-})
+}>()
 </script>
 
 <style scoped>

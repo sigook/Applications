@@ -105,6 +105,25 @@ stages:
             displayName: 'Lint Code'
             workingDirectory: $(workingDirectory)
 
+          - script: pnpm run test:ci
+            displayName: 'Unit Tests'
+            workingDirectory: $(workingDirectory)
+
+          - task: PublishTestResults@2
+            displayName: 'Publish Unit Test Results'
+            condition: succeededOrFailed()
+            inputs:
+              testResultsFormat: 'JUnit'
+              testResultsFiles: '$(workingDirectory)/test-results/junit.xml'
+              testRunTitle: 'Covenant.Web Unit Tests'
+              failTaskOnMissingResultsFile: true
+
+          - task: PublishCodeCoverageResults@2
+            displayName: 'Publish Code Coverage'
+            condition: succeededOrFailed()
+            inputs:
+              summaryFileLocation: '$(workingDirectory)/coverage/cobertura-coverage.xml'
+
           # Build application
           - script: pnpm run build:$(deployEnvironment)
             displayName: 'Build $(deployEnvironment)'

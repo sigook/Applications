@@ -31,7 +31,7 @@ export interface Stat {
 <script setup lang="ts">
 import SecondaryCard from '@/modules/landing/components/shared/cards/SecondaryCard.vue'
 
-defineProps<{
+const { stats } = defineProps<{
   stats: readonly Stat[]
 }>()
 </script>

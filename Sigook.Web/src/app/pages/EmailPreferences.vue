@@ -33,7 +33,7 @@ async function onUnsubscribe() {
     return;
   }
 
-  const key = `${email}${subscriptionType ?? ''}`;
+  const key = `${String(email)}${String(subscriptionType ?? '')}`;
   const alreadyUnsubscribe = window.sessionStorage.getItem(key);
   if (alreadyUnsubscribe) {
     redirectToHome();

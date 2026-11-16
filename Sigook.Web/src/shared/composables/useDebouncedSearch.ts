@@ -12,13 +12,13 @@ interface DebouncedSearchOptions {
 export function useDebouncedSearch<T>(
   fetch: (term: string) => Promise<T[]>,
   { minLength = SEARCH_MIN_LENGTH, delay = SEARCH_DEBOUNCE_MS }: DebouncedSearchOptions = {},
-): { results: Ref<T[]>; isSearching: Ref<boolean>; search: (text: string) => void } {
+): { results: Ref<T[]>; isSearching: Ref<boolean>; search: (text: string | null | undefined) => void } {
   const results = ref<T[]>([]) as Ref<T[]>;
   const isSearching = ref(false);
   let timer: ReturnType<typeof setTimeout> | undefined;
   let latestRequest = 0;
 
-  function search(text: string): void {
+  function search(text: string | null | undefined): void {
     clearTimeout(timer);
     const term = (text ?? '').trim();
     if (term.length < minLength) {
@@ -27,25 +27,23 @@ export function useDebouncedSearch<T>(
       isSearching.value = false;
       return;
     }
-    timer = setTimeout(() => run(term), delay);
+    timer = setTimeout(() => { void run(term); }, delay);
   }
 
-  function run(term: string): void {
+  async function run(term: string): Promise<void> {
     const request = ++latestRequest;
     isSearching.value = true;
-    fetch(term)
-      .then((response) => {
-        if (request === latestRequest) results.value = response;
-      })
-      .catch((error) => {
-        if (request === latestRequest) showAlertError(error);
-      })
-      .finally(() => {
-        if (request === latestRequest) isSearching.value = false;
-      });
+    try {
+      const response = await fetch(term);
+      if (request === latestRequest) results.value = response;
+    } catch (error) {
+      if (request === latestRequest) showAlertError(error);
+    } finally {
+      if (request === latestRequest) isSearching.value = false;
+    }
   }
 
-  onScopeDispose(() => clearTimeout(timer));
+  onScopeDispose(() => { clearTimeout(timer); });
 
   return { results, isSearching, search };
 }

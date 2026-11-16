@@ -7,7 +7,7 @@ export function hoursLabel(hours: number | null | undefined): string {
   return (hours ?? 0).toFixed(1);
 }
 
-export function weekStartOf(day: dayjs.ConfigType = undefined): string {
+export function weekStartOf(day?: dayjs.ConfigType): string {
   return dayjs(day).startOf('week').format('YYYY-MM-DD');
 }
 

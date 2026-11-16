@@ -48,11 +48,11 @@ public class UserAccountService(
         }
     }
 
-    public async Task<Result> UpdateAgencyUser(Guid userId, IdModel agency)
+    public async Task<Result> UpdateAgencyClaims(Guid userId, IEnumerable<Guid> add, IEnumerable<Guid> remove)
     {
         try
         {
-            return await userAdministration.AddAgencyClaim(userId, agency.Id);
+            return await userAdministration.UpdateAgencyClaims(userId, add, remove);
         }
         catch (Exception ex)
         {
@@ -168,6 +168,12 @@ public class UserAccountService(
             return Result.Fail<IEnumerable<UserRoleModel>>("There was an error getting the roles please try again later");
         }
     }
+
+    public Task<IReadOnlyList<AgencyMemberModel>> GetAgencyMembers(IEnumerable<Guid> agencyIds) =>
+        userAdministration.GetAgencyMembers(agencyIds);
+
+    public Task<IReadOnlyList<AgencyMemberModel>> GetUsersAgencies(IEnumerable<Guid> userIds) =>
+        userAdministration.GetUsersAgencies(userIds);
 
     private string RandomPassword()
     {

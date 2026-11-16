@@ -16,13 +16,11 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { image, imageSm, focal = 'center' } = defineProps<{
   image: string
   imageSm?: string
   focal?: string
-}>(), {
-  focal: 'center',
-})
+}>()
 </script>
 
 <style scoped>

@@ -46,7 +46,7 @@ export interface ValleyReason {
   readonly body?: string
 }
 
-defineProps<{
+const { eyebrow, heading, headingAccent, subtitle, reasons } = defineProps<{
   eyebrow: string
   heading: string
   headingAccent: string

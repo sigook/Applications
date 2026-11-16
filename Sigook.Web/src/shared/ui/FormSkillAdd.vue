@@ -11,7 +11,7 @@ import { ref, watch } from 'vue';
 import { getSkills } from "@/shared/api/catalogApi";
 import type { Skill } from '@/shared/types/common';
 
-const props = defineProps<{ existingSkills?: Skill[] }>();
+const { existingSkills } = defineProps<{ existingSkills?: Skill[] }>();
 const emit = defineEmits<{
   (e: 'update:existingSkills', v: Skill[]): void;
   (e: 'onPressAdd', skill: Skill): void;
@@ -23,8 +23,8 @@ const skills = ref<Skill[]>([]);
 const filteredSkills = ref<Skill[]>([]);
 const localSkills = ref<Skill[]>([]);
 
-watch(() => props.existingSkills, (newVal) => {
-  localSkills.value = [...(newVal || [])];
+watch(() => existingSkills, (newVal) => {
+  localSkills.value = [...(newVal ?? [])];
 }, { immediate: true });
 
 watch(localSkills, (newVal) => {
@@ -48,10 +48,13 @@ function closeTagInput() {
   showInput.value = false;
 }
 
-getSkills().then(response => {
+async function loadSkills() {
+  const response = await getSkills();
   skills.value = response;
   filteredSkills.value = skills.value;
-});
+}
+
+void loadSkills();
 </script>
 
 <style scoped lang="scss">

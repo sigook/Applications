@@ -6,6 +6,9 @@
       <SigookGrid ref="grid" :fetch="loadWorkers" v-model:params="serverParams" :sort-map="sortMap"
         :export="{ url: '/api/agency/recruiting/workers/File', fileName: 'Workers' }" focusable
         @update:loading="(value) => isLoading = value" @loaded="(total) => totalItems = total" @cellclick="onCellClick">
+        <template #filters>
+          <AgencyFilter v-model="serverParams.agencyIds" @change="grid?.search()" />
+        </template>
         <template #actions>
           <b-button tag="router-link" to="/recruiting/workers/register" icon-left="plus">Create</b-button>
         </template>
@@ -33,6 +36,7 @@
           </template>
           <template v-slot="props">
             <span class="is-block">
+              <AgencyBadge :agency-id="props.row.agencyId" class="mr-1" />
               <router-link :to="{ path: '/recruiting/workers/' + props.row.id }">
                 {{ props.row.fullName }}
               </router-link>
@@ -48,7 +52,7 @@
         </b-table-column>
         <b-table-column field="mobileNumber" label="Phone" searchable>
           <template v-slot:searchable>
-            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small" @update:modelValue="(v) => serverParams.phone = formatPhone(v)"></b-input>
+            <b-input :model-value="serverParams.phone" placeholder="Search..." icon="magnify" size="is-small" @update:modelValue="(v: string) => serverParams.phone = formatPhone(v)"></b-input>
           </template>
           <template v-slot="props"><copy-link kind="phone" :value="props.row.mobileNumber" /></template>
         </b-table-column>
@@ -93,9 +97,9 @@
               <b-tag v-for="(skill, index) in props.row.skills.slice(0, 3)" :key="`${skill}_${index}`" rounded>
                 {{ skill }}
               </b-tag>
-              <b-tooltip v-if="props.row.skills.length > 3" :label="props.row.skills.join(', ')" type="is-dark" multilined append-to-body>
+              <HoverTooltip v-if="props.row.skills.length> 3" :label="props.row.skills.join(', ')" type="is-dark" multilined append-to-body>
                 <b-tag rounded type="is-info is-light" class="see-more">See more...</b-tag>
-              </b-tooltip>
+              </HoverTooltip>
             </div>
           </template>
         </b-table-column>
@@ -115,10 +119,7 @@
           </template>
         </b-table-column>
         <b-table-column field="actions" v-slot="props">
-          <b-dropdown aria-role="list" position="is-bottom-left" append-to-body>
-            <template #trigger>
-              <b-button icon-right="dots-vertical" size="is-medium" type="is-text" />
-            </template>
+          <RowActionsDropdown>
             <b-dropdown-item aria-role="listitem" @click="router.push(`/recruiting/workers/${props.row.id}`)">
               Edit
             </b-dropdown-item>
@@ -128,13 +129,15 @@
             <b-dropdown-item aria-role="listitem" v-if="props.row.approvedToWork" @click="confirmDelete(props.row)">
               Reject to work
             </b-dropdown-item>
-          </b-dropdown>
+          </RowActionsDropdown>
         </b-table-column>
       </SigookGrid>
     </div>
   </div>
 </template>
 <script setup lang="ts">
+import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
+import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAgencyStore } from '@/modules/agency/store';
@@ -146,6 +149,8 @@ import { formatPhone } from '@/shared/utils/phoneFormat';
 import { getAgencyWorkers, updateApprovedToWork } from '@/modules/agency/recruiting/workers/api';
 import { dateMonth } from '@/shared/format';
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
+import AgencyFilter from '@/modules/agency/shared/AgencyFilter.vue';
+import AgencyBadge from '@/modules/agency/shared/AgencyBadge.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
@@ -193,7 +198,7 @@ function onCellClick(row: AgencyWorkerListItem, column: TableColumnRef) {
     case 'requests':
       break;
     default:
-      router.push(`/recruiting/workers/${row.id}`);
+      void router.push(`/recruiting/workers/${row.id}`);
   }
 }
 
@@ -214,38 +219,32 @@ function onFeatureChange() {
 }
 
 function goToApplicants(item: { id: string }) {
-  router.push({
+  void router.push({
     path: `/recruiting/requests/${item.id}`,
     query: { tab: 'Applicants' },
   });
 }
 
-function deleteWorker(worker: AgencyWorkerListItem) {
+async function deleteWorker(worker: AgencyWorkerListItem) {
   isLoading.value = true;
-  updateApprovedToWork(worker.id)
-    .then(() => {
-      isLoading.value = false;
-      showAlertSuccess('Updated');
-      grid.value?.reload();
-    })
-    .catch((error) => {
-      isLoading.value = false;
-      showAlertError(error);
-      grid.value?.reload();
-    });
+  try {
+    await updateApprovedToWork(worker.id);
+    isLoading.value = false;
+    showAlertSuccess('Updated');
+    grid.value?.reload();
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+    grid.value?.reload();
+  }
 }
 
-function confirmDelete(worker: AgencyWorkerListItem) {
-  showAlertConfirm(
+async function confirmDelete(worker: AgencyWorkerListItem) {
+  if (!(await showAlertConfirm(
     'Are you sure?',
     'You want to disable the worker' + '. ' + 'This worker will not be able to apply to new requests',
-  ).then((response) => {
-    if (response) {
-      deleteWorker(worker);
-    }
-  }).catch((error) => {
-    showAlertError(error);
-  });
+  ))) return;
+  await deleteWorker(worker);
 }
 </script>
 <style lang="scss" scoped>

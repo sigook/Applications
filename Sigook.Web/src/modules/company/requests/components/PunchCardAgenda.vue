@@ -96,15 +96,12 @@ import { dateHHmm, hour } from '@/shared/format';
 import { usePunchCardCalendar } from '@/modules/company/requests/usePunchCardCalendar';
 import type { PunchCardDay, PunchCardWorker } from '@/shared/punch-card/types';
 
-const props = withDefaults(
-  defineProps<{
-    highlights: PunchCardDay[];
-    startDate: string | Date;
-    worker?: PunchCardWorker;
-    errors?: Record<string, string>;
-  }>(),
-  { errors: () => ({}) },
-);
+const { highlights, startDate, worker, errors = {} } = defineProps<{
+  highlights: PunchCardDay[];
+  startDate?: string | Date | null;
+  worker?: PunchCardWorker;
+  errors?: Record<string, string>;
+}>();
 
 const emit = defineEmits<{
   (e: 'monthChange', range: { startDate: string; endDate: string }): void;
@@ -132,10 +129,10 @@ const {
   weekRange,
   distributeWeekHours,
 } = usePunchCardCalendar({
-  highlights: () => props.highlights,
-  startDate: () => props.startDate,
-  worker: () => props.worker,
-  onMonthChange: (range) => emit('monthChange', range),
+  highlights: () => highlights,
+  startDate: () => startDate ?? undefined,
+  worker: () => worker,
+  onMonthChange: (range) => { emit('monthChange', range); },
 });
 
 function dayNumber(date: string | Date) {

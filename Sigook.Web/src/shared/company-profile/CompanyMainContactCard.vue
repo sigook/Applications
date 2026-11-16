@@ -25,7 +25,7 @@ import type { CompanyContactSummary } from '@/shared/company-profile/types';
 import DetailCard from '@/shared/detail-page/DetailCard.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 
-const props = defineProps<{ fetchContacts: () => Promise<CompanyContactSummary[]> }>();
+const { fetchContacts } = defineProps<{ fetchContacts: () => Promise<CompanyContactSummary[]> }>();
 const emit = defineEmits<{
   (e: 'showAll'): void;
   (e: 'loaded', count: number): void;
@@ -38,12 +38,17 @@ function fullName(contact: CompanyContactSummary) {
   return [contact.firstName, contact.middleName, contact.lastName].filter(Boolean).join(' ');
 }
 
-props.fetchContacts()
-  .then((response) => {
+async function load() {
+  try {
+    const response = await fetchContacts();
     contacts.value = response;
     emit('loaded', response.length);
-  })
-  .catch(showAlertError);
+  } catch (error) {
+    showAlertError(error);
+  }
+}
+
+void load();
 </script>
 
 <style lang="scss" scoped>

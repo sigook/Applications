@@ -15,13 +15,11 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const { modelValue, count, ariaLabel = 'Carousel navigation' } = defineProps<{
   modelValue: number
   count: number
   ariaLabel?: string
-}>(), {
-  ariaLabel: 'Carousel navigation',
-})
+}>()
 
 defineEmits<{
   'update:modelValue': [index: number]

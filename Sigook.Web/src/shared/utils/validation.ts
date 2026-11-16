@@ -18,7 +18,7 @@ function isValidPhone(value: string | undefined | null): boolean {
   }
 }
 
-export function phoneSchema(required = true): yup.StringSchema {
+export function phoneSchema(required = true): yup.StringSchema<string | null | undefined> {
   let schema = yup.string().nullable();
   if (required) schema = schema.required('Phone is required');
   return schema.test('phone', 'Invalid phone number', (v) => !v || isValidPhone(v));
@@ -39,7 +39,7 @@ export function identificationNumberSchema(typeField: string): yup.StringSchema 
   });
 }
 
-export function postalCodeSchema(required = true): yup.StringSchema {
+export function postalCodeSchema(required = true): yup.StringSchema<string | null | undefined> {
   let schema = yup.string().nullable();
   if (required) schema = schema.required('Postal code is required');
   return schema.test('postal', 'Invalid postal code', (v) => {

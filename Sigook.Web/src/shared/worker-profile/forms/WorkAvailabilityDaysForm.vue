@@ -34,25 +34,24 @@ import { createWorkerAvailabilityDays } from '@/shared/worker-profile/api';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
 import type { CatalogItem } from '@/shared/types/common';
 
-const props = defineProps<{ data?: WorkerProfileDetail }>();
-const emit = defineEmits<{ (e: 'closeModal', value: boolean): void }>();
+const { data } = defineProps<{ data: WorkerProfileDetail }>();
+const emit = defineEmits<(e: 'closeModal', value: boolean) => void>();
 
 const isLoading = ref(false);
 const allDaysSelected = ref(false);
 const days = ref<CatalogItem[]>([]);
 const worker = reactive<{ availabilityDays: CatalogItem[] }>({ availabilityDays: [] });
 
-function saveWorkerAvailabilityDays() {
+async function saveWorkerAvailabilityDays() {
   isLoading.value = true;
-  createWorkerAvailabilityDays(props.data.id, worker.availabilityDays)
-    .then(() => {
-      isLoading.value = false;
-      emit('closeModal', true);
-    })
-    .catch(error => {
-      isLoading.value = false;
-      showAlertError(error);
-    });
+  try {
+    await createWorkerAvailabilityDays(data.id, worker.availabilityDays);
+    isLoading.value = false;
+    emit('closeModal', true);
+  } catch (error) {
+    isLoading.value = false;
+    showAlertError(error);
+  }
 }
 
 function changeDaysSelected() {
@@ -70,11 +69,9 @@ function changeAllDays() {
   }
 }
 
-(async () => {
+void (async () => {
   days.value = await getDays();
-  if (props.data != null) {
-    worker.availabilityDays = props.data.availabilityDays;
-    changeAllDays();
-  }
+  worker.availabilityDays = data.availabilityDays;
+  changeAllDays();
 })();
 </script>

@@ -12,12 +12,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import type { Deal } from '@/modules/agency/sales/clients/types';
 import type { SalesClientReference } from '@/modules/agency/sales/dashboard/types';
 import DealForm from '@/modules/agency/sales/clients/components/DealForm.vue';
 
-defineProps<{
+const { modelValue, deal, client } = defineProps<{
   modelValue: boolean;
   deal?: Deal | null;
   client?: SalesClientReference | null;
@@ -28,10 +28,10 @@ const emit = defineEmits<{
   (e: 'saved'): void;
 }>();
 
-const formRef = ref<InstanceType<typeof DealForm> | null>(null);
+const formRef = useTemplateRef<InstanceType<typeof DealForm>>('formRef');
 const isSaving = ref(false);
 
-const close = (): void => emit('update:modelValue', false);
+const close = (): void => { emit('update:modelValue', false); };
 
 async function onSave(): Promise<void> {
   if (!formRef.value) return;
