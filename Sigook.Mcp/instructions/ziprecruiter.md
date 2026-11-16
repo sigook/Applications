@@ -14,7 +14,7 @@ The export is two zips in one folder. `read_export` on the folder reads both.
 
 ## CSV columns
 
-| Column | `import_candidate` parameter | How |
+| Column | `import_candidates` row field | How |
 |---|---|---|
 | `Name` | `name` | as is |
 | `Email` | `email` | as is |
