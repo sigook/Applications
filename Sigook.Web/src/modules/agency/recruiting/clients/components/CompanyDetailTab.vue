@@ -11,7 +11,7 @@
       <template #badge>
         <span class="detail-tag">Agency only</span>
       </template>
-      <div v-if="company.internalInfo" class="detail-rich-text" v-html="company.internalInfo"></div>
+      <div v-if="company.internalInfo" class="detail-rich-text" v-html="sanitizeHtml(company.internalInfo)"></div>
       <span v-else class="detail-empty">No internal info</span>
     </detail-card>
 
@@ -32,6 +32,7 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeHtml } from '@/shared/utils/html';
 import { computed, toRef } from 'vue';
 import { useAdmin } from '@/shared/composables/useAdmin';
 import { useCompanyDetail } from '@/shared/company-profile/useCompanyDetail';

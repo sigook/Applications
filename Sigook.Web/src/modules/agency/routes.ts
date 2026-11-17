@@ -285,7 +285,7 @@ const routesAgency: RouteRecordRaw[] = [
     component: CreateAgency,
     meta: {
       requiresAuth: true,
-      role: agencyStaff,
+      role: adminAccess,
     },
   },
   {

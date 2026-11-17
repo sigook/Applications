@@ -133,6 +133,7 @@ public static class ApiServicesConfiguration
         services.AddScoped<IBulkPayStubEmailService, BulkPayStubEmailService>();
         services.AddScoped<IDocumentService, DocumentService>();
         services.AddScoped<IUploadedFilesService, UploadedFilesService>();
+        services.AddScoped<IRichTextSanitizer, RichTextSanitizer>();
         services.AddScoped<ISkillService, SkillService>();
         services.AddScoped<ICatalogService, CatalogService>();
         services.AddScoped<IGeocodeService, GeocodeService>();

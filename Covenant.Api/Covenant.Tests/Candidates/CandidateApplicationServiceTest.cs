@@ -34,6 +34,8 @@ public class CandidateApplicationServiceTest
 {
     private const string Topic = "create-applicant";
     private const string Webhook = "https://teams/candidates";
+    private const string Queue = "validate-candidate";
+    private const int MaximumFileSize = 1000;
 
     private readonly Mock<IValidator<CandidateViewModel>> _validator = new();
     private readonly Mock<ICandidateRepository> _candidateRepository = new();
@@ -76,8 +78,83 @@ public class CandidateApplicationServiceTest
             _filesContainer.Object,
             _publisher.Object,
             _teams.Object,
-            Options.Create(new ServiceBusConfiguration { CreateApplicantTopic = Topic }),
-            Options.Create(new TeamsWebhookConfiguration { CandidateAndWorker = Webhook }));
+            Options.Create(new ServiceBusConfiguration { CreateApplicantTopic = Topic, ValidateCandidateQueue = Queue }),
+            Options.Create(new TeamsWebhookConfiguration { CandidateAndWorker = Webhook }),
+            Options.Create(new FilesConfiguration { MaximumFileSize = MaximumFileSize }));
+        _filesContainer.Setup(f => f.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>())).ReturnsAsync(Result.Ok());
+    }
+
+    private static MemoryStream Resume(int length = 10) => new(new byte[length]);
+
+    [Theory]
+    [InlineData("cv.pdf", ".pdf")]
+    [InlineData("My Resume.DOCX", ".docx")]
+    public async Task SubmitApplication_WithResume_StoresItUnderAServerGeneratedName(string uploadedName, string extension)
+    {
+        var candidate = Message();
+        candidate.FileName = "company.png";
+
+        var result = await _sut.SubmitApplication(candidate, Resume(), uploadedName);
+
+        Assert.True(result);
+        Assert.EndsWith(extension, candidate.FileName);
+        Assert.True(Guid.TryParse(Path.GetFileNameWithoutExtension(candidate.FileName), out _));
+        _filesContainer.Verify(f => f.UploadAsync(It.IsAny<Stream>(), candidate.FileName), Times.Once);
+        _filesContainer.Verify(f => f.UploadAsync(It.IsAny<Stream>(), "company.png"), Times.Never);
+        _publisher.Verify(p => p.SendMessageAsync(candidate, Queue, null), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("login.html")]
+    [InlineData("logo.svg")]
+    [InlineData("resume")]
+    [InlineData(null)]
+    public async Task SubmitApplication_DisallowedExtension_FailsWithoutUploadingOrPublishing(string uploadedName)
+    {
+        var candidate = Message();
+
+        var result = await _sut.SubmitApplication(candidate, Resume(), uploadedName);
+
+        Assert.False(result);
+        _filesContainer.Verify(f => f.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never);
+        _publisher.Verify(p => p.SendMessageAsync(It.IsAny<CandidateViewModel>(), It.IsAny<string>(), It.IsAny<IReadOnlyDictionary<string, object>>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SubmitApplication_ResumeOverTheSizeLimit_FailsWithoutUploading()
+    {
+        var result = await _sut.SubmitApplication(Message(), Resume(MaximumFileSize + 1), "cv.pdf");
+
+        Assert.False(result);
+        _filesContainer.Verify(f => f.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SubmitApplication_WithoutResume_IgnoresTheClientFileName()
+    {
+        var candidate = Message();
+        candidate.FileName = "company.png";
+
+        var result = await _sut.SubmitApplication(candidate, null, null);
+
+        Assert.True(result);
+        Assert.Null(candidate.FileName);
+        _filesContainer.Verify(f => f.UploadAsync(It.IsAny<Stream>(), It.IsAny<string>()), Times.Never);
+        _publisher.Verify(p => p.SendMessageAsync(candidate, Queue, null), Times.Once);
+    }
+
+    [Fact]
+    public async Task ProcessApplication_InvalidMessageWithoutResume_DeletesNothing()
+    {
+        _validator.Setup(v => v.ValidateAsync(It.IsAny<CandidateViewModel>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ValidationResult([new ValidationFailure("Email", "Email is required")]));
+        var message = Message();
+        message.FileName = null;
+
+        await _sut.ProcessApplication(message);
+
+        Assert.Contains("Email is required", Error);
+        _filesContainer.Verify(f => f.DeleteFileIfExists(It.IsAny<string>()), Times.Never);
     }
 
     private CandidateViewModel Message(string email = "new@mail.com", Guid? requestId = null, string fullName = "Nina New") => new()

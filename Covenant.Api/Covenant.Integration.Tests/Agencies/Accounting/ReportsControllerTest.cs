@@ -237,7 +237,7 @@ public class ReportsControllerTest(SeededWebApplicationFactory<ReportsController
                 .With(w => { w.FirstName = firstName; w.LastName = lastName; });
             var jobLocation = FakeData.FakeLocation(city);
             locationTax = new LocationTax { LocationId = jobLocation.Id, Tax1 = 0.13m };
-            request = new Request(Company, FakeData.FakeJobPositionRate(Company, "Forklift", Data.BillRate, 20)) { AgencyRate = Data.BillRate, WorkerRate = 20 };
+            request = new Request(Company, FakeData.FakeJobPositionRate(Company, "Forklift", Data.BillRate, 20));
             request.UpdateJobLocation(jobLocation, false);
             var workerRequest = WorkerRequest.AgencyBook(worker.Id, request.Id);
             timeSheets = [.. hoursPerDay.Select((hours, day) => Approved(workerRequest, Data.Monday.AddDays(day), hours))];

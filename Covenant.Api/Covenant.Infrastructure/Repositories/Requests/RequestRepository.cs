@@ -83,7 +83,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         CompanyProfileId = r.CompanyProfileId,
                         RequestStatus = r.Status,
                         IsAsap = r.IsAsap,
-                        WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : r.WorkerRate,
+                        WorkerRate = r.WorkerSalary.HasValue ? r.WorkerSalary : (decimal?)r.JobPositionRate.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
                         DisplayRecruiters = string.Join("|", Context.RequestRecruiters
                             .Where(rr => rr.RequestId == r.Id)
@@ -225,7 +225,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             .Include(r => r.JobLocation).ThenInclude(jl => jl.City).ThenInclude(c => c.Province).ThenInclude(p => p.Country)
             .Where(r => r.CompanyProfile.Active)
             .Where(r => openStatus.Contains(r.Status))
-            .Where(r => r.WorkerSalary != null || (r.AgencyRate > 0 && r.WorkerRate > 0))
+            .Where(r => r.WorkerSalary != null || (r.JobPositionRate.Rate > 0 && r.JobPositionRate.WorkerRate > 0))
             .Where(r => countries.Contains(r.JobLocation.City.Province.Country.Code))
             .Select(r => new JobViewModel
             {
@@ -235,7 +235,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 Requirements = r.Requirements,
                 Responsibilities = r.Responsibilities,
                 Location = r.JobLocation.City.Value + " " + r.JobLocation.City.Province.Value,
-                Salary = r.WorkerRate.HasValue ? r.WorkerRate.Value.ToString("C") : r.WorkerSalary.Value.ToString("C"),
+                Salary = r.WorkerSalary.HasValue ? r.WorkerSalary.Value.ToString("C") : r.JobPositionRate.WorkerRate.ToString("C"),
                 Title = r.JobTitle,
                 Type = r.EmploymentType.ToDisplayName(),
                 CreatedAt = r.CreatedAt,
@@ -276,8 +276,8 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                         Responsibilities = r.Responsibilities,
                         WorkersQuantity = r.WorkersQuantity,
                         WorkersQuantityWorking = r.WorkersQuantityWorking,
-                        AgencyRate = r.AgencyRate,
-                        WorkerRate = r.WorkerRate,
+                        AgencyRate = (decimal?)r.JobPositionRate.Rate,
+                        WorkerRate = (decimal?)r.JobPositionRate.WorkerRate,
                         WorkerSalary = r.WorkerSalary,
                         JobPositionId = r.JobPositionRateId,
                         JobPosition = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle,
@@ -646,7 +646,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 IsAsap = wr.Request.IsAsap,
                 CreatedAt = wr.Request.CreatedAt,
                 JobTitle = wr.Request.JobTitle,
-                WorkerRate = wr.Request.WorkerRate,
+                WorkerRate = (decimal?)wr.Request.JobPositionRate.WorkerRate,
                 WorkerSalary = wr.Request.WorkerSalary,
                 WorkerApprovedToWork = wr.WorkerProfile.ApprovedToWork.ToString(),
                 Location = wr.Request.JobLocation.Address + " " + wr.Request.JobLocation.City.Value + " " + wr.Request.JobLocation.City.Province.Value + " " + wr.Request.JobLocation.PostalCode,
@@ -695,7 +695,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                 IsRejected = rejectedRequests.Any(wr => wr.RequestId == r.Id)
             })
             .Where(x => x.IsBooked || (!hasBooked && x.Request.Status == RequestStatus.Open && !x.IsRejected
-                && (x.Request.WorkerSalary != null || (x.Request.AgencyRate > 0 && x.Request.WorkerRate > 0))))
+                && (x.Request.WorkerSalary != null || (x.Request.JobPositionRate.Rate > 0 && x.Request.JobPositionRate.WorkerRate > 0))))
             .Select(x => new WorkerRequestListModel
         {
             Id = x.Request.Id,
@@ -703,7 +703,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
             IsAsap = x.Request.IsAsap,
             CreatedAt = x.Request.CreatedAt,
             JobTitle = x.Request.JobTitle,
-            WorkerRate = x.IsBooked ? (x.Request.WorkerRate ?? x.Request.WorkerSalary) : (x.Request.WorkerSalary ?? x.Request.WorkerRate),
+            WorkerRate = x.IsBooked ? ((decimal?)x.Request.JobPositionRate.WorkerRate ?? x.Request.WorkerSalary) : (x.Request.WorkerSalary ?? (decimal?)x.Request.JobPositionRate.WorkerRate),
             Location = x.IsBooked
                 ? x.Request.JobLocation.Address + " " + x.Request.JobLocation.City.Value + " " + x.Request.JobLocation.City.Province.Value + " " + x.Request.JobLocation.PostalCode
                 : x.Request.JobLocation.City.Value + " " + x.Request.JobLocation.City.Province.Value,
@@ -747,7 +747,7 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
                     DisplayShift = r.Shift == null ? null : r.Shift.DisplayShift,
                     Skills = Context.RequestSkills.Where(rs => rs.RequestId == r.Id).Select(rs => rs.Skill),
                     WorkersQuantity = r.WorkersQuantity,
-                    WorkerRate = r.WorkerRate,
+                    WorkerRate = (decimal?)r.JobPositionRate.WorkerRate,
                     WorkerSalary = r.WorkerSalary,
                     JobPosition = r.JobPositionRate != null ? r.JobPositionRate.JobPosition : r.JobTitle,
                     HolidayIsPaid = r.HolidayIsPaid,
@@ -1523,12 +1523,6 @@ public class RequestRepository(CovenantContext context, IOptions<FilesConfigurat
         var requests = Context.Requests.Where(r => ids.Contains(r.Id));
         return await requests.ToListAsync();
     }
-
-    public async Task<IEnumerable<Request>> GetRequestsPendingRates(Guid jobPositionRateId) =>
-        await Context.Requests
-            .Where(r => r.JobPositionRateId == jobPositionRateId && r.WorkerSalary == null)
-            .Where(r => r.AgencyRate == null || r.AgencyRate <= 0 || r.WorkerRate == null || r.WorkerRate <= 0)
-            .ToListAsync();
 
     public async Task<bool> RequestBelongsToCompany(Guid requestId, Guid companyId)
     {

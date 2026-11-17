@@ -168,7 +168,9 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         Invoice overdue = await PostInvoice(_data.ForOverdue, DateTime.Today.AddDays(-paymentTermDays - 5));
         Invoice current = await PostInvoice(_data.ForNotOverdue, DateTime.Today.AddDays(-paymentTermDays + 1));
 
-        HttpResponseMessage response = await _client.PostAsync($"{ScheduleTasksController.RouteName}/MarkOverdueInvoices", new StringContent(""));
+        using var job = new HttpRequestMessage(HttpMethod.Post, $"{ScheduleTasksController.RouteName}/MarkOverdueInvoices");
+        job.Headers.Add(TestAuthenticationHandler.SubHeader, Startup.FunctionsClientId);
+        HttpResponseMessage response = await _client.SendAsync(job);
         response.EnsureSuccessStatusCode();
 
         var context = Context;
@@ -311,9 +313,12 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
     {
         public static readonly Mock<Covenant.Common.Interfaces.ITeamsService> Teams = new();
 
+        public const string FunctionsClientId = "sigook.functions.test";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
+            services.Configure<IdentityConfiguration>(o => o.FunctionsClientId = FunctionsClientId);
             services.AddTestAuthenticationBuilder().AddTestAuth(o =>
             {
                 o.AddAdminRole(Data.AgencyId);
@@ -431,11 +436,7 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
                 worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.com", city);
                 var jobLocation = FakeData.FakeLocation(city);
                 locationTax = new LocationTax { LocationId = jobLocation.Id, Tax1 = 0.06m };
-                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
-                {
-                    AgencyRate = 2,
-                    WorkerRate = 1
-                };
+                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile));
                 request.UpdateJobLocation(jobLocation, false);
                 var workerRequest = WorkerRequest.AgencyBook(worker.Id, request.Id);
                 timeSheets = [Approved(workerRequest, FakeNow), Approved(workerRequest, FakeNow.AddDays(1))];

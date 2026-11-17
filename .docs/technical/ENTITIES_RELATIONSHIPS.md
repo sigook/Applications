@@ -275,8 +275,8 @@ A job order. Key fields:
 - Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
   `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
   `JobIsOnBranchOffice`
-- Rates: `JobPositionRateId` → CompanyProfileJobPositionRate, plus per-request overrides
-  `WorkerRate`/`AgencyRate`/`WorkerSalary`
+- Rates: `JobPositionRateId` → CompanyProfileJobPositionRate (source of `Rate`/`WorkerRate`, the request
+  stores no copy), or `WorkerSalary` for direct hiring (`UseSalary`/`UseJobPosition`)
 - Capacity: `WorkersQuantity` (min 1), `WorkersQuantityWorking` (derived from booked workers)
 - Timing: `StartAt`, `FinishAt`, `IsAsap`, `DurationTerm` (`LongTerm=0, ShortTerm=1`),
   `EmploymentType` (`FullTime=1, PartTime, Contractor, Temporary`), `ShiftId` → Shift,

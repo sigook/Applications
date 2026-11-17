@@ -80,7 +80,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.WorkersQuantity, entity.WorkersQuantity);
         Assert.Equal(model.WorkersQuantityWorking, entity.WorkersQuantityWorking);
         Assert.Equal(model.IsAsap, entity.IsAsap);
-        Assert.Equal(model.WorkerRate, entity.WorkerRate ?? entity.WorkerSalary);
+        Assert.Equal(model.WorkerRate, entity.WorkerSalary ?? entity.JobPositionRate?.WorkerRate);
         Assert.Equal(model.DisplayShift, entity.Shift?.DisplayShift);
     }
 
@@ -114,8 +114,8 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.DurationBreak, Data.FakeRequest.DurationBreak);
         Assert.Equal(model.Incentive, Data.FakeRequest.Incentive);
         Assert.Equal(model.IncentiveDescription, Data.FakeRequest.IncentiveDescription);
-        Assert.Equal(model.AgencyRate, Data.FakeRequest.AgencyRate);
-        Assert.Equal(model.WorkerRate, Data.FakeRequest.WorkerRate);
+        Assert.Equal(model.AgencyRate, Data.FakeCompanyProfileJobPositionRate.Rate);
+        Assert.Equal(model.WorkerRate, Data.FakeCompanyProfileJobPositionRate.WorkerRate);
         Assert.Equal(model.DurationTerm, Data.FakeRequest.DurationTerm);
         Assert.Equal(model.DisplayShift, Data.FakeRequest.Shift.DisplayShift);
         Assert.Equal(model.VaccinationRequired, Data.FakeCompany.VaccinationRequired);
@@ -563,8 +563,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         {
             FakeCompany.AddJobPositionRate(FakeCompanyProfileJobPositionRate);
             FakeCompany.UpdateVaccinationInfo(true, "require vaccine certificate");
-            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation,
-                workerRate: null, agencyRate: null);
+            FakeRequest = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id, FakeLocation);
             FakeRequest.NumberId = 99;
             FakeRequest.CreatedAt = new DateTime(2021, 01, 01);
             FakeRequest.CreatedBy = "recruiter@mail.com";

@@ -1,11 +1,6 @@
 import { showAlertSuccess, showAlertSummary } from '@/shared/utils/toast';
+import { escapeHtml } from '@/shared/utils/html';
 import type { SkippedItem } from '@/modules/agency/shared/request-groups/types';
-
-function escapeHtml(value: string): string {
-  const element = document.createElement('span');
-  element.textContent = value;
-  return element.innerHTML;
-}
 
 export function reportBulkResult(updated: number, skipped: SkippedItem[], names: Map<string, string>, noun: string): void {
   if (!skipped.length) {

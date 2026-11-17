@@ -1,3 +1,4 @@
+using Covenant.Api.Authorization;
 using Covenant.Core.BL.Interfaces.Accounting.Invoices;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Covenant.Api.Controllers.Shared.Jobs;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = PolicyConfiguration.Jobs)]
 [Route(RouteName)]
 public class ScheduleTasksController(IAgencyService agencyService, IInvoiceService invoiceService) : ControllerBase
 {

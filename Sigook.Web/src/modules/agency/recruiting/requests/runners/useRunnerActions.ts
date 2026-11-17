@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/shared/utils/html';
 import { ref } from 'vue';
 import { deleteAgencyRunner } from '@/modules/agency/recruiting/requests/runners/api';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
@@ -32,7 +33,7 @@ export function useRunnerActions(onUpdated: () => void) {
   function confirmDelete(runner: RunnerActionTarget): void {
     getDialog().confirm({
       title: 'Delete runner',
-      message: `Delete <strong>${runner.name}</strong> from this order? Their status history and interviews will be deleted too.`,
+      message: `Delete <strong>${escapeHtml(runner.name)}</strong> from this order? Their status history and interviews will be deleted too.`,
       confirmText: 'Delete',
       cancelText: 'Cancel',
       type: 'is-danger',

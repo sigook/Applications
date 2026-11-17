@@ -16,7 +16,6 @@ public interface IRequestRepository : IBaseRepository
 {
     Task<Request> GetRequest(Expression<Func<Request, bool>> condition);
     Task<IEnumerable<Request>> GetRequests(IEnumerable<Guid> ids);
-    Task<IEnumerable<Request>> GetRequestsPendingRates(Guid jobPositionRateId);
     IQueryable<AgencyRequestListModel> GetAllRequestsForAgency(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter);
     Task<PaginatedList<AgencyRequestListModel>> GetRequestsForAgency(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter);
     Task<IEnumerable<RequestSourceSummaryModel>> GetRequestSourcesSummaryForAgency(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter);

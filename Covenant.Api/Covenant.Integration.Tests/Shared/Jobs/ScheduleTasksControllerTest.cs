@@ -1,5 +1,6 @@
 using Covenant.Api.Controllers.Shared.Jobs;
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Repositories.Requests;
@@ -16,13 +17,14 @@ using Covenant.Integration.Tests.Configuration;
 using Covenant.Integration.Tests.Utils;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Net;
 using Xunit;
 
 namespace Covenant.Integration.Tests.Shared.Jobs;
 
 public class ScheduleTasksControllerTest(CustomWebApplicationFactory<ScheduleTasksControllerTest.Startup> factory) : IClassFixture<CustomWebApplicationFactory<ScheduleTasksControllerTest.Startup>>
 {
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly CustomWebApplicationFactory<Startup> _factory = factory;
 
     [Theory]
     [InlineData("NotificationSinExpiration")]
@@ -30,15 +32,37 @@ public class ScheduleTasksControllerTest(CustomWebApplicationFactory<ScheduleTas
     [InlineData("MarkOverdueInvoices")]
     public async Task Execute(string action)
     {
-        var response = await _client.PostAsync($"{ScheduleTasksController.RouteName}/{action}", new StringContent(""));
+        using HttpClient client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, Startup.FunctionsClientId);
+
+        var response = await client.PostAsync($"{ScheduleTasksController.RouteName}/{action}", new StringContent(""));
+
         response.EnsureSuccessStatusCode();
+    }
+
+    [Theory]
+    [InlineData("NotificationSinExpiration")]
+    [InlineData("WarnLicensesExpiration")]
+    [InlineData("MarkOverdueInvoices")]
+    public async Task CallerThatIsNotTheFunctionsClient_ReturnsForbidden(string action)
+    {
+        using HttpClient client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, CovenantConstants.Role.Worker);
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, Guid.NewGuid().ToString());
+
+        var response = await client.PostAsync($"{ScheduleTasksController.RouteName}/{action}", new StringContent(""));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     public class Startup
     {
+        public const string FunctionsClientId = "sigook.functions.test";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
+            services.Configure<IdentityConfiguration>(o => o.FunctionsClientId = FunctionsClientId);
             services.AddTestAuthenticationBuilder().AddTestAuth(o => { });
             services.AddSingleton(new Mock<IGeocodeService>().Object);
             services.AddSingleton(Mock.Of<IPayStubsContainer>());

@@ -262,7 +262,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                                 : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         RequestId = ts.WorkerRequest.RequestId,
                         JobTitle = string.IsNullOrWhiteSpace(ts.WorkerRequest.Request.BillingTitle) ? ts.WorkerRequest.Request.JobTitle : ts.WorkerRequest.Request.BillingTitle,
-                        AgencyRate = ts.WorkerRequest.Request.AgencyRate.Value,
+                        AgencyRate = ts.WorkerRequest.Request.JobPositionRate.Rate,
                         BreakIsPaid = ts.WorkerRequest.Request.BreakIsPaid,
                         DurationBreak = ts.WorkerRequest.Request.DurationBreak,
                         HolidayIsPaid = ts.WorkerRequest.Request.HolidayIsPaid,
@@ -306,7 +306,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
                                 : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
-                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
@@ -354,7 +354,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
                                 : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
-                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
@@ -394,7 +394,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
         var query = from ts in timeSheets
                     where ts.WorkerRequest.WorkerProfileId == workerProfileId
                           && !ts.WorkerRequest.WorkerProfile.IsSubcontractor
-                          && ts.WorkerRequest.Request.WorkerRate != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
+                          && ts.WorkerRequest.Request.JobPositionRateId != null && !ts.WorkerRequest.Request.WorkerSalary.HasValue
                     orderby ts.Date
                     select new TimeSheetApprovedPayrollModel(
                         ts.WorkerRequest.Request.JobPositionRate != null && ts.WorkerRequest.Request.JobPositionRate.OvertimeStartsAfter.HasValue
@@ -403,7 +403,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                                 ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.OvertimeStartsAfter.Value
                                 : ts.WorkerRequest.Request.CompanyProfile.OvertimeStartsAfter),
                         ts.WorkerRequest.RequestId,
-                        ts.WorkerRequest.Request.WorkerRate.Value,
+                        ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
                         ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
@@ -496,7 +496,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         ts.WorkerRequest.WorkerProfile.WorkerId,
                         WorkerName = ts.WorkerRequest.WorkerProfile.FirstName + " " + ts.WorkerRequest.WorkerProfile.LastName,
                         JobPosition = ts.WorkerRequest.Request.JobPositionRate.JobPosition,
-                        BillRate = ts.WorkerRequest.Request.AgencyRate,
+                        BillRate = (decimal?)ts.WorkerRequest.Request.JobPositionRate.Rate,
                         RegularHoursWorked = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
                         OvertimeHoursWorked = ts.TimeSheetTotal.OvertimeHours.TotalHours,
                         HolidayHoursWorked = ts.TimeSheetTotal.HolidayHours.TotalHours,
@@ -546,7 +546,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         ts.WorkerRequest.WorkerProfile.WcCode,
                         Client = ts.WorkerRequest.Request.CompanyProfile.FullName,
                         JobName = ts.WorkerRequest.Request.JobCosting,
-                        PayRate = ts.WorkerRequest.Request.WorkerRate,
+                        PayRate = (decimal?)ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         RegularHours = ts.TimeSheetTotal.RegularHours.TotalHours + ts.TimeSheetTotal.OtherRegularHours.TotalHours,
                         OvertimeHours = ts.TimeSheetTotal.OvertimeHours.TotalHours
                     };

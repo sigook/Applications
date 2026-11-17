@@ -100,6 +100,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, useTemplateRef } from 'vue';
 import { useAgencyStore } from '@/modules/agency/store';
@@ -234,10 +235,10 @@ async function sendSelectedEmails(count: number) {
 }
 
 function onDeletePayStub(payStub: AgencyPayStubRow) {
-  const message = `You are about to delete the pay stub <b>${payStub.payStubNumber}</b>
+  const message = `You are about to delete the pay stub <b>${escapeHtml(payStub.payStubNumber)}</b>
         <br>
         <br>
-        If you are going to use the pay stub number <b>${payStub.payStubNumber}</b> for the same worker,
+        If you are going to use the pay stub number <b>${escapeHtml(payStub.payStubNumber)}</b> for the same worker,
         remember that you should not generate any pay stub for any other worker before generate this pay stub again.`;
   getDialog().confirm({
     title: 'Are you sure you want to delete?',

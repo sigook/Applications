@@ -1,3 +1,4 @@
+using Covenant.Infrastructure.Services;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
@@ -84,7 +85,8 @@ public class DuplicateRequestServiceTest
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
-            Mock.Of<IMediator>());
+            Mock.Of<IMediator>(),
+            new RichTextSanitizer());
 
         _model = new RequestCreateModel
         {

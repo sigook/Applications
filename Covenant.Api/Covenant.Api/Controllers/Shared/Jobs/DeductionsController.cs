@@ -1,3 +1,4 @@
+using Covenant.Api.Authorization;
 using Covenant.Common.Functionals;
 using Covenant.Common.Models.Accounting.Deductions;
 using Covenant.Core.BL.Interfaces.Accounting.Deductions;
@@ -7,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Covenant.Api.Controllers.Shared.Jobs;
 
 [ApiController]
-[Authorize]
+[Authorize(Policy = PolicyConfiguration.Jobs)]
 [Route(RouteName)]
 public class DeductionsController(IDeductionImportService importService) : ControllerBase
 {

@@ -20,7 +20,7 @@
 
     <div class="detail-body">
       <div class="content-block description" v-if="job.description">
-        <div v-html="job.description"></div>
+        <div v-html="sanitizeHtml(job.description)"></div>
       </div>
 
       <div class="content-block" v-if="job.shift">
@@ -30,12 +30,12 @@
 
       <div class="content-block" v-if="job.responsibilities">
         <h4>Responsibilities</h4>
-        <div class="html-content" v-html="job.responsibilities"></div>
+        <div class="html-content" v-html="sanitizeHtml(job.responsibilities)"></div>
       </div>
 
       <div class="content-block" v-if="job.requirements">
         <h4>Requirements</h4>
-        <div class="html-content" v-html="job.requirements"></div>
+        <div class="html-content" v-html="sanitizeHtml(job.requirements)"></div>
       </div>
     </div>
 
@@ -46,6 +46,7 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeHtml } from '@/services/htmlSanitizer'
 import type { Job } from '@/services/types/job.types'
 
 const { job } = defineProps<{ job: Job }>()

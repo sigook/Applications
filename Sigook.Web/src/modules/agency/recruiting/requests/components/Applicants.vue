@@ -81,7 +81,7 @@
           </template>
         </b-table-column>
         <b-table-column field="comments" label="Comments" v-slot="props">
-          <span v-html="props.row.comments"></span>
+          <span>{{ props.row.comments }}</span>
           <b-button type="is-ghost" icon-right="pencil" @click="showEditModal(props.row)">
           </b-button>
         </b-table-column>

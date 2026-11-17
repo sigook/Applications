@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Time.Testing;
 using Moq;
+using System.Net;
 using System.Net.Http.Json;
 using System.Reflection;
 using System.Security.Claims;
@@ -69,6 +70,13 @@ public class AgencyIdFilterTest(CustomWebApplicationFactory<AgencyIdFilterTest.S
     {
         var page = await _client.GetFromJsonAsync<PaginatedList<AgencyModel>>($"{AgenciesController.RouteName}?agencyIds={Startup.FakeAgency.Id}");
         Assert.DoesNotContain(page.Items, a => a.Id == Startup.ChildAgency.Id);
+    }
+
+    [Fact]
+    public async Task CreateAgency_AsRecruiter_ReturnsForbidden()
+    {
+        HttpResponseMessage response = await _client.PostAsJsonAsync(AgenciesController.RouteName, new AgencyModel());
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]

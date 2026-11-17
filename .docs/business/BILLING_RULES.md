@@ -46,7 +46,7 @@ WorkerRate = What the Agency pays the Worker (per hour)
 Markup     = AgencyRate − WorkerRate (Agency's profit)
 ```
 
-- `AgencyRate` comes per timesheet (`TimeSheetApprovedBillingModel.AgencyRate`), sourced from the Request's `AgencyRate` (`TimeSheetRepository`), not directly from the company's job position rate.
+- `AgencyRate` comes per timesheet (`TimeSheetApprovedBillingModel.AgencyRate`), read from the request's role `CompanyProfileJobPositionRate.Rate` when the invoice is generated (`TimeSheetRepository`). The request stores no rates, so a role rate change reaches every timesheet not yet invoiced; generated invoices keep `InvoiceTotal.AgencyRate`.
 - Multipliers are **global configuration**, not per company: the `Rates` object injected everywhere (`Covenant.Common/Configuration/Rates.cs`). Defaults (`Rates.DefaultRates`): `OverTime = 1.5`, `Holiday = 1.5`, `Vacations = 0.04`, `Hst = 0.13`.
 - The invoice does **not** snapshot rates. Only `rates.OverTime`, `rates.Holiday` and (Canada) `rates.Hst` participate in the math, read from configuration at creation time — see "Not billed" below.
 

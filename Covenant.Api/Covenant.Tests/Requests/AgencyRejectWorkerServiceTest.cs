@@ -1,3 +1,5 @@
+using Covenant.Tests.Utils;
+using Covenant.Infrastructure.Services;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
@@ -29,7 +31,7 @@ public class AgencyRejectWorkerServiceTest
     public async Task Reject()
     {
         var workerId = Guid.NewGuid();
-        var request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workerRate: 15M, agencyRate: 20M, workersQuantity: 1).Value;
+        var request = FakeData.FakeRequest(workersQuantity: 1);
         request.AddWorker(workerId, new DateTime(2019, 01, 01));
         var requestRepository = new Mock<IRequestRepository>();
         requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
@@ -49,7 +51,8 @@ public class AgencyRejectWorkerServiceTest
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
-            Mock.Of<IMediator>());
+            Mock.Of<IMediator>(),
+            new RichTextSanitizer());
 
         Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
         Assert.True(result);
@@ -62,7 +65,7 @@ public class AgencyRejectWorkerServiceTest
     public async Task IfWorkerHasNotBeenBookedCannotBeRejected()
     {
         var workerId = Guid.NewGuid();
-        var request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), default, default, workerRate: 15M, agencyRate: 20M, workersQuantity: 1).Value;
+        var request = FakeData.FakeRequest(workersQuantity: 1);
         var requestRepository = new Mock<IRequestRepository>();
         requestRepository.Setup(r => r.GetRequest(It.IsAny<Expression<Func<Request, bool>>>())).ReturnsAsync(request);
         var sut = new RequestService(
@@ -80,7 +83,8 @@ public class AgencyRejectWorkerServiceTest
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
-            Mock.Of<IMediator>());
+            Mock.Of<IMediator>(),
+            new RichTextSanitizer());
         Result result = await sut.RejectWorker(request.Id, workerId, new CommentsModel { Comments = "This is a test" });
         Assert.False(result);
     }

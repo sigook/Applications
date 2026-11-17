@@ -43,9 +43,9 @@ public partial class WorkersControllerTest
         {
             Agency = FakeData.FakeAgency(AgencyId);
             CompanyProfile = FakeData.FakeCompanyProfile(Agency);
-            JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile);
+            JobPositionRate = FakeData.FakeJobPositionRate(CompanyProfile, rate: 20M, workerRate: 15M);
             Request = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow,
-                JobPositionRate.Id, workerRate: 15M, agencyRate: 20M, workersQuantity: 5).Value;
+                JobPositionRate.Id, workersQuantity: 5).Value;
 
             WorkerForList = FakeData.FakeWorkerProfile(Agency, "w_profile@mail.com");
             WorkerToBook = FakeData.FakeWorkerProfile(Agency, "w_book@mail.com",
@@ -56,7 +56,7 @@ public partial class WorkersControllerTest
             WorkerToFinishAll1 = FakeData.FakeWorkerProfile(Agency, "w_finish_all1@mail.com");
             WorkerToFinishAll2 = FakeData.FakeWorkerProfile(Agency, "w_finish_all2@mail.com");
             RequestToFinishAll = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), FakeNow,
-                JobPositionRate.Id, workerRate: 15M, agencyRate: 20M, workersQuantity: 2).Value;
+                JobPositionRate.Id, workersQuantity: 2).Value;
 
             PatchWorker(WorkerForList, "A987654321B");
             PatchWorker(WorkerToBook, "A123456789B");

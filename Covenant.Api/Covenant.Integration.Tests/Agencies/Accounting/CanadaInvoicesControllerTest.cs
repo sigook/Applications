@@ -161,11 +161,7 @@ public class CanadaInvoicesControllerTest(SeededWebApplicationFactory<CanadaInvo
             {
                 CompanyProfile = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: $"{key}@company.ca");
                 worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.ca", city);
-                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
-                {
-                    AgencyRate = 2,
-                    WorkerRate = 1
-                };
+                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile));
                 request.UpdateJobLocation(FakeData.FakeLocation(city), false);
                 var workerRequest = WorkerRequest.AgencyBook(worker.Id, request.Id);
                 TimeSheets = [Approved(workerRequest, FakeNow), Approved(workerRequest, FakeNow.AddDays(1))];

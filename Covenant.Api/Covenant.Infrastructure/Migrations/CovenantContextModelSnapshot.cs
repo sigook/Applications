@@ -1792,9 +1792,6 @@ namespace Covenant.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal?>("AgencyRate")
-                        .HasColumnType("numeric");
-
                     b.Property<string>("BillingTitle")
                         .HasColumnType("text");
 
@@ -1890,9 +1887,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<bool>("UsesRunners")
                         .HasColumnType("boolean");
-
-                    b.Property<decimal?>("WorkerRate")
-                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("WorkerSalary")
                         .HasColumnType("numeric");

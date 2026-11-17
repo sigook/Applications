@@ -72,11 +72,9 @@ public class JobPositionsControllerTest
         FakePositionWithoutRates = CompanyProfileJobPositionRate.CompanyCreate(FakeCompanyProfile.Id, "Assembler").Value;
         FakeDeletedPosition = CompanyProfileJobPositionRate.CompanyCreate(FakeCompanyProfile.Id, "Welder").Value;
         FakeDeletedPosition.Delete("tst@mail.com");
-        FakeRequestPendingRates = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id,
-            workerRate: 0, agencyRate: 0);
-        FakeRequestWithSalary = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id,
-            workerRate: null, agencyRate: null);
-        FakeRequestWithSalary.UpdateRates(50000M, null, null, FakePositionWithoutRates.Id);
+        FakeRequestPendingRates = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id);
+        FakeRequestWithSalary = FakeData.FakeRequest(FakeAgency.Id, FakeCompanyProfile.Id, FakePositionWithoutRates.Id);
+        FakeRequestWithSalary.UseSalary(50000M);
         _client = _factory.CreateClient();
         Seed(_factory.Services.GetService<CovenantContext>());
     }
@@ -374,7 +372,7 @@ public class JobPositionsControllerTest
     }
 
     [Fact]
-    public async Task PutRatesPropagatesToRequestsPendingRates()
+    public async Task PutRatesAreReadByTheRequestsOfTheRole()
     {
         var model = new CompanyProfileJobPositionRateModel
         {
@@ -385,13 +383,13 @@ public class JobPositionsControllerTest
         HttpResponseMessage response = await _client.PutAsJsonAsync($"{RequestUri()}/{FakePositionWithoutRates.Id}", model);
         response.EnsureSuccessStatusCode();
         var context = _factory.Services.GetRequiredService<CovenantContext>();
-        var pending = await context.Requests.AsNoTracking().SingleAsync(r => r.Id == FakeRequestPendingRates.Id);
-        Assert.Equal(25M, pending.AgencyRate);
-        Assert.Equal(18M, pending.WorkerRate);
+        var pending = await context.Requests.AsNoTracking().Include(r => r.JobPositionRate).SingleAsync(r => r.Id == FakeRequestPendingRates.Id);
+        Assert.Equal(25M, pending.JobPositionRate.Rate);
+        Assert.Equal(18M, pending.JobPositionRate.WorkerRate);
         Assert.True(pending.HasRates);
         var salary = await context.Requests.AsNoTracking().SingleAsync(r => r.Id == FakeRequestWithSalary.Id);
         Assert.Equal(50000M, salary.WorkerSalary);
-        Assert.Null(salary.AgencyRate);
+        Assert.Null(salary.JobPositionRateId);
     }
 
     private void Seed(CovenantContext context)

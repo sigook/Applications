@@ -62,7 +62,8 @@ public class AgencyService(
     ILogger<AgencyService> logger,
     IServiceProvider serviceProvider,
     IValidator<AgencyPersonnelModel> agencyPersonnelValidator,
-    IWorkerRequirementService workerRequirementService) : IAgencyService
+    IWorkerRequirementService workerRequirementService,
+    IRichTextSanitizer richTextSanitizer) : IAgencyService
 {
     private const string UnknownTimeZone = "The time zone of your device could not be recognized.";
 
@@ -121,7 +122,7 @@ public class AgencyService(
             rIndustry.Value,
             logo,
             model.About,
-            model.InternalInfo,
+            richTextSanitizer.Sanitize(model.InternalInfo),
             model.RequiresPermissionToSeeRequests,
             createdBy,
             model.CompanyStatus,
@@ -171,7 +172,7 @@ public class AgencyService(
         {
             company.UpdateStatus(model.CompanyStatus, currentUserService.GetNickname(), DateTime.Now);
         }
-        company.UpdateDetails(model.About, model.InternalInfo, model.SalesRepresentativeId);
+        company.UpdateDetails(model.About, richTextSanitizer.Sanitize(model.InternalInfo), model.SalesRepresentativeId);
         company.UpdatePhones(model.Phone, model.PhoneExt, model.Fax, model.FaxExt);
 
         companyRepository.Update(company);
@@ -230,12 +231,6 @@ public class AgencyService(
             return Result.Fail(ApiResources.JobPositionAlreadyExists);
         entity.OnShiftUpdated += async (sender, e) => await shiftRepository.Create(e);
         entity.Update(result.Value);
-        if (entity.HasRates)
-        {
-            var requests = await requestRepository.GetRequestsPendingRates(entity.Id);
-            foreach (var request in requests)
-                request.UpdateRates(null, entity.Rate, entity.WorkerRate, entity.Id);
-        }
         await companyRepository.SaveChangesAsync();
         return Result.Ok();
     }

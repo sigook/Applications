@@ -1,3 +1,4 @@
+using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
@@ -40,7 +41,15 @@ public static class FakeData
         jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
         location = location ?? FakeLocation();
         startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-        return Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
-            workerRate, agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
+        var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, finishAt,
+            workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
+        request.JobPositionRate = new CompanyProfileJobPositionRate
+        {
+            CompanyProfileId = companyProfileId,
+            JobPosition = "General Labour",
+            Rate = agencyRate ?? 0,
+            WorkerRate = workerRate ?? 0
+        };
+        return request;
     }
 }

@@ -159,6 +159,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import PageHeader from '@/shared/ui/PageHeader.vue';
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { ref, computed, watch } from 'vue';
@@ -389,7 +390,7 @@ async function onDrop(toRecruiterId: string, toDate: string): Promise<void> {
 function confirmUnassign(assignment: WeeklyBoardAssignment): void {
   getDialog().confirm({
     title: 'Remove assignment',
-    message: `Remove <strong>${assignment.recruiterName}</strong> from order #${assignment.numberId}?`,
+    message: `Remove <strong>${escapeHtml(assignment.recruiterName)}</strong> from order #${assignment.numberId}?`,
     confirmText: 'Remove',
     cancelText: 'Cancel',
     type: 'is-danger',

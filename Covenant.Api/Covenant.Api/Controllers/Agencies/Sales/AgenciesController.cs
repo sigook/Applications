@@ -45,6 +45,7 @@ public class AgenciesController(IAgencyService agencyService, IAgencyRepository 
     /// <summary>Creates a new agency.</summary>
     /// <param name="model">Agency data to create.</param>
     [HttpPost]
+    [Authorize(Policy = PolicyConfiguration.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateAgency([FromBody] AgencyModel model)

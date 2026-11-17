@@ -34,6 +34,13 @@ An **agency owner** gets `admin`. There is no `agency` role: what resolves a use
 | `SalesAccess` | superadmin, admin, sales | Sales module |
 | `AdminAccess` | superadmin, admin | Invoices, pay stubs, reports, and user management (policy name: `Admin`) |
 
+Two endpoints sit outside those groups:
+
+- **Creating a sub-agency** (`POST api/agency/sales/agencies`) requires Policy `Admin`, because it
+  creates an `admin` user for the new agency. Listing and reading agencies stay on Policy `Agency`.
+- **Machine-to-machine jobs** (`api/jobs/*`) require Policy `Jobs`: the caller's `sub` must be the
+  Sigook.Functions client (`Identity:FunctionsClientId`). No user role reaches them.
+
 `AgencyStaff` is also the **identity** group: those are the users for whom `AgencyIdFilter` injects
 the `agencyId` / `agencyIds` claims.
 
