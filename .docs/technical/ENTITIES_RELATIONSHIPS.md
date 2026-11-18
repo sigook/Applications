@@ -275,12 +275,12 @@ A job order. Key fields:
 - Job: `JobTitle`, `BillingTitle`, `JobCosting` (admin/superadmin only in the UI), `Description`,
   `Requirements`, `InternalRequirements`, `Responsibilities`, `JobLocationId` → Location,
   `JobIsOnBranchOffice`
-- Rates: `JobPositionRateId` → CompanyProfileJobPositionRate, plus per-request overrides
-  `WorkerRate`/`AgencyRate`/`WorkerSalary`
+- Rates: `JobPositionRateId` → CompanyProfileJobPositionRate (source of `Rate`/`WorkerRate`, the request
+  stores no copy), or `WorkerSalary` for direct hiring (`UseSalary`/`UseJobPosition`)
 - Capacity: `WorkersQuantity` (min 1), `WorkersQuantityWorking` (derived from booked workers)
 - Timing: `StartAt`, `FinishAt`, `IsAsap`, `DurationTerm` (`LongTerm=0, ShortTerm=1`),
   `EmploymentType` (`FullTime=1, PartTime, Contractor, Temporary`), `ShiftId` → Shift,
-  `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true),
+  `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true; set per request by the agency form switch "Holiday is paid", forced to false when `CompanyProfile.PaidHolidays` is off; effective value = `CompanyProfile.PaidHolidays && HolidayIsPaid`),
   `PunchCardOptionEnabled`
 - Extras: `Incentive(+Description)`, `UsesRunners` (bool, default true),
   `InvitationSentItAt` (resend throttle: 7 days), `CreatedBy`
@@ -473,7 +473,7 @@ formulas**; EI is the only computed one. Non-unique lookup indexes: `CppDeductio
 | Entity | Purpose |
 |---|---|
 | `Location.cs` | address: `Address`, `CityId` → City, `PostalCode`, `Entrance`, `MainIntersection`, `Latitude`/`Longitude`, `LocationTax`; `IsUSA` is a null-conditional navigation chain (`City?.Province?.Country?.Code`) — a missing `Include` of City.Province.Country silently yields `false` → Canadian invoice rules for a US agency (`InvoiceCountryStrategyResolver` uses `AgencyRepository.GetBillingLocation`, which includes the chain) |
-| `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"USA" (3 letters for USA — asymmetric; `Location.IsUSA` compares to "USA", so comparing to "US" never matches). Canonical values are the static factories `Country.Canada`/`Country.UnitedStates` — there is no `CovenantConstants.Country` class. `ProvinceSetting.cs` holds per-province config |
+| `City.cs` / `Province.cs` / `Country.cs` | geo catalogs; `Province.Code` = "ON"/"BC"/…, `Country.Code` = "CA"/"USA" (3 letters for USA — asymmetric; `Location.IsUSA` compares to "USA", so comparing to "US" never matches). Canonical values are the static factories `Country.Canada`/`Country.UnitedStates` — there is no `CovenantConstants.Country` class. `ProvinceSetting.cs` holds per-province config (only `OvertimeStartsAfter`; holiday pay is a company setting) |
 | `Holiday.cs` | public holidays: `Date` (unique index), `Description`, `CountryCode` |
 | `CovenantFile.cs` | file metadata for blobs (referenced by all `*Document` join entities) |
 | `CovenantNote.cs` | shared note entity with author/soft-delete (used by Candidate/Company/Request notes) |

@@ -132,6 +132,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, computed } from 'vue';
@@ -417,7 +418,7 @@ async function convertToWorker(candidateId: string) {
 }
 
 async function removeApplicant(row: AgencyApplicant) {
-  if (!(await showAlertConfirm('Are you sure', `You want to remove ${row.name} from request ${row.requestNumberId}`))) return;
+  if (!(await showAlertConfirm('Are you sure', `You want to remove ${escapeHtml(row.name)} from request ${row.requestNumberId}`))) return;
   isLoading.value = true;
   try {
     await deleteAgencyRequestApplicant(row.requestId, row.id);

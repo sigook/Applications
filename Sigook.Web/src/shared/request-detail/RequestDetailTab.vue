@@ -16,19 +16,19 @@
     </detail-card>
 
     <detail-card :id="anchor('description')" title="Description">
-      <div v-if="description" class="detail-rich-text" v-html="description"></div>
+      <div v-if="description" class="detail-rich-text" v-html="sanitizeHtml(description)"></div>
       <span v-else class="detail-empty">No description</span>
     </detail-card>
 
     <div :id="anchor('requirements')" class="request-detail-pair">
       <detail-card v-if="responsibilities" title="Responsibilities">
-        <div class="detail-rich-text" v-html="responsibilities"></div>
+        <div class="detail-rich-text" v-html="sanitizeHtml(responsibilities)"></div>
       </detail-card>
       <detail-card title="Requirements">
         <template v-if="$slots['requirements-actions']" #actions>
           <slot name="requirements-actions" />
         </template>
-        <div v-if="requirements" class="detail-rich-text" v-html="requirements"></div>
+        <div v-if="requirements" class="detail-rich-text" v-html="sanitizeHtml(requirements)"></div>
         <span v-else class="detail-empty">No requirements</span>
       </detail-card>
     </div>
@@ -37,7 +37,7 @@
       <template #badge>
         <span class="detail-tag">Agency only</span>
       </template>
-      <div class="detail-rich-text" v-html="internalRequirements"></div>
+      <div class="detail-rich-text" v-html="sanitizeHtml(internalRequirements)"></div>
     </detail-card>
 
     <detail-card v-if="incentive" :id="anchor('incentive')" title="Incentive">
@@ -63,6 +63,7 @@
 </template>
 
 <script setup lang="ts">
+import { sanitizeHtml } from '@/shared/utils/html';
 import { computed } from 'vue';
 import { currency } from '@/shared/format';
 import type { RequestComplianceItem } from '@/shared/request-detail/types';

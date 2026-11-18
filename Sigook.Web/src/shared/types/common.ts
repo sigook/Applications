@@ -53,7 +53,6 @@ export interface Country {
 
 // Matches backend ProvinceSettingsModel.
 export interface ProvinceSettings {
-  paidHolidays: boolean | null;
   overtimeStartsAfter: number | null;
 }
 

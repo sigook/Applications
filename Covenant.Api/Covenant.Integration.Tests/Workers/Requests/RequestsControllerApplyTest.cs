@@ -234,8 +234,6 @@ public class RequestsControllerApplyTest(CustomWebApplicationFactory<RequestsCon
                 FakeRate.Id
             ).Value;
             request.NumberId = numberId;
-            request.WorkerRate = 15;
-            request.AgencyRate = 20;
             request.UpdateJobTitle("Driver");
             return request;
         }

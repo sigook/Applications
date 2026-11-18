@@ -13,6 +13,7 @@
 		<PackageReference Include="Azure.Messaging.ServiceBus" />
 		<PackageReference Include="Azure.Storage.Blobs" />
 		<PackageReference Include="EFCore.BulkExtensions.PostgreSql" />
+		<PackageReference Include="HtmlSanitizer" />
 		<PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" />
 		<PackageReference Include="MailKit" />
 		<PackageReference Include="Microsoft.EntityFrameworkCore" />

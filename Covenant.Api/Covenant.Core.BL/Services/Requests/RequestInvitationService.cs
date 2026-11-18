@@ -64,7 +64,7 @@ public class RequestInvitationService(
         var description = request.Description;
         var requirements = request.Requirements;
         var city = request.JobLocation?.City?.Value;
-        var rateValue = request.WorkerRate ?? request.WorkerSalary.Value;
+        var rateValue = request.WorkerSalary ?? request.JobPositionRate.WorkerRate;
         var rate = request.JobLocation.IsUSA ? rateValue.ToUsMoney() : rateValue.ToCaMoney();
         var agencyId = request.CompanyProfile.AgencyId;
         var cityId = request.JobLocation.CityId;

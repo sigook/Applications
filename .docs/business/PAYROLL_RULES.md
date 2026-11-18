@@ -62,7 +62,7 @@ How pay stubs are generated and how earnings and deductions are actually compute
 | Regular | `WorkerRate` | Hours up to both thresholds |
 | OtherRegular | `WorkerRate` (straight rate) | Hours beyond `TimeLimits.MaxHoursWeek` (44 h) that are not yet overtime |
 | Overtime | `WorkerRate × Rates.OverTime` (1.5) | Hours beyond the request's `OvertimeStartsAfter` |
-| StatutoryWorkedHoliday | `WorkerRate × Rates.Holiday` (1.5) | All hours of a timesheet with `IsHoliday && HolidayIsPaid` |
+| StatutoryWorkedHoliday | `WorkerRate × Rates.Holiday` (1.5) | All hours of a timesheet with `IsHoliday && HolidayIsPaid`, where `HolidayIsPaid = CompanyProfile.PaidHolidays && Request.HolidayIsPaid` (see `TIMESHEET_RULES.md`) |
 | StatutoryHoliday | Flat amount | Public-holiday pay for a holiday the worker did not work |
 | Missing | `MissingRateWorker` (falls back to `WorkerRate` when ≤ 0) | `TimeSheet.MissingHours` |
 | MissingOvertime | `MissingRateWorker × Rates.OverTime` | `TimeSheet.MissingHoursOvertime` |

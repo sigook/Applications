@@ -1,3 +1,4 @@
+using Covenant.Tests.Utils;
 using Covenant.Common.Configuration;
 using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities.Workers;
@@ -15,6 +16,7 @@ using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
+using Covenant.Infrastructure.Services;
 using Covenant.Core.BL.Interfaces;
 using Covenant.Core.BL.Services.Agencies;
 using Covenant.Core.BL.Services.Workers;
@@ -45,7 +47,7 @@ public class AgencyBookWorkerServiceTest
         sinInfo.SetupGet(g => g.SocialInsurance).Returns("980-897-987");
         sinInfo.SetupGet(g => g.SocialInsuranceFile).Returns(new CovenantFile("sin.pdf"));
         _worker.PatchSinInformation(sinInfo.Object);
-        request = Request.AgencyCreateRequest(Guid.NewGuid(), new Location(), _fakeNow, default, workerRate: 15M, agencyRate: 20M, workersQuantity: 1).Value;
+        request = FakeData.FakeRequest(startAt: _fakeNow, workersQuantity: 1);
         _workerRepository = new Mock<IWorkerRepository>();
         _workerRepository.Setup(r => r.GetProfile(It.IsAny<Expression<Func<WorkerProfile, bool>>>())).ReturnsAsync(_worker);
         _workerRequestRepository = new Mock<IWorkerRequestRepository>();
@@ -72,7 +74,8 @@ public class AgencyBookWorkerServiceTest
             Mock.Of<ILogger<AgencyService>>(),
             Mock.Of<IServiceProvider>(),
             Mock.Of<IValidator<AgencyPersonnelModel>>(),
-            new WorkerRequirementService(new FakeTimeProvider()));
+            new WorkerRequirementService(new FakeTimeProvider()),
+            new RichTextSanitizer());
     }
 
     [Fact]

@@ -1,3 +1,4 @@
+using Covenant.Infrastructure.Services;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
@@ -49,7 +50,8 @@ public class CancelRequestServiceTest
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
-            Mock.Of<IMediator>());
+            Mock.Of<IMediator>(),
+            new RichTextSanitizer());
         Result result = await service.CancelRequest(request.Id, new RequestCancellationDetailModel());
         Assert.True(result);
         Assert.Equal(RequestStatus.Cancelled, request.Status);

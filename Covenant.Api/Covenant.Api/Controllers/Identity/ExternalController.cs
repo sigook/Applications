@@ -20,7 +20,7 @@ public class ExternalController(
     IMicrosoft365AccountService accountService,
     ILogger<ExternalController> logger) : ControllerBase
 {
-    private const string StaffEmailDomain = "@covenantgroupl.com";
+    private static readonly string[] StaffEmailDomains = ["@covenantgroupl.com", "@sigook.com"];
     private const string ReturnUrlItem = "returnUrl";
     private const string SchemeItem = "scheme";
 
@@ -88,7 +88,7 @@ public class ExternalController(
             return null;
         }
 
-        if (!email.EndsWith(StaffEmailDomain, StringComparison.InvariantCultureIgnoreCase))
+        if (!StaffEmailDomains.Any(domain => email.EndsWith(domain, StringComparison.OrdinalIgnoreCase)))
         {
             logger.LogWarning("External email domain validation failed: {Email}", email);
             return null;

@@ -195,6 +195,11 @@ public class AuthorizationController(
             logger.LogWarning("Native login failed: email not confirmed for {Email}", request.Username);
             return InvalidGrant(EmailNotConfirmed);
         }
+        if (!await sessionValidator.IsActive(user))
+        {
+            logger.LogWarning("Native login failed: session is no longer allowed. UserId={UserId}", user.Id);
+            return InvalidGrant(InactiveUser);
+        }
 
         logger.LogInformation("Native login succeeded for UserId={UserId}", user.Id);
         var principal = await CreatePrincipal(user, request.GetScopes(), IdentityClaims.LocalIdentityProvider, null);

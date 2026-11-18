@@ -111,7 +111,7 @@ Pay stubs, invoices, subcontractor reports and the holiday-pay base all pass the
 
 ### 2. Holiday gate
 
-Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:99). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. (Invoicing hardcodes `holidayIsPaid: true`; pay stubs honor the flag.)
+Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:99). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. `HolidayIsPaid` is resolved in two steps: the company must pay holidays (`CompanyProfile.PaidHolidays`, the "Paid holidays" checkbox in the client settings) **and** the request must pay them (`Request.HolidayIsPaid`). `TimeSheetRepository` projects `CompanyProfile.PaidHolidays && Request.HolidayIsPaid` into every payroll, subcontractor and worker-activity model, and `RequestRepository` projects the same expression into the request detail shown in Sigook.Web and Sigook.App. `RequestService` also stores `Request.HolidayIsPaid = false` whenever the company does not pay holidays; in the agency request form the "Holiday is paid" switch is disabled for those companies (`RequestLookupModel.CompanyPaidHolidays`). Company-created requests ignore the value sent by the company and take the company setting; the agency can turn it off when approving. Provinces have no holiday setting. (Invoices and pay stubs both honor the flag.)
 
 ### 3. Weekly accumulation — per Worker + Week + Request
 

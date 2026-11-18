@@ -1,6 +1,15 @@
 import { getToast, getDialog } from '@/shared/utils/buefyProgrammatic';
+import { escapeHtml } from '@/shared/utils/html';
 
-export async function getErrorMessage(errorMessage: unknown): Promise<string> {
+export function getErrorMessage(errorMessage: unknown): Promise<string> {
+  return formatError(errorMessage, escapeHtml, '<br/>');
+}
+
+export async function getErrorText(errorMessage: unknown): Promise<string> {
+  return (await formatError(errorMessage, (text) => text, ' ')).trim();
+}
+
+async function formatError(errorMessage: unknown, encode: (text: string) => string, lineBreak: string): Promise<string> {
   let value: unknown = errorMessage;
   if (
     typeof value === "object" && value !== null &&
@@ -11,9 +20,9 @@ export async function getErrorMessage(errorMessage: unknown): Promise<string> {
       const text = await data.text();
       try {
         const parsed = JSON.parse(text) as Record<string, unknown>;
-        return Object.values(parsed).flat().join(', ');
+        return Object.values(parsed).flat().map((entry) => encode(String(entry))).join(', ');
       } catch {
-        return text;
+        return encode(text);
       }
     }
     value = data;
@@ -27,14 +36,14 @@ export async function getErrorMessage(errorMessage: unknown): Promise<string> {
         typeof entry === "object" && entry !== null &&
         (entry as { message?: unknown }).message
       ) {
-        message += String((entry as { message?: unknown }).message) + "<br/>";
+        message += encode(String((entry as { message?: unknown }).message)) + lineBreak;
       } else {
-        message += String(entry) + "<br/>";
+        message += encode(String(entry)) + lineBreak;
       }
     }
     return message;
   }
-  return typeof value === "string" ? value : String(value ?? "");
+  return encode(typeof value === "string" ? value : String(value ?? ""));
 }
 
 export function showAlertError(errorMessage: unknown): void {
@@ -51,7 +60,7 @@ export function showAlertError(errorMessage: unknown): void {
 
 export function showAlertSuccess(successMessage: string): void {
   getToast().open({
-    message: successMessage,
+    message: escapeHtml(successMessage),
     type: 'is-success',
     duration: 4000,
     position: 'is-top-right',

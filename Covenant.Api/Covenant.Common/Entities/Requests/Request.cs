@@ -46,8 +46,6 @@ public class Request
     public Location JobLocation { get; private set; }
     public decimal? Incentive { get; private set; }
     public string IncentiveDescription { get; private set; }
-    public decimal? AgencyRate { get; internal set; }
-    public decimal? WorkerRate { get; internal set; }
     public decimal? WorkerSalary { get; internal set; }
     public bool PunchCardOptionEnabled { get; private set; }
     public bool HolidayIsPaid { get; private set; } = true;
@@ -79,7 +77,7 @@ public class Request
     private int CountWorkersWorking => _workers.Count(c => c.WorkerRequestStatus == WorkerRequestStatus.Booked);
     public bool CanBeUpdated => Status != RequestStatus.Cancelled;
     public const string RatesPendingMessage = "The role of this request has no rates yet. An agency admin must set them first.";
-    public bool HasRates => WorkerSalary.HasValue || (AgencyRate > 0 && WorkerRate > 0);
+    public bool HasRates => WorkerSalary.HasValue || JobPositionRate is { HasRates: true };
     public bool IsAvailableToApply => Status == RequestStatus.Open && HasRates;
     public bool IsPendingReview => Status == RequestStatus.PendingReview;
     public RequestStatus Status { get; private set; } = RequestStatus.Open;
@@ -289,12 +287,18 @@ public class Request
         return Result.Ok();
     }
 
-    public void UpdateRates(decimal? workerSalary, decimal? agencyRate, decimal? workerRate, Guid? jobPositionRateId)
+    public void UseSalary(decimal workerSalary)
     {
         WorkerSalary = workerSalary;
-        AgencyRate = agencyRate;
-        WorkerRate = workerRate;
-        JobPositionRateId = jobPositionRateId;
+        JobPositionRate = null;
+        JobPositionRateId = null;
+    }
+
+    public void UseJobPosition(CompanyProfileJobPositionRate jobPositionRate)
+    {
+        WorkerSalary = null;
+        JobPositionRate = jobPositionRate;
+        JobPositionRateId = jobPositionRate.Id;
     }
 
     public void UpdateInternalRequirements(string internalRequirements) => InternalRequirements = internalRequirements;
@@ -302,6 +306,7 @@ public class Request
     public void UpdateResponsibilities(string responsibilities) => Responsibilities = responsibilities;
 
     public void UpdateBreakIsPaid(bool breakIsPaid) => BreakIsPaid = breakIsPaid;
+    public void UpdateHolidayIsPaid(bool holidayIsPaid) => HolidayIsPaid = holidayIsPaid;
 
     public void UpdateWorkersQuantity(int workersQuantity) => WorkersQuantity = workersQuantity;
 
@@ -456,8 +461,6 @@ public class Request
         DateTime startAt,
         Guid? jobPositionRateId = null,
         DateTime? finishAt = null,
-        decimal? workerRate = default,
-        decimal? agencyRate = default,
         string jobTitle = null,
         int workersQuantity = MinimumWorkersQuantity,
         string description = null,
@@ -490,8 +493,6 @@ public class Request
             FinishAt = finishAt,
             DurationTerm = durationTerm,
             EmploymentType = employmentType,
-            WorkerRate = workerRate,
-            AgencyRate = agencyRate,
             CreatedBy = createdBy,
             PunchCardOptionEnabled = isPunchCardOptionEnabled
         });
@@ -503,8 +504,6 @@ public class Request
         DateTime startAt,
         Guid? jobPositionRateId = null,
         DateTime? finishAt = null,
-        decimal? workerRate = default,
-        decimal? agencyRate = default,
         string jobTitle = null,
         int workersQuantity = MinimumWorkersQuantity,
         string description = null,
@@ -537,8 +536,6 @@ public class Request
             FinishAt = finishAt,
             DurationTerm = durationTerm,
             EmploymentType = employmentType,
-            WorkerRate = workerRate,
-            AgencyRate = agencyRate,
             CreatedBy = createdBy,
             PunchCardOptionEnabled = isPunchCardOptionEnabled
         });

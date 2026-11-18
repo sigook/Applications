@@ -74,6 +74,25 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
     }
 
     [Fact]
+    public async Task Post_WorkedHoliday_BilledAtHolidayRateWhenCompanyAndRequestPayHolidays()
+    {
+        await PostInvoice(_data.ForHolidayPaid);
+        var totals = await Context.InvoiceTotals.AsNoTracking()
+            .Where(t => t.Invoice.CompanyProfileId == _data.ForHolidayPaid.CompanyProfile.Id).ToListAsync();
+        Assert.Contains(totals, t => t.Holiday > 0 && t.Description.EndsWith("/ Holiday"));
+    }
+
+    [Fact]
+    public async Task Post_WorkedHoliday_BilledAsRegularWhenCompanyDoesNotPayHolidays()
+    {
+        await PostInvoice(_data.ForHolidayNotPaid);
+        var totals = await Context.InvoiceTotals.AsNoTracking()
+            .Where(t => t.Invoice.CompanyProfileId == _data.ForHolidayNotPaid.CompanyProfile.Id).ToListAsync();
+        Assert.DoesNotContain(totals, t => t.Holiday > 0);
+        Assert.Equal(16, totals.Where(t => t.Regular > 0).Sum(t => t.Quantity));
+    }
+
+    [Fact]
     public async Task Post()
     {
         var model = new CreateInvoiceModel
@@ -168,7 +187,9 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         Invoice overdue = await PostInvoice(_data.ForOverdue, DateTime.Today.AddDays(-paymentTermDays - 5));
         Invoice current = await PostInvoice(_data.ForNotOverdue, DateTime.Today.AddDays(-paymentTermDays + 1));
 
-        HttpResponseMessage response = await _client.PostAsync($"{ScheduleTasksController.RouteName}/MarkOverdueInvoices", new StringContent(""));
+        using var job = new HttpRequestMessage(HttpMethod.Post, $"{ScheduleTasksController.RouteName}/MarkOverdueInvoices");
+        job.Headers.Add(TestAuthenticationHandler.SubHeader, Startup.FunctionsClientId);
+        HttpResponseMessage response = await _client.SendAsync(job);
         response.EnsureSuccessStatusCode();
 
         var context = Context;
@@ -311,9 +332,12 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
     {
         public static readonly Mock<Covenant.Common.Interfaces.ITeamsService> Teams = new();
 
+        public const string FunctionsClientId = "sigook.functions.test";
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
+            services.Configure<IdentityConfiguration>(o => o.FunctionsClientId = FunctionsClientId);
             services.AddTestAuthenticationBuilder().AddTestAuth(o =>
             {
                 o.AddAdminRole(Data.AgencyId);
@@ -383,8 +407,11 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
         public BillableCompany ForExport { get; }
         public BillableCompany ForPaymentsReport { get; }
         public BillableCompany ForDateFilters { get; }
+        public BillableCompany ForHolidayPaid { get; }
+        public BillableCompany ForHolidayNotPaid { get; }
+        public static readonly DateTime HolidayDate = new(2019, 03, 01);
 
-        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForUpdatePaidAt, ForSameStatus, ForList, ForStatusesPaid, ForStatusesPending, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport, ForDateFilters];
+        private BillableCompany[] Companies => [ForPreview, ForPost, ForPaid, ForPaidAt, ForUpdatePaidAt, ForSameStatus, ForList, ForStatusesPaid, ForStatusesPending, ForDelete, ForOverdue, ForNotOverdue, ForExport, ForPaymentsReport, ForDateFilters, ForHolidayPaid, ForHolidayNotPaid];
 
         public Data()
         {
@@ -405,12 +432,15 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
             ForExport = new BillableCompany(Agency, toronto, "export");
             ForPaymentsReport = new BillableCompany(Agency, toronto, "payments-report");
             ForDateFilters = new BillableCompany(Agency, toronto, "date-filters");
+            ForHolidayPaid = new BillableCompany(Agency, toronto, "holiday-paid", HolidayDate, paysHolidays: true);
+            ForHolidayNotPaid = new BillableCompany(Agency, toronto, "holiday-not-paid", HolidayDate, paysHolidays: false);
         }
 
         public void Seed(CovenantContext context)
         {
             context.Cities.Add(toronto);
             context.Users.Add(CurrentUser);
+            context.Holidays.Add(new Holiday(HolidayDate, toronto.Province.Country.Code));
             foreach (BillableCompany company in Companies) company.Seed(context);
             context.SaveChanges();
         }
@@ -425,20 +455,18 @@ public class InvoicesControllerTest(SeededWebApplicationFactory<InvoicesControll
             public CompanyProfile CompanyProfile { get; }
             public Guid[] TimeSheetIds => [.. timeSheets.Select(t => t.Id)];
 
-            public BillableCompany(Agency agency, City city, string key)
+            public BillableCompany(Agency agency, City city, string key, DateTime? date = null, bool paysHolidays = false)
             {
                 CompanyProfile = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: $"{key}@company.com");
+                CompanyProfile.UpdatePaidHolidays(paysHolidays);
                 worker = FakeData.FakeWorkerProfile(agency, $"{key}@worker.com", city);
                 var jobLocation = FakeData.FakeLocation(city);
                 locationTax = new LocationTax { LocationId = jobLocation.Id, Tax1 = 0.06m };
-                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
-                {
-                    AgencyRate = 2,
-                    WorkerRate = 1
-                };
+                request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile));
                 request.UpdateJobLocation(jobLocation, false);
                 var workerRequest = WorkerRequest.AgencyBook(worker.Id, request.Id);
-                timeSheets = [Approved(workerRequest, FakeNow), Approved(workerRequest, FakeNow.AddDays(1))];
+                var start = date ?? FakeNow;
+                timeSheets = [Approved(workerRequest, start), Approved(workerRequest, start.AddDays(1))];
             }
 
             private static TimeSheet Approved(WorkerRequest workerRequest, DateTime date)

@@ -824,6 +824,9 @@ public class CompanyRepository(CovenantContext context, IOptions<FilesConfigurat
     public Task<Guid> GetAgencyId(Guid companyProfileId) =>
         Context.CompanyProfiles.Where(cp => cp.Id == companyProfileId).Select(cp => cp.AgencyId).FirstOrDefaultAsync();
 
+    public Task<bool> PaysHolidays(Guid companyProfileId) =>
+        Context.CompanyProfiles.Where(cp => cp.Id == companyProfileId).Select(cp => cp.PaidHolidays).FirstOrDefaultAsync();
+
     public async Task<List<BaseModel<Guid>>> GetCompaniesList(IEnumerable<Guid> agencyIds, string searchTerm)
     {
         var query = Context.CompanyProfiles

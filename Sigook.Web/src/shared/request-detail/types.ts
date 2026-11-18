@@ -41,6 +41,7 @@ export interface CreateAgencyRequestModel {
   description?: string;
   durationBreak: string;
   breakIsPaid: boolean;
+  holidayIsPaid: boolean;
   incentive?: number | null;
   incentiveDescription?: string;
   requirements?: string;

@@ -1,34 +1,30 @@
 using Covenant.Api.Authorization;
-using Covenant.Common.Configuration;
-using Covenant.Common.Interfaces.Storage;
+using Covenant.Api.Configuration;
+using Covenant.Api.Utils.Extensions;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Notifications;
 using Covenant.Common.Models.Website;
 using Covenant.Common.Models;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Utils.Extensions;
-using FluentValidation;
+using Covenant.Core.BL.Interfaces.Candidates;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Options;
 
 namespace Covenant.Api.Controllers.Shared;
 
 [Route(RouteName)]
 [ApiController]
 public class WebsiteController(
-    IMessagePublisher client,
     IRazorViewToStringRenderer razorViewToStringRenderer,
     IEmailService emailService,
     IRequestRepository requestRepository,
     IMemoryCache memoryCache,
-    IOptions<ServiceBusConfiguration> options,
-    IFilesContainer filesContainer,
+    ICandidateApplicationService candidateApplicationService,
     IUploadedFilesService uploadedFilesService) : ControllerBase
 {
     public const string RouteName = "api/website";
-
-    private readonly ServiceBusConfiguration serviceBusConfiguration = options.Value;
 
     /// <summary>Sends a contact-form email from the public website.</summary>
     /// <param name="contact">Contact form data.</param>
@@ -79,19 +75,16 @@ public class WebsiteController(
     /// <summary>Receives a candidate application with an optional resume file from the public website.</summary>
     [HttpPost("candidate")]
     [Consumes("multipart/form-data")]
+    [EnableRateLimiting(RateLimitingConfiguration.CandidateApplicationPolicy)]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> CreateCandidate()
     {
         var candidate = uploadedFilesService.GetModel<CandidateViewModel>();
-        if (HttpContext.Request.Form.Files.Count > 0)
-        {
-            var resumeFile = HttpContext.Request.Form.Files[0];
-            if (resumeFile != null)
-            {
-                await filesContainer.UploadAsync(resumeFile.OpenReadStream(), candidate.FileName);
-            }
-        }
-        await client.SendMessageAsync(candidate, serviceBusConfiguration.ValidateCandidateQueue);
-        return Ok();
+        var resumeFile = HttpContext.Request.Form.Files.FirstOrDefault();
+        await using var resume = resumeFile?.OpenReadStream();
+        var result = await candidateApplicationService.SubmitApplication(candidate, resume, resumeFile?.FileName);
+        if (result) return Ok();
+        return BadRequest(ModelState.AddErrors(result.Errors));
     }
 }

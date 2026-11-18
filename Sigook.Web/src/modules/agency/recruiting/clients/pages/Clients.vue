@@ -158,6 +158,7 @@
   </div>
 </template>
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref, computed, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
@@ -295,7 +296,7 @@ async function onDeleteCompany(row: AgencyCompanyListItem) {
     }
     const confirmed = await showAlertConfirm(
       'Delete client',
-      `${check.fullName} and its users will be permanently deleted. This action cannot be undone.`,
+      `${escapeHtml(check.fullName)} and its users will be permanently deleted. This action cannot be undone.`,
       'Delete',
     );
     if (!confirmed) return;

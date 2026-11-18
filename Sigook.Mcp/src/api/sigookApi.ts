@@ -8,13 +8,16 @@ import type {
   CandidateListModel,
   CatalogItem,
   CityModel,
+  CompanyProfileListModel,
   CovenantFileModel,
   IdResponse,
+  JobPositionModel,
   NoteModel,
   PaginatedList,
   ProvinceModel,
   RequestApplicantModel,
   SkillModel,
+  TeamsFileModel,
   UserInfo
 } from '../models/apiModels.js';
 
@@ -110,6 +113,35 @@ export class SigookApi {
 
   addApplicant = (requestId: string, model: RequestApplicantModel, signal?: AbortSignal) =>
     this.asResult<unknown>('POST', `api/agency/recruiting/requests/${requestId}/applicants`, { json: model, signal });
+
+  getCompanies = (search: string, pageSize: number, signal?: AbortSignal) =>
+    this.get<PaginatedList<CompanyProfileListModel>>(`api/agency/recruiting/clients?${query({ businessInfo: search, pageSize })}`, signal);
+
+  getJobPositions = (profileId: string, signal?: AbortSignal) =>
+    this.get<JobPositionModel[]>(`api/agency/recruiting/clients/${profileId}/jobpositions/Dropdown`, signal);
+
+  getJobPosition = (profileId: string, id: string, signal?: AbortSignal) =>
+    this.get<JobPositionModel>(`api/agency/recruiting/clients/${profileId}/jobpositions/${id}`, signal);
+
+  updateJobPosition = (profileId: string, id: string, model: JobPositionModel, signal?: AbortSignal) =>
+    this.asResult<unknown>('PUT', `api/agency/recruiting/clients/${profileId}/jobpositions/${id}`, { json: model, signal });
+
+  findTeamsFiles = (team: string, channel: string, name: string, signal?: AbortSignal) =>
+    this.get<TeamsFileModel[]>(`api/agency/teams/files?${query({ team, channel, name })}`, signal);
+
+  async downloadTeamsFile(team: string, channel: string, name: string, signal?: AbortSignal): Promise<Buffer> {
+    const url = new URL(`api/agency/teams/files/content?${query({ team, channel, name })}`, this.environment.apiUrl);
+    const token = await this.session.getAccessToken(signal);
+    let response: Response;
+    try {
+      response = await this.send(url, 'GET', token, {}, signal);
+    } catch (error) {
+      throw new Error(`Sigook API unreachable: ${networkMessage(error)}`);
+    }
+    if (response.status === 404) throw new Error(`File '${name}' not found in channel '${channel}' of team '${team}'. Use find_teams_files to see the exact names.`);
+    if (!response.ok) throw new Error(`GET ${url.pathname}${url.search} failed (${response.status}): ${truncate(await response.text())}`);
+    return Buffer.from(await response.arrayBuffer());
+  }
 
   async getUserInfo(signal?: AbortSignal): Promise<UserInfo> {
     const user = await this.orThrow<UserInfo>(new URL('connect/userinfo', this.environment.authority), signal);

@@ -148,11 +148,7 @@ public class DeleteSubcontractorReportControllerTest(SeededWebApplicationFactory
             Worker = FakeData.FakeWorkerProfile(agency, "subcontractor@test.com", city);
             Worker.IsSubcontractor = true;
 
-            request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile))
-            {
-                AgencyRate = 2,
-                WorkerRate = 1
-            };
+            request = new Request(CompanyProfile, FakeData.FakeJobPositionRate(CompanyProfile));
             request.UpdateJobLocation(FakeData.FakeLocation(city), false);
 
             WorkerRequest = WorkerRequest.AgencyBook(Worker.Id, request.Id);

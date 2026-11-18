@@ -1761,9 +1761,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<TimeSpan?>("OvertimeStartsAfter")
                         .HasColumnType("interval");
 
-                    b.Property<bool?>("PaidHolidays")
-                        .HasColumnType("boolean");
-
                     b.HasKey("ProvinceId");
 
                     b.ToTable("ProvinceSettings", (string)null);
@@ -1791,9 +1788,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
-
-                    b.Property<decimal?>("AgencyRate")
-                        .HasColumnType("numeric");
 
                     b.Property<string>("BillingTitle")
                         .HasColumnType("text");
@@ -1890,9 +1884,6 @@ namespace Covenant.Infrastructure.Migrations
 
                     b.Property<bool>("UsesRunners")
                         .HasColumnType("boolean");
-
-                    b.Property<decimal?>("WorkerRate")
-                        .HasColumnType("numeric");
 
                     b.Property<decimal?>("WorkerSalary")
                         .HasColumnType("numeric");

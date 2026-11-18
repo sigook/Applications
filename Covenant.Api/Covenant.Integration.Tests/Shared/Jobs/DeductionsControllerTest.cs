@@ -1,4 +1,6 @@
 using Covenant.Api.Controllers.Shared.Jobs;
+using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Enums;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Models.Accounting.Deductions;
@@ -18,7 +20,14 @@ public class DeductionsControllerTest(CustomWebApplicationFactory<DeductionsCont
     private const string TaxBlob = "TAX MONTHLY 2026.pdf";
 
     private readonly CustomWebApplicationFactory<Startup> _factory = factory;
-    private readonly HttpClient _client = factory.CreateClient();
+    private readonly HttpClient _client = CreateFunctionsClient(factory);
+
+    private static HttpClient CreateFunctionsClient(CustomWebApplicationFactory<Startup> factory)
+    {
+        HttpClient client = factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, Startup.FunctionsClientId);
+        return client;
+    }
 
     private CovenantContext Context => _factory.Services.GetRequiredService<CovenantContext>();
 
@@ -81,13 +90,32 @@ public class DeductionsControllerTest(CustomWebApplicationFactory<DeductionsCont
         Assert.False(await Context.CppDeductions.AnyAsync(c => c.Year == 2026 && c.PayPeriod == PayPeriod.BiWeekly));
     }
 
+    [Theory]
+    [InlineData("Cpp/Blob", CovenantConstants.Role.Worker)]
+    [InlineData("Tax/Blob", CovenantConstants.Role.Admin)]
+    public async Task CallerThatIsNotTheFunctionsClient_ReturnsForbidden(string action, string role)
+    {
+        using HttpClient client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.RoleHeader, role);
+        client.DefaultRequestHeaders.Add(TestAuthenticationHandler.SubHeader, Guid.NewGuid().ToString());
+
+        HttpResponseMessage response = await client.PostAsJsonAsync($"{DeductionsController.RouteName}/{action}", Model(CppBlob, PayPeriod.SemiMonthly, 2100));
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        Assert.False(await Context.CppDeductions.AnyAsync(c => c.Year == 2100));
+        Assert.False(await Context.TaxDeductions.AnyAsync(t => t.Year == 2100));
+    }
+
     public class Startup
     {
+        public const string FunctionsClientId = "sigook.functions.test";
+
         private static readonly string CraFolder = Path.Combine(AppContext.BaseDirectory, "Files", "Cra");
 
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
+            services.Configure<IdentityConfiguration>(o => o.FunctionsClientId = FunctionsClientId);
             services.AddTestAuthenticationBuilder().AddTestAuth(_ => { });
             services.AddTestDatabase();
             var container = new Mock<ICraTablesContainer>();

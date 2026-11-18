@@ -144,6 +144,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import HoverTooltip from '@/shared/ui/HoverTooltip.vue';
 import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { computed, ref, useTemplateRef } from 'vue';
@@ -240,7 +241,7 @@ function statusTooltip(invoice: AgencyInvoiceListItem): string {
 }
 
 async function onMarkAsPending(invoice: AgencyInvoiceListItem) {
-  const confirmed = await showAlertConfirm('Mark as Pending', `Invoice <b>${invoice.invoiceNumber}</b> will be marked as Pending and its payment date cleared.`, 'Confirm');
+  const confirmed = await showAlertConfirm('Mark as Pending', `Invoice <b>${escapeHtml(invoice.invoiceNumber)}</b> will be marked as Pending and its payment date cleared.`, 'Confirm');
   if (!confirmed) return;
   isLoading.value = true;
   try {

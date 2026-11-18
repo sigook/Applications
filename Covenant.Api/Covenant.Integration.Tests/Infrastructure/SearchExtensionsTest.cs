@@ -88,6 +88,22 @@ public class SearchExtensionsTest
     }
 
     [Theory]
+    [InlineData("123456789")]
+    [InlineData("4567")]
+    public async Task Dropdown_DoesNotSearchBySocialInsurance(string term)
+    {
+        var (context, agencyId, workers) = await Seed();
+        await using var _ = context;
+        var worker = await context.WorkerProfiles.SingleAsync(wp => wp.Id == workers["juan"]);
+        worker.SocialInsurance = "123456789";
+        await context.SaveChangesAsync();
+
+        var result = await SearchDropdown(context, agencyId, term);
+
+        Assert.Empty(result);
+    }
+
+    [Theory]
     [InlineData("%")]
     [InlineData("a_l")]
     public async Task Search_LikeWildcards_AreMatchedLiterally(string term)

@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { getErrorMessage, showAlertConfirm, showAlertError, showAlertSuccess, showAlertSummary } from '@/shared/utils/toast';
+import { getErrorMessage, getErrorText, showAlertConfirm, showAlertError, showAlertSuccess, showAlertSummary } from '@/shared/utils/toast';
 import { getDialog, getToast } from '@/shared/utils/buefyProgrammatic';
 
 vi.mock('@/shared/utils/buefyProgrammatic', () => {
@@ -53,6 +53,23 @@ describe('getErrorMessage', () => {
   it('returns an empty string for null', async () => {
     expect(await getErrorMessage(null)).toBe('');
   });
+
+  it('escapes markup coming from the server', async () => {
+    expect(await getErrorMessage({ data: '<img src=x onerror=alert(1)>' })).toBe('&lt;img src=x onerror=alert(1)&gt;');
+    expect(await getErrorMessage({ data: { name: '<b>Nina</b> is taken' } })).toBe('&lt;b&gt;Nina&lt;/b&gt; is taken<br/>');
+    const blob = new Blob([JSON.stringify({ file: ['<script>x</script>'] })]);
+    expect(await getErrorMessage({ data: blob })).toBe('&lt;script&gt;x&lt;/script&gt;');
+  });
+});
+
+describe('getErrorText', () => {
+  it('returns the messages as plain text separated by spaces', async () => {
+    expect(await getErrorText({ data: { a: "You're too far", b: { message: 'Move closer' } } })).toBe("You're too far Move closer");
+  });
+
+  it('does not escape the text', async () => {
+    expect(await getErrorText('<b>Too far</b>')).toBe('<b>Too far</b>');
+  });
 });
 
 describe('showAlertError', () => {
@@ -73,6 +90,11 @@ describe('showAlertSuccess', () => {
   it('opens a success toast', () => {
     showAlertSuccess('Saved');
     expect(toastOpen).toHaveBeenCalledWith(expect.objectContaining({ message: 'Saved', type: 'is-success' }));
+  });
+
+  it('escapes markup in the message', () => {
+    showAlertSuccess('<img src=x onerror=alert(1)> was deleted');
+    expect(toastOpen).toHaveBeenCalledWith(expect.objectContaining({ message: '&lt;img src=x onerror=alert(1)&gt; was deleted' }));
   });
 });
 

@@ -82,7 +82,6 @@ public class LocationService(
 
             var settings = new ProvinceSetting(
                 provinceId,
-                model.PaidHolidays,
                 model.OvertimeStartsAfter.HasValue ? TimeSpan.FromHours(model.OvertimeStartsAfter.Value) : null);
 
             await catalogRepository.UpsertProvinceSettings(settings);

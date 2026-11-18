@@ -272,7 +272,7 @@ public class WorkerTimeSheetsControllerTest(SeededWebApplicationFactory<WorkerTi
         public BookedWorker(Agency agency, CompanyProfile company, City city, string key)
         {
             Profile = FakeData.FakeWorkerProfile(agency, $"{key}@timesheet-worker.com", city);
-            Request = new Request(company, FakeData.FakeJobPositionRate(company)) { AgencyRate = 30, WorkerRate = 20 };
+            Request = new Request(company, FakeData.FakeJobPositionRate(company, rate: 30, workerRate: 20));
             Request.UpdateJobLocation(FakeData.FakeLocation(city), false);
             WorkerRequest = WorkerRequest.AgencyBook(Profile.Id, Request.Id);
             DateTime day = Data.FakeNow.Date.AddDays(-7);

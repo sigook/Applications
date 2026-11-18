@@ -43,7 +43,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(request.NumberId, model.NumberId);
         Assert.Equal(request.WorkersQuantity, model.WorkersQuantity);
         Assert.Equal(request.IsAsap, model.IsAsap);
-        Assert.Equal(request.WorkerRate, model.WorkerRate);
+        Assert.Equal(request.JobPositionRateId == Data.CookRate.Id ? Data.CookRate.WorkerRate : Data.FakeRate.WorkerRate, model.WorkerRate);
         DateAssert.Equal(request.CreatedAt, model.CreatedAt);
         Assert.Equal(request.FinishAt, model.FinishAt);
         Assert.Equal(request.StartAt, model.StartAt);
@@ -135,7 +135,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(Data.FakeRequest.Requirements, detail.Requirements);
         Assert.Equal(Data.FakeRequest.WorkersQuantity, detail.WorkersQuantity);
         Assert.Equal(Data.FakeRequest.JobPositionRate.JobPosition, detail.JobPosition);
-        Assert.Equal(Data.FakeRequest.HolidayIsPaid, detail.HolidayIsPaid);
+        Assert.False(detail.HolidayIsPaid);
         Assert.Equal(Data.FakeRequest.BreakIsPaid, detail.BreakIsPaid);
         Assert.Equal(WorkerRequestStatus.Booked.ToString(), detail.Status);
         Assert.Equal(Data.FakeRequest.DurationTerm.ToString(), detail.DurationTerm);
@@ -143,7 +143,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(Data.FakeRequest.IncentiveDescription, detail.IncentiveDescription);
         Assert.Equal(Data.FakeRequest.DurationBreak, detail.DurationBreak);
         Assert.Equal(Data.FakeRequest.Status.ToString(), detail.RequestStatus);
-        Assert.Equal(Data.FakeRequest.WorkerRate, detail.WorkerRate);
+        Assert.Equal(Data.FakeRate.WorkerRate, detail.WorkerRate);
         Assert.Equal(Data.FakeRequest.Status.ToString(), detail.RequestStatus);
         DateAssert.Equal(Data.FakeRequest.CreatedAt, detail.CreatedAt);
         Assert.Equal(Data.FakeRequest.StartAt, detail.StartAt);
@@ -198,7 +198,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
             });
             context.Requests.AddRange(Data.FakeRequest, Data.OpenRequest, Data.SecondBookedRequest);
             context.CompanyProfiles.Add(Data.CompanyProfile);
-            context.CompanyProfileJobPositionRates.Add(Data.FakeRate);
+            context.CompanyProfileJobPositionRates.AddRange(Data.FakeRate, Data.CookRate);
             context.WorkerProfiles.Add(Data.WorkerProfile);
             context.WorkerRequests.AddRange(Data.FakeWorkerRequest, Data.SecondWorkerRequest);
             context.SaveChanges();
@@ -214,7 +214,8 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         }.With(a => a.ChangeLogo(new CovenantFile("logo.png")));
         public static readonly CompanyProfile CompanyProfile = new CompanyProfile { Company = new User(CvnEmail.Create("company@mail.com").Value), Agency = FakeAgency, Logo = new CovenantFile() , Industry = new CompanyProfileIndustry("Test") };
         public static readonly WorkerProfile WorkerProfile;
-        public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 1, 1, "General", "r@m.com").Value;
+        public static readonly CompanyProfileJobPositionRate FakeRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Position", 20, 15, "General", "r@m.com").Value;
+        public static readonly CompanyProfileJobPositionRate CookRate = CompanyProfileJobPositionRate.Create(CompanyProfile.Id, "Cook", 30, 25, "General", "r@m.com").Value;
 
         public static readonly Request FakeRequest = Request.AgencyCreateRequest(CompanyProfile.Id, new Location
         {
@@ -235,17 +236,15 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
                     }
                 }
             }
-        }, Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
-        public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
-        public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id, workerRate: 15M, agencyRate: 20M).Value;
+        }, Now, FakeRate.Id).Value;
+        public static readonly Request OpenRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, FakeRate.Id).Value;
+        public static readonly Request SecondBookedRequest = Request.AgencyCreateRequest(CompanyProfile.Id, FakeData.FakeLocation(), Now, CookRate.Id).Value;
         public static readonly WorkerRequest FakeWorkerRequest;
         public static readonly WorkerRequest SecondWorkerRequest;
 
         static Data()
         {
-            FakeRequest.WorkerRate = 15;
             FakeRequest.UpdateJobTitle("Driver");
-            SecondBookedRequest.WorkerRate = 25;
             SecondBookedRequest.UpdateJobTitle("Cook");
             WorkerProfile = new WorkerProfile(new User(CvnEmail.Create("worker_profile@mail.com").Value))
             {

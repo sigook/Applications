@@ -236,6 +236,9 @@
                 <b-switch v-model="request.punchCardOptionEnabled" v-if="!directHiring">
                   Punch card is visible in app
                 </b-switch>
+                <b-switch v-model="request.holidayIsPaid" v-if="!directHiring" :disabled="!companyPaidHolidays">
+                  {{ companyPaidHolidays ? 'Holiday is paid' : 'Holiday is not paid (company does not pay holidays)' }}
+                </b-switch>
                 <div class="setting-row" v-if="!directHiring">
                   <b-switch v-model="request.breakIsPaid">Duration break is paid</b-switch>
                   <div class="setting-row-control">
@@ -396,11 +399,13 @@ const salesRepresentatives = ref<AgencyPersonnelListItem[]>([]);
 const salesRepresentative = ref('');
 const salesRepresentativeSelected = ref<AgencyPersonnelListItem | null>(null);
 const companyUsers = ref<CompanyUserModel[]>([]);
+const companyPaidHolidays = ref(true);
 const companyUsersSelected = ref<CompanyUserModel[]>([]);
 const request = ref<AgencyRequestFormState>({
   companyProfileId: companyProfileId.value,
   durationBreak: dayjs().startOf('day').toDate(),
   breakIsPaid: false,
+  holidayIsPaid: true,
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
   isAsap: false,
@@ -537,6 +542,8 @@ async function init(): Promise<void> {
   locations.value = lookup.locations;
   salesRepresentatives.value = lookup.personnel;
   companyUsers.value = lookup.companyUsers;
+  companyPaidHolidays.value = lookup.companyPaidHolidays;
+  if (!companyPaidHolidays.value) request.value.holidayIsPaid = false;
   sourceRequest.value = lookup.request;
   if (!lookup.request) return;
 

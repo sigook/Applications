@@ -47,10 +47,9 @@ public class RequestInvitationServiceTest
         var agency = new Agency("Test Agency", null) { RecruitmentEmail = "recruit@agency.com" };
         var company = new CompanyProfile(new User(CvnEmail.Create("company@mail.com").Value), agency, "Acme", "4165551234", new CompanyProfileIndustry("Test"));
         var location = new Location { City = _toronto, CityId = _toronto.Id };
-        _request = FakeData.FakeRequest(location: location).With(r =>
+        _request = FakeData.FakeRequest(location: location, workerRate: 21.5m, agencyRate: 30m).With(r =>
         {
             r.CompanyProfile = company;
-            r.WorkerRate = 21.5m;
             r.NumberId = 42;
         });
 

@@ -122,7 +122,6 @@ export interface AgencyWorkerDropdownItem {
   workerProfileId: string;
   fullName: string;
   email: string;
-  socialInsurance: string;
   approvedToWork: boolean;
 }
 

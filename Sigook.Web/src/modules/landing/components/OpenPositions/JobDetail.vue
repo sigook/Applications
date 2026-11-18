@@ -34,7 +34,7 @@
 
     <section v-if="job.description" class="job-detail__section">
       <h4 class="job-detail__section-title">Description</h4>
-      <div class="job-detail__html" v-html="job.description"></div>
+      <div class="job-detail__html" v-html="sanitizeHtml(job.description)"></div>
     </section>
 
     <section v-if="job.shift" class="job-detail__section">
@@ -44,12 +44,12 @@
 
     <section v-if="job.responsibilities" class="job-detail__section">
       <h4 class="job-detail__section-title">Responsibilities</h4>
-      <div class="job-detail__html" v-html="job.responsibilities"></div>
+      <div class="job-detail__html" v-html="sanitizeHtml(job.responsibilities)"></div>
     </section>
 
     <section v-if="job.requirements" class="job-detail__section">
       <h4 class="job-detail__section-title">Requirements</h4>
-      <div class="job-detail__html" v-html="job.requirements"></div>
+      <div class="job-detail__html" v-html="sanitizeHtml(job.requirements)"></div>
     </section>
 
     <footer class="job-detail__footer">
@@ -69,6 +69,7 @@
  *   - Desktop: sticky right column
  *   - Mobile : inline expanded under the active list item
  */
+import { sanitizeHtml } from '@/shared/utils/html';
 import { computed } from 'vue'
 import type { JobViewModel } from '@/modules/landing/types'
 import { useCandidateApplyModal } from '@/modules/landing/composables/useCandidateApplyModal'

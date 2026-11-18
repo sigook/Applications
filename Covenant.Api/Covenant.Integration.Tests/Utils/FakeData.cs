@@ -126,15 +126,15 @@ public static class FakeData
             companyProfileId = companyProfile.Id;
             if (jobPositionRateId == default)
             {
-                rate = FakeJobPositionRate(companyProfile);
+                rate = FakeJobPositionRate(companyProfile, rate: agencyRate ?? 0, workerRate: workerRate ?? 0);
                 jobPositionRateId = rate.Id;
             }
         }
         jobPositionRateId = jobPositionRateId == default ? Guid.NewGuid() : jobPositionRateId;
         location ??= FakeLocation();
         startAt = startAt == default ? new DateTime(2019, 01, 01) : startAt;
-        var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId, workerRate: workerRate,
-            agencyRate: agencyRate, workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
+        var request = Request.AgencyCreateRequest(companyProfileId, location, startAt, jobPositionRateId,
+            workersQuantity: workersQuantity, durationTerm: durationTerm).Value;
         if (companyProfile is not null) request.CompanyProfile = companyProfile;
         if (rate is not null) request.JobPositionRate = rate;
         return request;

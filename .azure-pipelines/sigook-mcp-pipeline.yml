@@ -73,6 +73,10 @@ stages:
                   version="${base}$(versionSuffix)"
                   npm version "$version" --no-git-tag-version --allow-same-version
                   if npm view "@sigook/mcp@$version" version >/dev/null 2>&1; then
+                    if [ "$(distTag)" = "latest" ]; then
+                      echo "##vso[task.logissue type=error]@sigook/mcp@$version is already published. Bump version in Sigook.Mcp/package.json and package-lock.json before a stable release."
+                      exit 1
+                    fi
                     echo "@sigook/mcp@$version already published; skipping."
                     exit 0
                   fi

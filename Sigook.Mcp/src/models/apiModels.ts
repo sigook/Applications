@@ -101,3 +101,28 @@ export interface UserInfo {
   nickname?: string | null;
   role?: unknown;
 }
+
+export interface CompanyProfileListModel {
+  id: string;
+  numberId: number;
+  fullName: string;
+  locations?: string[] | null;
+  active: boolean;
+  industry?: string | null;
+}
+
+export interface JobPositionModel {
+  id: string;
+  jobPosition: string | null;
+  rate: number;
+  workerRate: number;
+  [field: string]: unknown;
+}
+
+export interface TeamsFileModel {
+  name: string;
+  webUrl?: string | null;
+  size?: number | null;
+  lastModified?: string | null;
+  lastModifiedBy?: string | null;
+}

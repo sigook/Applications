@@ -1,3 +1,4 @@
+using Covenant.Infrastructure.Services;
 using Covenant.Core.BL.Interfaces.Agencies;
 using Covenant.Api.Validators.Requests;
 using Covenant.Common.Configuration;
@@ -71,6 +72,7 @@ public class CreateRequestServiceTest
         });
         currentUserService = new Mock<ICurrentUserService>();
         _companyRepository.Setup(cr => cr.GetAgencyId(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        _companyRepository.Setup(cr => cr.PaysHolidays(It.IsAny<Guid>())).ReturnsAsync(true);
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(_now, TimeSpan.Zero));
         _sut = new RequestService(
             _companyRepository.Object,
@@ -87,7 +89,8 @@ public class CreateRequestServiceTest
             new RequestCreateModelValidator(),
             new RequestUpdateRequirementsModelValidator(),
             new RequestAdapter(),
-            Mock.Of<IMediator>());
+            Mock.Of<IMediator>(),
+            new RichTextSanitizer());
         _model = new RequestCreateModel
         {
             JobTitle = "Waiter",
@@ -111,6 +114,30 @@ public class CreateRequestServiceTest
         _requestRepository.Verify(r => r.Create(It.Is<Request>(e => e.Status == RequestStatus.Open)), Times.Once);
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateRequestKeepsHolidayIsPaid(bool holidayIsPaid)
+    {
+        _model.HolidayIsPaid = holidayIsPaid;
+        Result<Guid> result = await _sut.CreateRequest(_model);
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e => e.HolidayIsPaid == holidayIsPaid)), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateRequestIsHolidayUnpaidWhenCompanyDoesNotPayHolidays()
+    {
+        _companyRepository.Setup(cr => cr.PaysHolidays(It.IsAny<Guid>())).ReturnsAsync(false);
+        _model.HolidayIsPaid = true;
+        Result<Guid> result = await _sut.CreateRequest(_model);
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e => !e.HolidayIsPaid)), Times.Once);
+    }
+
+    [Fact]
+    public void HolidayIsPaidDefaultsToTrue() => Assert.True(new RequestCreateModel().HolidayIsPaid);
 
     [Fact]
     public async Task CreateRequestWithComplianceItems()

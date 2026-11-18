@@ -94,7 +94,7 @@
 import { ref, computed, watch, onUnmounted } from 'vue';
 import { useAppStore } from '@/app/stores/app';
 import { useWorkerStore } from '@/modules/worker/store';
-import { getErrorMessage, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
+import { getErrorText, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import dayjs from 'dayjs';
 import { workerRegisterTime, getPunchStatus } from '@/modules/worker/requests/api';
 import { ClockType } from '@/shared/constants/enums';
@@ -341,7 +341,7 @@ async function registerHour() {
   } catch (error) {
     isLoading.value = false;
     const data = (error as { data?: unknown }).data;
-    const message = (await getErrorMessage(data)).replace(/<br\/>/g, ' ').trim();
+    const message = await getErrorText(data);
     if (/too far/i.test(message)) {
       punchRejected.value = { message, reference: punchReference() };
       return;

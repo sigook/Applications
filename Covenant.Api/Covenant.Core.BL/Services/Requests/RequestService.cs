@@ -45,9 +45,18 @@ public class RequestService(
     IValidator<RequestCreateModel> requestCreateValidator,
     IValidator<RequestUpdateRequirementsModel> requestUpdateRequirementsValidator,
     IRequestAdapter requestAdapter,
-    IMediator mediator) : IRequestService
+    IMediator mediator,
+    IRichTextSanitizer richTextSanitizer) : IRequestService
 {
     private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
+
+    private void SanitizeRichText(RequestCreateModel model)
+    {
+        model.Description = richTextSanitizer.Sanitize(model.Description);
+        model.Requirements = richTextSanitizer.Sanitize(model.Requirements);
+        model.InternalRequirements = richTextSanitizer.Sanitize(model.InternalRequirements);
+        model.Responsibilities = richTextSanitizer.Sanitize(model.Responsibilities);
+    }
 
     public Task<Result<Guid>> CreateRequest(RequestCreateModel model) => CreateRequest(model, submitForReview: false);
 
@@ -131,6 +140,7 @@ public class RequestService(
         model.ComplianceItems = null;
         model.UsesRunners = true;
         model.PunchCardOptionEnabled = true;
+        model.HolidayIsPaid = true;
         if (currentUserService.IsCompanyUser())
             model.CompanyUserIds = [currentUserService.GetUserId()];
         var requestId = await CreateRequest(model, submitForReview: true);
@@ -198,6 +208,7 @@ public class RequestService(
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
         var rRates = await ApplyRates(request, model);
         if (!rRates) return rRates;
+        SanitizeRichText(model);
         request.UpdateJobTitle(model.JobTitle);
         request.UpdateBillingTitle(model.BillingTitle);
         request.UpdateJobCosting(model.JobCosting);
@@ -210,6 +221,7 @@ public class RequestService(
         request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         request.UpdateDurationBreak(model.DurationBreak);
         request.UpdateBreakIsPaid(model.BreakIsPaid);
+        request.UpdateHolidayIsPaid(model.HolidayIsPaid && await companyRepository.PaysHolidays(request.CompanyProfileId));
         request.UpdateWorkersQuantity(model.WorkersQuantity);
         request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
         request.UpdateIsAsap(model.IsAsap);
@@ -270,7 +282,7 @@ public class RequestService(
         var validationResult = await requestUpdateRequirementsValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure();
         var request = await requestRepository.GetRequest(r => r.Id == id);
-        var update = request.UpdateRequirements(model.Requirements);
+        var update = request.UpdateRequirements(richTextSanitizer.Sanitize(model.Requirements));
         if (!update) return update;
         requestRepository.Update(request);
         await requestRepository.SaveChangesAsync();
@@ -387,6 +399,7 @@ public class RequestService(
             return Result.Fail<Request>(ValidationMessages.RequiredMsg(ApiResources.JobPosition));
         var validationResult = await requestCreateValidator.ValidateAsync(model);
         if (!validationResult.IsValid) return validationResult.ToResultFailure<Request>();
+        SanitizeRichText(model);
         var rRequest = Request.AgencyCreateRequest(
             model.CompanyProfileId,
             model.LocationId.Value,
@@ -401,21 +414,17 @@ public class RequestService(
             isPunchCardOptionEnabled: model.PunchCardOptionEnabled);
         if (!rRequest) return Result.Fail<Request>(rRequest.Errors);
         var entity = rRequest.Value;
-        entity.UpdateRates(model.WorkerSalary, entity.AgencyRate, entity.WorkerRate, entity.JobPositionRateId);
+        var rRates = await ApplyRates(entity, model);
+        if (!rRates) return Result.Fail<Request>(rRates.Errors);
         entity.UpdateInternalRequirements(model.InternalRequirements);
         entity.UpdateResponsibilities(model.Responsibilities);
-        if (entity.JobPositionRateId.HasValue)
-        {
-            var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
-            if (positionRate is null) return Result.Fail<Request>(ApiResources.InvalidJobPosition);
-            entity.UpdateRates(entity.WorkerSalary, positionRate.Rate, positionRate.WorkerRate, entity.JobPositionRateId);
-        }
         entity.UpdateJobTitle(model.JobTitle);
         entity.UpdateBillingTitle(model.BillingTitle);
         entity.UpdateJobCosting(model.JobCosting);
         entity.UpdateRequirements(model.Requirements);
         entity.UpdateDescription(model.Description);
         entity.UpdateDurationBreak(model.DurationBreak);
+        entity.UpdateHolidayIsPaid(model.HolidayIsPaid && await companyRepository.PaysHolidays(model.CompanyProfileId));
         entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         if (model.Shift != null)
         {
@@ -434,13 +443,13 @@ public class RequestService(
     {
         if (model.WorkerSalary.HasValue)
         {
-            request.UpdateRates(model.WorkerSalary.Value, null, null, null);
+            request.UseSalary(model.WorkerSalary.Value);
             return Result.Ok();
         }
         if (!model.JobPositionRateId.HasValue) return Result.Fail(ApiResources.InvalidJobPosition);
         var positionRate = await companyRepository.GetJobPosition(model.JobPositionRateId.Value);
         if (positionRate is null) return Result.Fail(ApiResources.InvalidJobPosition);
-        request.UpdateRates(null, positionRate.Rate, positionRate.WorkerRate, positionRate.Id);
+        request.UseJobPosition(positionRate);
         return Result.Ok();
     }
 
@@ -562,6 +571,7 @@ public class RequestService(
         model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
         model.Personnel = await agencyService.GetAgencyPersonnel([await companyRepository.GetAgencyId(companyProfileId)]);
         model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
+        model.CompanyPaidHolidays = await companyRepository.PaysHolidays(companyProfileId);
         return model;
     }
 

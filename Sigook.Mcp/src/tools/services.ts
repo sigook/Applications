@@ -2,14 +2,14 @@ import type { CatalogCache } from '../api/catalogCache.js';
 import type { ExportCache } from '../api/exportCache.js';
 import type { SigookApi } from '../api/sigookApi.js';
 import type { SigookSession } from '../auth/sigookSession.js';
-import type { ImportInstructions } from '../instructions/importInstructions.js';
+import type { Instructions } from '../instructions/instructions.js';
 
 export interface Services {
   session: SigookSession;
   api: SigookApi;
   catalog: CatalogCache;
   exports: ExportCache;
-  instructions: ImportInstructions;
+  instructions: Instructions;
 }
 
 export const jsonResult = (value: unknown) => ({

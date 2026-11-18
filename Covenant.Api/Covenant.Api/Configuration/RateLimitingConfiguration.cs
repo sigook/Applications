@@ -10,6 +10,12 @@ public static class RateLimitingConfiguration
     private const int PasswordResetSegmentsPerWindow = 5;
     private static readonly TimeSpan PasswordResetWindow = TimeSpan.FromMinutes(10);
 
+    public const string CandidateApplicationPolicy = "candidate-application";
+
+    private const int CandidateApplicationPermitsPerWindow = 30;
+    private const int CandidateApplicationSegmentsPerWindow = 5;
+    private static readonly TimeSpan CandidateApplicationWindow = TimeSpan.FromMinutes(10);
+
     public static IServiceCollection AddCovenantRateLimiting(this IServiceCollection services) =>
         services.AddRateLimiter(options =>
         {
@@ -26,6 +32,14 @@ public static class RateLimitingConfiguration
                     PermitLimit = PasswordResetPermitsPerWindow,
                     Window = PasswordResetWindow,
                     SegmentsPerWindow = PasswordResetSegmentsPerWindow,
+                    QueueLimit = 0
+                }));
+            options.AddPolicy(CandidateApplicationPolicy, httpContext =>
+                RateLimitPartition.GetSlidingWindowLimiter(ClientIp(httpContext), _ => new SlidingWindowRateLimiterOptions
+                {
+                    PermitLimit = CandidateApplicationPermitsPerWindow,
+                    Window = CandidateApplicationWindow,
+                    SegmentsPerWindow = CandidateApplicationSegmentsPerWindow,
                     QueueLimit = 0
                 }));
         });

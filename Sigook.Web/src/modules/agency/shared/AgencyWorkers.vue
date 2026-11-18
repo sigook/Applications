@@ -85,7 +85,7 @@
                 <span v-if="props.row.finishReason" class="fz-1">{{ WorkerRequestFinishReasonLabels[props.row.finishReason as WorkerRequestFinishReason] }}</span>
               </div>
               <i v-if="props.row.finishComments" class="worker-status__note fz-1">{{ props.row.finishComments }}</i>
-              <i v-if="props.row.rejectComments" class="worker-status__note fz-1" v-html="props.row.rejectComments"></i>
+              <i v-if="props.row.rejectComments" class="worker-status__note fz-1">{{ props.row.rejectComments }}</i>
             </div>
           </template>
         </b-table-column>

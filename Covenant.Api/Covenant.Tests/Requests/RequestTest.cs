@@ -81,7 +81,7 @@ public class RequestTest
     public void WorkerSalaryCountsAsRates()
     {
         var request = FakeData.FakeRequest(workerRate: null, agencyRate: null);
-        request.UpdateRates(50000M, null, null, null);
+        request.UseSalary(50000M);
 
         Assert.True(request.HasRates);
         Assert.True(request.IsAvailableToApply);

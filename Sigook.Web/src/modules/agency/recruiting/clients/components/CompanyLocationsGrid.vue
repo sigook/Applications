@@ -45,6 +45,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import RowActionsDropdown from '@/shared/ui/RowActionsDropdown.vue';
 import { ref } from 'vue';
 import { showAlertConfirm, showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -141,7 +142,7 @@ async function configureTax(location: AgencyCompanyLocationModel) {
     return;
   }
   getDialog().prompt({
-    message: `Tax (%) for ${formatLocation(location)}`,
+    message: `Tax (%) for ${escapeHtml(formatLocation(location))}`,
     inputAttrs: {
       type: 'number',
       step: '0.01',

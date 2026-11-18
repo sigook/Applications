@@ -65,17 +65,17 @@ While `PendingReview`, the request:
 - cannot be reopened through `Open()` (returns "must be approved");
 - can be edited by the company (requirements) and the agency, and cancelled by either.
 
-The agency approves through `PUT /api/agency/recruiting/requests/{id}/Approve` (policy `Recruiting` = admin + recruiting), which takes the full edit form (`RequestCreateModel`) so the reviewer can complete agency-only fields (rates, billing title, job costing, recruiters…) in the same step. `RequestService.ApproveRequest` first copies the rates of the selected role (or the direct-hiring salary) onto the request, then approves, adds a "Request approved" note and saves the form. Rejection = `Cancel` with a reason.
+The agency approves through `PUT /api/agency/recruiting/requests/{id}/Approve` (policy `Recruiting` = admin + recruiting), which takes the full edit form (`RequestCreateModel`) so the reviewer can complete agency-only fields (rates, billing title, job costing, recruiters…) in the same step. `RequestService.ApproveRequest` first assigns the selected role (or the direct-hiring salary) to the request, then approves, adds a "Request approved" note and saves the form. Rejection = `Cancel` with a reason.
 
 ### 1c. Rates gate (`HasRates`)
 
-`HasRates` = `WorkerSalary` set, or `AgencyRate > 0` and `WorkerRate > 0`. A role created by the company or a non-admin agency user has no rates until an agency admin sets them. While a request has no rates:
+`HasRates` = `WorkerSalary` set, or the request's role (`JobPositionRate`) has `Rate > 0` and `WorkerRate > 0`. A role created by the company or a non-admin agency user has no rates until an agency admin sets them. While a request has no rates:
 - `Approve` fails;
 - `AddWorker` fails and `IsAvailableToApply` is false (no bookings, no worker applications);
 - `SendInvitation` fails;
 - it is not listed in the worker job board (`GetAvailableRequest`) nor offered in the worker's request list.
 
-Setting the role rates (`PUT /api/agency/recruiting/clients/{profileId}/jobpositions/{id}`) copies them to every request of that role that still has no rates.
+The request stores no rates: every read (pay stubs, invoices, reports, lists, invitations) goes through `Request.JobPositionRate`. Setting or changing the role rates (`PUT /api/agency/recruiting/clients/{profileId}/jobpositions/{id}`) therefore applies at once to every request of that role and to every timesheet not yet paid or invoiced. Pay stubs and invoices already generated keep their own amounts (`PayStubWageDetail.WorkerRate`, `InvoiceTotal.AgencyRate`).
 
 ### 2. `AddWorker(Guid workerProfileId, DateTime startWorking, string createdBy = null)` (`Request.cs:94`)
 

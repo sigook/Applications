@@ -40,7 +40,7 @@ Each environment keeps its own token file.
 | Tool | Endpoint | Purpose |
 |---|---|---|
 | `sigook_login` / `sigook_logout` / `sigook_whoami` | `connect/*` | Session and environment check |
-| `get_import_instructions` | embedded | Workflow + source mapping, auto-detect by headers |
+| `get_instructions` | embedded | Instructions of a workflow by `topic`; for `import-candidates` also the source mapping, auto-detected by headers |
 | `read_export` | local | Reads a folder or zip: CSV rows as raw header/value maps + local path of every pdf/doc/docx. Zips extract once to `%LOCALAPPDATA%\Sigook.Mcp\exports\<hash>` |
 | `read_document` | local | Text of a pdf/docx/txt (`unpdf`, `mammoth`) so the harness can extract skills, address and experience from a resume. Scanned PDFs return empty text |
 | `read_documents` | local | Same as `read_document` for up to 20 files in one call, 6000 chars per document by default. A missing or unsupported file returns `{ path, error }` for that entry only |
@@ -55,29 +55,38 @@ Each environment keeps its own token file.
 | `add_candidate_document` | `POST .../candidates/{id}/documents` | Extra file |
 | `add_candidate_note` | `POST .../candidates/{id}/notes` | Free text |
 | `apply_candidate_to_request` | `POST agency/recruiting/requests/{id}/applicants` | Candidate as applicant, comments included |
+| `find_teams_files` | `GET agency/teams/files?team=&channel=&name=` | Files of a private/shared Teams channel whose name matches, newest first. Admin only |
+| `download_teams_file` | `GET agency/teams/files/content?team=&channel=&name=` | Exact file name → `%LOCALAPPDATA%\Sigook.Mcp\teams\<team>\<channel>\<name>`. Admin only |
+| `read_workbook` | local | Sheets of a .xlsx + a page of rows (`exceljs`); formula cells return their cached value |
+| `find_companies` | `GET agency/recruiting/clients?BusinessInfo=` | Company profiles by name or location → `profileId` |
+| `list_company_roles` | `GET agency/recruiting/clients/{profileId}/jobpositions/Dropdown` | Roles with `workerRate` (pay) and `rate` (bill) |
+| `compare_role_rates` | `Dropdown` above + local workbook | Matches each role to a quote row by category + state + city parsed from its name (`src/rates/`); status `equal`, `different`, `ambiguous`, `no-quote`, `unparsed`. Read-only |
+| `update_role_rates` | `GET` + `PUT agency/recruiting/clients/{profileId}/jobpositions/{id}` | Changes only `workerRate`/`rate` of the confirmed roles; returns before/after per role |
+
+The Teams endpoints read the SharePoint site that Teams creates for a private or shared channel (`/sites/{team}-{channel}`, e.g. `Covenant-Management`) with the API's app-only Graph client, which only has `Sites.Read.All` + `Files.Read.All` (no Teams permissions), and search the file by name anywhere in that site. Standard channels have no site of their own and are not supported there.
 
 `import_candidate` writes nothing when the phone is invalid, the city is unknown or the resume path is missing (`step` says which). Write tools return `{ success, ... }` or `{ success: false, statusCode, error }` with the API body untouched, so the harness can report validation errors (duplicated email/phone, bad format) row by row.
 
-## Import instructions travel with the server
+## Instructions travel with the server
 
-The server does not know ZipRecruiter or Indeed in code. The workflow and every column mapping are Markdown files shipped in the package (`Sigook.Mcp/instructions/`), so any client that installs it gets them without cloning this repo.
+The server does not know workflows, ZipRecruiter or Indeed in code. Every workflow and every column mapping is a Markdown file shipped in the package (`Sigook.Mcp/instructions/`), so any client that installs it gets them without cloning this repo.
 
 | File | Role |
 |---|---|
-| `instructions/workflow.md` | Generic step-by-step import workflow |
-| `instructions/<source>.md` | One per job board. Front matter: `name`, `title`, `description`, `detect` (CSV headers that identify the source, comma-separated) |
+| `instructions/<topic>.md` | One per workflow (`import-candidates.md`, ...). Front matter: `name` (the topic), `title`, `description` (one line) |
+| `instructions/sources/<source>.md` | One per job board, used by `import-candidates`. Front matter: `name`, `title`, `description`, `detect` (CSV headers that identify the source, comma-separated) |
+
+Token cost: the server `instructions` sent on `initialize` are built from the front matter, one line per topic (`- <name>: <description>`), and every session loads them. The body of a topic loads only when the model calls `get_instructions(topic)`, so a workflow file can grow without costing anything to sessions that do not run it. Keep `description` to one line.
 
 Exposed three ways, so every MCP client can reach them:
 
 | Mechanism | Id | Notes |
 |---|---|---|
 | Prompt | `import-candidates(path, source?)` | Claude Code: `/mcp__sigook__import-candidates`. Without `source` the prompt tells the model to auto-detect |
-| Resources | `sigook://instructions/import-candidates`, `sigook://mappings/{source}` | Markdown |
-| Tool | `get_import_instructions(source?, headers?)` | Fallback for clients without prompts/resources; with `headers` it auto-detects the source |
+| Resources | `sigook://instructions/{topic}` (listed), `sigook://mappings/{source}` | Markdown |
+| Tool | `get_instructions(topic, source?, headers?)` | Works in every client; `source`/`headers` only apply to `import-candidates`, and with `headers` it auto-detects the source |
 
-The server `instructions` sent on `initialize` point the model at `get_import_instructions`.
-
-New job board = add `instructions/<source>.md` and republish the package. No code change.
+New workflow = add `instructions/<topic>.md` (plus its tools). New job board = add `instructions/sources/<source>.md` and republish the package, no code change.
 
 ## Installing (people without the repo)
 
@@ -105,4 +114,4 @@ cd Sigook.Mcp && npm ci && npm test
 
 Claude Code starts the server from `.mcp.json` (`dist/index.js`, `SIGOOK_ENV=staging`). To target production for a session, override the variable: `SIGOOK_ENV=production`.
 
-Smoke test without a client: send JSON-RPC lines (`initialize`, `tools/list`, `tools/call`) to the process stdin; `sigook_whoami`, `normalize_phone`, `read_export` and `get_import_instructions` work without signing in.
+Smoke test without a client: send JSON-RPC lines (`initialize`, `tools/list`, `tools/call`) to the process stdin; `sigook_whoami`, `normalize_phone`, `read_export` and `get_instructions` work without signing in.

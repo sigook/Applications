@@ -1,3 +1,4 @@
+import { escapeHtml } from '@/shared/utils/html';
 import { ref, type Ref } from 'vue';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
@@ -50,7 +51,7 @@ export function useApplicantStatusActions(onChanged: (status: RequestApplicantSt
   function confirmCancel(target: ApplicantStatusTarget) {
     getDialog().confirm({
       title: 'Cancel applicant',
-      message: `Cancel <strong>${target.name}</strong>? Their compliance checks are kept and the applicant can be reopened later.`,
+      message: `Cancel <strong>${escapeHtml(target.name)}</strong>? Their compliance checks are kept and the applicant can be reopened later.`,
       confirmText: 'Cancel applicant',
       cancelText: 'Keep',
       type: 'is-danger',

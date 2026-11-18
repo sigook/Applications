@@ -58,7 +58,7 @@ Prospect managed by the agency that does NOT yet have a user account (`Covenant.
 
 ## Revenue Model
 
-Agency profit = markup between the two rates on `CompanyProfileJobPositionRate` (copied onto each `Request` as `AgencyRate` / `WorkerRate`):
+Agency profit = markup between the two rates on `CompanyProfileJobPositionRate` (`Rate` / `WorkerRate`), read by each `Request` through its role:
 
 ```
 AgencyRate ($25/hr billed to Company) − WorkerRate ($18/hr paid to Worker) = $7/hr markup

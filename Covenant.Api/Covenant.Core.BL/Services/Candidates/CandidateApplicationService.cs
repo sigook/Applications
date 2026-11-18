@@ -3,6 +3,7 @@ using Covenant.Common.Constants;
 using Covenant.Common.Entities.Requests;
 using Covenant.Common.Entities;
 using Covenant.Common.Enums;
+using Covenant.Common.Functionals;
 using Covenant.Common.Interfaces.Storage;
 using Covenant.Common.Interfaces;
 using Covenant.Common.Models.Candidates;
@@ -14,6 +15,7 @@ using Covenant.Common.Repositories.Candidates;
 using Covenant.Common.Repositories.Requests;
 using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
+using Covenant.Common.Resources;
 using Covenant.Core.BL.Interfaces.Candidates;
 using FluentValidation;
 using Microsoft.Extensions.Options;
@@ -33,11 +35,32 @@ public class CandidateApplicationService(
     IMessagePublisher messagePublisher,
     ITeamsService teamsService,
     IOptions<ServiceBusConfiguration> serviceBusOptions,
-    IOptions<TeamsWebhookConfiguration> teamsWebhookOptions) : ICandidateApplicationService
+    IOptions<TeamsWebhookConfiguration> teamsWebhookOptions,
+    IOptions<FilesConfiguration> filesOptions) : ICandidateApplicationService
 {
     private const string Source = "Sigook";
+    private static readonly string[] ResumeExtensions = [".pdf", ".doc", ".docx"];
     private readonly ServiceBusConfiguration serviceBusConfiguration = serviceBusOptions.Value;
     private readonly TeamsWebhookConfiguration teamsWebhookConfiguration = teamsWebhookOptions.Value;
+    private readonly FilesConfiguration filesConfiguration = filesOptions.Value;
+
+    public async Task<Result> SubmitApplication(CandidateViewModel candidate, Stream resume, string resumeFileName)
+    {
+        candidate.FileName = null;
+        if (resume is not null)
+        {
+            var extension = Path.GetExtension(resumeFileName ?? string.Empty).ToLowerInvariant();
+            if (!ResumeExtensions.Contains(extension)) return Result.Fail($"Invalid format {extension}");
+            if (resume.Length > filesConfiguration.MaximumFileSize) return Result.Fail(ApiResources.MaxSizeFileError);
+
+            var blobName = $"{Guid.NewGuid()}{extension}";
+            var upload = await filesContainer.UploadAsync(resume, blobName);
+            if (!upload) return upload;
+            candidate.FileName = blobName;
+        }
+        await messagePublisher.SendMessageAsync(candidate, serviceBusConfiguration.ValidateCandidateQueue);
+        return Result.Ok();
+    }
 
     public async Task ProcessApplication(CandidateViewModel message)
     {
@@ -49,7 +72,10 @@ public class CandidateApplicationService(
         }
         if (!string.IsNullOrWhiteSpace(outcome.Error))
         {
-            await filesContainer.DeleteFileIfExists(message.FileName);
+            if (!string.IsNullOrWhiteSpace(message.FileName))
+            {
+                await filesContainer.DeleteFileIfExists(message.FileName);
+            }
             properties[ServiceBusSqlConstants.ErrorCandidate] = outcome.Error;
         }
         await messagePublisher.SendMessageAsync(outcome.Body, serviceBusConfiguration.CreateApplicantTopic, properties);

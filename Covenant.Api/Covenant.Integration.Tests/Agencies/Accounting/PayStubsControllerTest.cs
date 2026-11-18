@@ -368,11 +368,7 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         public PaidWorker(Agency agency, CompanyProfile company, City city, string key, bool approved = true)
         {
             Profile = FakeData.FakeWorkerProfile(agency, $"{key}@paystub-worker.com", city);
-            request = new Request(company, FakeData.FakeJobPositionRate(company))
-            {
-                AgencyRate = 30,
-                WorkerRate = Data.WorkerRate
-            };
+            request = new Request(company, FakeData.FakeJobPositionRate(company, rate: 30, workerRate: Data.WorkerRate));
             request.UpdateJobLocation(FakeData.FakeLocation(city), false);
             workerRequest = WorkerRequest.AgencyBook(Profile.Id, request.Id);
             timeSheets = [Day(workerRequest, Data.FakeNow, approved), Day(workerRequest, Data.FakeNow.AddDays(1), approved)];

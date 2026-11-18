@@ -6,14 +6,6 @@
 
     <div class="columns is-multiline">
       <div class="column is-12">
-        <b-field>
-          <b-checkbox v-model="paidHolidays">
-            Paid Holidays
-          </b-checkbox>
-        </b-field>
-      </div>
-
-      <div class="column is-12">
         <b-field label="Overtime Starts After" :type="formErrors.overtimeStartsAfter ? 'is-danger' : ''"
           :message="formErrors.overtimeStartsAfter">
           <b-input v-model="overtimeStartsAfter" name="overtimeStartsAfter" type="number" step="1"></b-input>
@@ -61,10 +53,8 @@ const { overtimeStartsAfter } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
-const paidHolidays = ref(false);
 
 if (currentSettings) {
-  paidHolidays.value = !!currentSettings.paidHolidays;
   form.setFieldValue('overtimeStartsAfter', currentSettings.overtimeStartsAfter ?? null);
 }
 
@@ -76,7 +66,6 @@ async function saveSettings() {
     return;
   }
   const settings: ProvinceSettings = {
-    paidHolidays: paidHolidays.value,
     overtimeStartsAfter:
       overtimeStartsAfter.value === null || String(overtimeStartsAfter.value) === ''
         ? null

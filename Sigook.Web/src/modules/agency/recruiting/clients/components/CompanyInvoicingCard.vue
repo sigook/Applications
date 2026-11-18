@@ -36,6 +36,7 @@
 </template>
 
 <script setup lang="ts">
+import { escapeHtml } from '@/shared/utils/html';
 import { computed, ref } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
@@ -109,7 +110,7 @@ async function removeRecipient(recipient: InvoiceRecipientModel, index: number) 
   if (!recipient.id) return;
   const id = recipient.id;
   try {
-    if (!(await showAlertConfirm('Are you sure', `Remove ${recipient.email} from invoice recipients`))) return;
+    if (!(await showAlertConfirm('Are you sure', `Remove ${escapeHtml(recipient.email)} from invoice recipients`))) return;
     await deleteCompanyInvoiceRecipient(profileId, id);
     recipients.value.splice(index, 1);
   } catch (error) {
