@@ -1,3 +1,9 @@
+---
+name: import-candidates
+title: Import candidates
+description: import candidates from a job-board export (folder or zip with CSV + resumes).
+---
+
 # Import candidates into Sigook
 
 You drive the `sigook` MCP server. It talks to the Sigook API as the signed-in person; it never decides mappings or loops on its own. You do.
@@ -6,7 +12,7 @@ You drive the `sigook` MCP server. It talks to the Sigook API as the signed-in p
 
 1. `sigook_whoami`. Confirm the environment with the user when it is production. If `signedIn` is false, call `sigook_login` and tell the user a browser window opened for their Microsoft 365 account.
 2. `read_export` with the folder or zip. Keep `take` small (20) on the first call to look at headers and a sample; then page with `skip`/`take`.
-3. Pick the source mapping from the headers (`get_import_instructions` lists every mapping with the headers that identify it). If none matches, derive the mapping from the headers, show it to the user and get a yes before writing.
+3. Pick the source mapping from the headers (`get_instructions` with topic `import-candidates` lists every mapping with the headers that identify it). If none matches, derive the mapping from the headers, show it to the user and get a yes before writing.
 4. `list_skills` once and keep the vocabulary. Sources are matched by name inside `import_candidates`.
 
 ## Per batch

@@ -293,13 +293,12 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
             .Where(wp => agencyIds.Contains(wp.AgencyId))
             .WhereSearch(searchTerm,
                 wp => wp.FirstName, wp => wp.MiddleName, wp => wp.LastName, wp => wp.SecondLastName,
-                wp => wp.Worker.Email, wp => wp.SocialInsurance);
+                wp => wp.Worker.Email);
         var query = workerProfiles
             .Select(wp => new AgencyWorkerDropdownModel
             {
                 Id = wp.WorkerId,
                 WorkerProfileId = wp.Id,
-                SocialInsurance = wp.SocialInsurance,
                 FullName = wp.FirstName +
                     (string.IsNullOrWhiteSpace(wp.MiddleName) ? string.Empty : " " + wp.MiddleName) +
                     " " + wp.LastName +

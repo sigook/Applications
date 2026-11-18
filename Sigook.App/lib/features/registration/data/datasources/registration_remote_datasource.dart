@@ -23,13 +23,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     String? identificationType2FileName;
     String? resumeFileName;
 
-    debugPrint(
-      '🔍 DEBUG: identificationType1File = ${request.identificationType1File}',
-    );
-    debugPrint(
-      '🔍 DEBUG: identificationType1File?.filePath = ${request.identificationType1File?.filePath}',
-    );
-
     if (request.profileImage != null) {
       profileImageFileName = FileNamingService.generateProfileImageName(
         request.profileImage!.pathFile,
@@ -39,13 +32,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     if (request.identificationType1File?.filePath != null) {
       identificationType1FileName = FileNamingService.generateDocumentName(
         request.identificationType1File!.filePath!,
-      );
-      debugPrint(
-        '🔍 DEBUG: Generated identificationType1FileName = $identificationType1FileName',
-      );
-    } else {
-      debugPrint(
-        '⚠️ DEBUG: identificationType1File is null or has no filePath!',
       );
     }
 
@@ -69,20 +55,10 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     );
     final jsonData = workerData.toJson();
 
-    debugPrint('╔═══ WORKER REGISTRATION REQUEST (MULTIPART) ═══');
-    debugPrint('║');
-    debugPrint('║ 📋 Form Field: "data" (JSON string)');
-    const encoder = JsonEncoder.withIndent('  ');
-    final prettyJson = encoder.convert(jsonData);
-    debugPrint('║ ${prettyJson.replaceAll('\n', '\n║ ')}');
-    debugPrint('║');
-    debugPrint('║ 📎 Files to attach:');
-
     final data = FormData();
     data.fields.add(MapEntry('data', jsonEncode(jsonData)));
 
     if (request.profileImage != null && profileImageFileName != null) {
-      debugPrint('║   - $profileImageFileName');
       data.files.add(
         MapEntry(
           profileImageFileName,
@@ -97,7 +73,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     if (request.identificationType1File != null &&
         request.identificationType1File!.filePath != null &&
         identificationType1FileName != null) {
-      debugPrint('║   - $identificationType1FileName');
       data.files.add(
         MapEntry(
           identificationType1FileName,
@@ -112,7 +87,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     if (request.identificationType2File != null &&
         request.identificationType2File!.filePath != null &&
         identificationType2FileName != null) {
-      debugPrint('║   - $identificationType2FileName');
       data.files.add(
         MapEntry(
           identificationType2FileName,
@@ -127,7 +101,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
     if (request.resume != null &&
         request.resume!.filePath != null &&
         resumeFileName != null) {
-      debugPrint('║   - $resumeFileName');
       data.files.add(
         MapEntry(
           resumeFileName,
@@ -138,11 +111,6 @@ class RegistrationRemoteDataSourceImpl implements RegistrationRemoteDataSource {
         ),
       );
     }
-
-    debugPrint('║');
-    debugPrint('║ 📦 Total files: ${data.files.length}');
-    debugPrint('║ 📋 Total form fields: ${data.fields.length}');
-    debugPrint('╚════════════════════════════════════════════════');
 
     const retryOptions = RetryOptions(
       maxAttempts: 3,

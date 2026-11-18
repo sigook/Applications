@@ -7167,6 +7167,140 @@
         }
       }
     },
+    "/api/agency/teams/files": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Searches the files of a private or shared Teams channel (its own SharePoint site, team-channel) whose name or content matches Name, most recently modified first.",
+        "parameters": [
+          {
+            "name": "Team",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Channel",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Models.Teams.TeamsChannelFileModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
+    "/api/agency/teams/files/content": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Downloads the file of a private or shared Teams channel whose name is exactly Name.",
+        "parameters": [
+          {
+            "name": "Team",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Channel",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          },
+          {
+            "name": "Name",
+            "in": "query",
+            "schema": {
+              "$ref": "#/components/schemas/System.String"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileStreamResult"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.FileStreamResult"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              },
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Microsoft.AspNetCore.Mvc.ProblemDetails"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error"
+          },
+          "401": {
+            "description": "Unauthorized — authentication required"
+          },
+          "403": {
+            "description": "Forbidden — insufficient permissions"
+          }
+        }
+      }
+    },
     "/api/agency/sales/agencies": {
       "get": {
         "tags": [
@@ -33697,6 +33831,47 @@
           }
         }
       },
+      "Covenant.Common.Models.Teams.TeamsChannelFileModel": {
+        "required": [
+          "name",
+          "webUrl",
+          "size",
+          "lastModified",
+          "lastModifiedBy"
+        ],
+        "type": "object",
+        "properties": {
+          "name": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "webUrl": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "size": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.Int64, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "lastModified": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTimeOffset, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "lastModifiedBy": {
+            "$ref": "#/components/schemas/System.String"
+          }
+        }
+      },
       "Covenant.Common.Models.Website.ContactDto": {
         "type": "object",
         "properties": {
@@ -33803,9 +33978,6 @@
           "id": {
             "$ref": "#/components/schemas/System.Guid"
           },
-          "socialInsurance": {
-            "$ref": "#/components/schemas/System.String"
-          },
           "fullName": {
             "$ref": "#/components/schemas/System.String"
           },
@@ -33820,9 +33992,6 @@
           },
           "approvedToWork": {
             "$ref": "#/components/schemas/System.Boolean"
-          },
-          "value": {
-            "$ref": "#/components/schemas/System.String"
           }
         }
       },
@@ -34460,6 +34629,50 @@
           }
         }
       },
+      "Microsoft.AspNetCore.Mvc.FileStreamResult": {
+        "type": "object",
+        "properties": {
+          "fileStream": {
+            "$ref": "#/components/schemas/System.IO.Stream"
+          },
+          "contentType": {
+            "$ref": "#/components/schemas/System.String"
+          },
+          "fileDownloadName": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.String"
+              }
+            ]
+          },
+          "lastModified": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/System.Nullable`1[[System.DateTimeOffset, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
+              }
+            ]
+          },
+          "entityTag": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/Microsoft.Net.Http.Headers.EntityTagHeaderValue"
+              }
+            ]
+          },
+          "enableRangeProcessing": {
+            "$ref": "#/components/schemas/System.Boolean"
+          }
+        }
+      },
       "Microsoft.AspNetCore.Mvc.ProblemDetails": {
         "type": "object",
         "properties": {
@@ -34827,6 +35040,12 @@
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/Covenant.Common.Enums.WorkerRequirement"
+        }
+      },
+      "System.Collections.Generic.IReadOnlyList`1[[Covenant.Common.Models.Teams.TeamsChannelFileModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/Covenant.Common.Models.Teams.TeamsChannelFileModel"
         }
       },
       "System.Collections.Generic.List`1[[Covenant.Common.Enums.DealStatus, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -35300,10 +35519,7 @@
         "format": "int64"
       },
       "System.IO.Stream": {
-        "type": [
-          "null",
-          "string"
-        ],
+        "type": "string",
         "format": "binary"
       },
       "System.Nullable`1[[Covenant.Common.Enums.DealType, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]": {
@@ -35508,6 +35724,9 @@
     },
     {
       "name": "Notifications"
+    },
+    {
+      "name": "Teams"
     },
     {
       "name": "Agencies"

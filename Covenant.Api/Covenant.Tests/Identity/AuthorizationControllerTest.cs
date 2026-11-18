@@ -109,6 +109,24 @@ public class AuthorizationControllerTest
     }
 
     [Fact]
+    public async Task PasswordGrant_DisabledMicrosoft365Account_ReturnsInactiveUser()
+    {
+        _sessionValidator.Setup(s => s.IsActive(_user)).ReturnsAsync(false);
+
+        IActionResult result = await Controller(PasswordGrant()).Exchange();
+
+        AssertInvalidGrant(result, "inactive_user");
+    }
+
+    [Fact]
+    public async Task PasswordGrant_WrongPassword_DoesNotCheckTheMicrosoft365Account()
+    {
+        await Controller(PasswordGrant(password: "wrong")).Exchange();
+
+        _sessionValidator.Verify(s => s.IsActive(It.IsAny<CovenantUser>()), Times.Never);
+    }
+
+    [Fact]
     public async Task PasswordGrant_LockedOut_ReturnsLockedOut()
     {
         _signInManager.Setup(s => s.CheckPasswordSignInAsync(_user, Password, true)).ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.LockedOut);

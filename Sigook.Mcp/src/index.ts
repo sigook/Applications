@@ -9,12 +9,14 @@ import { SigookSession } from './auth/sigookSession.js';
 import { TokenStore } from './auth/tokenStore.js';
 import { environmentFromProcess } from './config/environment.js';
 import { packageVersion } from './config/packageInfo.js';
-import { ImportInstructions } from './instructions/importInstructions.js';
+import { Instructions } from './instructions/instructions.js';
 import { registerCandidateTools } from './tools/candidateTools.js';
+import { registerCompanyRateTools } from './tools/companyRateTools.js';
 import { registerDocumentTools } from './tools/documentTools.js';
 import { registerExportTools } from './tools/exportTools.js';
+import { registerFileTools } from './tools/fileTools.js';
 import { registerImportCandidateTools } from './tools/importCandidateTools.js';
-import { registerImportTools } from './tools/importTools.js';
+import { registerInstructionTools } from './tools/instructionTools.js';
 import { registerLookupTools } from './tools/lookupTools.js';
 import { registerSessionTools } from './tools/sessionTools.js';
 import type { Services } from './tools/services.js';
@@ -26,24 +28,27 @@ if (environment.allowInvalidCertificates) process.env.NODE_TLS_REJECT_UNAUTHORIZ
 
 const session = new SigookSession(new TokenStore(environment.name), new PkceLoginFlow(environment), environment);
 const api = new SigookApi(session, environment);
+const instructions = new Instructions();
 const services: Services = {
   session,
   api,
   catalog: new CatalogCache(api),
   exports: new ExportCache(),
-  instructions: new ImportInstructions()
+  instructions
 };
 
 const server = new McpServer({ name: 'sigook', version: packageVersion }, {
-  instructions: 'Sigook staffing platform. Call sigook_whoami first to confirm the target environment and session. To import candidates from a job-board export, call get_import_instructions before anything else: it returns the workflow and the column mapping of the source.'
+  instructions: instructions.serverInstructions()
 });
 
 registerSessionTools(server, services);
 registerLookupTools(server, services);
 registerExportTools(server, services);
 registerDocumentTools(server);
-registerImportTools(server, services);
+registerInstructionTools(server, services);
 registerImportCandidateTools(server, services);
 registerCandidateTools(server, services);
+registerFileTools(server, services);
+registerCompanyRateTools(server, services);
 
 await server.connect(new StdioServerTransport());

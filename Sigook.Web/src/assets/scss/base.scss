@@ -1,4 +1,5 @@
 @use "sass:color";
+@use "sass:list";
 @import 'variables';
 @import url("https://fonts.googleapis.com/css?family=Raleway");
 
@@ -519,7 +520,7 @@ $agency-flag-colors: $navy, $purple, $green-text, $accent-text, $grey-dark, $dan
   }
 
   @each $color in $agency-flag-colors {
-    &--agency-#{index($agency-flag-colors, $color) - 1} {
+    &--agency-#{list.index($agency-flag-colors, $color) - 1} {
       background: $color;
       color: $white;
     }

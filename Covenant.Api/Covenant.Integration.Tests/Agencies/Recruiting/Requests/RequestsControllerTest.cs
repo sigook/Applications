@@ -239,7 +239,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         var entity = await context.Requests.SingleAsync(s => s.Id == request.Id);
         Assert.Equal(model.JobTitle, entity.JobTitle);
         Assert.Equal(model.Description, entity.Description);
-        Assert.Equal(model.Requirements, entity.Requirements);
+        Assert.Equal(model.Requirements, entity.Requirements, ignoreLineEndingDifferences: true);
         Assert.Equal(Data.FakeLocation.FormattedAddress, entity.JobLocation.FormattedAddress);
         Assert.Equal(model.WorkerSalary, entity.WorkerSalary);
         Assert.NotNull(entity.UpdatedAt);

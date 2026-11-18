@@ -300,7 +300,7 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 - Node 22
 - `npm ci` + `npm test` in `Sigook.Mcp/` (compiles and runs the unit tests)
 - Not on PRs (left out at compile time): `npmAuthenticate@0` → `npm publish` to `https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/registry/`
-- Version = `version` of `package.json`; `dev` builds get the suffix `-dev.<BuildId>` and the dist-tag `dev` (prerelease), `main` runs publish the bare version with the dist-tag `latest` (stable). Bump `version` before a stable release; an already published version is skipped so re-runs stay green.
+- Version = `version` of `package.json`; `dev` builds get the suffix `-dev.<BuildId>` and the dist-tag `dev` (prerelease), `main` runs publish the bare version with the dist-tag `latest` (stable). Bump `version` in `package.json` and `package-lock.json` before a stable release: a `main` run fails when that version is already in the feed. An already published `dev` version is skipped so re-runs stay green.
 - Feed `sigook-tools` (project `sigook`, id `32651ba0-bb2e-4877-9fdf-d6ac5d0fc44a`): both build services are Contributor, `Project Collection Valid Users` are Reader, so anyone in the Azure DevOps org can install from it. No upstreams: `Sigook.Mcp/.npmrc` routes only the `@sigook` scope to the feed.
 
 ### Sigook.CognitiveServices (.NET 8 Web App)

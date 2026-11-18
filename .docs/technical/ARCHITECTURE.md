@@ -510,7 +510,9 @@ Local development connects to the **staging** Service Bus — services and contr
   those pages. The API serves no HTML pages: `Views/` only holds email templates.
 - **Browser sign-in is Microsoft 365 only.** `/connect/authorize` without a session always goes to
   `External/Challenge` (also the cookie `LoginPath`); a rejected staff login lands on
-  `{WebClientUrl}/login?error=invalid_user`.
+  `{WebClientUrl}/login?error=invalid_user`. The callback only admits accounts whose email ends in
+  `@covenantgroupl.com` or `@sigook.com` (`ExternalController.StaffEmailDomains`) and that match a
+  Sigook user with at least one role.
 - **User administration** (create user, agency/company claims, role and email changes,
   deactivation) happens in-process through `IUserAdministrationService`; the API writes the
   identity database directly (`ConnectionStrings:IdentityConnection`) and mirrors the user in its
