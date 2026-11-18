@@ -31567,6 +31567,9 @@
           "breakIsPaid": {
             "$ref": "#/components/schemas/System.Boolean"
           },
+          "holidayIsPaid": {
+            "$ref": "#/components/schemas/System.Boolean"
+          },
           "incentive": {
             "oneOf": [
               {

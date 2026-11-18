@@ -111,7 +111,7 @@ Pay stubs, invoices, subcontractor reports and the holiday-pay base all pass the
 
 ### 2. Holiday gate
 
-Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:99). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. (Invoicing hardcodes `holidayIsPaid: true`; pay stubs honor the flag.)
+Hours become `HolidayHours` only when `IsHoliday && HolidayIsPaid` (TimesheetCalculatorService.cs:99). In that case all hours of the day are holiday hours and are **not** added to the weekly accumulator. A holiday with `HolidayIsPaid = false` is processed as a normal day. `HolidayIsPaid` comes from `Request.HolidayIsPaid`, set per request by the agency in the request form ("Holiday is paid", default on; company-created requests start on and the agency can change it when approving). It is unrelated to `CompanyProfile.PaidHolidays`/`ProvinceSetting.PaidHolidays`, which only drive the not-worked holiday pay. (Invoicing hardcodes `holidayIsPaid: true`; pay stubs honor the flag.)
 
 ### 3. Weekly accumulation — per Worker + Week + Request
 

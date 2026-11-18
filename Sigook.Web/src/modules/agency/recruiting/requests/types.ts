@@ -360,6 +360,7 @@ export interface AgencyRequestFormState {
   internalRequirements?: string;
   durationBreak: Date;
   breakIsPaid: boolean;
+  holidayIsPaid: boolean;
   durationTerm: DurationTerm;
   employmentType: EmploymentType;
   isAsap: boolean;

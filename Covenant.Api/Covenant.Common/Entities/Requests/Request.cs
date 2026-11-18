@@ -306,6 +306,7 @@ public class Request
     public void UpdateResponsibilities(string responsibilities) => Responsibilities = responsibilities;
 
     public void UpdateBreakIsPaid(bool breakIsPaid) => BreakIsPaid = breakIsPaid;
+    public void UpdateHolidayIsPaid(bool holidayIsPaid) => HolidayIsPaid = holidayIsPaid;
 
     public void UpdateWorkersQuantity(int workersQuantity) => WorkersQuantity = workersQuantity;
 

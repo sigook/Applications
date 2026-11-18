@@ -114,6 +114,20 @@ public class CreateRequestServiceTest
         _requestRepository.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CreateRequestKeepsHolidayIsPaid(bool holidayIsPaid)
+    {
+        _model.HolidayIsPaid = holidayIsPaid;
+        Result<Guid> result = await _sut.CreateRequest(_model);
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e => e.HolidayIsPaid == holidayIsPaid)), Times.Once);
+    }
+
+    [Fact]
+    public void HolidayIsPaidDefaultsToTrue() => Assert.True(new RequestCreateModel().HolidayIsPaid);
+
     [Fact]
     public async Task CreateRequestWithComplianceItems()
     {

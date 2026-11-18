@@ -145,6 +145,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
             Description = "It is a long established fact that a reader will be distracted by the readable content of a page when looking at its layout.",
             DurationBreak = TimeSpan.FromMinutes(15),
             BreakIsPaid = true,
+            HolidayIsPaid = false,
             Incentive = 10,
             IncentiveDescription = "Incentive",
             Requirements = "There are many variations of passages of Lorem Ipsum available, but the majority have suffered alteration in some form, by injected humour, or randomised words which don't look even slightly believable.",
@@ -231,7 +232,8 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
                          Nunc et nulla sit amet lectus sagittis mattis vitae ut ante. Cras augue magna, vulputate quis erat quis, eleifend cursus metus. Aliquam sed scelerisque est. Aenean eu tellus metus. Maecenas eget maximus magna. Proin at urna vel sem tincidunt ultrices. Quisque interdum lorem ac accumsan vulputate. In eu imperdiet ipsum. Aenean et nibh vitae magna maximus ultricies sollicitudin et nulla. In condimentum lobortis risus vitae feugiat. In sollicitudin mollis felis id rhoncus. Lorem ipsum dolor sit amet, 
                          consectetur adipiscing elit. Mauris consequat eros id neque efficitur hendrerit.",
             LocationId = Data.FakeLocation.Id,
-            WorkerSalary = 50_000m
+            WorkerSalary = 50_000m,
+            HolidayIsPaid = false
         };
         HttpResponseMessage response = await _client.PutAsJsonAsync(updateUrl, model);
         response.EnsureSuccessStatusCode();
@@ -242,6 +244,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.Requirements, entity.Requirements, ignoreLineEndingDifferences: true);
         Assert.Equal(Data.FakeLocation.FormattedAddress, entity.JobLocation.FormattedAddress);
         Assert.Equal(model.WorkerSalary, entity.WorkerSalary);
+        Assert.False(entity.HolidayIsPaid);
         Assert.NotNull(entity.UpdatedAt);
     }
 
@@ -416,6 +419,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.Description, entity.Description);
         Assert.Equal(model.DurationBreak, entity.DurationBreak);
         Assert.Equal(model.BreakIsPaid, entity.BreakIsPaid);
+        Assert.Equal(model.HolidayIsPaid, entity.HolidayIsPaid);
         Assert.Equal(model.Incentive, entity.Incentive);
         Assert.Equal(model.IncentiveDescription, entity.IncentiveDescription);
         Assert.Equal(model.Requirements, entity.Requirements);

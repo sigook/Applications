@@ -236,6 +236,9 @@
                 <b-switch v-model="request.punchCardOptionEnabled" v-if="!directHiring">
                   Punch card is visible in app
                 </b-switch>
+                <b-switch v-model="request.holidayIsPaid" v-if="!directHiring">
+                  Holiday is paid
+                </b-switch>
                 <div class="setting-row" v-if="!directHiring">
                   <b-switch v-model="request.breakIsPaid">Duration break is paid</b-switch>
                   <div class="setting-row-control">
@@ -401,6 +404,7 @@ const request = ref<AgencyRequestFormState>({
   companyProfileId: companyProfileId.value,
   durationBreak: dayjs().startOf('day').toDate(),
   breakIsPaid: false,
+  holidayIsPaid: true,
   durationTerm: DurationTerm.LongTerm,
   employmentType: EmploymentType.FullTime,
   isAsap: false,

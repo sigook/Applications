@@ -280,7 +280,7 @@ A job order. Key fields:
 - Capacity: `WorkersQuantity` (min 1), `WorkersQuantityWorking` (derived from booked workers)
 - Timing: `StartAt`, `FinishAt`, `IsAsap`, `DurationTerm` (`LongTerm=0, ShortTerm=1`),
   `EmploymentType` (`FullTime=1, PartTime, Contractor, Temporary`), `ShiftId` → Shift,
-  `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true),
+  `DurationBreak` (max 1h), `BreakIsPaid`, `HolidayIsPaid` (default true; set per request by the agency form switch "Holiday is paid"),
   `PunchCardOptionEnabled`
 - Extras: `Incentive(+Description)`, `UsesRunners` (bool, default true),
   `InvitationSentItAt` (resend throttle: 7 days), `CreatedBy`

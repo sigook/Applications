@@ -220,6 +220,7 @@ public class RequestService(
         request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         request.UpdateDurationBreak(model.DurationBreak);
         request.UpdateBreakIsPaid(model.BreakIsPaid);
+        request.UpdateHolidayIsPaid(model.HolidayIsPaid);
         request.UpdateWorkersQuantity(model.WorkersQuantity);
         request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
         request.UpdateIsAsap(model.IsAsap);
@@ -422,6 +423,7 @@ public class RequestService(
         entity.UpdateRequirements(model.Requirements);
         entity.UpdateDescription(model.Description);
         entity.UpdateDurationBreak(model.DurationBreak);
+        entity.UpdateHolidayIsPaid(model.HolidayIsPaid);
         entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         if (model.Shift != null)
         {

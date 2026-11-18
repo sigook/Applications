@@ -12,6 +12,7 @@ public class RequestCreateModel
     public string Description { get; set; }
     public TimeSpan DurationBreak { get; set; }
     public bool BreakIsPaid { get; set; }
+    public bool HolidayIsPaid { get; set; } = true;
     public decimal? Incentive { get; set; }
     public string IncentiveDescription { get; set; }
     public string Requirements { get; set; }
