@@ -67,8 +67,7 @@ public static class CompanyExtensionsMapping
                 {
                     OvertimeStartsAfter = cpl.Location.City.Province.ProvinceSetting.OvertimeStartsAfter.HasValue
                         ? cpl.Location.City.Province.ProvinceSetting.OvertimeStartsAfter.Value.TotalHours
-                        : (double?)null,
-                    PaidHolidays = cpl.Location.City.Province.ProvinceSetting.PaidHolidays
+                        : (double?)null
                 },
                 Country = new CountryModel
                 {

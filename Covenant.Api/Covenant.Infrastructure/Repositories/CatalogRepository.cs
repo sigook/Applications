@@ -197,7 +197,7 @@ public class CatalogRepository(CovenantContext context) : BaseRepository<Covenan
         }
         else
         {
-            existing.Update(settings.PaidHolidays, settings.OvertimeStartsAfter);
+            existing.Update(settings.OvertimeStartsAfter);
             Context.ProvinceSettings.Update(existing);
         }
     }

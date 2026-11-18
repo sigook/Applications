@@ -72,6 +72,7 @@ public class CreateRequestServiceTest
         });
         currentUserService = new Mock<ICurrentUserService>();
         _companyRepository.Setup(cr => cr.GetAgencyId(It.IsAny<Guid>())).ReturnsAsync(Guid.NewGuid());
+        _companyRepository.Setup(cr => cr.PaysHolidays(It.IsAny<Guid>())).ReturnsAsync(true);
         var timeProvider = new FakeTimeProvider(new DateTimeOffset(_now, TimeSpan.Zero));
         _sut = new RequestService(
             _companyRepository.Object,
@@ -123,6 +124,16 @@ public class CreateRequestServiceTest
         Result<Guid> result = await _sut.CreateRequest(_model);
         Assert.True(result);
         _requestRepository.Verify(r => r.Create(It.Is<Request>(e => e.HolidayIsPaid == holidayIsPaid)), Times.Once);
+    }
+
+    [Fact]
+    public async Task CreateRequestIsHolidayUnpaidWhenCompanyDoesNotPayHolidays()
+    {
+        _companyRepository.Setup(cr => cr.PaysHolidays(It.IsAny<Guid>())).ReturnsAsync(false);
+        _model.HolidayIsPaid = true;
+        Result<Guid> result = await _sut.CreateRequest(_model);
+        Assert.True(result);
+        _requestRepository.Verify(r => r.Create(It.Is<Request>(e => !e.HolidayIsPaid)), Times.Once);
     }
 
     [Fact]

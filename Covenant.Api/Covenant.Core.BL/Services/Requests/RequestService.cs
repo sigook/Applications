@@ -140,6 +140,7 @@ public class RequestService(
         model.ComplianceItems = null;
         model.UsesRunners = true;
         model.PunchCardOptionEnabled = true;
+        model.HolidayIsPaid = true;
         if (currentUserService.IsCompanyUser())
             model.CompanyUserIds = [currentUserService.GetUserId()];
         var requestId = await CreateRequest(model, submitForReview: true);
@@ -220,7 +221,7 @@ public class RequestService(
         request.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         request.UpdateDurationBreak(model.DurationBreak);
         request.UpdateBreakIsPaid(model.BreakIsPaid);
-        request.UpdateHolidayIsPaid(model.HolidayIsPaid);
+        request.UpdateHolidayIsPaid(model.HolidayIsPaid && await companyRepository.PaysHolidays(request.CompanyProfileId));
         request.UpdateWorkersQuantity(model.WorkersQuantity);
         request.UpdatePunchCardVisibilityStatusInApp(model.PunchCardOptionEnabled);
         request.UpdateIsAsap(model.IsAsap);
@@ -423,7 +424,7 @@ public class RequestService(
         entity.UpdateRequirements(model.Requirements);
         entity.UpdateDescription(model.Description);
         entity.UpdateDurationBreak(model.DurationBreak);
-        entity.UpdateHolidayIsPaid(model.HolidayIsPaid);
+        entity.UpdateHolidayIsPaid(model.HolidayIsPaid && await companyRepository.PaysHolidays(model.CompanyProfileId));
         entity.UpdateIncentive(model.Incentive, model.IncentiveDescription);
         if (model.Shift != null)
         {
@@ -570,6 +571,7 @@ public class RequestService(
         model.Locations = await companyRepository.GetCompanyLocations(c => c.CompanyProfileId == companyProfileId);
         model.Personnel = await agencyService.GetAgencyPersonnel([await companyRepository.GetAgencyId(companyProfileId)]);
         model.CompanyUsers = await companyRepository.GetAllCompanyUsers(companyProfileId);
+        model.CompanyPaidHolidays = await companyRepository.PaysHolidays(companyProfileId);
         return model;
     }
 

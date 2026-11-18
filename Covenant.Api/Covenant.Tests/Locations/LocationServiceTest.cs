@@ -71,11 +71,10 @@ public class LocationServiceTest
         ProvinceSetting saved = null;
         _catalog.Setup(c => c.UpsertProvinceSettings(It.IsAny<ProvinceSetting>())).Callback<ProvinceSetting>(s => saved = s).Returns(Task.CompletedTask);
 
-        Result result = await _sut.UpsertProvinceSettings(provinceId, new ProvinceSettingsModel { PaidHolidays = true, OvertimeStartsAfter = 40.5 });
+        Result result = await _sut.UpsertProvinceSettings(provinceId, new ProvinceSettingsModel { OvertimeStartsAfter = 40.5 });
 
         Assert.True(result);
         Assert.Equal(provinceId, saved.ProvinceId);
-        Assert.True(saved.PaidHolidays);
         Assert.Equal(TimeSpan.FromHours(40.5), saved.OvertimeStartsAfter);
     }
 

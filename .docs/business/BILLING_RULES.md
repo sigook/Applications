@@ -123,7 +123,7 @@ Some older invoices have `InvoiceTotals` rows with zero quantity/amounts and a n
 
 ## Timesheet Line Items — `InvoiceService.ProcessTimesheets`
 
-Timesheets are grouped by **`Week + WorkerId + RequestId`** and processed in date order with a running `accumulatedRegularHours` per group. Hours come from `TimesheetCalculatorService.CalculateHoursBreakdown`, called via `InvoiceService.CalculateHoursForItem` with the request's `BreakIsPaid` and `holidayIsPaid: true` (see holiday asymmetry below). Timesheets without both `TimeInApproved` and `TimeOutApproved` produce an empty breakdown (no charge).
+Timesheets are grouped by **`Week + WorkerId + RequestId`** and processed in date order with a running `accumulatedRegularHours` per group. Hours come from `TimesheetCalculatorService.CalculateHoursBreakdown`, called via `InvoiceService.CalculateHoursForItem` with the request's `BreakIsPaid` and the timesheet's `HolidayIsPaid` (`CompanyProfile.PaidHolidays && Request.HolidayIsPaid`, see worked holiday below). Timesheets without both `TimeInApproved` and `TimeOutApproved` produce an empty breakdown (no charge).
 
 One line item (`InvoiceTotal`) is emitted per non-zero bucket per timesheet, each linked to a `TimeSheetTotal` entity:
 
@@ -167,7 +167,7 @@ Overtime accumulates **per Worker + Week + Request**, not per worker globally. A
 
 `TimesheetCalculatorService.CalculateHoursBreakdown`: when `isHoliday && holidayIsPaid`, **all** of the day's hours go to `HolidayHours`, nothing feeds the overtime accumulator. `ProcessTimesheets` bills them at `AgencyRate × rates.Holiday`. Applies to every agency, Canada and USA alike.
 
-**Asymmetry with pay stubs:** invoices hardcode `holidayIsPaid: true` (`InvoiceService.CalculateHoursForItem`), so worked-holiday hours are *always* billed at the holiday multiplier regardless of the company's `HolidayIsPaid` setting. Pay stubs honor the timesheet's `ts.HolidayIsPaid` flag (`PayStubService`), so a worker may be paid those hours as regular while the company is still billed at the holiday rate.
+**Same rule as pay stubs:** `InvoiceService.CalculateHoursForItem` passes the timesheet's `HolidayIsPaid` (`CompanyProfile.PaidHolidays && Request.HolidayIsPaid`, projected by `TimeSheetRepository.GetTimeSheetForCreatingInvoice`). When the company does not pay holidays, or the request is marked as not paying them, worked-holiday hours are billed as a normal day (regular/overtime), exactly as they are paid on the pay stub.
 
 ### b) Public Holiday Pay (statutory holiday NOT worked)
 
@@ -194,7 +194,7 @@ Both flows mirror the dual-guard design on the payroll side — see `PAYROLL_RUL
 
 | Aspect | Invoice (company charge) | Pay stub (worker pay) |
 |--------|--------------------------|----------------------|
-| Worked holiday honors `HolidayIsPaid`? | No — hardcoded `holidayIsPaid: true` | Yes — uses `ts.HolidayIsPaid` |
+| Worked holiday honors `HolidayIsPaid`? | Yes — uses `ts.HolidayIsPaid` (`CompanyProfile.PaidHolidays && Request.HolidayIsPaid`) | Yes — same value |
 | Not-worked base | `Regular + OtherRegular` **company charges** (AgencyRate) / 20, capped 176h | Full worker gross incl. OT/holiday/missing + 4% vacations, / 20 |
 | Rate preserved | AgencyRate (markup kept) | WorkerRate |
 | Double-billing guard | `alreadyBilled` `InvoiceHoliday` exclusion (plus `TimeSheetTotal == null` on qualifying timesheets) | Dual guard on payroll side (see `PAYROLL_RULES.md`) |

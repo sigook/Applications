@@ -390,7 +390,7 @@ public class InvoiceService(
             item.DurationBreak,
             item.BreakIsPaid,
             isHoliday: isHoliday,
-            holidayIsPaid: true,
+            item.HolidayIsPaid,
             ref accumulatedRegularHours,
             item.OvertimeStartsAfter,
             timeLimits.MaxHoursWeek);

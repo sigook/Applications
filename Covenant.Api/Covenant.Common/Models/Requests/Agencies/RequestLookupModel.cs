@@ -11,4 +11,5 @@ public class RequestLookupModel
     public IEnumerable<LocationDetailModel> Locations { get; set; }
     public IEnumerable<AgencyPersonnelModel> Personnel { get; set; }
     public IEnumerable<CompanyUserModel> CompanyUsers { get; set; }
+    public bool CompanyPaidHolidays { get; set; }
 }

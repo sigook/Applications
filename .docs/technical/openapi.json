@@ -29652,16 +29652,6 @@
       "Covenant.Common.Models.Locations.ProvinceSettingsModel": {
         "type": "object",
         "properties": {
-          "paidHolidays": {
-            "oneOf": [
-              {
-                "type": "null"
-              },
-              {
-                "$ref": "#/components/schemas/System.Nullable`1[[System.Boolean, System.Private.CoreLib, Version=10.0.0.0, Culture=neutral, PublicKeyToken=7cec85d7bea7798e]]"
-              }
-            ]
-          },
           "overtimeStartsAfter": {
             "oneOf": [
               {
@@ -30899,6 +30889,9 @@
           },
           "companyUsers": {
             "$ref": "#/components/schemas/System.Collections.Generic.IEnumerable`1[[Covenant.Common.Models.Companies.CompanyUserModel, Covenant.Common, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null]]"
+          },
+          "companyPaidHolidays": {
+            "$ref": "#/components/schemas/System.Boolean"
           }
         }
       },

@@ -1761,9 +1761,6 @@ namespace Covenant.Infrastructure.Migrations
                     b.Property<TimeSpan?>("OvertimeStartsAfter")
                         .HasColumnType("interval");
 
-                    b.Property<bool?>("PaidHolidays")
-                        .HasColumnType("boolean");
-
                     b.HasKey("ProvinceId");
 
                     b.ToTable("ProvinceSettings", (string)null);

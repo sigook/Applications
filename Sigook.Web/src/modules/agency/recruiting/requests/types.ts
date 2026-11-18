@@ -349,6 +349,7 @@ export interface AgencyRequestLookup {
   locations: AgencyCompanyLocationModel[];
   personnel: AgencyPersonnelListItem[];
   companyUsers: CompanyUserModel[];
+  companyPaidHolidays: boolean;
 }
 
 export interface AgencyRequestFormState {

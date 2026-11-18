@@ -300,7 +300,7 @@ Key facts (full rules in `BILLING_RULES.md`):
 - Invoice subtotal = timesheets (at `AgencyRate`) + additional items + holidays − discounts; tax = `strategy.CalculateTax`.
 - Vacations and bonus are **not** billed — the invoice has no such columns (vacation 4% is a pay-stub concept).
 - HST is a single global configuration rate, not per-province.
-- Worked holidays are always billed at holiday rate on invoices (invoices hardcode `holidayIsPaid: true`), while pay stubs honor the timesheet's `HolidayIsPaid` flag.
+- Worked holidays are billed and paid at holiday rate only when the timesheet's `HolidayIsPaid` is true (`CompanyProfile.PaidHolidays && Request.HolidayIsPaid`); invoices and pay stubs apply the same rule.
 
 Delivery and management:
 

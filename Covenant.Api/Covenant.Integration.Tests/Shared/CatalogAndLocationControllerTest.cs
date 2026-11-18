@@ -144,11 +144,10 @@ public class CatalogAndLocationControllerTest(SeededWebApplicationFactory<Catalo
         HttpClient admin = As(CovenantConstants.Role.Admin);
         string uri = $"{LocationController.RouteName}/province/{_data.Quebec.Id}/settings";
 
-        (await admin.PutAsJsonAsync(uri, new ProvinceSettingsModel { PaidHolidays = true, OvertimeStartsAfter = 40 })).EnsureSuccessStatusCode();
-        (await admin.PutAsJsonAsync(uri, new ProvinceSettingsModel { PaidHolidays = false, OvertimeStartsAfter = 44 })).EnsureSuccessStatusCode();
+        (await admin.PutAsJsonAsync(uri, new ProvinceSettingsModel { OvertimeStartsAfter = 40 })).EnsureSuccessStatusCode();
+        (await admin.PutAsJsonAsync(uri, new ProvinceSettingsModel { OvertimeStartsAfter = 44 })).EnsureSuccessStatusCode();
 
         ProvinceSetting settings = await Context.ProvinceSettings.AsNoTracking().SingleAsync(s => s.ProvinceId == _data.Quebec.Id);
-        Assert.False(settings.PaidHolidays);
         Assert.Equal(TimeSpan.FromHours(44), settings.OvertimeStartsAfter);
     }
 
@@ -156,7 +155,7 @@ public class CatalogAndLocationControllerTest(SeededWebApplicationFactory<Catalo
     public async Task ProvinceSettings_AsRecruiting_IsForbidden()
     {
         HttpResponseMessage response = await As(CovenantConstants.Role.Recruiting)
-            .PutAsJsonAsync($"{LocationController.RouteName}/province/{_data.Quebec.Id}/settings", new ProvinceSettingsModel { PaidHolidays = true });
+            .PutAsJsonAsync($"{LocationController.RouteName}/province/{_data.Quebec.Id}/settings", new ProvinceSettingsModel { OvertimeStartsAfter = 40 });
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }

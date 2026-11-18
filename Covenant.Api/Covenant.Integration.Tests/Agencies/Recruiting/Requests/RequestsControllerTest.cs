@@ -103,7 +103,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.WorkersQuantity, Data.FakeRequest.WorkersQuantity);
         Assert.Equal(model.WorkersQuantityWorking, Data.FakeRequest.WorkersQuantityWorking);
         Assert.Equal(model.JobPosition, Data.FakeRequest.JobPositionRate.JobPosition);
-        Assert.Equal(model.HolidayIsPaid, Data.FakeRequest.HolidayIsPaid);
+        Assert.False(model.HolidayIsPaid);
         Assert.Equal(model.BreakIsPaid, Data.FakeRequest.BreakIsPaid);
         Assert.Equal(model.Status, Data.FakeRequest.Status);
         DateAssert.Equal(model.CreatedAt, Data.FakeRequest.CreatedAt);
@@ -246,6 +246,31 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.WorkerSalary, entity.WorkerSalary);
         Assert.False(entity.HolidayIsPaid);
         Assert.NotNull(entity.UpdatedAt);
+    }
+
+    [Fact]
+    public async Task PutHolidayIsPaidWhenCompanyPaysHolidays()
+    {
+        var request = Data.FakeHolidayPayingRequest;
+        var updateUrl = $"{RequestUri()}/{request.Id}";
+        var model = new RequestCreateModel
+        {
+            JobTitle = "General Labour",
+            Description = "Description",
+            Requirements = "Requirements",
+            LocationId = Data.FakeLocation.Id,
+            WorkerSalary = 50_000m,
+            HolidayIsPaid = false
+        };
+
+        (await _client.PutAsJsonAsync(updateUrl, model)).EnsureSuccessStatusCode();
+        var detail = await _client.GetFromJsonAsync<AgencyRequestDetailModel>(updateUrl);
+        Assert.False(detail.HolidayIsPaid);
+
+        model.HolidayIsPaid = true;
+        (await _client.PutAsJsonAsync(updateUrl, model)).EnsureSuccessStatusCode();
+        detail = await _client.GetFromJsonAsync<AgencyRequestDetailModel>(updateUrl);
+        Assert.True(detail.HolidayIsPaid);
     }
 
     [Fact]
@@ -419,7 +444,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(model.Description, entity.Description);
         Assert.Equal(model.DurationBreak, entity.DurationBreak);
         Assert.Equal(model.BreakIsPaid, entity.BreakIsPaid);
-        Assert.Equal(model.HolidayIsPaid, entity.HolidayIsPaid);
+        Assert.False(entity.HolidayIsPaid);
         Assert.Equal(model.Incentive, entity.Incentive);
         Assert.Equal(model.IncentiveDescription, entity.IncentiveDescription);
         Assert.Equal(model.Requirements, entity.Requirements);
@@ -496,6 +521,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
                 Data.FakeIsAsapRequest, Data.FakeRequestUpdateLocation, Data.FakeRequestToOpen,
                 Data.FakeRequestToSendInvitation, Data.FakeRequestWithRecentInvitation,
                 Data.FakeRequestPendingReview, Data.FakeRequestPendingReviewToCancel, Data.FakeRequestPendingReviewForInvitation,
+                Data.FakeHolidayPayingRequest,
                 Data.FakeWorker, Data.FakeWorkerProfile, Data.FakeCompanyProfileJobPositionRate);
             Data.FakeCompany.ContactPeople.Add(Data.FakeContactPerson);
             context.RequestSkills.Add(Data.FakeSkill);
@@ -556,6 +582,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         public static readonly Request FakeRequestPendingReview;
         public static readonly Request FakeRequestPendingReviewToCancel;
         public static readonly Request FakeRequestPendingReviewForInvitation;
+        public static readonly Request FakeHolidayPayingRequest;
 
         public static readonly User FakeWorker = new User(CvnEmail.Create("w1@mai.com").Value);
         public static readonly WorkerProfile FakeWorkerProfile = new WorkerProfile(FakeWorker, AgencyId) { Location = FakeData.FakeLocation() };
@@ -601,6 +628,9 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
             FakeRequestPendingReviewForInvitation = FakeData.FakeRequest(AgencyId, FakeCompany.Id, FakeCompany.JobPositionRates.First().Id);
             FakeRequestPendingReviewForInvitation.WorkerSalary = 50_000m;
             FakeRequestPendingReviewForInvitation.SubmitForReview();
+            FakeHolidayPayingRequest = FakeData.FakeRequest(AgencyId, location: FakeLocation);
+            FakeHolidayPayingRequest.WorkerSalary = 50_000m;
+            FakeHolidayPayingRequest.CompanyProfile.UpdatePaidHolidays(true);
             var sinInfo = new Mock<ISinInformation<CovenantFile>>();
             sinInfo.SetupGet(g => g.SocialInsurance).Returns("989-987-678");
             sinInfo.SetupGet(g => g.SocialInsuranceExpire).Returns(true);

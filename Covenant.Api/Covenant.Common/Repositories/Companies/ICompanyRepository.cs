@@ -57,6 +57,7 @@ public interface ICompanyRepository : IBaseRepository
     Task<List<InteractionTypeSummaryModel>> GetInteractionsByType(IEnumerable<Guid> agencyIds, Guid? ownerId, DateTime fromUtc, DateTime toUtcExclusive);
     Task<List<RecentClientModel>> GetRecentInteractionClients(IEnumerable<Guid> agencyIds, Guid? ownerId, int take);
     Task<Guid> GetAgencyId(Guid companyProfileId);
+    Task<bool> PaysHolidays(Guid companyProfileId);
     Task<List<BaseModel<Guid>>> GetCompaniesList(IEnumerable<Guid> agencyIds, string searchTerm);
     Task<CompanyDeletionCheckModel> GetDeletionCheck(Guid companyProfileId);
     Task<List<Guid>> GetCompanyUserIds(Guid companyProfileId);

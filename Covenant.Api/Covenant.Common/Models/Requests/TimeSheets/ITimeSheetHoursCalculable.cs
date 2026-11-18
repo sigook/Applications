@@ -9,5 +9,6 @@ public interface ITimeSheetHoursCalculable
     DateTime? TimeOutApproved { get; }
     TimeSpan DurationBreak { get; }
     bool BreakIsPaid { get; }
+    bool HolidayIsPaid { get; }
     TimeSpan OvertimeStartsAfter { get; }
 }

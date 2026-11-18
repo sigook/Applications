@@ -135,7 +135,7 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Equal(Data.FakeRequest.Requirements, detail.Requirements);
         Assert.Equal(Data.FakeRequest.WorkersQuantity, detail.WorkersQuantity);
         Assert.Equal(Data.FakeRequest.JobPositionRate.JobPosition, detail.JobPosition);
-        Assert.Equal(Data.FakeRequest.HolidayIsPaid, detail.HolidayIsPaid);
+        Assert.False(detail.HolidayIsPaid);
         Assert.Equal(Data.FakeRequest.BreakIsPaid, detail.BreakIsPaid);
         Assert.Equal(WorkerRequestStatus.Booked.ToString(), detail.Status);
         Assert.Equal(Data.FakeRequest.DurationTerm.ToString(), detail.DurationTerm);

@@ -265,7 +265,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         AgencyRate = ts.WorkerRequest.Request.JobPositionRate.Rate,
                         BreakIsPaid = ts.WorkerRequest.Request.BreakIsPaid,
                         DurationBreak = ts.WorkerRequest.Request.DurationBreak,
-                        HolidayIsPaid = ts.WorkerRequest.Request.HolidayIsPaid,
+                        HolidayIsPaid = ts.WorkerRequest.Request.CompanyProfile.PaidHolidays && ts.WorkerRequest.Request.HolidayIsPaid,
                         WorkerId = ts.WorkerRequest.WorkerProfile.WorkerId,
                         TimeSheetId = ts.Id,
                         Week = PostgresFunctions.get_week_start_sunday(ts.Date),
@@ -309,9 +309,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.Request.CompanyProfile.PaidHolidays && ts.WorkerRequest.Request.HolidayIsPaid,
                         ts.WorkerRequest.WorkerProfile.WorkerId,
                         ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
@@ -357,9 +355,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.Request.CompanyProfile.PaidHolidays && ts.WorkerRequest.Request.HolidayIsPaid,
                         ts.WorkerRequest.WorkerProfile.WorkerId,
                         ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
@@ -406,9 +402,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                         ts.WorkerRequest.Request.JobPositionRate.WorkerRate,
                         ts.WorkerRequest.Request.BreakIsPaid,
                         ts.WorkerRequest.Request.DurationBreak,
-                        ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting != null && ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.HasValue
-                            ? ts.WorkerRequest.Request.JobLocation.City.Province.ProvinceSetting.PaidHolidays.Value
-                            : ts.WorkerRequest.Request.CompanyProfile.PaidHolidays,
+                        ts.WorkerRequest.Request.CompanyProfile.PaidHolidays && ts.WorkerRequest.Request.HolidayIsPaid,
                         ts.WorkerRequest.WorkerProfile.WorkerId,
                         ts.WorkerRequest.WorkerProfileId,
                         ts.Id,
@@ -630,7 +624,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
                 DurationBreak = ts.WorkerRequest.Request.DurationBreak,
                 BreakIsPaid = ts.WorkerRequest.Request.BreakIsPaid,
                 IsHoliday = ts.IsHoliday,
-                HolidayIsPaid = ts.WorkerRequest.Request.HolidayIsPaid,
+                HolidayIsPaid = ts.WorkerRequest.Request.CompanyProfile.PaidHolidays && ts.WorkerRequest.Request.HolidayIsPaid,
                 IsPaid = ts.TimeSheetTotalPayroll != null,
                 MissingHours = ts.MissingHours,
                 MissingHoursOvertime = ts.MissingHoursOvertime,
