@@ -8,8 +8,7 @@
           <b-field label="Worker" :type="formErrors.worker ? 'is-danger' : ''"
             :message="formErrors.worker || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="worker" :data="workers" placeholder="Worker" name="worker"
-              :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker"
-              :custom-formatter="(option: AgencyWorkerDropdownItem) => `${option.fullName} | ${option.approvedToWork ? 'Approved' : 'Not Approved'}`">
+              :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker" field="fullName">
             </b-autocomplete>
           </b-field>
         </div>
