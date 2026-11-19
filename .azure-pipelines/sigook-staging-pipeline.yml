@@ -1,0 +1,42 @@
+name: Sigook-Staging-$(Date:yyyyMMdd)$(Rev:.r)
+
+trigger:
+  batch: true
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - Covenant.Api/**
+      - Sigook.Web/**
+    exclude:
+      - Covenant.Api/**/*.md
+      - Covenant.Api/Sigook.Functions/**
+      - Covenant.Api/Sigook.Functions.Tests/**
+      - Sigook.Web/**/*.md
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - Covenant.Api/**
+      - Sigook.Web/**
+
+parameters:
+  - name: deployApi
+    displayName: 'Deploy API'
+    type: boolean
+    default: true
+
+  - name: deployWeb
+    displayName: 'Deploy Web'
+    type: boolean
+    default: true
+
+extends:
+  template: templates/release-template.yml
+  parameters:
+    deployApi: ${{ parameters.deployApi }}
+    deployWeb: ${{ parameters.deployWeb }}
