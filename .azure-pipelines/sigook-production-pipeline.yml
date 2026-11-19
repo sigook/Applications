@@ -1,28 +1,12 @@
-name: Release-$(Date:yyyyMMdd)$(Rev:.r)
+name: Sigook-Production-$(Date:yyyyMMdd)$(Rev:.r)
 
 trigger:
   batch: true
   branches:
     include:
-      - main
-  paths:
-    include:
-      - Covenant.Api/**
-      - Sigook.Web/**
-    exclude:
-      - Covenant.Api/**/*.md
-      - Covenant.Api/Sigook.Functions/**
-      - Covenant.Api/Sigook.Functions.Tests/**
-      - Sigook.Web/**/*.md
+      - release/*
 
-pr:
-  branches:
-    include:
-      - main
-  paths:
-    include:
-      - Covenant.Api/**
-      - Sigook.Web/**
+pr: none
 
 parameters:
   - name: deployApi
