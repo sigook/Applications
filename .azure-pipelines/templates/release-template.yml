@@ -7,9 +7,6 @@ parameters:
     type: boolean
     default: true
 
-pool:
-  name: 'covenant-build-pool'
-
 variables:
   isProduction: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
   isStaging: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
@@ -27,6 +24,8 @@ variables:
 stages:
   - stage: Build
     displayName: 'Build and Test'
+    pool:
+      name: 'covenant-build-pool'
     jobs:
       - ${{ if parameters.deployApi }}:
         - template: api-build-job.yml
@@ -44,6 +43,8 @@ stages:
   - stage: Deploy
     displayName: 'Deploy'
     dependsOn: Build
+    pool:
+      name: 'covenant-build-pool'
     condition: and(succeeded(), or(eq(variables['isStaging'], true), eq(variables['isProduction'], true)))
     jobs:
       - deployment: Release
@@ -89,6 +90,8 @@ stages:
   - stage: Notify
     displayName: 'Notify Production Deploy'
     dependsOn: Deploy
+    pool:
+      name: 'covenant-build-pool'
     condition: and(succeeded(), eq(variables['isProduction'], true))
     jobs:
       - job: SendEmail
