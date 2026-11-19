@@ -12,7 +12,7 @@ All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and us
 
 | Branch | Environment | Deploy |
 |--------|-------------|--------|
-| `main` | Staging | Auto-deploy after build+test on every push (`Release-CICD` for Covenant.Api + Sigook.Web, plus Covenant.Web, Sigook.App and Sigook.Mcp on their paths) |
+| `main` | Staging | Auto-deploy after build+test on every push (`Sigook-CICD` for Covenant.Api + Sigook.Web, plus Covenant.Web, Sigook.App and Sigook.Mcp on their paths) |
 | `release/YYYY.MM.DD` | Production | `Release-Production` (Covenant.Api + Sigook.Web) runs automatically when the branch is created and on every later push. Covenant.Web, Sigook.App, Sigook.Mcp, Sigook.Functions and CognitiveServices are run manually from Azure DevOps choosing the release branch |
 
 Every pipeline resolves its targets (environment, Docker tag, App Service / Static Web App, store track, URL) as compile-time variables: `refs/heads/release/*` → production values, any other ref → staging values. Deploys run as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by these apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The pipelines must be authorized on the environments they deploy to.
@@ -21,9 +21,9 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 ### PR Validation Strategy
 
-- **PRs to `main`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Release-CICD` run. The required checks on `main` (GitHub ruleset) are `Release-CICD`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge. Sigook.Functions and CognitiveServices also validate PRs to `main`.
+- **PRs to `main`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Sigook-CICD` run. The required checks on `main` (GitHub ruleset `main-applications`) are `Sigook-CICD`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge. Sigook.Functions and CognitiveServices also validate PRs to `main`.
 - **Direct push to `main`**: Full flow (build, test, deploy to staging). For Covenant.Api and Sigook.Web a change in either one releases both.
-- **Release branches** get no PRs: they are created from `main` and only receive cherry-picked hotfixes.
+- **Release branches** get no PRs: they are created from `main` and only receive cherry-picked hotfixes. GitHub ruleset `release-branches` blocks deleting and force-pushing `release/*`.
 
 ### Cutting a release
 
@@ -47,7 +47,7 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Release (`Release-CICD`) | `release-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `main` and PRs to `main` | Build (API and/or Web) → Deploy | `sigook-api-staging` + `sigook-web-staging` |
+| Release (`Sigook-CICD`) | `release-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `main` and PRs to `main` | Build (API and/or Web) → Deploy | `sigook-api-staging` + `sigook-web-staging` |
 | Release Production (`Release-Production`) | `release-production-pipeline.yml` | Any push to `release/*` (no path filter), branch creation included | Build (API and/or Web) → Deploy → Notify | `sigook-api` + `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
@@ -70,7 +70,7 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 **Build naming:** `Release-YYYYMMDD.r` (staging) / `Release-Production-YYYYMMDD.r` (production)
 
 Two pipeline definitions run the same template, `templates/release-template.yml` (parameters, pool, variables and stages), through `extends`:
-- `release-pipeline.yml` (`Release-CICD`): `main` with path filters, plus PR validation
+- `release-pipeline.yml` (`Sigook-CICD`): `main` with path filters, plus PR validation
 - `release-production-pipeline.yml` (`Release-Production`): `release/*` with **no path filter**, `pr: none`. Azure Pipelines only triggers a new branch with path filters when the branch brings changes inside those paths, and a release branch cut from `main` brings none, so this trigger must stay unfiltered. Every push to a release branch releases both apps
 
 **PR runs:** every PR to `main` touching `Covenant.Api/**` or `Sigook.Web/**` runs both build jobs without publishing images; Deploy and Notify are skipped.

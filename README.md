@@ -18,6 +18,7 @@ Monorepo for the Covenant/Sigook **staffing and recruitment platform** for the C
 | [`Sigook.Web/`](Sigook.Web/) | Vue 3 + Vite | Agency web portal (main platform) |
 | [`Covenant.Web/`](Covenant.Web/) | Vue 3 + Vite | Marketing website (public-facing) |
 | [`Sigook.CognitiveServices/`](Sigook.CognitiveServices/) | .NET | AI/ML services (Azure Cognitive) |
+| [`Sigook.Mcp/`](Sigook.Mcp/) | Node 22 + TypeScript | MCP server (stdio) that lets Claude Code operate Sigook through the API as the signed-in person |
 | `Sigook.Database/` | SQL | Database project |
 
 ## Documentation
@@ -29,6 +30,7 @@ Business rules and technical documentation live in [`.docs/`](.docs/README.md). 
 - [Architecture](.docs/technical/ARCHITECTURE.md) — tech stack, layers, modules
 - [Development commands](.docs/technical/DEVELOPMENT_COMMANDS.md) — build, run, and test commands for every project
 - [CI/CD pipelines](.docs/technical/PIPELINES.md) — Azure DevOps pipelines and deployment URLs
+- [Sigook MCP](.docs/technical/SIGOOK_MCP.md) — MCP tools, authentication, environments, workflow instructions
 - `.docs/technical/openapi.json` — OpenAPI spec, source of truth for every endpoint (regenerated on API build)
 
 ## Getting started
@@ -40,6 +42,7 @@ Business rules and technical documentation live in [`.docs/`](.docs/README.md). 
 | .NET SDK | 10.0.401 (pinned in `Covenant.Api/global.json`) | `Covenant.Api` solution (API, identity, Azure Functions) |
 | Node.js | `^20.19.0 \|\| >=22.12.0` (engine-strict) | `Sigook.Web`, `Covenant.Web` |
 | pnpm | pinned via `packageManager` (`corepack enable`) | `Sigook.Web`, `Covenant.Web` |
+| Node.js + npm | `>=22` | `Sigook.Mcp` |
 | Flutter SDK | stable | `Sigook.App` |
 | Azure Functions Core Tools | v4 | `Sigook.Functions` (local run) |
 
@@ -62,6 +65,9 @@ cd Covenant.Web && pnpm install && pnpm run dev
 
 # Worker mobile app
 cd Sigook.App && flutter pub get && flutter run --dart-define-from-file=.env.staging -t lib/main_staging.dart
+
+# Sigook MCP (registered in .mcp.json; Claude Code starts it from dist/)
+cd Sigook.Mcp && npm install && npm run build
 ```
 
 Full command reference (tests, migrations, builds per environment): [DEVELOPMENT_COMMANDS.md](.docs/technical/DEVELOPMENT_COMMANDS.md).
@@ -72,6 +78,7 @@ Full command reference (tests, migrations, builds per environment): [DEVELOPMENT
 dotnet test Covenant.Api/Covenant.Api.slnx   # .NET (integration tests need Docker)
 flutter test                # Sigook.App
 pnpm run type-check && pnpm run lint   # Vue apps
+npm test                    # Sigook.Mcp
 ```
 
 Run the relevant tests before committing.
