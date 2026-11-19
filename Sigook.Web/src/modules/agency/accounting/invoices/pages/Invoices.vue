@@ -179,7 +179,7 @@ const isLoading = ref(true);
 const totalItems = ref(0);
 const total = ref(0);
 const serverParams = ref<AgencyInvoiceFilter>(agencyStore.agencyInvoiceFilter ?? {
-  sortBy: 0,
+  sortBy: 1,
   isDescending: true,
 });
 

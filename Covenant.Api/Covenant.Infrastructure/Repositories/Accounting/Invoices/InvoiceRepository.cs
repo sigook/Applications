@@ -272,24 +272,14 @@ public class InvoiceRepository(CovenantContext context) : BaseRepository<Covenan
 
     private IQueryable<InvoiceListModel> ApplySortInvoices(IQueryable<InvoiceListModel> query, GetInvoicesFilter filter)
     {
-        switch (filter.SortBy)
+        var ordered = filter.SortBy switch
         {
-            case GetInvoicesFilterSortBy.InvoiceNumber:
-                query = query.AddOrderBy(filter, i => i.InvoiceNumberId);
-                break;
-            case GetInvoicesFilterSortBy.CreatedAt:
-                query = query.AddOrderBy(filter, i => i.CreatedAt);
-                break;
-            case GetInvoicesFilterSortBy.CompanyFullName:
-                query = query.AddOrderBy(filter, i => i.CompanyFullName);
-                break;
-            case GetInvoicesFilterSortBy.Status:
-                query = query.AddOrderBy(filter, i => i.Status);
-                break;
-            default:
-                query = query.OrderByDescending(i => i.NumberId);
-                break;
-        }
-        return query;
+            GetInvoicesFilterSortBy.InvoiceNumber => query.AddOrderBy(filter, i => i.InvoiceNumberId),
+            GetInvoicesFilterSortBy.CreatedAt => query.AddOrderBy(filter, i => i.CreatedAt),
+            GetInvoicesFilterSortBy.CompanyFullName => query.AddOrderBy(filter, i => i.CompanyFullName),
+            GetInvoicesFilterSortBy.Status => query.AddOrderBy(filter, i => i.Status),
+            _ => query.OrderByDescending(i => i.NumberId)
+        };
+        return ordered.ThenByDescending(i => i.NumberId);
     }
 }
