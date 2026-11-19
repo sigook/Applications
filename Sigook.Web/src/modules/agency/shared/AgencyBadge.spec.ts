@@ -28,7 +28,13 @@ describe('AgencyBadge', () => {
     const flag = mountBadge('a2').find('.request-flag');
     expect(flag.text()).toBe('SS');
     expect(flag.attributes('aria-label')).toBe('Agency: Sigook Staffing');
-    expect(flag.classes()).toContain('request-flag--agency-1');
+    expect(flag.classes()).toContain('request-flag--agency-sigook');
+  });
+
+  it('uses the brand color for Covenant and the palette for other agencies', () => {
+    useAgencyStore().setAgencies([covenant, sigook, { id: 'a3', name: 'Other Agency' }]);
+    expect(mountBadge('a1').find('.request-flag').classes()).toContain('request-flag--agency-covenant');
+    expect(mountBadge('a3').find('.request-flag').classes()).toContain('request-flag--agency-2');
   });
 
   it('is hidden when the user has a single agency', () => {

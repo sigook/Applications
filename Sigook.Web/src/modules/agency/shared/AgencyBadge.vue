@@ -22,8 +22,12 @@ const color = computed(() => agencyColor(agencyId));
 </script>
 
 <style lang="scss" scoped>
-.agency-badge {
+span.agency-badge {
+  display: inline-flex;
   vertical-align: middle;
-  line-height: 1;
+
+  .request-flag {
+    display: block;
+  }
 }
 </style>
