@@ -13,6 +13,15 @@ describe('PhoneInput', () => {
     expect((wrapper.find('input').element as HTMLInputElement).value).toBe('416 555-0199');
   });
 
+  it.each([
+    [{}, 'mobileNumber'],
+    [{ label: 'Phone' }, 'phone'],
+    [{ label: 'Contact Emergency Phone' }, 'contactEmergencyPhone'],
+    [{ label: 'Office Number', name: 'officePhone' }, 'officePhone'],
+  ])('names the input from %o as %s', (props, expected) => {
+    expect(setup(props).find('input').attributes('name')).toBe(expected);
+  });
+
   it('shows the label with a required mark', () => {
     const wrapper = setup({ label: 'Phone', required: true });
     expect(wrapper.find('label').text()).toBe('Phone *');

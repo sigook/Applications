@@ -165,15 +165,19 @@ function validateForm() {
       payload.workerRateMax = values.workerRateMax;
       payload.overtimeStartsAfter = values.overtimeStartsAfter;
     }
-    const id = currentPosition?.id;
-    if (isUpdate.value && id && update) {
-      await save(async () => {
-        await update(id, payload);
-        return id;
-      });
-    } else {
+    if (!isUpdate.value) {
       await save(async () => (await create(payload))?.id);
+      return;
     }
+    const id = currentPosition?.id;
+    if (!id || !update) {
+      showAlertError('This role cannot be edited here');
+      return;
+    }
+    await save(async () => {
+      await update(id, payload);
+      return id;
+    });
   }, () => {
     showAlertError('Please make sure all required fields are filled out correctly');
   })();

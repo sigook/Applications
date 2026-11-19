@@ -84,7 +84,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends RunnerRow">
-import { computed, ref, useTemplateRef } from 'vue';
+import { computed, nextTick, ref, useTemplateRef } from 'vue';
 import { useRouter } from 'vue-router';
 import { dateMonth, dateHHmm, emailName } from '@/shared/format';
 import { useRunnerActions } from '@/modules/agency/recruiting/requests/runners/useRunnerActions';
@@ -139,8 +139,7 @@ const statusOptions: CatalogItem<RunnerStatus>[] = RUNNER_STATUSES.map((s) => ({
 const statusesSelected = computed<CatalogItem<RunnerStatus>[]>({
   get: () => statusOptions.filter((option) => params.value?.statuses?.includes(option.id)),
   set: (options) => {
-    patchParams({ statuses: options.length ? options.map((option) => option.id) : undefined });
-    grid.value?.search();
+    void patchAndSearch({ statuses: options.length ? options.map((option) => option.id) : undefined });
   },
 });
 
@@ -150,9 +149,14 @@ function patchParams(changes: Partial<AgencyRunnerFilter>) {
   params.value = { ...params.value, ...changes };
 }
 
-function onTypeChange(type: RunnerType | null) {
-  patchParams({ type });
+async function patchAndSearch(changes: Partial<AgencyRunnerFilter>) {
+  patchParams(changes);
+  await nextTick();
   grid.value?.search();
+}
+
+function onTypeChange(type: RunnerType | null) {
+  void patchAndSearch({ type });
 }
 
 function toTarget(row: T): RunnerActionTarget {

@@ -149,8 +149,7 @@
             </div>
             <div class="card-content">
               <div class="container-image mx-auto mb-4">
-                <UploadImage @imageSelected="(img) => (logoFile = img)" :required="false"
-                  @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"></UploadImage>
+                <UploadImage @imageSelected="(img) => (logoFile = img)" :required="false"></UploadImage>
               </div>
               <div class="settings-list" v-if="isAdmin">
                 <b-switch v-model="company.requiresPermissionToSeeRequests">
@@ -185,7 +184,6 @@ import PhoneInput from '@/shared/ui/PhoneInput.vue';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { useAdmin } from '@/shared/composables/useAdmin';
-import { usePubSub } from '@/shared/composables/usePubSub';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/shared/api/catalogApi';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
@@ -201,7 +199,6 @@ const route = useRoute();
 const router = useRouter();
 const { isSalesView, companyBase } = useModuleBase();
 const { isAdmin } = useAdmin();
-const pubSub = usePubSub();
 const agencyStore = useAgencyStore();
 const agencies = computed(() => agencyStore.agencies);
 const agencyId = ref<string | null>(null);

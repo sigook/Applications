@@ -80,11 +80,13 @@ const sortMap = {
 
 const isLoading = ref(true);
 const totalItems = ref(0);
-const agencyTypesSelected = ref<AgencyTypeOption[]>([]);
 const serverParams = ref<AgencyListFilter>(agencyStore.agencyListFilter ?? {
   sortBy: 0,
   isDescending: false,
 });
+const agencyTypesSelected = ref<AgencyTypeOption[]>(
+  appGlobals.$agencyTypes.filter((t) => serverParams.value.agencyTypes?.includes(t.value)),
+);
 
 function loadAgencies(params: AgencyListFilter) {
   agencyStore.updateAgencyListFilter(params);

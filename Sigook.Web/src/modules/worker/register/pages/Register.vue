@@ -28,7 +28,6 @@
             <div class="column is-12">
               <div class=" container-image mx-auto my-2">
                 <UploadImage @imageSelected="(profileImg) => saveImage(profileImg)" :edited-image="worker.profileImage"
-                  @onUpload="() => pubSub.subscribe('file')" @finishUpload="() => pubSub.unsubscribe()"
                   class="upload-image-spacing" />
                 <p class="fz-2">
                   <i>Please upload a photo taken in front of a plain white or off-white background</i>
@@ -82,7 +81,7 @@
             @isCanada="isCanadaSelected($event)" />
           <div class="columns is-multiline">
             <div class="column is-12">
-              <PhoneInput ref="phoneComponent" :required="true" model="Mobile Number"
+              <PhoneInput ref="phoneComponent" :required="true" label="Mobile Number"
                 :defaultValue="worker.mobileNumber as string" @formattedPhone="(phone) => (worker.mobileNumber = phone)" />
             </div>
           </div>
@@ -191,11 +190,11 @@
                 <div class="column is-6 upload-button-container">
                   <b-field class="file is-primary upload-field" :class="{
                     'has-name': !!selectedDocumentFile,
-                    'upload-disabled': worker.identificationType1File && worker.identificationType2File
+                    'upload-disabled': bothIdentificationsUploaded
                   }">
                     <b-upload v-model="selectedDocumentFile" accept=".pdf,.jpeg,.jpg,.png,.gif,.doc,.docx,.xls,.xlsx"
                       @update:modelValue="handleIdentificationUpload"
-                      :disabled="worker.identificationType1File && worker.identificationType2File" :loading="isLoading"
+                      :disabled="bothIdentificationsUploaded" :loading="isLoading"
                       class="file-label" rounded>
                       <span class="file-cta">
                         <b-icon class="file-icon" icon="upload"></b-icon>
@@ -237,7 +236,7 @@
                           <b-select v-model="identificationType1" name="identificationType1"
                             placeholder="Select identification type" expanded>
                             <option v-for="(type, index) in identificationTypes" :value="type"
-                              :disabled="type === identificationType2"
+                              :disabled="type.id === identificationType2?.id"
                               v-bind:key="'identificationType1' + index">
                               {{ type.value }}
                             </option>
@@ -286,7 +285,7 @@
                           <b-select v-model="identificationType2" name="identificationType2"
                             placeholder="Select identification type" expanded>
                             <option v-for="(type, index) in identificationTypes" :value="type"
-                              :disabled="type === identificationType1"
+                              :disabled="type.id === identificationType1?.id"
                               v-bind:key="'identificationType2' + index">
                               {{ type.value }}
                             </option>
@@ -629,7 +628,6 @@ import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import dayjs from 'dayjs';
 import { registerWorker } from '@/modules/worker/register/api';
 import { useCreateWorker } from '@/modules/worker/register/useCreateWorker';
-import { usePubSub } from '@/shared/composables/usePubSub';
 import { filename } from '@/shared/format';
 import { createMultipartFormData } from '@/modules/worker/register/buildWorkerFormData';
 import { identificationNumberSchema } from '@/shared/utils/validation';
@@ -646,7 +644,6 @@ const route = useRoute();
 const appStore = useAppStore();
 const securityStore = useSecurityStore();
 const createWorker = useCreateWorker();
-const pubSub = usePubSub();
 
 const {
   skills,
@@ -669,6 +666,7 @@ const {
 
 const isLogin = computed(() => !!securityStore.user);
 const hasSecondId = computed(() => !!worker.identificationType2File);
+const bothIdentificationsUploaded = computed(() => !!worker.identificationType1File && !!worker.identificationType2File);
 
 const validationSchema = computed(() => {
   const shape: yup.ObjectShape = {
@@ -1065,11 +1063,16 @@ function isCanadaSelected(value: boolean) {
 }
 
 void (async () => {
-  await loadCatalogs();
-  isLoading.value = false;
-  const response = await appStore.getCurrentDate();
-  disableStartDate.value = response;
-  disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
+  try {
+    await loadCatalogs();
+    const response = await appStore.getCurrentDate();
+    disableStartDate.value = response;
+    disabledDates.value = dayjs(response).subtract(18, 'years').toDate();
+  } catch (error) {
+    showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
+  }
 })();
 </script>
 

@@ -205,13 +205,13 @@ function changeAll() {
 }
 
 watch(() => currentShift, (val) => {
-  if (isUpdate && val !== null) {
+  if (isUpdate && val) {
     mapFromShift();
   }
 }, { immediate: true });
 
 onMounted(() => {
-  if (isUpdate && currentShift !== null) {
+  if (isUpdate && currentShift) {
     mapFromShift();
   } else {
     updateModel();

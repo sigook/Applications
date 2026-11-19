@@ -29,7 +29,7 @@
         </b-field>
       </div>
       <div class="column is-6">
-        <phone-input :required="false" :model="'Mobile'" :default-value="user?.mobileNumber"
+        <phone-input :required="false" label="Mobile" :default-value="user?.mobileNumber"
           @formattedPhone="(phone) => mobileNumber = phone"></phone-input>
       </div>
       <div class="column is-6">

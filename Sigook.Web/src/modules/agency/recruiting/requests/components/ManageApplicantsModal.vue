@@ -8,7 +8,7 @@
             :message="formErrors.applicant || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="applicant" :data="applicants" placeholder="Search by name, email or ID..."
               name="applicant" append-to-body :loading="isLoadingList" @typing="searchApplicants" @select="selectApplicant"
-              :custom-formatter="(option: ApplicantSearchResult) => `#${option.numberId} | ${option.name} | ${option.email || 'No Email' } | ${option.type}`">
+              :custom-formatter="applicantLabel">
               <template v-slot="props">
                 <div class="is-flex is-justify-content-space-between is-align-items-center">
                   <div>
@@ -30,7 +30,7 @@
   </div>
 </template>
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
+import { ref, reactive, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import * as yup from 'yup';
 import { searchAgencyRequestApplicants } from "@/modules/agency/recruiting/requests/api";
@@ -64,16 +64,40 @@ const model = reactive<CreateRequestApplicantModel>({
   comments: null
 });
 
-function selectApplicant(item: ApplicantSearchResult | null) {
-  if (!item) return;
-  model.workerProfileId = item.workerProfileId || null;
-  model.candidateId = item.candidateId || null;
+const selectedLabel = ref<string | null>(null);
+
+function applicantLabel(option: ApplicantSearchResult): string {
+  return `#${option.numberId} | ${option.name} | ${option.email || 'No Email'} | ${option.type}`;
 }
+
+function clearSelection() {
+  selectedLabel.value = null;
+  model.workerProfileId = null;
+  model.candidateId = null;
+}
+
+function selectApplicant(item: ApplicantSearchResult | null) {
+  if (!item) {
+    clearSelection();
+    return;
+  }
+  selectedLabel.value = applicantLabel(item);
+  model.workerProfileId = item.workerProfileId ?? null;
+  model.candidateId = item.candidateId ?? null;
+}
+
+watch(applicant, (text) => {
+  if (selectedLabel.value !== null && text !== selectedLabel.value) clearSelection();
+});
 
 async function saveApplicant() {
   form.markInteracted();
   const { valid } = await form.validate();
   if (!valid) return;
+  if (!model.workerProfileId && !model.candidateId) {
+    form.setFieldError('applicant', 'Select an applicant from the list');
+    return;
+  }
   emit('updateApplicants', { model: { ...model } });
 }
 </script>

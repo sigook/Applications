@@ -1,10 +1,7 @@
 <template>
   <section id="about-form" class="about-form">
-    <!-- Re-use existing ContactSection (Get in Touch! header + form card).
-         Bg is set via CSS variable to teal-dark. -->
     <ContactSection class="about-form__contact" />
 
-    <!-- Closing "connect" strip — follow Sigook on social. -->
     <div class="about-form__connect">
       <span class="about-form__connect-label">Connect with us</span>
       <SocialLinks />
@@ -18,20 +15,12 @@ import SocialLinks from '@/modules/landing/components/shared/ui/SocialLinks.vue'
 </script>
 
 <style scoped>
-/* ============================================================
-   About — Form Section (mobile-first)
-   Figma node: 2537:889
-   Re-uses ContactSection (Get in Touch) with teal-dark bg.
-   ============================================================ */
-
 .about-form {
   position: relative;
   width: 100%;
-  /* Pass teal-dark down to ContactSection via the CSS variable it reads */
   --contact-bg: var(--c-brand-teal-dark);
 }
 
-/* ── Closing connect strip ──────────────────────────────────────────────── */
 .about-form__connect {
   position: relative;
   z-index: 2;

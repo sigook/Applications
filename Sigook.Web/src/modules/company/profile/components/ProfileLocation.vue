@@ -41,7 +41,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, useTemplateRef } from 'vue';
+import { ref, toRaw, useTemplateRef } from 'vue';
 import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import AddressComponent from "@/shared/ui/Address.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
@@ -75,7 +75,7 @@ function addLocation() {
 }
 
 function editLocation(location: CompanyProfileLocationDetail) {
-  locationBeingUpdate.value = location;
+  locationBeingUpdate.value = structuredClone(toRaw(location));
   showModal.value = true;
 }
 

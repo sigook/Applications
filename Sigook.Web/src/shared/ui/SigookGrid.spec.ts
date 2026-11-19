@@ -176,6 +176,17 @@ describe('SigookGrid with server data', () => {
     expect(fetch).toHaveBeenLastCalledWith({ pageIndex: 3, pageSize: 30 });
   });
 
+  it('scrolls the table back to the top when the page changes', async () => {
+    const fetch = vi.fn().mockResolvedValue(page(rowsOf(2), 100));
+    const wrapper = setup({ fetch });
+    await flushPromises();
+    const tableWrapper = wrapper.find('.table-wrapper').element;
+    const scrollTo = vi.spyOn(tableWrapper, 'scrollTo');
+
+    wrapper.findComponent({ name: 'BTable' }).vm.$emit('page-change', 2);
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0 });
+  });
+
   it('ignores sorting for local data', async () => {
     const wrapper = setup({ data: rowsOf(2), sortMap: { name: 4 } });
     wrapper.findComponent({ name: 'BTable' }).vm.$emit('sort', 'name', 'desc');

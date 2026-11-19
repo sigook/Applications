@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
       <div class="column is-12">
-        <b-field>
+        <b-field :type="fileError ? 'is-danger' : ''" :message="fileError">
           <template #label>
             {{ "File" }} <span class="has-text-danger">*</span>
           </template>
@@ -67,6 +67,7 @@ const { description } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
+const fileError = ref('');
 const selectedCertFile = ref<File | null>(null);
 const fileObjects = reactive<{ certificate: File | null }>({ certificate: null });
 const certificate = ref<CovenantFileModel>({ fileName: "", description: "" });
@@ -80,6 +81,7 @@ function handleCertFileSelected(file: File | null) {
     return;
   }
   fileObjects.certificate = file;
+  fileError.value = '';
   const generatedName = generateFileName('Certificate', file.name);
   certificate.value = { fileName: generatedName, description: '' };
   selectedCertFile.value = null;
@@ -110,13 +112,20 @@ async function saveCertificates(values: { description: string }) {
   }
 }
 
+function showInvalidForm() {
+  showAlertError('Please make sure all required fields are filled out correctly');
+}
+
 function validateAll() {
   form.markInteracted();
+  fileError.value = fileObjects.certificate ? '' : 'File is required';
   void form.handleSubmit(async (values) => {
+    if (fileError.value) {
+      showInvalidForm();
+      return;
+    }
     await saveCertificates(values);
-  }, () => {
-    showAlertError('Please make sure all required fields are filled out correctly');
-  })();
+  }, showInvalidForm)();
 }
 
 for (let i = 0; i < data.certificates.length; i++) {

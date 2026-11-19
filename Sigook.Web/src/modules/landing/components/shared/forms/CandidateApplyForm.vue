@@ -313,7 +313,6 @@ import { showAlertError, showAlertSuccess } from '@/shared/utils/toast'
 const { jobTitle, requestId } = defineProps<{
   jobTitle?: string
   requestId?: string
-  redirectOnSuccess?: boolean
 }>()
 
 const emit = defineEmits<(e: 'submitted') => void>()
@@ -553,12 +552,6 @@ async function onSubmit(): Promise<void> {
   const result = await validateField('termsAccepted' as never)
   if (!result.valid) {
     showAlertError('You must accept the terms and conditions')
-    return
-  }
-  if (resumeRequired.value && !resume.value) {
-    resumeError.value = 'Resume is required when you apply via LinkedIn'
-    activeStep.value = 1
-    showAlertError('Resume is required when you apply via LinkedIn')
     return
   }
 

@@ -59,13 +59,13 @@ function changeTab(tab: string) {
 }
 
 async function loadAgency() {
-  isLoading.value = false;
+  isLoading.value = true;
   try {
     agency.value = await getAgency(route.params.id as string);
-    isLoading.value = false;
   } catch (error) {
-    isLoading.value = false;
     showAlertError(error);
+  } finally {
+    isLoading.value = false;
   }
 }
 </script>

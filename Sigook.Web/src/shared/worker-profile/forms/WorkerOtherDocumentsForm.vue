@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
       <div class="column is-12">
-        <b-field>
+        <b-field :type="fileError ? 'is-danger' : ''" :message="fileError">
           <template #label>
             {{ "File" }} <span class="has-text-danger">*</span>
           </template>
@@ -67,6 +67,7 @@ const { description } = form.fields;
 const formErrors = form.errors;
 
 const isLoading = ref(false);
+const fileError = ref('');
 const selectedDocFile = ref<File | null>(null);
 const fileObjects = reactive<{ otherDocument: File | null }>({ otherDocument: null });
 const otherDocument = ref<CovenantFileModel>({ fileName: "", description: "" });
@@ -79,6 +80,7 @@ function handleDocFileSelected(file: File | null) {
     return;
   }
   fileObjects.otherDocument = file;
+  fileError.value = '';
   const generatedName = generateFileName('OtherDoc', file.name);
   otherDocument.value = { fileName: generatedName, description: '' };
   selectedDocFile.value = null;
@@ -108,13 +110,20 @@ async function saveOtherDocument(values: { description: string }) {
   }
 }
 
+function showInvalidForm() {
+  showAlertError('Please make sure all required fields are filled out correctly');
+}
+
 function validateAll() {
   form.markInteracted();
+  fileError.value = fileObjects.otherDocument ? '' : 'File is required';
   void form.handleSubmit(async (values) => {
+    if (fileError.value) {
+      showInvalidForm();
+      return;
+    }
     await saveOtherDocument(values);
-  }, () => {
-    showAlertError('Please make sure all required fields are filled out correctly');
-  })();
+  }, showInvalidForm)();
 }
 </script>
 

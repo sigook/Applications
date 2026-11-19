@@ -44,7 +44,7 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { showAlertError } from "@/shared/utils/toast";
+import { showAlertConfirm, showAlertError } from "@/shared/utils/toast";
 import {
   getCompanyUsers, deleteCompanyProfileUser, createCompanyProfileUser, updateCompanyProfileUser, updateCompanyUserEmail,
 } from '@/modules/agency/recruiting/clients/api';
@@ -62,20 +62,28 @@ const editingUser = ref<CompanyUserModel | null>(null);
 const users = ref<(CompanyUserModel & { actions: null })[]>([]);
 
 async function getUsers() {
-  const response = await getCompanyUsers(company.id);
-  users.value = response.map((r) => ({ ...r, actions: null }));
+  isLoading.value = true;
+  try {
+    const response = await getCompanyUsers(company.id);
+    users.value = response.map((r) => ({ ...r, actions: null }));
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function deleteUser(id: string) {
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this user'))) return;
   isLoading.value = true;
   try {
     await deleteCompanyProfileUser(company.id, id);
   } catch (error) {
-    isLoading.value = false;
     showAlertError(typeof error === 'object' && error !== null && 'data' in error ? error.data : undefined);
+  } finally {
+    isLoading.value = false;
   }
   await getUsers();
-  isLoading.value = false;
 }
 
 async function saveUser(model: CreateCompanyUserModel) {
@@ -97,9 +105,5 @@ async function updateUsers() {
   showModal.value = false;
 }
 
-void (async () => {
-  isLoading.value = true;
-  await getUsers();
-  isLoading.value = false;
-})();
+void getUsers();
 </script>

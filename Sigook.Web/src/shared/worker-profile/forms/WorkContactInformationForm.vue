@@ -7,11 +7,11 @@
           @isLoading="(value) => isLoading = value" />
       </div>
       <div class="column is-6">
-        <PhoneInput ref="mobileComponent" :required="true" model="Mobile Number" :defaultValue="worker.mobileNumber"
+        <PhoneInput ref="mobileComponent" :required="true" label="Mobile Number" :defaultValue="worker.mobileNumber"
           @formattedPhone="(phone) => worker.mobileNumber = phone" />
       </div>
       <div class="column is-6">
-        <PhoneInput ref="phoneComponent" :required="false" model="Phone" :defaultValue="worker.phone"
+        <PhoneInput ref="phoneComponent" :required="false" label="Phone" :defaultValue="worker.phone"
           @formattedPhone="(phone) => worker.phone = phone" />
       </div>
       <div class="column is-12 mt-5">

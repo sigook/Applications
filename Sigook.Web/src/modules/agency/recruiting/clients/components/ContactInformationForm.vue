@@ -3,7 +3,7 @@
     <h2 class="has-text-centered main-title">{{ 'Contact Information' }}</h2>
     <div class="columns is-multiline">
       <div class="column is-6">
-        <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="localModel.phone"
+        <phone-input ref="phoneComponent" :required="true" label="Phone" :defaultValue="localModel.phone"
           @formattedPhone="(phone) => localModel.phone = phone" />
       </div>
 
@@ -15,7 +15,7 @@
       </div>
 
       <div class="column is-6">
-        <phone-input ref="faxComponent" :required="false" model="Fax" :defaultValue="localModel.fax"
+        <phone-input ref="faxComponent" :required="false" label="Fax" :defaultValue="localModel.fax"
           @formattedPhone="(phone) => localModel.fax = phone" />
       </div>
 

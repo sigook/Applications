@@ -5,8 +5,6 @@
         <UploadImage
           :required="false"
           @imageSelected="(img) => (logoFile = img)"
-          @onUpload="() => pubSub.subscribe('file')"
-          @finishUpload="() => pubSub.unsubscribe()"
         />
       </div>
 
@@ -172,7 +170,6 @@ import { useStickyForm } from '@/shared/composables/useStickyForm';
 import { useDropdownReveal } from '@/shared/composables/useDropdownReveal';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
 import { useAdmin } from '@/shared/composables/useAdmin';
-import { usePubSub } from '@/shared/composables/usePubSub';
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getIndustries, getCompanyStatus, addIndustry as addIndustryApi } from '@/shared/api/catalogApi';
 import { getAgencyPersonnel } from '@/modules/agency/profile/api';
@@ -183,7 +180,6 @@ import type { AgencyPersonnelListItem } from '@/modules/agency/profile/types';
 import type { CompanyProfileFormState } from '@/modules/agency/recruiting/clients/types';
 
 const { isAdmin } = useAdmin();
-const pubSub = usePubSub();
 const agencyStore = useAgencyStore();
 const agencies = computed(() => agencyStore.agencies);
 const agencyId = ref<string | null>(agencies.value.at(0)?.id ?? null);
@@ -277,9 +273,13 @@ const filteredSalesRepresentative = computed(() => {
 });
 
 async function init() {
-  industryOptions.value = await getIndustries();
-  statuses.value = await getCompanyStatus();
-  salesRepresentatives.value = await getAgencyPersonnel(agencyId.value ?? undefined);
+  try {
+    industryOptions.value = await getIndustries();
+    statuses.value = await getCompanyStatus();
+    salesRepresentatives.value = await getAgencyPersonnel(agencyId.value ?? undefined);
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 void init();
 
@@ -375,11 +375,15 @@ function onAddIndustry() {
 }
 
 async function addIndustry(value: string, dialog: { close: () => void }) {
-  const newIndustry = await addIndustryApi({ value });
-  industryOptions.value.push(newIndustry);
-  industrySelected.value = newIndustry;
-  form.setFieldValue('industry', newIndustry.value);
-  dialog.close();
+  try {
+    const newIndustry = await addIndustryApi({ value });
+    industryOptions.value.push(newIndustry);
+    industrySelected.value = newIndustry;
+    form.setFieldValue('industry', newIndustry.value);
+    dialog.close();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 
 defineExpose({ submit });

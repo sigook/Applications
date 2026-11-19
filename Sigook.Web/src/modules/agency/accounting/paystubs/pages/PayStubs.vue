@@ -81,7 +81,8 @@
               @click="onSendPayStubEmail(props.row)">
               {{ props.row.emailSent ? 'Email Sent' : props.row.emailSending ? 'Sending...' : 'Send Email' }}
             </b-dropdown-item>
-            <b-dropdown-item aria-role="listitem" class="has-text-danger" @click="onDeletePayStub(props.row)">
+            <b-dropdown-item v-if="props.row.canDelete" aria-role="listitem" class="has-text-danger"
+              @click="onDeletePayStub(props.row)">
               Delete
             </b-dropdown-item>
           </RowActionsDropdown>

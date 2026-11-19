@@ -94,8 +94,9 @@ One table: app · pipeline · resultado · duración · link. First line = wheth
 ## Mode B — Hotfix to the active release
 
 1. The fix must already be committed and pushed on `origin/main` (if not, do that first, with the user's OK to commit).
-2. Active release = newest `origin/release/*`. Confirm with the user: commits (SHAs + subjects) to cherry-pick and target branch.
-3. Worktree in a short path (scratchpad hits Windows MAX_PATH):
+2. Wait for `Sigook-Staging` (51) on that `main` SHA to finish (and the `main` run of any other pipeline whose paths the fix touches). Only a `succeeded` result unlocks the cherry-pick; on failure or cancel, stop and report.
+3. Active release = newest `origin/release/*`. Confirm with the user: commits (SHAs + subjects) to cherry-pick and target branch.
+4. Worktree in a short path (scratchpad hits Windows MAX_PATH):
    ```bash
    git worktree add C:/Src/Covenant/hotfix-wt origin/$BRANCH -b hotfix-tmp
    cd C:/Src/Covenant/hotfix-wt && git cherry-pick -x <sha...>
@@ -103,8 +104,8 @@ One table: app · pipeline · resultado · duración · link. First line = wheth
    cd - && git worktree remove --force C:/Src/Covenant/hotfix-wt && git branch -D hotfix-tmp
    ```
    Conflict → stop, show the conflicting files, ask.
-4. The push auto-starts `Sigook-Production` (API + Web). If the fix touches another app's paths, propose re-running that pipeline on the branch (step A.6).
-5. Watch and report as in A.7–A.8.
+5. The push auto-starts `Sigook-Production` (API + Web). If the fix touches another app's paths, propose re-running that pipeline on the branch (step A.6).
+6. Watch and report as in A.7–A.8.
 
 ## Rules
 

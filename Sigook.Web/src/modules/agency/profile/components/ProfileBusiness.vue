@@ -22,7 +22,7 @@
       </div>
       <div class="column is-3">
         <phone-input ref="phoneComponent" :required="true" :defaultValue="localAgencyData.phonePrincipal"
-          model="Phone Principal" @formattedPhone="(phone: string | null) => (localAgencyData.phonePrincipal = phone ?? undefined)">
+          label="Phone Principal" @formattedPhone="(phone: string | null) => (localAgencyData.phonePrincipal = phone ?? undefined)">
         </phone-input>
       </div>
       <div class="column is-3">
@@ -56,7 +56,7 @@
 import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
-import { showAlertSuccess } from "@/shared/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { getWsibGroups } from "@/shared/api/catalogApi";
 import { updateAgencyProfile } from '@/modules/agency/profile/api';
 import phoneInput from "@/shared/ui/PhoneInput.vue";
@@ -137,13 +137,14 @@ async function validateForm() {
       phonePrincipalExt: values.phonePrincipalExt ? parseInt(values.phonePrincipalExt, 10) : null,
       webPage: values.webPage,
     };
-    emit('update:agencyData', updated);
     try {
       await updateAgencyProfile(agencyData.id, updated);
-      isLoading.value = false;
+      emit('update:agencyData', updated);
       showAlertSuccess("Updated");
       emit('saved');
-    } catch {
+    } catch (error) {
+      showAlertError(error);
+    } finally {
       isLoading.value = false;
     }
   })();

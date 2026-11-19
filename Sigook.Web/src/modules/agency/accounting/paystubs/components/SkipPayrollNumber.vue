@@ -21,6 +21,7 @@ import { ref, useTemplateRef } from 'vue';
 import { BAutocomplete } from 'buefy';
 import { getSkipPayrollNumbers, addSkipPayrollNumber } from "@/modules/agency/accounting/paystubs/api";
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
+import { showAlertError } from '@/shared/utils/toast';
 import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 
 const { results: numbers, isSearching: isLoading, search } =
@@ -43,8 +44,12 @@ function onSelectFooter() {
 }
 
 async function addNumber(value: string, dialog: { close: () => void }) {
-  await addSkipPayrollNumber({ value: value });
-  autoCompleteNumbers.value?.setSelected(value);
-  dialog.close();
+  try {
+    await addSkipPayrollNumber({ value: value });
+    autoCompleteNumbers.value?.setSelected(value);
+    dialog.close();
+  } catch (error) {
+    showAlertError(error);
+  }
 }
 </script>

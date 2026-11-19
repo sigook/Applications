@@ -398,9 +398,11 @@ async function addCandidateSkills(id: string, model: CandidateSkillModel) {
 }
 
 async function onDeleteCandidateSkill(candidateId: string, skill: CandidateSkillModel) {
+  const { id } = skill;
+  if (!id) return;
   isLoading.value = true;
   try {
-    await deleteCandidateSkill(candidateId, skill.id ?? '');
+    await deleteCandidateSkill(candidateId, id);
     isLoading.value = false;
     grid.value?.reload();
   } catch (error) {

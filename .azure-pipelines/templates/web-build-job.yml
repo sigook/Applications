@@ -67,6 +67,10 @@ jobs:
           testRunTitle: 'Sigook.Web Unit Tests'
           failTaskOnMissingResultsFile: true
 
+      - template: dotnet-setup.yml
+        parameters:
+          sdkVersion: '10.0.401'
+
       - task: PublishCodeCoverageResults@2
         displayName: 'Publish Code Coverage'
         condition: succeededOrFailed()

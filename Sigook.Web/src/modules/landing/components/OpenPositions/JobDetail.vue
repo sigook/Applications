@@ -61,14 +61,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * JobDetail — the right-column / inline detail panel for a single job.
- *
- * Consumes a JobViewModel from the live API (`@/modules/landing/types`). Owns no
- * state — purely presentational. Used by OpenPositionsListSection in two modes:
- *   - Desktop: sticky right column
- *   - Mobile : inline expanded under the active list item
- */
 import { sanitizeHtml } from '@/shared/utils/html';
 import { computed } from 'vue'
 import type { JobViewModel } from '@/modules/landing/types'

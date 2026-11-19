@@ -131,7 +131,7 @@ function validateDimensions(evt: Event) {
       const height = image.height;
       const width = image.width;
       if (height < 150 || width < 150) {
-        showAlertError('This file es too small, please select a photo with height and width of at least 150 pixels');
+        showAlertError('This file is too small, please select a photo with height and width of at least 150 pixels');
         localImage.value = null;
       } else {
         showCrop(evt);

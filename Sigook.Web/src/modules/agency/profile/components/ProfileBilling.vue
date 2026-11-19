@@ -68,17 +68,19 @@ async function saveChanges() {
 }
 
 async function updateLocation(location: AgencyLocationDetail) {
-  if (!location.id) return;
+  const { id } = location;
+  if (!id) return;
   isLoading.value = true;
   try {
-    await updateAgencyLocation(agencyData.id, location.id, location);
-    isLoading.value = false;
-    hideModal();
-    location.formattedAddress = getFormattedAddress(location);
+    await updateAgencyLocation(agencyData.id, id, location);
+    const updated = { ...location, formattedAddress: getFormattedAddress(location) };
+    locations.value = locations.value.map(l => l.id === id ? updated : l);
     emit('changed', locations.value);
+    hideModal();
   } catch (error) {
-    isLoading.value = false;
     showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
   }
 }
 
@@ -86,23 +88,27 @@ async function createLocation(location: AgencyLocationDetail) {
   isLoading.value = true;
   try {
     const r = await createAgencyLocation(agencyData.id, location);
-    location.id = r.id;
-    location.formattedAddress = getFormattedAddress(location);
-    locations.value.push(location);
+    const created = { ...location, id: r.id, formattedAddress: getFormattedAddress(location) };
+    locations.value = [...locations.value, created];
     emit('changed', locations.value);
-    isLoading.value = false;
     hideModal();
   } catch (error) {
-    isLoading.value = false;
     showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
   }
 }
 
 async function getLocations() {
   isLoading.value = true;
-  locations.value = await getAgencyLocations(agencyData.id);
-  emit('changed', locations.value);
-  isLoading.value = false;
+  try {
+    locations.value = await getAgencyLocations(agencyData.id);
+    emit('changed', locations.value);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function deleteLocation(location: AgencyLocationDetail) {
@@ -126,7 +132,7 @@ function addLocation() {
 }
 
 function editLocation(location: AgencyLocationDetail) {
-  locationBeingUpdate.value = location;
+  locationBeingUpdate.value = { ...location };
   showModal.value = true;
 }
 

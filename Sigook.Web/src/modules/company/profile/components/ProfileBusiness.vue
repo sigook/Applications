@@ -17,7 +17,7 @@
         </b-field>
       </div>
       <div class="column is-6 is-3-desktop">
-        <PhoneInput ref="phoneComponent" :required="true" model="Phone" label="Phone"
+        <PhoneInput ref="phoneComponent" :required="true" label="Phone"
           :defaultValue="localCompanyData.phone" @formattedPhone="(phone: string | null) => localCompanyData.phone = phone" />
       </div>
       <div class="column is-6 is-3-desktop">
@@ -31,7 +31,7 @@
         </b-field>
       </div>
       <div class="column is-6 is-3-desktop">
-        <PhoneInput ref="faxComponent" :required="false" model="Fax" label="Fax" :defaultValue="localCompanyData.fax"
+        <PhoneInput ref="faxComponent" :required="false" label="Fax" :defaultValue="localCompanyData.fax"
           @formattedPhone="(phone: string | null) => localCompanyData.fax = phone" />
       </div>
       <div class="column is-6 is-3-desktop">
@@ -126,6 +126,10 @@ const filteredIndustries = computed(() => {
 function selectIndustry(option: Industry | null) {
   industrySelected.value = option ?? null;
 }
+
+watch(industry, (text) => {
+  if (!text) industrySelected.value = null;
+});
 
 async function save() {
   form.markInteracted();

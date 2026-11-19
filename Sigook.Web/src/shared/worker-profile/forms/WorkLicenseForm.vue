@@ -3,7 +3,7 @@
     <b-loading v-model="isLoading"></b-loading>
     <div class="columns is-multiline">
       <div class="column is-12">
-        <b-field>
+        <b-field :type="fileError ? 'is-danger' : ''" :message="fileError">
           <template #label>
             {{ "File" }} <span class="has-text-danger">*</span>
           </template>
@@ -117,6 +117,7 @@ const appStore = useAppStore();
 
 const todayDate = ref<Date | null>(null);
 const isLoading = ref(false);
+const fileError = ref('');
 const selectedLicenseFile = ref<File | null>(null);
 const fileObjects = reactive<{ license: File | null }>({ license: null });
 const licenseModal = ref<{ license: CovenantFileModel }>({
@@ -132,6 +133,7 @@ function handleLicenseFileSelected(file: File | null) {
     return;
   }
   fileObjects.license = file;
+  fileError.value = '';
   const generatedName = generateFileName('License', file.name);
   licenseModal.value.license = { fileName: generatedName, description: '' };
   selectedLicenseFile.value = null;
@@ -170,13 +172,20 @@ async function saveLicenses(values: LicenseForm) {
   }
 }
 
+function showInvalidForm() {
+  showAlertError("Please make sure all required fields are filled out correctly");
+}
+
 function validateAll() {
   form.markInteracted();
+  fileError.value = fileObjects.license ? '' : 'File is required';
   void form.handleSubmit(async (values) => {
+    if (fileError.value) {
+      showInvalidForm();
+      return;
+    }
     await saveLicenses(values);
-  }, () => {
-    showAlertError("Please make sure all required fields are filled out correctly");
-  })();
+  }, showInvalidForm)();
 }
 
 for (let i = 0; i < data.licenses.length; i++) {

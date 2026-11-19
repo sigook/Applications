@@ -9,14 +9,13 @@
         <button type="button" class="op-list__empty-reset" @click="fetchJobs()">Retry</button>
       </p>
 
-      <p v-else-if="filtered.length === 0" class="op-list__empty">
+      <p v-else-if="jobs.length === 0" class="op-list__empty">
         No openings match your search.
-        <button type="button" class="op-list__empty-reset" @click="resetFilters">Clear search</button>.
       </p>
 
       <ol v-else class="op-list__items" aria-label="Open positions">
         <li
-          v-for="job in filtered"
+          v-for="job in jobs"
           :key="job.numberId"
           class="op-list__item-wrap"
           :data-job-id="job.numberId"
@@ -75,7 +74,6 @@ const router = useRouter()
 
 const { jobs, loading, error, fetchJobs } = useJobs()
 
-const query = ref('')
 const selectedId = ref<string>('')
 
 const expandedIds = ref<string[]>([])
@@ -109,16 +107,10 @@ function readFiltersFromRoute(): JobSearchFilter {
   }
 }
 
-const filtered = computed(() => {
-  const q = query.value.trim().toLowerCase()
-  if (!q) return jobs.value
-  return jobs.value.filter((j) => j.title.toLowerCase().includes(q) || j.numberId.includes(q))
-})
-
-const showList = computed(() => !loading.value && !error.value && filtered.value.length > 0)
+const showList = computed(() => !loading.value && !error.value && jobs.value.length > 0)
 
 const selectedJob = computed(() =>
-  filtered.value.find((j) => j.numberId === selectedId.value) ?? filtered.value[0],
+  jobs.value.find((j) => j.numberId === selectedId.value) ?? jobs.value[0],
 )
 
 function showSalary(job: JobViewModel): boolean {
@@ -153,12 +145,7 @@ function selectJob(numberId: string): void {
   syncUrl(numberId)
 }
 
-function resetFilters(): void {
-  query.value = ''
-  if (filtered.value.length > 0) selectedId.value = filtered.value[0].numberId
-}
-
-watch(filtered, (list) => {
+watch(jobs, (list) => {
   if (list.length === 0) {
     selectedId.value = ''
   } else if (!list.some((j) => j.numberId === selectedId.value)) {

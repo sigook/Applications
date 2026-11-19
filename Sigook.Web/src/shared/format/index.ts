@@ -8,7 +8,7 @@ export { default as time } from '@/shared/format/timeFilter';
 export { default as hour } from '@/shared/format/fixedHoursFilter';
 export { default as hourminutes } from '@/shared/format/hourMinutes';
 export { default as filename } from '@/shared/format/fileNameFilter';
-export { default as lowercase } from '@/shared/format/capitalizeFilter';
+export { default as lowercase } from '@/shared/format/lowercaseFilter';
 export { default as emailName } from '@/shared/format/emailName';
 export { default as avatarLetters } from '@/shared/format/avatarLetters';
 export { default as sin } from '@/shared/format/sinFilter';

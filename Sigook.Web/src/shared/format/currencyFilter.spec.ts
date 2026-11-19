@@ -7,8 +7,13 @@ describe('currencyFilter', () => {
     expect(currency(1234.5)).toBe(`$${expected}`);
   });
 
-  it('returns an empty string for null and zero', () => {
+  it('returns an empty string for missing amounts', () => {
     expect(currency(null)).toBe('');
-    expect(currency(0)).toBe('');
+    expect(currency(undefined)).toBe('');
+    expect(currency(Number.NaN)).toBe('');
+  });
+
+  it('shows zero as a real amount', () => {
+    expect(currency(0)).toBe(`$${(0).toLocaleString(undefined, { minimumFractionDigits: 2 })}`);
   });
 });

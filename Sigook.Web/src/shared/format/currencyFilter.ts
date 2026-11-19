@@ -1,5 +1,5 @@
 export default function (amount: number | null | undefined): string {
-  if (!amount) {
+  if (amount === null || amount === undefined || Number.isNaN(amount)) {
     return '';
   }
   return "$" + amount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });

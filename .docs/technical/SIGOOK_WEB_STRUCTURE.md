@@ -58,7 +58,7 @@ Sigook.Web/
 | `punch-card/` | CalendarPunchCard, DataEntryTerms, `distributeHours`, `timeSheetApprove`, `directHiring`, `types.ts` (TimeSheetModel, PunchCard*) |
 | `company-profile/` | CompanyLocationsCard, CompanyMainContactCard, LocationForm, JobPositionForm (`kind` `full` = with rates for agency admins, `basic` = name/description/shift for companies and non-admins; receives `create`/`update`/`load`), CompanyUserModal (create/edit; email editable on create or with `email-editable`, passed by the agency Users grid and the company Users grid), `useCompanyDetail`, `types.ts` (CompanyProfileDetail, CompanyUserModel, …) |
 | `api/` | `catalogApi`, `locationApi`, `accountApi`, `userNotificationApi`, `sharedApi`, `reportApi` (`downloadAgencyReport`, the generic Excel download used by SigookGrid) |
-| `composables/` | useAdmin, useRecruitingAccess, useSalesAccess, useSuperAdmin, useBreakpoint, useBodyScrollLock, useFocusTrap, useGoBack, useStickyForm, usePubSub, useDropdownReveal, useElementSize, useSwipe |
+| `composables/` | useAdmin, useRecruitingAccess, useSalesAccess, useSuperAdmin, useBreakpoint, useBodyScrollLock, useFocusTrap, useGoBack, useStickyForm, useDropdownReveal, useElementSize, useSwipe |
 | `utils/` | toast, downloadFile, compressFile, fileNaming, fileValidation, multipart, validation, phoneFormat, locationLabel, buefyProgrammatic |
 | `format/` | Date/money/text formatters (one per file) re-exported by `index.ts`: `import { date, currency } from '@/shared/format'` |
 | `constants/` | `enums.ts` (RequestStatus, ClockType, CompanyStatus, …), `catalog.ts` |

@@ -1,42 +1,46 @@
 <template>
   <div class="p-4">
+    <b-loading v-model="isLoading"></b-loading>
     <h2 class="has-text-centered fz1 mb-4">Logo</h2>
-    <upload-image @imageSelected="(file) => newLogo = file"
-      :edited-image="logo" :required="false" @onUpload="() => subscribe('file')"
-      @finishUpload="() => unsubscribe()" class="mx-auto my-2">
+    <upload-image @imageSelected="(file: File) => logoFile = file"
+      :edited-image="logo" :required="true" class="mx-auto my-2">
     </upload-image>
     <div class="mt-4">
-      <b-button @click="cancelUpdate">Cancel</b-button>
-      <b-button type="is-primary" class="ml-2" :disabled="isLoadingFiles" @click="updateLogo()">Save</b-button>
+      <b-button @click="emit('cancel')">Cancel</b-button>
+      <b-button type="is-primary" class="ml-2" @click="saveLogo()">Save</b-button>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import UploadImage from "@/shared/ui/PreviewImage.vue";
-import { usePubSub } from "@/shared/composables/usePubSub";
+import { showAlertError } from '@/shared/utils/toast';
+import { updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
+import UploadImage from '@/shared/ui/PreviewImage.vue';
 import type { CovenantFileModel } from '@/shared/types/common';
 
-const { logo } = defineProps<{ logo?: CovenantFileModel | null }>();
+const { profileId, logo } = defineProps<{ profileId: string; logo?: CovenantFileModel | null }>();
 const emit = defineEmits<{
-  (e: 'save', value: File): void;
+  (e: 'updated'): void;
   (e: 'cancel'): void;
 }>();
 
-const { subscribe, unsubscribe, isLoadingFiles } = usePubSub();
+const logoFile = ref<File | null>(null);
+const isLoading = ref(false);
 
-const newLogo = ref<File | null>(null);
-
-function updateLogo() {
-  if (!newLogo.value) {
-    emit("cancel");
-  } else {
-    emit("save", newLogo.value);
+async function saveLogo() {
+  if (!logoFile.value) {
+    showAlertError('Please select an image');
+    return;
   }
-}
-
-function cancelUpdate() {
-  emit("cancel");
+  isLoading.value = true;
+  try {
+    await updateAgencyCompanyProfileLogo(profileId, logoFile.value);
+    emit('updated');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 </script>

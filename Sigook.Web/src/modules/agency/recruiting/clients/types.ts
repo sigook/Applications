@@ -79,13 +79,26 @@ export interface AgencyCompanyFilter {
 // Item returned by GET /api/agency/recruiting/clients.
 export interface AgencyCompanyListItem {
   id: string;
+  companyId?: string;
   agencyId: string;
+  logo?: string | null;
   fullName: string;
-  email: string;
   numberId?: number;
-  companyStatus?: string;
+  locations?: string[] | null;
   active?: boolean;
+  industry?: string | null;
+  companyStatus?: CompanyStatus;
+  contactName?: string | null;
+  contactRole?: string | null;
+  phone?: string | null;
+  email: string;
+  website?: string | null;
+  createdBy?: string | null;
   createdAt?: string;
+  updatedBy?: string | null;
+  updatedAt?: string | null;
+  notesCount?: number;
+  salesRepresentative?: string | null;
 }
 
 // Related records that prevent a company from being deleted.

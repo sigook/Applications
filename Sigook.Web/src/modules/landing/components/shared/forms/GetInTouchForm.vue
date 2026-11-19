@@ -8,7 +8,6 @@
     </header>
 
     <form class="git-card__form" @submit.prevent="handleFormSubmit" novalidate>
-      <!-- Name row -->
       <div class="git-card__field-group">
         <label class="git-card__label">Name</label>
         <div class="git-card__name-row">

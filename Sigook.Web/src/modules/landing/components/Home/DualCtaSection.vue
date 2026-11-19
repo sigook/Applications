@@ -1,5 +1,5 @@
 <template>
-  <div class="dual-cta-wrap">
+  <div id="dual-cta" class="dual-cta-wrap">
     <div class="dual-cta__back" aria-hidden="true"></div>
     <section class="dual-cta" aria-label="Find work or find talent">
     <div class="dual-cta__bg" aria-hidden="true">

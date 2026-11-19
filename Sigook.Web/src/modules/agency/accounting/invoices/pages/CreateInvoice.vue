@@ -260,6 +260,7 @@ const isLoadingRequests = ref(false);
 const additionalItems = ref<CreateInvoiceItemModel[]>([]);
 const discounts = ref<CreateInvoiceItemModel[]>([]);
 const previewData = ref<InvoicePreviewModel | null>(null);
+const previewedInvoice = ref<CreateAgencyInvoiceModel | null>(null);
 const dateSelected = ref<Date[]>([]);
 const previewContainer = useTemplateRef<HTMLElement>('previewContainer');
 
@@ -339,6 +340,11 @@ watch(() => invoice.value.directHiring, (isDirectHiring) => {
   }
 });
 
+watch([invoice, additionalItems, discounts, email, invoiceDate], () => {
+  previewData.value = null;
+  previewedInvoice.value = null;
+}, { deep: true });
+
 function updateTotalAdditionalItems(item: CreateInvoiceItemModel) {
   item.total = item.quantity * item.unitPrice;
 }
@@ -369,14 +375,18 @@ async function validateForm() {
   const itemsOk = validateItems();
   if (!valid || !itemsOk) return;
   isLoading.value = true;
-  invoice.value.email = email.value || undefined;
-  invoice.value.invoiceDate = invoiceDate.value ? invoiceDate.value.toISOString() : undefined;
-  invoice.value.additionalItems = additionalItems.value;
-  invoice.value.discounts = discounts.value;
+  const payload: CreateAgencyInvoiceModel = {
+    ...invoice.value,
+    email: email.value || undefined,
+    invoiceDate: invoiceDate.value ? invoiceDate.value.toISOString() : undefined,
+    additionalItems: additionalItems.value.map((item) => ({ ...item })),
+    discounts: discounts.value.map((discount) => ({ ...discount })),
+  };
   try {
-    const response = await previewAgencyInvoice(invoice.value);
+    const response = await previewAgencyInvoice(payload);
     isLoading.value = false;
     previewData.value = response;
+    previewedInvoice.value = payload;
     void nextTick(() => {
       const el = previewContainer.value?.querySelector('.box');
       if (el) {
@@ -411,9 +421,11 @@ function removeDiscount(discount: CreateInvoiceItemModel) {
 }
 
 async function confirmInvoice() {
+  const payload = previewedInvoice.value;
+  if (!payload) return;
   isLoading.value = true;
   try {
-    await createAgencyInvoice(invoice.value);
+    await createAgencyInvoice(payload);
     isLoading.value = false;
     void router.push('/accounting/invoices');
   } catch (error) {
@@ -424,6 +436,7 @@ async function confirmInvoice() {
 
 function cancelPreview() {
   previewData.value = null;
+  previewedInvoice.value = null;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 </script>

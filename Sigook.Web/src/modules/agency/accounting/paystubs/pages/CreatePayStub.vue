@@ -199,8 +199,11 @@ interface Discount {
 
 const router = useRouter();
 
+const workerProfileId = ref<string | null>(null);
+
 const schema = yup.object({
-  worker: yup.string().required('Worker is required'),
+  worker: yup.string().required('Worker is required')
+    .test('picked', 'Please select a worker from the list', () => workerProfileId.value !== null),
   position: yup.string().required('Position is required'),
   datesOfWork: yup.array().of(yup.date()).min(2, 'Dates are required').required('Dates are required'),
 });
@@ -216,7 +219,6 @@ const isLoading = ref(false);
 const { results: workers, isSearching: isLoadingList, search: searchWorkers } =
   useDebouncedSearch((term) => getAgencyWorkersDropdown({ searchTerm: term }));
 const payVacations = ref(false);
-const workerProfileId = ref<string | null>(null);
 const workBegins = ref<string | null>(null);
 const workEnd = ref<string | null>(null);
 const items = ref<PayStubItem[]>([]);

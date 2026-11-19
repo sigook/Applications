@@ -28,7 +28,6 @@
           <CandidateApplyForm
             :job-title="context?.jobTitle"
             :request-id="context?.requestId"
-            :redirect-on-success="false"
             @submitted="onSubmitted"
           />
         </div>

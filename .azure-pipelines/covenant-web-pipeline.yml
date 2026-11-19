@@ -117,6 +117,10 @@ stages:
               testRunTitle: 'Covenant.Web Unit Tests'
               failTaskOnMissingResultsFile: true
 
+          - template: templates/dotnet-setup.yml
+            parameters:
+              sdkVersion: '10.0.401'
+
           - task: PublishCodeCoverageResults@2
             displayName: 'Publish Code Coverage'
             condition: succeededOrFailed()

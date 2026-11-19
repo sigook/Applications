@@ -9,6 +9,7 @@ export default mergeConfig(
       env: { TZ: 'America/Toronto' },
       include: ['src/**/*.spec.ts'],
       setupFiles: ['src/testing/setup.ts'],
+      testTimeout: 15000,
       restoreMocks: true,
       unstubGlobals: true,
       coverage: {
@@ -25,10 +26,10 @@ export default mergeConfig(
         reporter: ['text-summary', 'cobertura', 'html'],
         reportsDirectory: 'coverage',
         thresholds: {
-          statements: 4,
-          branches: 4,
-          functions: 3,
-          lines: 4,
+          statements: 93,
+          branches: 94,
+          functions: 86,
+          lines: 94,
         },
       },
     },

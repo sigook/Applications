@@ -50,8 +50,13 @@ const reasonSelected = ref<CancellationReason | null>(null);
 const cancellationList = ref<CancellationReason[]>([]);
 
 void (async () => {
-  cancellationList.value = await getReasonCancellationRequest();
-  isLoading.value = false;
+  try {
+    cancellationList.value = await getReasonCancellationRequest();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 })();
 
 function validateInput() {

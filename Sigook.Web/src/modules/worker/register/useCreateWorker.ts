@@ -101,23 +101,11 @@ export function useCreateWorker() {
   }
 
   function changeDaysSelected(): void {
-    if (allDaysSelected.value) {
-      for (let i = 0; i < days.value.length; i++) {
-        worker.availabilityDays.push(days.value[i]);
-      }
-    } else {
-      worker.availabilityDays = [];
-    }
+    worker.availabilityDays = allDaysSelected.value ? [...days.value] : [];
   }
 
   function changeAllDays(): void {
-    for (let i = 0; i < worker.availabilityDays.length; i++) {
-      if (worker.availabilityDays.length !== days.value.length) {
-        allDaysSelected.value = false;
-      } else {
-        allDaysSelected.value = true;
-      }
-    }
+    allDaysSelected.value = days.value.length > 0 && worker.availabilityDays.length === days.value.length;
   }
 
   function getFilteredSkills(text: string): void {

@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { getAgencyWorkersDropdown } from '@/modules/agency/recruiting/workers/api';
 import { bookAgencyRequestWorker } from "@/modules/agency/recruiting/requests/api";
@@ -27,11 +26,10 @@ import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { useDebouncedSearch } from '@/shared/composables/useDebouncedSearch';
 import type { AgencyWorkerDropdownItem } from '@/modules/agency/recruiting/workers/types';
 
+const { requestId } = defineProps<{ requestId: string }>();
 const emit = defineEmits<(e: 'workerBooked') => void>();
-const route = useRoute();
 
 const isLoading = ref(false);
-const requestId = ref<string>(route.params.id as string);
 const { results: workers, isSearching: isLoadingList, search: searchWorkers } =
   useDebouncedSearch((term) => getAgencyWorkersDropdown({ searchTerm: term }));
 const workerSelected = ref<string | null>(null);
@@ -62,7 +60,7 @@ async function book(value: string, dialog: { close: () => void }) {
   if (!workerProfileId.value) return;
   isLoading.value = true;
   try {
-    await bookAgencyRequestWorker(requestId.value, workerProfileId.value, { startWorking: value });
+    await bookAgencyRequestWorker(requestId, workerProfileId.value, { startWorking: value });
     isLoading.value = false;
     showAlertSuccess('Booked');
     emit('workerBooked');

@@ -152,7 +152,7 @@ function toggleWeek(index: number) {
 watch(calendar, (weeks) => {
   const currentWeek = weeks.findIndex((week) => week.days.some((day) => isToday(day.day)));
   expandedWeeks.value = new Set([currentWeek >= 0 ? currentWeek : 0]);
-});
+}, { immediate: true });
 </script>
 
 <style lang="scss" scoped>

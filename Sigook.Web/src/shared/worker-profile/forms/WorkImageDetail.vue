@@ -10,14 +10,12 @@
     <b-modal custom-content-class="card" v-model="showEditModal" width="400px" :destroy-on-hide="true">
       <div class="p-4">
         <h2 class="has-text-centered fz1 mb-4">Profile Photo</h2>
-        <upload-image v-if="profileImage"
-          @imageSelected="(profileImg: File) => profileImageFile = profileImg"
-          :edited-image="data.profileImage" :required="true" @onUpload="() => pubSub.subscribe('file')"
-          @finishUpload="() => pubSub.unsubscribe()" class="mx-auto my-2">
+        <upload-image @imageSelected="(file: File) => profileImageFile = file"
+          :edited-image="data.profileImage" :required="true" class="mx-auto my-2">
         </upload-image>
         <div class="mt-4">
           <b-button @click="showEditModal = false">Cancel</b-button>
-          <b-button type="is-primary" class="ml-2" @click="createWorkerImageHandler()">Save</b-button>
+          <b-button type="is-primary" class="ml-2" @click="saveImage()">Save</b-button>
         </div>
       </div>
     </b-modal>
@@ -26,60 +24,33 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { showAlertError } from '@/shared/utils/toast';
-import { generateFileName } from '@/shared/utils/fileNaming';
-import { compressFile } from '@/shared/utils/compressFile';
-import { usePubSub } from '@/shared/composables/usePubSub';
 import { createWorkerImage } from '@/shared/worker-profile/api';
 import UploadImage from '@/shared/ui/PreviewImage.vue';
 import type { WorkerProfileDetail } from '@/shared/worker-profile/types';
-import type { CovenantFileModel } from '@/shared/types/common';
 
 const { data } = defineProps<{ data: WorkerProfileDetail }>();
-const emit = defineEmits<(e: 'updateProfile', value: boolean) => void>();
-
-const pubSub = usePubSub();
+const emit = defineEmits<(e: 'updateProfile') => void>();
 
 const showEditModal = ref(false);
-const profileImage = ref<CovenantFileModel>({});
 const profileImageFile = ref<File | null>(null);
 const isLoading = ref(false);
 
-async function createWorkerImageHandler() {
+async function saveImage() {
   if (!profileImageFile.value) {
     showAlertError('Please select an image');
     return;
   }
-
   isLoading.value = true;
-
   try {
-    // Generate unique filename with GUID (same pattern as registration)
-    const generatedFileName = generateFileName('ProfileImage', profileImageFile.value.name);
-
-    // Compress the image
-    let fileToUpload: Blob | File;
-    try {
-      fileToUpload = await compressFile(profileImageFile.value);
-    } catch {
-      fileToUpload = profileImageFile.value;
-    }
-
-    // Create FormData
-    const formData = new FormData();
-    formData.append(generatedFileName, fileToUpload, generatedFileName);
-
-    await createWorkerImage(data.id, formData);
-
-    isLoading.value = false;
+    await createWorkerImage(data.id, profileImageFile.value);
     showEditModal.value = false;
-    emit('updateProfile', true);
+    emit('updateProfile');
   } catch (error) {
-    isLoading.value = false;
     showAlertError(error);
+  } finally {
+    isLoading.value = false;
   }
 }
-
-profileImage.value = Object.assign({}, data.profileImage);
 </script>
 
 <style lang="scss" scoped>

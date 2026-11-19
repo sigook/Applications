@@ -24,7 +24,6 @@ import { ICONS, type IconDef, type LandingIconName } from '@/modules/landing/com
 
 const { name, strokeWidth } = defineProps<{
   name: LandingIconName
-  /** Override the icon's default stroke width (stroke icons only). */
   strokeWidth?: number
 }>()
 

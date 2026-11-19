@@ -54,7 +54,8 @@
     </detail-header>
 
     <b-modal v-if="company" custom-content-class="card" v-model="showUpdateLogo" width="400px" :destroy-on-hide="true">
-      <company-update-logo :logo="company.logo" @save="updateLogo" @cancel="showUpdateLogo = false" />
+      <company-update-logo :profile-id="company.id" :logo="company.logo" @updated="onLogoUpdated"
+        @cancel="showUpdateLogo = false" />
     </b-modal>
   </div>
 </template>
@@ -71,7 +72,7 @@ import Breadcrumbs from '@/shared/ui/Breadcrumbs.vue';
 import type { PageBreadcrumb } from '@/shared/types/common';
 import type { AgencyCompanyProfileDetail } from '@/modules/agency/recruiting/clients/types';
 import type { DetailChip, DetailKpi } from '@/shared/detail-page/types';
-import { getAgencyCompany, updateAgencyCompanyProfileLogo } from '@/modules/agency/recruiting/clients/api';
+import { getAgencyCompany } from '@/modules/agency/recruiting/clients/api';
 import { lowercase } from '@/shared/format';
 import { CompanyStatus } from '@/shared/constants/enums';
 import DetailHeader from '@/shared/detail-page/DetailHeader.vue';
@@ -175,18 +176,8 @@ async function loadCompany() {
   }
 }
 
-async function updateLogo(logo: File) {
-  const current = company.value;
-  if (!current) return;
+async function onLogoUpdated() {
   showUpdateLogo.value = false;
-  isLoading.value = true;
-  try {
-    await updateAgencyCompanyProfileLogo(current.id, logo);
-  } catch (error) {
-    showAlertError(error);
-    isLoading.value = false;
-    return;
-  }
   await loadCompany();
 }
 

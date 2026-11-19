@@ -1,5 +1,5 @@
 <template>
-  <div class="sigook-grid" @keyup.enter="onFilterEnter">
+  <div ref="root" class="sigook-grid" @keyup.enter="onFilterEnter">
     <div v-if="showToolbar" class="sigook-grid-toolbar">
       <b-button v-if="canRefresh" icon-left="refresh" title="Refresh" aria-label="Refresh" @click="reload()" />
       <slot name="filters"></slot>
@@ -61,7 +61,7 @@
 </template>
 
 <script setup lang="ts" generic="T, P extends GridParams">
-import { computed, onMounted, ref, shallowRef, useSlots } from 'vue';
+import { computed, onMounted, ref, shallowRef, useSlots, useTemplateRef } from 'vue';
 import { showAlertError } from '@/shared/utils/toast';
 import { downloadFile } from '@/shared/utils/downloadFile';
 import { downloadAgencyReport } from '@/shared/api/reportApi';
@@ -126,6 +126,7 @@ const emit = defineEmits<{
 
 const slots = useSlots();
 const { isTouch } = useBreakpoint();
+const root = useTemplateRef<HTMLDivElement>('root');
 
 const rows = shallowRef<T[]>([]);
 const serverTotal = ref(0);
@@ -186,6 +187,7 @@ async function fetchRows(load: NonNullable<typeof fetchPage>, next: P) {
 
 function onPageChange(page: number) {
   pageIndex.value = page;
+  root.value?.querySelector('.table-wrapper')?.scrollTo({ top: 0 });
   if (isServer.value) reload();
 }
 

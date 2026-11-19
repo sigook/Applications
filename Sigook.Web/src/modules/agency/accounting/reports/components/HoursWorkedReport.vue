@@ -141,8 +141,13 @@ const report = ref<HoursWorkedReportView>({ rows: [] });
 
 async function loadCompanies() {
   isLoading.value = true;
-  companies.value = await getAgencyCompanyProfileWithRequests();
-  isLoading.value = false;
+  try {
+    companies.value = await getAgencyCompanyProfileWithRequests();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function onDatesSelected() {
@@ -154,20 +159,24 @@ async function onDatesSelected() {
 }
 
 async function selectCompany(company: CompanyProfileListItem | null) {
+  serverParams.value.companyProfileId = company?.id;
+  serverParams.value.jobPositionRateId = undefined;
+  jobPositionSelected.value = '';
+  jobPositions.value = [];
   if (company) {
-    serverParams.value.companyProfileId = company.id;
     await loadJobPositions();
-  } else {
-    serverParams.value.companyProfileId = undefined;
-    jobPositions.value = [];
   }
 }
 
 async function loadJobPositions() {
   const companyProfileId = serverParams.value.companyProfileId;
-  if (companyProfileId && dates.value.length === 2) {
-    isLoadingJobPositions.value = true;
+  if (!companyProfileId || dates.value.length !== 2) return;
+  isLoadingJobPositions.value = true;
+  try {
     jobPositions.value = await getJobPositionsHoursWorked({ ...serverParams.value, companyProfileId });
+  } catch (error) {
+    showAlertError(error);
+  } finally {
     isLoadingJobPositions.value = false;
   }
 }

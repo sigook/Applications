@@ -3,7 +3,7 @@
     <template #label>
       {{ label }} <span v-if="required" class="has-text-danger">*</span>
     </template>
-    <b-input type="tel" title="phone" :name="name" :disabled="disabled" :placeholder="placeholder"
+    <b-input type="tel" title="phone" :name="inputName" :disabled="disabled" :placeholder="placeholder"
       v-model="phone" maxlength="12" :has-counter="false" />
   </b-field>
 </template>
@@ -23,10 +23,9 @@ function formatPhone(raw: string): string {
   return `${a} ${b}-${c}`;
 }
 
-const { name = 'mobileNumber', label = 'Mobile Number', defaultValue = '', disabled, required, placeholder } = defineProps<{
+const { name, label = 'Mobile Number', defaultValue = '', disabled, required, placeholder } = defineProps<{
   name?: string;
   label?: string;
-  model?: string;
   defaultValue?: string | null;
   disabled?: boolean;
   required?: boolean;
@@ -34,6 +33,12 @@ const { name = 'mobileNumber', label = 'Mobile Number', defaultValue = '', disab
 }>();
 
 const emit = defineEmits<(e: 'formattedPhone', v: string | null) => void>();
+
+const inputName = computed(() => name ?? label
+  .trim()
+  .split(/\s+/)
+  .map((word, i) => i === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+  .join(''));
 
 const schema = computed(() => ({
   phone: phoneSchema(required),

@@ -23,7 +23,7 @@
               <span v-if="localEditableDay.clockOut">{{ dateHHmm(localEditableDay.clockOut) }}</span>
               <span v-else class="fz-1">No reported</span>
             </div>
-            <div class="mt-2" v-if="localEditableDay.clockInRounded">
+            <div class="mt-2" v-if="localEditableDay.clockOutRounded">
               <span class="fz-2 has-text-weight-bold is-block">Rounded</span>
               <span>{{ dateHHmm(localEditableDay.clockOutRounded) }}</span>
             </div>
@@ -271,6 +271,10 @@ function saveHours() {
   })();
 }
 
+function timeSpan(value: Date | null): string {
+  return value ? dayjs(value).format('HH:mm:ss') : '00:00:00';
+}
+
 async function sendValidation(values: TimeSheetForm) {
   const timeSheetId = localEditableDay.value.id;
   if (!timeSheetId) return;
@@ -279,8 +283,8 @@ async function sendValidation(values: TimeSheetForm) {
   const model: TimeSheetModel = {
     hours: dayjs(values.hoursApproved).format('HH:mm:ss'),
     timeIn: timeInZero.format('YYYY-MM-DDTHH:mm:ss'),
-    missingHours: dayjs(values.missinghours).format("HH:mm:ss"),
-    missingHoursOvertime: dayjs(values.missingHoursOvertime).format("HH:mm:ss"),
+    missingHours: timeSpan(values.missinghours),
+    missingHoursOvertime: timeSpan(values.missingHoursOvertime),
     deductionsOthers: values.deductions ?? 0,
     deductionsOthersDescription: values.deductionsDes,
     bonusOrOthers: values.bonus ?? 0,

@@ -142,9 +142,9 @@ export function usePunchCardCalendar(options: PunchCardCalendarOptions): PunchCa
     }
   }
 
-  watch(() => options.highlights(), syncHighlightsWithCalendar, { immediate: true })
-
   getTodayMonth()
+
+  watch(() => options.highlights(), syncHighlightsWithCalendar, { immediate: true })
 
   return {
     calendar,

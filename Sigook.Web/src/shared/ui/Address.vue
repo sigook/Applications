@@ -162,7 +162,7 @@ function markAllInteracted() {
 }
 
 const isLoading = ref(false);
-const localModel = ref<LocationDetailModel | null>(JSON.parse(JSON.stringify(model)));
+const localModel = ref<LocationDetailModel | null>(model ? JSON.parse(JSON.stringify(model)) as LocationDetailModel : null);
 const countries = ref<Country[]>([]);
 const provinces = ref<Province[]>([]);
 const provinceSelected = ref<Province | null>(null);

@@ -34,13 +34,13 @@
             </div>
           </td>
           <td v-for="(item, indexDay) in week.days" :key="'calendarDay' + indexDay"
-            :class="{ 'bg-gray': !isAvailableToUpdate(item.day) || !isAvailableToUpdateWorker(item.day) }">
+            :class="{ 'bg-gray': !isEditable(item.day) }">
             <div class="wrapper-day" :class="{ 'highlight-day': item.id }">
               <span :class="{ 'isToday': isToday(item.day), 'notCurrentMonth': notCurrentMonth(item.day) }">
                 {{ onlyDay(item.day) }}
               </span>
               <slot name="punch-input"
-                v-if="item && isAvailableToUpdate(item.day) && isAvailableToUpdateWorker(item.day)" :index="indexDay"
+                v-if="item && isEditable(item.day)" :index="indexDay"
                 :item="item" />
             </div>
           </td>
@@ -63,7 +63,7 @@
         </div>
         <div class="days-grid">
           <div v-for="(item, indexDay) in week.days" :key="'mobileDay' + indexDay" class="day-card" :class="{
-            'bg-gray': !isAvailableToUpdate(item.day) || !isAvailableToUpdateWorker(item.day),
+            'bg-gray': !isEditable(item.day),
             'highlight-day': item.id,
             'is-today': isToday(item.day),
             'not-current-month': notCurrentMonth(item.day)
@@ -75,7 +75,7 @@
             </div>
             <div class="day-content">
               <slot name="punch-input"
-                v-if="item && isAvailableToUpdate(item.day) && isAvailableToUpdateWorker(item.day)" :index="indexDay"
+                v-if="item && isEditable(item.day)" :index="indexDay"
                 :item="item" />
             </div>
           </div>
@@ -181,14 +181,15 @@ function isAvailableToUpdate(date: string | Date) {
 }
 
 function distributeWeekHours(week: PunchCardWeek) {
-  const hours = distributeHours(week.days.length, week.totalHoursWeek ?? 0, maximumHoursPerDay);
-  if (hours.length > 0) {
-    for (let i = 0; i < hours.length; i++) {
-      week.days[i].totalHoursApproved = hours[i] || 0;
-    }
-  } else {
+  const editableDays = week.days.filter((day) => isEditable(day.day));
+  const hours = distributeHours(editableDays.length, week.totalHoursWeek ?? 0, maximumHoursPerDay);
+  if (hours.length === 0) {
     showAlertError("Total hours is invalid");
+    return;
   }
+  editableDays.forEach((day, i) => {
+    day.totalHoursApproved = hours[i] || 0;
+  });
 }
 
 function isAvailableToUpdateWorker(date: string | Date) {
@@ -202,6 +203,10 @@ function isAvailableToUpdateWorker(date: string | Date) {
     return false;
   }
   return true;
+}
+
+function isEditable(date: string | Date) {
+  return isAvailableToUpdate(date) && isAvailableToUpdateWorker(date);
 }
 
 function syncHighlightsWithCalendar() {
@@ -229,14 +234,13 @@ function syncHighlightsWithCalendar() {
 
 const hasEvents = computed(() => highlights && highlights.length > 0);
 
-watch(() => highlights, () => {
-  syncHighlightsWithCalendar();
-}, { immediate: true });
-
-// created()
 today.value = dayjs().toDate();
 selectDate.value = today.value;
 getTodayMonth();
+
+watch(() => highlights, () => {
+  syncHighlightsWithCalendar();
+}, { immediate: true });
 
 defineExpose({ WorkerRequestStatus });
 </script>

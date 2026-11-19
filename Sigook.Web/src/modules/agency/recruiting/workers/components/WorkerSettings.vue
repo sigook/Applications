@@ -88,9 +88,10 @@
 </template>
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue';
+import dayjs from 'dayjs';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
-import { showAlertError } from "@/shared/utils/toast";
+import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { getDialog } from '@/shared/utils/buefyProgrammatic';
 import { getTaxCategories } from "@/shared/api/catalogApi";
 import { updateWorkerProfileExternalId, updateWorkerProfileWcCode, updateAgencyWorkerContractor, updateAgencyWorkerSubContractor, updateWorkerProfileTaxCategory, updateWorkerProfileTaxRate, addNewHoliday, getAgencyWorkerProfileHolidays, addUpdateAgencyWorkerProfileHolidays } from '@/modules/agency/recruiting/workers/api';
@@ -219,7 +220,7 @@ async function confirmHoliday(value: string, dialog: { close: () => void }) {
 
 function addHoliday() {
   getDialog().prompt({
-    message: `City`,
+    message: 'Holiday date',
     inputAttrs: {
       type: 'date',
       placeholder: 'Date',
@@ -231,14 +232,20 @@ function addHoliday() {
 }
 
 function onHolidaySelected(date: Date) {
-  workerHolidaySelected.value = workerHolidays.value.find(wh => new Date(wh.date).getDate() === date.getDate()) ?? null;
+  workerHolidaySelected.value = workerHolidays.value.find(wh => dayjs(wh.date).isSame(date, 'day')) ?? null;
 }
 
 async function addUpdateWorkerHoliday() {
   if (!workerHolidaySelected.value) return;
   isLoading.value = true;
-  await addUpdateAgencyWorkerProfileHolidays(localWorker.value.id, workerHolidaySelected.value);
-  isLoading.value = false;
+  try {
+    await addUpdateAgencyWorkerProfileHolidays(localWorker.value.id, workerHolidaySelected.value);
+    showAlertSuccess('Holiday updated');
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 const selectableDates = computed(() => {

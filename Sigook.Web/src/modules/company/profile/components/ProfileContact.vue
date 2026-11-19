@@ -73,11 +73,11 @@
           </div>
           <div class="column is-6 is-4-desktop">
             <PhoneInput ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
+              label="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
           </div>
           <div class="column is-6 is-4-desktop">
             <PhoneInput ref="officeComponent" :required="false" :defaultValue="officeNumber"
-              model="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
+              label="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
           </div>
           <div class="column is-6 is-4-desktop">
             <b-field label="Extension" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
@@ -101,7 +101,7 @@ import PhoneInput from "@/shared/ui/PhoneInput.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
 import CopyLink from '@/shared/ui/CopyLink.vue';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
-import { showAlertError, showAlertSuccess } from "@/shared/utils/toast";
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { getContactPeople, deleteContactPerson, saveContactPerson, updateContactPerson } from '@/modules/company/profile/api';
 import type { CompanyContactPersonModel } from '@/modules/company/profile/types';
 
@@ -191,8 +191,16 @@ async function getContactPersons() {
 }
 
 async function removeLine(id: string) {
-  await deleteContactPerson(id);
-  await getContactPersons();
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this contact', 'Yes'))) return;
+  isLoading.value = true;
+  try {
+    await deleteContactPerson(id);
+    await getContactPersons();
+  } catch (error) {
+    showAlertError((error as { data?: unknown }).data);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 async function validateForm() {

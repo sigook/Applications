@@ -1,5 +1,5 @@
-export default function(date: string | null | undefined): string {
-    if (!date) return '';
-    const hour = date.split(":");
-    return hour[0] + ':' + hour[1]
+export default function hourMinutes(time: string | null | undefined): string {
+  if (!time) return '';
+  const [hours, minutes = '00'] = time.split(':');
+  return `${hours}:${minutes}`;
 }

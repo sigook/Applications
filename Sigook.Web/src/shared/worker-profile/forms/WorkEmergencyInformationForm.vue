@@ -50,7 +50,7 @@
         </b-field>
       </div>
       <div class="column is-12">
-        <PhoneInput ref="emergencyPhoneComponent" :required="true" model="Contact Emergency Phone"
+        <PhoneInput ref="emergencyPhoneComponent" :required="true" label="Contact Emergency Phone"
           :defaultValue="worker.contactEmergencyPhone"
           @formattedPhone="(phone) => worker.contactEmergencyPhone = phone" />
       </div>

@@ -15,5 +15,5 @@ export const DEFAULT_AUTH_ERROR = "Something went wrong. Please try again.";
 
 export function authErrorMessage(code: string | undefined): string {
   if (!code) return DEFAULT_AUTH_ERROR;
-  return AUTH_ERROR_MESSAGES[code] ?? DEFAULT_AUTH_ERROR;
+  return Object.hasOwn(AUTH_ERROR_MESSAGES, code) ? AUTH_ERROR_MESSAGES[code] : DEFAULT_AUTH_ERROR;
 }

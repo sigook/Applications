@@ -1,4 +1,4 @@
-import { CatalogItem, City, Skill } from '@/shared/types/common';
+import { CatalogItem, City } from '@/shared/types/common';
 
 // Candidate item returned by GET /api/agency/recruiting/candidates.
 // Mirrors backend CandidateListModel (Covenant.Common.Models.Candidates).
@@ -13,7 +13,7 @@ export interface Candidate {
   province?: string;
   residencyStatus?: string;
   phoneNumbers: CandidatePhoneNumberModel[];
-  skills: Skill[];
+  skills: CandidateSkillModel[];
   requests?: { id: string; value: string }[];
   recruiter?: string;
   createdAt: string;
@@ -116,6 +116,6 @@ export interface CandidatePhoneNumberModel {
 // Skill payload for POST /api/agency/recruiting/candidates/{id}/Skills.
 // Mirrors backend SkillModel.
 export interface CandidateSkillModel {
-  id?: string;
+  id?: string | null;
   skill: string;
 }

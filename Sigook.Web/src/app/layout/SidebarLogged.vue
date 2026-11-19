@@ -187,8 +187,6 @@ watch(isCompactDesktop, (compact) => {
   isCollapsed.value = compact;
 });
 
-// The icon-only rail is a desktop affordance; on mobile and tablet the sidebar
-// is an off-canvas drawer that keeps the collapsible groups.
 const collapsed = computed(() => isCollapsed.value && !isDrawer.value);
 
 watch(isDrawer, (drawer) => {
@@ -211,8 +209,6 @@ function setGroupRef(el: unknown, index: number) {
   groupRefs.value[index] = el as { newExpanded: boolean } | null;
 }
 
-// Open the group whose child route is currently active (buefy keeps the
-// expanded state internally, so we set it directly on the menu-item instance).
 function expandActiveGroup() {
   menuGroups.value.forEach((group, i) => {
     const groupRef = groupRefs.value[i];

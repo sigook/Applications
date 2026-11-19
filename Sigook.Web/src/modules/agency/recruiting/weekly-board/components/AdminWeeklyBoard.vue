@@ -143,7 +143,7 @@
           </b-collapse>
         </section>
         <footer class="modal-card-foot is-justify-content-space-between">
-          <b-button type="is-danger" icon-left="trash-can-outline" :loading="isSaving" @click="onUnassign(detail)">
+          <b-button type="is-danger" icon-left="trash-can-outline" :loading="isSaving" @click="confirmUnassign(detail)">
             Remove assignment
           </b-button>
           <b-button @click="showDetail = false">Close</b-button>

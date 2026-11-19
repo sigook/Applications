@@ -22,7 +22,7 @@
               </b-field>
             </div>
             <div class="column is-12">
-              <PhoneInput ref="phoneComponent" model="Phone" :required="true" :defaultValue="phoneNumber"
+              <PhoneInput ref="phoneComponent" label="Phone" :required="true" :defaultValue="phoneNumber"
                 @formattedPhone="(phone) => phoneNumber = phone ?? ''" />
             </div>
             <div class="column is-12">
@@ -235,7 +235,11 @@ async function submitCandidate(values: Pick<CreateCandidateModel, 'name' | 'emai
 }
 
 void (async () => {
-  [genders.value, sourceList.value] = await Promise.all([getGenders(), getSources()]);
+  try {
+    [genders.value, sourceList.value] = await Promise.all([getGenders(), getSources()]);
+  } catch (error) {
+    showAlertError(error);
+  }
 })();
 </script>
 

@@ -193,8 +193,7 @@ const rangeLabel = computed(() => {
 });
 
 const visibleDays = computed<WeekDay[]>(() => {
-  if (activeDay.value) return days.value.filter(d => d.date === activeDay.value);
-  return days.value.filter(d => hasAssignments(d.date));
+  return days.value.filter(d => (!activeDay.value || d.date === activeDay.value) && hasAssignments(d.date));
 });
 
 function assignmentsFor(date: string): WeeklyBoardAssignment[] {

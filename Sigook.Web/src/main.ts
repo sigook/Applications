@@ -4,7 +4,7 @@ import router from '@/app/router';
 import pinia from '@/app/stores';
 import Buefy from 'buefy';
 import { QuillEditor } from '@vueup/vue-quill';
-import { registerValidationRules } from '@/lang/validator';
+import { configureValidation } from '@/lang/validator';
 import { setupBuefyProgrammatic } from '@/shared/utils/buefyProgrammatic';
 import mgr from '@/app/security/securityService';
 import { useSecurityStore } from '@/app/stores/security';
@@ -15,7 +15,7 @@ import 'buefy/dist/css/buefy.css';
 import '@vueup/vue-quill/dist/vue-quill.snow.css';
 import '@/assets/scss/landing-form.scss';
 
-registerValidationRules();
+configureValidation();
 
 const CHUNK_RELOAD_KEY = 'chunkReloadAt';
 const CHUNK_RELOAD_COOLDOWN_MS = 10_000;

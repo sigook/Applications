@@ -1,5 +1,6 @@
 <template>
   <div class="card job-boards-modal">
+    <b-loading v-model="isLoading"></b-loading>
     <header class="card-header">
       <p class="card-header-title">Job Boards — Request #{{ numberId }}</p>
     </header>
@@ -58,6 +59,7 @@ const emit = defineEmits<{
 }>();
 
 const availableBoards = ref<Source[]>([]);
+const isLoading = ref(false);
 const selection = reactive<Record<string, BoardSelection>>({});
 
 function hydrateSelection() {
@@ -90,9 +92,15 @@ async function onSave() {
 }
 
 async function loadSources() {
-  const sources = await getSourcesForRequests();
-  availableBoards.value = sources;
-  hydrateSelection();
+  isLoading.value = true;
+  try {
+    availableBoards.value = await getSourcesForRequests();
+    hydrateSelection();
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 }
 
 void loadSources();

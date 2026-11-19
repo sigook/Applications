@@ -4,7 +4,7 @@
     <div class="columns is-multiline">
       <div class="column is-12">
         <b-field label="To">
-          <b-input disabled :value="invoice.email"></b-input>
+          <b-input disabled :model-value="invoice.email"></b-input>
         </b-field>
       </div>
       <div class="column is-12">

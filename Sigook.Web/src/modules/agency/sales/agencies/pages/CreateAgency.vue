@@ -17,7 +17,7 @@
           </b-field>
         </div>
         <div class="column is-6 is-3-desktop">
-          <phone-input ref="phoneComponent" :required="true" model="Phone" :defaultValue="phoneNumber"
+          <phone-input ref="phoneComponent" :required="true" label="Phone" :defaultValue="phoneNumber"
             @formattedPhone="(phone: string | null) => phoneNumber = phone ?? ''"></phone-input>
         </div>
         <div class="column is-6 is-3-desktop">

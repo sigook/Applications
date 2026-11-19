@@ -1,4 +1,5 @@
 import { api } from '@/app/security/apiService';
+import { generateFileName } from '@/shared/utils/fileNaming';
 import type { WorkerCatalogItem, WorkerBasicInformationModel, WorkerContactInformationModel, WorkerEmergencyInformationModel, WorkerOtherInformationModel, WorkerJobExperienceModel } from '@/shared/worker-profile/types';
 
 // Job Experience
@@ -117,7 +118,10 @@ export function deleteWorkerOtherDocuments(profileId: string, otherDocumentId: s
 }
 
 // Profile Image
-export function createWorkerImage(profileId: string, formData: FormData): Promise<void> {
+export function createWorkerImage(profileId: string, image: File): Promise<void> {
+  const fileName = generateFileName('ProfileImage', image.name);
+  const formData = new FormData();
+  formData.append(fileName, image, fileName);
   return api.post(`/api/worker/profile/${profileId}/ProfileImage`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' }
   });

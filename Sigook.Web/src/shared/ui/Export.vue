@@ -14,6 +14,7 @@
   </b-field>
 </template>
 <script setup lang="ts">
+import { showAlertError } from "@/shared/utils/toast";
 import { downloadFile } from "@/shared/utils/downloadFile";
 import { downloadAgencyReport, type ReportQueryParams } from '@/shared/api/reportApi';
 import type { GridParams } from '@/shared/types/common';
@@ -32,8 +33,9 @@ async function downloadReport() {
     const file = await downloadAgencyReport(url, params);
     emit('onDataLoading', false);
     downloadFile(file, `${fileName}_${new Date().toLocaleDateString()}`);
-  } catch {
+  } catch (error) {
     emit('onDataLoading', false);
+    showAlertError(error);
   }
 }
 </script>

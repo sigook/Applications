@@ -332,12 +332,17 @@ const companyUsersSelected = ref<CompanyUserModel[]>([]);
 const companyUserTagInput = useTemplateRef<InstanceType<typeof BTaginput>>('companyUserTagInput');
 
 void (async () => {
-  [locations.value, companyJobPositions.value, companyUsers.value] = await Promise.all([
-    getProfileLocations(),
-    getCompanyJobPositions(),
-    isCompanyAdmin.value ? getCompanyUser() : Promise.resolve([]),
-  ]);
-  isLoading.value = false;
+  try {
+    [locations.value, companyJobPositions.value, companyUsers.value] = await Promise.all([
+      getProfileLocations(),
+      getCompanyJobPositions(),
+      isCompanyAdmin.value ? getCompanyUser() : Promise.resolve([]),
+    ]);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    isLoading.value = false;
+  }
 })();
 
 const filteredCompanyJobPositions = computed(() => {

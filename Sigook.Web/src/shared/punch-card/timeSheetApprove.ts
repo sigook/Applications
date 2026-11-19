@@ -1,9 +1,20 @@
 import dayjs from 'dayjs';
 import type { PunchCardDay, TimeSheetModel } from '@/shared/punch-card/types';
 
+function pad(value: number): string {
+  return String(value).padStart(2, '0');
+}
+
+export function formatTimeSpan(hours: number): string {
+  const totalSeconds = Math.round(hours * 3600);
+  const days = Math.floor(totalSeconds / 86400);
+  const time = `${pad(Math.floor((totalSeconds % 86400) / 3600))}:${pad(Math.floor((totalSeconds % 3600) / 60))}:${pad(totalSeconds % 60)}`;
+  return days > 0 ? `${days}.${time}` : time;
+}
+
 export function buildTimeSheetApproveModel(item: PunchCardDay): TimeSheetModel {
   return {
-    hours: dayjs().startOf('day').add(item.totalHours ?? 0, 'hours').format('HH:mm:ss'),
+    hours: formatTimeSpan(item.totalHours ?? 0),
     timeIn: dayjs(item.timeIn).format('YYYY-MM-DDTHH:mm:ss'),
     missingHours: item.missingHours,
     missingHoursOvertime: item.missingHoursOvertime,

@@ -43,7 +43,7 @@
       </div>
 
       <div class="column is-6">
-        <phone-input :required="false" :model="'Office Number'" label="Office Number" :defaultValue="contactPerson.officeNumber"
+        <phone-input :required="false" label="Office Number" :defaultValue="contactPerson.officeNumber"
           @formattedPhone="(phone) => contactPerson.officeNumber = phone">
         </phone-input>
       </div>
@@ -55,7 +55,7 @@
       </div>
 
       <div class="column is-6">
-        <phone-input :required="false" :model="'Mobile Number'" label="Mobile Number" :defaultValue="contactPerson.mobileNumber"
+        <phone-input :required="false" label="Mobile Number" :defaultValue="contactPerson.mobileNumber"
           @formattedPhone="(phone) => contactPerson.mobileNumber = phone">
         </phone-input>
       </div>

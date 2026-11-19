@@ -66,11 +66,11 @@
           </div>
           <div class="column is-4">
             <phone-input ref="mobileComponent" :required="true" :defaultValue="mobileNumber"
-              model="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
+              label="Mobile Number" @formattedPhone="(phone: string | null) => mobileNumber = phone ?? ''" />
           </div>
           <div class="column is-4">
             <phone-input ref="officeComponent" :required="false" :defaultValue="officeNumber"
-              model="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
+              label="Office Number" @formattedPhone="(phone: string | null) => officeNumber = phone ?? ''" />
           </div>
           <div class="column is-4">
             <b-field label="Ext" :type="formErrors.officeNumberExt ? 'is-danger' : ''"
@@ -91,7 +91,7 @@
 import { ref, watch, useTemplateRef } from 'vue';
 import * as yup from 'yup';
 import { useStickyForm } from '@/shared/composables/useStickyForm';
-import { showAlertSuccess } from "@/shared/utils/toast";
+import { showAlertConfirm, showAlertError, showAlertSuccess } from "@/shared/utils/toast";
 import { updateAgencyProfile } from '@/modules/agency/profile/api';
 import phoneInput from "@/shared/ui/PhoneInput.vue";
 import SigookGrid from '@/shared/ui/SigookGrid.vue';
@@ -166,38 +166,40 @@ async function validateForm() {
   const officeValid = await officeComponent.value?.validatePhone();
   await form.handleSubmit(async (values) => {
     if (!mobileValid || !officeValid) return;
-    isLoading.value = true;
     const contact = {
       ...values,
       officeNumberExt: values.officeNumberExt ? parseInt(values.officeNumberExt, 10) : null,
     };
-    (localAgencyData.value.contactInformation ??= []).push(contact);
-    emit('update:agencyData', localAgencyData.value);
-    try {
-      await updateAgencyProfile(agencyData.id, localAgencyData.value);
-      isLoading.value = false;
+    const updated = {
+      ...localAgencyData.value,
+      contactInformation: [...(localAgencyData.value.contactInformation ?? []), contact],
+    };
+    if (await saveAgency(updated)) {
       showModal.value = false;
       form.resetAll();
-      showAlertSuccess('Updated');
-    } catch {
-      isLoading.value = false;
     }
   })();
 }
 
 async function removeContact(contact: AgencyContactInformation) {
   const contacts = localAgencyData.value.contactInformation;
-  if (!contacts) return;
-  const index = contacts.indexOf(contact);
-  if (index === -1) return;
+  if (!contacts?.includes(contact)) return;
+  if (!(await showAlertConfirm('Are you sure', 'You want to delete this contact'))) return;
+  await saveAgency({ ...localAgencyData.value, contactInformation: contacts.filter(c => c !== contact) });
+}
+
+async function saveAgency(updated: AgencyDetail) {
   isLoading.value = true;
-  contacts.splice(index, 1);
-  emit('update:agencyData', localAgencyData.value);
   try {
-    await updateAgencyProfile(agencyData.id, localAgencyData.value);
-    isLoading.value = false;
-    showAlertSuccess("Updated");
-  } catch {
+    await updateAgencyProfile(agencyData.id, updated);
+    localAgencyData.value = updated;
+    emit('update:agencyData', updated);
+    showAlertSuccess('Updated');
+    return true;
+  } catch (error) {
+    showAlertError(error);
+    return false;
+  } finally {
     isLoading.value = false;
   }
 }
