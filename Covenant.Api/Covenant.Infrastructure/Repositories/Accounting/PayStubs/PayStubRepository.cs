@@ -113,7 +113,7 @@ public class PayStubRepository(Rates rates, CovenantContext context) : BaseRepos
                     AgencyPhone = ps.WorkerProfile.Agency.PhonePrincipal,
                     AgencyPhoneExt = ps.WorkerProfile.Agency.PhonePrincipalExt,
                     AgencyLogoFileName = ps.WorkerProfile.Agency.Logo == null ? null : ps.WorkerProfile.Agency.Logo.FileName,
-                    AgencyLocation = (from al in ps.WorkerProfile.Agency.Locations
+                    AgencyLocation = (from al in ps.WorkerProfile.Agency.Locations.Where(l => l.IsBilling).OrderBy(l => l.LocationId)
                                       select $"{al.Location.Address} {al.Location.City.Value} {al.Location.City.Province.Code} {al.Location.PostalCode}").FirstOrDefault(),
                     WorkerFullName = ps.WorkerProfile.FirstName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.MiddleName) ? string.Empty : " " + ps.WorkerProfile.MiddleName) + " " + ps.WorkerProfile.LastName + (string.IsNullOrWhiteSpace(ps.WorkerProfile.SecondLastName) ? string.Empty : " " + ps.WorkerProfile.SecondLastName),
                     SinNumber = ps.WorkerProfile.SocialInsurance,
