@@ -42,7 +42,7 @@ If you change business rules, update the corresponding `.docs/` file.
 ## Mandatory Rules
 
 - **All code, variable names, and commits must be in English**
-- **Git workflow**: feature branches from `dev` → PR to `dev` → merge `dev` to `main` for production
+- **Git workflow**: feature branches from `main` → PR to `main` (deploys to staging) → create `release/YYYY.MM.DD` from `main` on GitHub for production (API + Web deploy automatically; hotfix = fix on `main`, cherry-pick to the release branch)
 - Follow existing patterns in each project (repository pattern, DI, service layer)
 - Run tests before committing (`dotnet test` for .NET, `flutter test` for Flutter)
 - Don't generate code with comments, only make comments when they are requested

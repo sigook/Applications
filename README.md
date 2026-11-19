@@ -78,8 +78,8 @@ Run the relevant tests before committing.
 
 ## Git workflow
 
-- Feature branches are created from `dev` and merged back via PR.
-- `dev` is merged into `main` for production releases.
+- Feature branches are created from `main` and merged back via PR; every push to `main` deploys to staging.
+- Production releases are `release/YYYY.MM.DD` branches created from `main` on GitHub. Hotfixes land on `main` first and are cherry-picked to the release branch.
 - All code, variable names, and commit messages are in English.
 
 ## Developer setup

@@ -8,7 +8,7 @@
           <b-field label="Worker" :type="formErrors.worker ? 'is-danger' : ''"
             :message="formErrors.worker || 'Type at least 3 characters to search'">
             <b-autocomplete v-model="worker" :data="workers" placeholder="Worker" name="worker"
-              :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker">
+              :loading="isLoadingList" @typing="searchWorkers" @select="selectWorker" field="fullName">
             </b-autocomplete>
           </b-field>
         </div>

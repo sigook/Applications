@@ -10,6 +10,7 @@ import type {
   CityModel,
   CompanyProfileListModel,
   CovenantFileModel,
+  IdentificationTypeModel,
   IdResponse,
   JobPositionModel,
   NoteModel,
@@ -18,7 +19,9 @@ import type {
   RequestApplicantModel,
   SkillModel,
   TeamsFileModel,
-  UserInfo
+  UserInfo,
+  WorkerDocumentsDetail,
+  WorkerListModel
 } from '../models/apiModels.js';
 
 const REQUEST_TIMEOUT_MS = 100 * 1000;
@@ -33,6 +36,14 @@ export interface FilePart {
   fileName: string;
 }
 
+export type WorkerDocumentSection = 'Documents' | 'SinInformation' | 'Licenses' | 'Certificates' | 'OtherDocument' | 'Resume';
+
+export interface WorkerSearch {
+  fullName?: string | null;
+  phone?: string | null;
+  numberId?: number | null;
+}
+
 interface CallOptions {
   body?: FormData;
   json?: unknown;
@@ -45,7 +56,10 @@ const CONTENT_TYPES: Record<string, string> = {
   '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
-  '.jpeg': 'image/jpeg'
+  '.jpeg': 'image/jpeg',
+  '.gif': 'image/gif',
+  '.xls': 'application/vnd.ms-excel',
+  '.xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
 };
 
 export const toJson = (model: unknown): string =>
@@ -108,7 +122,19 @@ export class SigookApi {
   addCandidateDocument = (candidateId: string, model: CovenantFileModel, file: FilePart, signal?: AbortSignal) =>
     this.asResult<string>('POST', `api/agency/recruiting/candidates/${candidateId}/documents`, { body: multipart(model, file), signal });
 
-  addCandidateNote = (candidateId: string, model: NoteModel, signal?: AbortSignal) =>
+  getIdentificationTypes = (signal?: AbortSignal) =>
+    this.get<IdentificationTypeModel[]>('api/catalog/identificationType', signal);
+
+  getWorkers = (filter: WorkerSearch, pageSize: number, signal?: AbortSignal) =>
+    this.get<PaginatedList<WorkerListModel>>(`api/agency/recruiting/workers?${query({ ...filter, pageSize })}`, signal);
+
+  getWorkerDetail = (workerProfileId: string, signal?: AbortSignal) =>
+    this.asResult<WorkerDocumentsDetail>('GET', `api/agency/recruiting/workers/${workerProfileId}`, { signal });
+
+  postWorkerDocumentSection = (workerProfileId: string, section: WorkerDocumentSection, model: unknown, file: FilePart, signal?: AbortSignal) =>
+    this.asResult<unknown>('POST', `api/worker/profile/${workerProfileId}/${section}`, { body: multipart(model, file), signal });
+
+  addCandidateNote =(candidateId: string, model: NoteModel, signal?: AbortSignal) =>
     this.asResult<IdResponse>('POST', `api/agency/recruiting/candidates/${candidateId}/notes`, { json: model, signal });
 
   addApplicant = (requestId: string, model: RequestApplicantModel, signal?: AbortSignal) =>

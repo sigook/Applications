@@ -1,14 +1,14 @@
 # Azure Pipeline for Sigook.Mcp (Node MCP server, npm package @sigook/mcp)
 # Builds and tests on PRs; publishes the package to the Azure Artifacts feed `sigook-tools`:
-#   dev  -> prerelease  <package.json version>-dev.<BuildId>, dist-tag `dev`
-#   main -> stable      <package.json version>, dist-tag `latest` (manual run)
+#   main      -> prerelease  <package.json version>-dev.<BuildId>, dist-tag `dev`
+#   release/* -> stable      <package.json version>, dist-tag `latest` (manual run)
 
 name: Sigook.Mcp-$(Year:yyyy).$(Month).$(DayOfMonth).$(Rev:r)
 
 trigger:
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Sigook.Mcp/**
@@ -16,7 +16,7 @@ trigger:
 pr:
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Sigook.Mcp/**
@@ -26,7 +26,7 @@ pool:
 
 variables:
   nodeVersion: '22.x'
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     versionSuffix: ''
     distTag: 'latest'
   ${{ else }}:

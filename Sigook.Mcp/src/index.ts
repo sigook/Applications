@@ -19,6 +19,7 @@ import { registerImportCandidateTools } from './tools/importCandidateTools.js';
 import { registerInstructionTools } from './tools/instructionTools.js';
 import { registerLookupTools } from './tools/lookupTools.js';
 import { registerSessionTools } from './tools/sessionTools.js';
+import { registerWorkerDocumentTools } from './tools/workerDocumentTools.js';
 import type { Services } from './tools/services.js';
 
 console.log = console.info = console.debug = console.warn = console.error;
@@ -48,6 +49,7 @@ registerDocumentTools(server);
 registerInstructionTools(server, services);
 registerImportCandidateTools(server, services);
 registerCandidateTools(server, services);
+registerWorkerDocumentTools(server, services);
 registerFileTools(server, services);
 registerCompanyRateTools(server, services);
 

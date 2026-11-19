@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:package_info_plus/package_info_plus.dart';
+import '../../../../core/config/environment.dart';
 import '../../../../core/providers/core_providers.dart';
 import '../../data/datasources/app_update_remote_datasource.dart';
 import '../../data/repositories/app_update_repository_impl.dart';
@@ -28,6 +29,7 @@ final checkAppUpdateProvider = Provider<CheckAppUpdate>((ref) {
 /// Null means "could not check" (offline, API down): the app must never be
 /// locked out because of a failed check, only because of a confirmed one.
 final appUpdateCheckProvider = FutureProvider<AppUpdateCheck?>((ref) async {
+  if (EnvironmentConfig.isScreenshotMode) return null;
   final info = await PackageInfo.fromPlatform();
   final result = await ref.read(checkAppUpdateProvider)(info.version);
   return result.fold(
