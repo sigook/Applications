@@ -3,24 +3,23 @@
 
 name: CovenantWeb-$(Date:yyyyMMdd)$(Rev:.r)
 
-# Trigger on dev branch with covenantWeb changes
-# Production (main) deployments are triggered manually
+# Trigger on main (staging) with covenantWeb changes
+# Production deployments are run manually on a release/* branch
 trigger:
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Covenant.Web/**
     exclude:
       - Covenant.Web/**/*.md
 
-# PR trigger - only validate PRs to dev (not to main)
-# PRs to main are trusted since dev is the quality gate
+# PR trigger - validate PRs to main
 pr:
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Covenant.Web/**
@@ -29,18 +28,18 @@ pool:
   name: 'covenant-build-pool'
 
 # Environment detection variables
-# Target values resolve at compile time: main/master → production, anything else (PRs included) → staging
+# Target values resolve at compile time: release/* → production, anything else (PRs included) → staging
 variables:
   workingDirectory: '$(System.DefaultWorkingDirectory)/Covenant.Web'
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master','main','master')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development','dev','development')]
+  isProduction: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+  isStaging: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
-  ${{ if in(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     deployEnvironment: 'production'
     swaName: 'covenantgroup-swa'
     swaResourceGroup: 'CovenantGroup'
     appUrl: 'https://www.covenantgroupl.com'
-  ${{ if notIn(variables['Build.SourceBranch'], 'refs/heads/main', 'refs/heads/master') }}:
+  ${{ else }}:
     deployEnvironment: 'staging'
     swaName: 'covenantgroup-staging-swa'
     swaResourceGroup: 'CovenantGroupStaging'
@@ -55,8 +54,8 @@ stages:
       # ============================================
       - job: Build_and_Test
         displayName: 'Build and Test Application'
-        # Run on direct pushes to main/dev OR on Pull Requests
-        condition: or(eq(variables['isDev'], true), eq(variables['isMain'], true), eq(variables['isPR'], true))
+        # Run on pushes to main, release/* runs OR on Pull Requests
+        condition: or(eq(variables['isStaging'], true), eq(variables['isProduction'], true), eq(variables['isPR'], true))
         steps:
           - checkout: self
             displayName: 'Checkout Repository'
@@ -170,8 +169,8 @@ stages:
       - deployment: Deploy_to_Azure
         displayName: 'Deploy to Azure Static Web Apps'
         dependsOn: Build_and_Test
-        # Only deploy on direct pushes to main/dev, NOT on Pull Requests
-        condition: and(succeeded(), or(eq(variables['isDev'], true), eq(variables['isMain'], true)), ne(variables['isPR'], true))
+        # Only deploy on main or release/* runs, NOT on Pull Requests
+        condition: and(succeeded(), or(eq(variables['isStaging'], true), eq(variables['isProduction'], true)), ne(variables['isPR'], true))
         environment: ${{ variables.deployEnvironment }}
         strategy:
           runOnce:
@@ -213,7 +212,7 @@ stages:
   - stage: Notify
     displayName: 'Notify Production Deploy'
     dependsOn: CI_CD
-    condition: and(succeeded(), eq(variables['isMain'], true))
+    condition: and(succeeded(), eq(variables['isProduction'], true))
     jobs:
       - job: SendEmail
         displayName: 'Send Deployment Email'

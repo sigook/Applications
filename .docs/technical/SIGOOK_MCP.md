@@ -55,6 +55,9 @@ Each environment keeps its own token file.
 | `add_candidate_document` | `POST .../candidates/{id}/documents` | Extra file |
 | `add_candidate_note` | `POST .../candidates/{id}/notes` | Free text |
 | `apply_candidate_to_request` | `POST agency/recruiting/requests/{id}/applicants` | Candidate as applicant, comments included |
+| `find_workers` | `GET agency/recruiting/workers?FullName=&Phone=&NumberId=` | Workers by name, phone or number → `workerProfileId` |
+| `list_identification_types` | `GET catalog/identificationType` | Identification type ids (passport, PR card, SIN/SSN...) |
+| `add_worker_document` | `GET agency/recruiting/workers/{id}` + `POST worker/profile/{id}/{Documents\|SinInformation\|Licenses\|Certificates\|OtherDocument\|Resume}` (multipart `data` + file) | One file per call by `kind` (`identification`, `sin`, `license`, `certificate`, `other`, `resume`). Those endpoints replace the whole section, so the tool reads the worker first and resends what exists: both identification slots + police check + resume, every license with its data, every certificate. `identification` takes the first empty slot; `identification`, `sin` and `resume` fail on an existing file unless `replace=true` and return the replaced file. Description is sanitized to `[-_ a-zA-Z0-9]`, max 20 chars |
 | `find_teams_files` | `GET agency/teams/files?team=&channel=&name=` | Files of a private/shared Teams channel whose name matches, newest first. Admin only |
 | `download_teams_file` | `GET agency/teams/files/content?team=&channel=&name=` | Exact file name → `%LOCALAPPDATA%\Sigook.Mcp\teams\<team>\<channel>\<name>`. Admin only |
 | `read_workbook` | local | Sheets of a .xlsx + a page of rows (`exceljs`); formula cells return their cached value |

@@ -4,25 +4,34 @@ Documentation for all Azure DevOps pipelines in `.azure-pipelines/`.
 
 ## Overview
 
-All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers**. Covenant.Api and Sigook.Web deploy together through `release-pipeline.yml` in both environments; the other apps deploy independently. The only exception is the iOS build/upload of Sigook.App, which runs on **Microsoft-hosted macOS** agents (`vmImage`, free tier: 1 parallel job, 1800 min/month, 60 min per job).
+All pipelines run on the **self-hosted agent pool** `covenant-build-pool` and use **path-based triggers**. Covenant.Api and Sigook.Web deploy together through `release-pipeline.yml` (staging) and `release-production-pipeline.yml` (production), which share `templates/release-template.yml`; the other apps deploy independently. The only exception is the iOS build/upload of Sigook.App, which runs on **Microsoft-hosted macOS** agents (`vmImage`, free tier: 1 parallel job, 1800 min/month, 60 min per job).
 
 ### Environment Strategy
 
+`main` is the only long-lived branch. Production ships from `release/YYYY.MM.DD` branches cut from `main`.
+
 | Branch | Environment | Deploy |
 |--------|-------------|--------|
-| `dev` | Staging | Auto-deploy after build+test (`release-pipeline.yml` for Covenant.Api + Sigook.Web) |
-| `main` | Production | Manual trigger only (run `release-pipeline.yml` from Azure DevOps for Covenant.Api + Sigook.Web) |
+| `main` | Staging | Auto-deploy after build+test on every push (`Release-CICD` for Covenant.Api + Sigook.Web, plus Covenant.Web, Sigook.App and Sigook.Mcp on their paths) |
+| `release/YYYY.MM.DD` | Production | `Release-Production` (Covenant.Api + Sigook.Web) runs automatically when the branch is created and on every later push. Covenant.Web, Sigook.App, Sigook.Mcp, Sigook.Functions and CognitiveServices are run manually from Azure DevOps choosing the release branch |
 
-Covenant.Api and Sigook.Web share `release-pipeline.yml`, which validates their PRs and deploys them. `release-pipeline.yml` and Covenant.Web resolve their targets (environment, Docker tag, App Service / Static Web App, URL) as compile-time variables: `main`/`master` → production values, any other ref → staging values. Deploys run as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by these apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The pipelines must be authorized on the environments they deploy to.
+Every pipeline resolves its targets (environment, Docker tag, App Service / Static Web App, store track, URL) as compile-time variables: `refs/heads/release/*` → production values, any other ref → staging values. Deploys run as a `deployment` job bound to the Azure DevOps environment `staging` or `production` (Pipelines → Environments), which records the deploy history per environment. Both environments are shared by these apps and have no approvals or checks; adding one in the UI gates every production deploy of those apps without YAML changes. The pipelines must be authorized on the environments they deploy to.
 
 All checkouts are shallow (`fetchDepth: 1`).
 
 ### PR Validation Strategy
 
-- **PRs to `dev`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Release-CICD` run. The required checks on `dev` (GitHub ruleset `dev-applications`) are `Release-CICD`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge.
-- **PRs to `main`**: Pipeline does NOT run (already validated on dev). Exception: Sigook.Functions and CognitiveServices validate PRs to `main` since they have no staging.
-- **Direct push to `dev`**: Full flow (build, test, deploy). For Covenant.Api and Sigook.Web a change in either one releases both.
-- **Direct push to `main`**: No automatic trigger. Production deployments must be run manually from Azure DevOps.
+- **PRs to `main`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Release-CICD` run. The required checks on `main` (GitHub ruleset) are `Release-CICD`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge. Sigook.Functions and CognitiveServices also validate PRs to `main`.
+- **Direct push to `main`**: Full flow (build, test, deploy to staging). For Covenant.Api and Sigook.Web a change in either one releases both.
+- **Release branches** get no PRs: they are created from `main` and only receive cherry-picked hotfixes.
+
+### Cutting a release
+
+1. On GitHub, create the branch `release/YYYY.MM.DD` from `main` (date of the cut, e.g. `release/2026.11.19`)
+2. `Release-Production` starts by itself and deploys Covenant.Api + Sigook.Web to production, then sends the Notify email
+3. When the release must also ship Covenant.Web, Sigook.App, Sigook.Mcp, Sigook.Functions or CognitiveServices, run that pipeline in Azure DevOps choosing the release branch
+
+**Hotfix:** merge the fix to `main` first (it reaches staging), then `git cherry-pick` it onto the active release branch and push: `Release-Production` redeploys API + Web. Re-run the other pipelines on the release branch only if the fix touches them. Release branches are never merged back into `main`.
 
 ### Shared Azure Resources
 
@@ -38,16 +47,17 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Release (`Release-CICD`) | `release-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `dev` and PRs to `dev`; manual on `main` | Build (API and/or Web) → Deploy → Notify | `sigook-api-staging` + `sigook-web-staging` from `dev`; `sigook-api` + `sigook` from `main` |
+| Release (`Release-CICD`) | `release-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `main` and PRs to `main` | Build (API and/or Web) → Deploy | `sigook-api-staging` + `sigook-web-staging` |
+| Release Production (`Release-Production`) | `release-production-pipeline.yml` | Any push to `release/*` (no path filter), branch creation included | Build (API and/or Web) → Deploy → Notify | `sigook-api` + `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
 | Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
 | Sigook.Functions | `sigook-functions-pipeline.yml` | `Covenant.Api/Sigook.Functions/**` (PRs to main only) | Build+Test+Publish+Deploy (single job) | `sigook-functions` (production only) |
 | CognitiveServices | `cognitiveservices-pipeline.yml` | `Sigook.CognitiveServices/**` | Build+Publish+Deploy (single job) | `sigook-cognitive-services` (production only) |
-| Sigook.Mcp (`SigookMcp-CICD`) | `sigook-mcp-pipeline.yml` | `Sigook.Mcp/**` on `dev` and PRs to `dev`; manual on `main` | Build+Test+Publish (single job) | Azure Artifacts feed `sigook-tools` (prerelease from `dev`, stable from `main`) |
+| Sigook.Mcp (`SigookMcp-CICD`) | `sigook-mcp-pipeline.yml` | `Sigook.Mcp/**` on `main` and PRs to `main`; manual on `release/*` | Build+Test+Publish (single job) | Azure Artifacts feed `sigook-tools` (prerelease from `main`, stable from `release/*`) |
 | Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
-**Note:** Only the CI `trigger:` blocks exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `release-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still run validation.
+**Note:** Only the CI `trigger:` blocks of the `main` pipelines exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `release-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still run validation.
 
 The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `release-pipeline.yml` CI trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline, although a PR touching them still runs the API validation.
 
@@ -57,15 +67,19 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 
 ### Release (Covenant.Api + Sigook.Web)
 
-**Build naming:** `Release-YYYYMMDD.r`
+**Build naming:** `Release-YYYYMMDD.r` (staging) / `Release-Production-YYYYMMDD.r` (production)
 
-**PR runs:** every PR to `dev` touching `Covenant.Api/**` or `Sigook.Web/**` runs both build jobs without publishing images; Deploy and Notify are skipped.
+Two pipeline definitions run the same template, `templates/release-template.yml` (parameters, pool, variables and stages), through `extends`:
+- `release-pipeline.yml` (`Release-CICD`): `main` with path filters, plus PR validation
+- `release-production-pipeline.yml` (`Release-Production`): `release/*` with **no path filter**, `pr: none`. Azure Pipelines only triggers a new branch with path filters when the branch brings changes inside those paths, and a release branch cut from `main` brings none, so this trigger must stay unfiltered. Every push to a release branch releases both apps
 
-**Trigger:** Automatic on push to `dev` touching `Covenant.Api/**` or `Sigook.Web/**` (`batch: true`, so pushes during a run are grouped into the next one; `*.md` and the Functions folders are excluded). Manual on `main`. Parameters `deployApi` and `deployWeb` are both `true` by default, so an automatic run always releases both apps; in a manual run, clear one to release a single app. Clearing both fails at compile time because the Build stage has no jobs.
+**PR runs:** every PR to `main` touching `Covenant.Api/**` or `Sigook.Web/**` runs both build jobs without publishing images; Deploy and Notify are skipped.
 
-**Stage 1 - Build and Test:** the API job (`templates/api-build-job.yml`) and the Web job (`templates/web-build-job.yml`) validate each app and push the images on `main`/`dev`. A failure in either job stops the release before Azure is touched.
+**Trigger:** Automatic on push to `main` touching `Covenant.Api/**` or `Sigook.Web/**` (`batch: true`, so pushes during a run are grouped into the next one; `*.md` and the Functions folders are excluded) → staging. Automatic on creation of / push to `release/*` → production. Parameters `deployApi` and `deployWeb` are both `true` by default, so an automatic run always releases both apps; in a manual run, clear one to release a single app. Clearing both fails at compile time because the Build stage has no jobs.
 
-**Stage 2 - Deploy** (`main`/`dev` only; one `deployment` job on environment `production`/`staging`), in this order:
+**Stage 1 - Build and Test:** the API job (`templates/api-build-job.yml`) and the Web job (`templates/web-build-job.yml`) validate each app and push the images on `main` and `release/*`. A failure in either job stops the release before Azure is touched.
+
+**Stage 2 - Deploy** (`main` and `release/*` only; one `deployment` job on environment `staging`/`production`), in this order:
 1. Web: start the `warmup` slot and deploy the image
 2. API: start the `warmup` slot and deploy the image; the new version boots and runs the EF migrations
 3. Swap API
@@ -86,8 +100,8 @@ Built and deployed by [Release](#release-covenantapi--sigookweb).
 - Unit tests: `Covenant.Tests`, `Sigook.Functions.Tests`
 - Integration tests: `Covenant.Integration.Tests`
 - Code coverage gate: both test steps run with `--settings Covenant.Api/coverage.runsettings` (Microsoft code coverage, Cobertura). ReportGenerator (local tool in `Covenant.Api/dotnet-tools.json`) merges the reports, `PublishCodeCoverageResults@2` shows them in the run's Code Coverage tab, and `dotnet run coverage-gate.cs` fails the build when **line coverage is below 80%** (`minLineCoverage`), so nothing is published or deployed. Measured over `Covenant.Api`, `Covenant.Common`, `Covenant.Core.BL`, `Covenant.Documents`, `Covenant.Infrastructure` and `Sigook.Functions`; EF migrations, Razor views, `obj/` and source-generated code (`[GeneratedCode]`, `*.g.cs`) and `[ExcludeFromCodeCoverage]` members are excluded
-- Release on `dev`/`main` only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
-- Docker tags: `latest_staging` (dev) or `latest_production` (main), plus the immutable `$(Build.BuildId)`
+- Release on `main`/`release/*` only (the steps are left out of PR runs at compile time): `dotnet publish --no-build` of `Covenant.Api.csproj` into `$(Build.ArtifactStagingDirectory)/api`, then Docker build + push with that folder as build context
+- Docker tags: `latest_staging` (`main`) or `latest_production` (`release/*`), plus the immutable `$(Build.BuildId)`
 - Dockerfile: `Covenant.Api/Dockerfile` — runtime-only (`aspnet:10.0` + the published output); the solution is compiled once, on the agent
 - Cleanup of `bin/`/`obj/` runs on every run, PRs included
 
@@ -106,9 +120,9 @@ Built and deployed by [Release](#release-covenantapi--sigookweb).
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Lint with ESLint, TypeScript type-check (the only `vue-tsc` run)
 - Unit tests with Vitest (`pnpm run test:ci`); a failing test, or coverage below the floor in `vitest.config.ts` (`coverage.thresholds`, raised toward the 80% target as tests are added), fails the PR. JUnit results (`test-results/junit.xml`) go to the run's Tests tab and Cobertura coverage (`coverage/cobertura-coverage.xml`) to its Code Coverage tab, both published even when tests fail
-- Release on `dev`/`main` only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
+- Release on `main`/`release/*` only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
 - `pnpm exec vite build --mode staging|production` into `wwwroot/` — runs on PRs too (always `staging`) so bundling errors fail the PR
-- Release on `dev`/`main` only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`
+- Release on `main`/`release/*` only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`
 - Image: `sigook.azurecr.io/web:<tag>` plus the immutable `$(Build.BuildId)`
 
 **Deployed by Release:**
@@ -141,11 +155,11 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 - Type checking: `pnpm run type-check`
 - Linting: `pnpm run lint`
 - Unit tests with Vitest (`pnpm run test:ci`); a failing test, or coverage below the floor in `vitest.config.ts` (`coverage.thresholds`, raised toward the 80% target as tests are added), fails the run. JUnit results (`test-results/junit.xml`) go to the run's Tests tab and Cobertura coverage (`coverage/cobertura-coverage.xml`) to its Code Coverage tab, both published even when tests fail
-- Build: `pnpm run build:staging` (dev and PRs) or `pnpm run build:production` (main)
+- Build: `pnpm run build:staging` (`main` and PRs) or `pnpm run build:production` (`release/*`)
 - Verify `dist/index.html` exists
 - Publish `dist/` as artifact `covenantweb-dist` (only on direct push, not PRs)
 
-**Stage 1 (CI_CD) - Job 2: Deploy** (only on direct push to dev/main; `deployment` job on environment `staging`/`production`):
+**Stage 1 (CI_CD) - Job 2: Deploy** (only on push to `main` or a manual run on `release/*`; `deployment` job on environment `staging`/`production`):
 - Deploy prebuilt `dist/` via `AzureStaticWebApp@0` (`skip_app_build: true`)
 - Target SWA name and resource group are compile-time variables; the deployment token is fetched at deploy time via `AzureCLI@2` + `SigookPipelines` service connection (`az staticwebapp secrets list`) — no manual pipeline variables needed
 - SPA routing handled by `Covenant.Web/public/staticwebapp.config.json` (navigationFallback to `index.html`)
@@ -163,8 +177,8 @@ Two stages: Stage 1 `CI_CD` (job 1 "Build and Test", job 2 "Deploy"), Stage 2 "N
 
 | Branch | Environment | Android | iOS |
 |--------|-------------|---------|-----|
-| `dev` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `Closed Testing - SIGOOK V2` (custom track, addressed by its display name) | TestFlight internal group `Staging` |
-| `main` (manual run) | production (`lib/main_production.dart`, group `SigookApp-Production`) | Google Play `production` (live after Google review) | App Store, submitted for review automatically (`automatic_release`) |
+| `main` (auto) | staging (`lib/main_staging.dart`, group `SigookApp-Staging`) | Google Play closed testing track `Closed Testing - SIGOOK V2` (custom track, addressed by its display name) | TestFlight internal group `Staging` |
+| `release/YYYY.MM.DD` (manual run) | production (`lib/main_production.dart`, group `SigookApp-Production`) | Google Play `production` (live after Google review) | App Store, submitted for review automatically (`automatic_release`) |
 
 The CI trigger uses `batch: true`: pushes that land while a run is in progress are grouped into one next run, so a burst of commits spends a single iOS build of hosted macOS minutes. All checkouts are shallow (`fetchDepth: 1`).
 
@@ -173,10 +187,10 @@ The CI trigger uses `batch: true`: pushes that land while a run is in progress a
 - `flutter analyze --no-fatal-infos`, `flutter test`
 - Verify build config: `flutter build apk --debug --dry-run`
 
-**Stage 2 - Version** (push to dev/main only, Linux, no checkout). One job computes and exposes:
+**Stage 2 - Version** (push to `main` / run on `release/*` only, Linux, no checkout). One job computes and exposes:
 - `appVersionName` = `YYYY.M.D`
 - `appVersionCode` = `YYYYMMDDFF` where `FF` is the fraction of the UTC day (`minuteOfDay * 100 / 1440`, 0-99, 14.4-minute slots). The Android `versionCode` cap is 2100000000, so `YYYYMMDD` leaves exactly two digits; slots beat hours because a re-run in the same slot is the only collision left
-- `iosBuildNumber` = `YYYYMMDDHHMM` (`CFBundleVersion`; minute precision so a same-hour dev + main upload never collides in App Store Connect)
+- `iosBuildNumber` = `YYYYMMDDHHMM` (`CFBundleVersion`; minute precision so a same-hour staging + production upload never collides in App Store Connect)
 
 Both build stages read them as `stageDependencies.Version.Calculate.outputs['CalculateVersion.<name>']` at job level.
 
@@ -201,7 +215,7 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Stage 5 - Deploy Android to Google Play** (Linux): downloads the AAB and runs `fastlane android deploy aab:<path> track:"<Closed Testing - SIGOOK V2|production>"` with `GOOGLE_PLAY_JSON_KEY`. A failed upload fails the run; the step `DeployGooglePlay` also exposes `deployStatus` (`success`/`failed`) as an output variable.
 
-**Store screenshots** (pipeline parameter `uploadStoreScreenshots`, default `false`): when set, the run also pushes the screenshots committed under `Sigook.App/fastlane/` to the store listings. Android (`fastlane android screenshots`, after the Play deploy) runs on any branch because the Play listing is shared by every track. iOS (`fastlane ios screenshots version:`) runs only on `main`, right before `ios release`: App Store Connect only accepts new screenshots on a version that is not live yet, so they are attached to the version the run is about to submit. Capturing the screenshots is a separate manual pipeline (see *Sigook.App Store Screenshots* below).
+**Store screenshots** (pipeline parameter `uploadStoreScreenshots`, default `false`): when set, the run also pushes the screenshots committed under `Sigook.App/fastlane/` to the store listings. Android (`fastlane android screenshots`, after the Play deploy) runs on any branch because the Play listing is shared by every track. iOS (`fastlane ios screenshots version:`) runs only on `release/*`, right before `ios release`: App Store Connect only accepts new screenshots on a version that is not live yet, so they are attached to the version the run is about to submit. Capturing the screenshots is a separate manual pipeline (see *Sigook.App Store Screenshots* below).
 
 **Stage 6 - Notify** (production only, `Sigook-Notifications` variable group): deployment email via Microsoft Graph (template `notify-deployment.yml`, appType `mobile`, version `appVersionName`). Runs only when the previous stages succeeded and both `deployStatus` outputs are `success`.
 
@@ -225,9 +239,9 @@ Both build stages read them as `stageDependencies.Version.Calculate.outputs['Cal
 
 **Apple / Google prerequisites outside the repo:**
 - App Store Connect API key (App Manager); the build service the jobs run as (the organization-level one unless the job authorization scope is limited to the project) needs `Contribute` on the `MATCH_GIT_URL` repo
-- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers). The `beta` lane adds the build to that group without submitting it for beta review (`submit_beta_review: false`): internal groups need no review, and a second `dev` build in the same day's train would otherwise be rejected with "Another build is in review" before being added to the group
+- TestFlight internal group `Staging` with automatic distribution **off** (otherwise production uploads flow to staging testers). The `beta` lane adds the build to that group without submitting it for beta review (`submit_beta_review: false`): internal groups need no review, and a second `main` build in the same day's train would otherwise be rejected with "Another build is in review" before being added to the group
 - Google Play closed testing track `Closed Testing - SIGOOK V2` with the tester list (a release on any other track is invisible to them); the service account behind `GOOGLE_PLAY_JSON_KEY` needs "Release to production" and "Manage testing tracks"; Managed publishing off
-- Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `dev` was released after `main` (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
+- Play serves every user the highest `versionCode` across all tracks they are enrolled in and never downgrades, so an enrolled tester runs the staging build whenever `main` was released after the last release branch (and sees the "(Beta)" suffix in the store). Only people who accept that belong in the closed track; anyone who needs the production app must be removed from it and reinstall. Staging and local builds show an orange environment banner, so a phone running the wrong backend is obvious
 - Apple allows 3 active Apple Distribution certificates per team; match creates one on the first non-readonly run
 
 ### Sigook.App Forced Update (manual)
@@ -236,7 +250,7 @@ The pipeline never touches the forced-update gate. On every launch and every res
 
 Raising the minimum is optional and only needed when older builds must stop working (a critical bug, an Api change that breaks them):
 
-1. Release the version through `main` as usual
+1. Release the version through a `release/YYYY.MM.DD` run as usual
 2. Wait until it is approved and live in **both** the App Store and Google Play
 3. Set `MobileAppConfiguration__MinimumVersion` in the production Api App Settings to that `appVersionName` (`YYYY.M.D`)
 
@@ -294,13 +308,13 @@ Review the PNGs (staging data is visible: pick an account with presentable jobs 
 
 **Build naming:** `Sigook.Mcp-YYYY.M.D.r`
 
-**Trigger:** pushes to `dev` touching `Sigook.Mcp/**` and PRs to `dev`; manual run from `main` for a stable version.
+**Trigger:** pushes to `main` touching `Sigook.Mcp/**` and PRs to `main`; manual run from `release/*` for a stable version.
 
 **Single stage and job - Build, Test and Publish:**
 - Node 22
 - `npm ci` + `npm test` in `Sigook.Mcp/` (compiles and runs the unit tests)
 - Not on PRs (left out at compile time): `npmAuthenticate@0` → `npm publish` to `https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/registry/`
-- Version = `version` of `package.json`; `dev` builds get the suffix `-dev.<BuildId>` and the dist-tag `dev` (prerelease), `main` runs publish the bare version with the dist-tag `latest` (stable). Bump `version` in `package.json` and `package-lock.json` before a stable release: a `main` run fails when that version is already in the feed. An already published `dev` version is skipped so re-runs stay green.
+- Version = `version` of `package.json`; `main` builds get the suffix `-dev.<BuildId>` and the dist-tag `dev` (prerelease), `release/*` runs publish the bare version with the dist-tag `latest` (stable). Bump `version` in `package.json` and `package-lock.json` before a stable release: a `release/*` run fails when that version is already in the feed. An already published prerelease version is skipped so re-runs stay green.
 - Feed `sigook-tools` (project `sigook`, id `32651ba0-bb2e-4877-9fdf-d6ac5d0fc44a`): both build services are Contributor, `Project Collection Valid Users` are Reader, so anyone in the Azure DevOps org can install from it. No upstreams: `Sigook.Mcp/.npmrc` routes only the `@sigook` scope to the feed.
 
 ### Sigook.CognitiveServices (.NET 8 Web App)
@@ -448,10 +462,12 @@ All pipelines use these branch-detection variables:
 
 ```yaml
 variables:
-  isMain: $[in(variables['Build.SourceBranch'], 'refs/heads/main','refs/heads/master')]
-  isDev: $[in(variables['Build.SourceBranch'], 'refs/heads/dev','refs/heads/development')]
+  isProduction: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+  isStaging: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
   isPR: $[eq(variables['Build.Reason'], 'PullRequest')]
 ```
+
+Compile-time targets use `${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}` (production) with `${{ else }}` (staging).
 
 ---
 
@@ -496,7 +512,7 @@ variables:
 - Verify the change is in the correct path (e.g., `Covenant.Api/**`)
 - Check that the file is not excluded (e.g., `*.md` files are excluded)
 - Sigook.Functions and CognitiveServices are manual-only (no automatic triggers)
-- Large pushes (more than 300 changed files, typically a big PR merge) can skip pipelines: Azure Pipelines evaluates `paths:` against the file list GitHub returns for the commit, GitHub caps it at 300 files sorted alphabetically and Azure Pipelines does not page further. Only the pipelines whose paths fall inside those first 300 entries fire; `Covenant.Api/**` usually does, `Sigook.Web/**` and `Sigook.App/**` usually do not. Check which runs have `reason: individualCI` for the merge commit and run the missing pipelines manually from `dev`. Release only needs one of its two paths inside that list
+- Large pushes (more than 300 changed files, typically a big PR merge) can skip pipelines: Azure Pipelines evaluates `paths:` against the file list GitHub returns for the commit, GitHub caps it at 300 files sorted alphabetically and Azure Pipelines does not page further. Only the pipelines whose paths fall inside those first 300 entries fire; `Covenant.Api/**` usually does, `Sigook.Web/**` and `Sigook.App/**` usually do not. Check which runs have `reason: individualCI` for the merge commit and run the missing pipelines manually from `main`. Release only needs one of its two paths inside that list
 
 ### NuGet restore fails
 - All packages come from nuget.org (`Covenant.Api/nuget.config`); there is no private feed, so no authentication step is needed
@@ -515,5 +531,5 @@ variables:
 - "Xcode_X.app not found": Microsoft removed that Xcode from the hosted image; pick one from the listed versions and bump `xcodeVersion`
 - match "no profile/certificate found" on a fresh signing repo: run the pipeline once with `matchReadonly = false`; a 403 from Apple while creating them means the API key role is too low (use Admin)
 - App Store Connect rejects the upload with a duplicate build number: the same `iosBuildNumber` was already uploaded (a re-run of Build iOS reuses the Version stage outputs); run the pipeline again instead of re-running the stage
-- Google Play rejects the AAB with `Version code N has already been used`: `versionCode` must exceed every code previously uploaded on any track, so a re-run (or a dev + main run) inside the same 14.4-minute slot collides. Wait for the next slot and re-run; the earlier upload already reached its track
+- Google Play rejects the AAB with `Version code N has already been used`: `versionCode` must exceed every code previously uploaded on any track, so a re-run (or a `main` + `release/*` run) inside the same 14.4-minute slot collides. Wait for the next slot and re-run; the earlier upload already reached its track
 - Testers do not see a staging build: Play only offers a release to the testers of the track it was uploaded to, and each track has its own opt-in link; check the release landed on `Closed Testing - SIGOOK V2` and is "Available to testers" (the first release on a new closed track waits for Google review)

@@ -3,13 +3,13 @@ name: Sigook.App-$(Date:yyyyMMdd)$(Rev:.r)
 # PIPELINE: Sigook.App iOS + Android CI/CD
 # ============================================
 # TRIGGER POLICY:
-# - Runs on direct pushes to dev branch (Staging)
-# - Runs on PRs to dev branch (validation only, no build or deploy)
-# - Production (main) deployments are triggered manually (Run pipeline -> branch main)
+# - Runs on direct pushes to main branch (Staging)
+# - Runs on PRs to main branch (validation only, no build or deploy)
+# - Production deployments are triggered manually (Run pipeline -> branch release/YYYY.MM.DD)
 #
 # DEPLOY TARGETS:
-# - dev  -> TestFlight internal group "Staging" + Google Play closed testing track "Closed Testing - SIGOOK V2"
-# - main -> App Store (submitted for review) + Google Play production track
+# - main      -> TestFlight internal group "Staging" + Google Play closed testing track "Closed Testing - SIGOOK V2"
+# - release/* -> App Store (submitted for review) + Google Play production track
 #
 # POOLS:
 # - Validate, Version, Android build/deploy: self-hosted covenant-build-pool (Linux)
@@ -22,8 +22,8 @@ name: Sigook.App-$(Date:yyyyMMdd)$(Rev:.r)
 # secure files are involved.
 # ============================================
 
-# Trigger on dev branch with Sigook.App changes
-# Production (main) deployments are triggered manually
+# Trigger on main branch with Sigook.App changes
+# Production (release/*) deployments are triggered manually
 # batch: pushes that land while a run is in progress are grouped into a single
 # next run, so a burst of commits does not spend one iOS build (hosted macOS
 # minutes) per push
@@ -31,7 +31,7 @@ trigger:
   batch: true
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Sigook.App/**
@@ -40,12 +40,11 @@ trigger:
       - Sigook.App/fastlane/screenshots/**
       - Sigook.App/fastlane/metadata/android/*/images/**
 
-# PR trigger - only validate PRs to dev (not to main)
-# PRs to main are trusted since dev is the quality gate
+# PR trigger - validate PRs to main
 pr:
   branches:
     include:
-      - dev
+      - main
   paths:
     include:
       - Sigook.App/**
@@ -68,17 +67,17 @@ parameters:
   type: boolean
   default: true
 - name: uploadStoreScreenshots
-  displayName: 'Upload the committed store screenshots (Play: any branch; App Store: main only, attached to the version being submitted)'
+  displayName: 'Upload the committed store screenshots (Play: any branch; App Store: release/* only, attached to the version being submitted)'
   type: boolean
   default: false
 
 variables:
 - name: workingDirectory
   value: '$(System.DefaultWorkingDirectory)/Sigook.App'
-- name: isMain
+- name: isProduction
+  value: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
+- name: isStaging
   value: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
-- name: isDev
-  value: $[eq(variables['Build.SourceBranch'], 'refs/heads/dev')]
 - name: isPR
   value: $[eq(variables['Build.Reason'], 'PullRequest')]
 - name: flutterVersion
@@ -90,13 +89,13 @@ variables:
   value: '26.6'
 # Environment name for display purposes
 - name: environment
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     value: 'production'
   ${{ else }}:
     value: 'staging'
 # Flutter entry point file
 - name: entryPoint
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     value: 'lib/main_production.dart'
   ${{ else }}:
     value: 'lib/main_staging.dart'
@@ -104,13 +103,13 @@ variables:
 # (the one the testers are enrolled in); the Play API addresses custom tracks
 # by their display name.
 - name: playTrack
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     value: 'production'
   ${{ else }}:
     value: 'Closed Testing - SIGOOK V2'
 # fastlane iOS upload lane (beta = TestFlight, release = App Store review)
 - name: iosLane
-  ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     value: 'release'
   ${{ else }}:
     value: 'beta'
@@ -187,12 +186,12 @@ stages:
 # Version Name: YYYY.M.D (e.g., "2026.2.12")
 # Android Version Code: YYYYMMDDFF (FF = fraction of the UTC day, 14.4-minute slots) - always increasing, below the 2100000000 cap
 # iOS Build Number: YYYYMMDDHHMM - CFBundleVersion has no cap, so minute
-#   precision keeps a same-hour dev + main upload from colliding in App Store Connect
+#   precision keeps a same-hour staging + production upload from colliding in App Store Connect
 # ============================================
 - stage: Version
   displayName: 'Calculate Version'
   dependsOn: Validate_and_Test
-  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isStaging, true), eq(variables.isProduction, true)))
   pool:
     name: 'covenant-build-pool'
   jobs:
@@ -226,19 +225,19 @@ stages:
           echo "##vso[task.setvariable variable=appVersionCode;isOutput=true]${APP_VERSION_CODE}"
           echo "##vso[task.setvariable variable=iosBuildNumber;isOutput=true]${IOS_BUILD_NUMBER}"
 # ============================================
-# Stage 3: Build Android AAB (runs on merged PR to dev/main only)
+# Stage 3: Build Android AAB (push to main / release run only)
 # ============================================
 - stage: Build_Android
   displayName: 'Build Android'
   dependsOn:
   - Validate_and_Test
   - Version
-  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isStaging, true), eq(variables.isProduction, true)))
   pool:
     name: 'covenant-build-pool'
   variables:
-  # Environment-specific variable group (staging for dev, production for main)
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  # Environment-specific variable group (staging for main, production for release/*)
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
@@ -514,19 +513,19 @@ stages:
           echo "AAB: sigook-$(environment)-${VERSION_NAME}-${VERSION_CODE}.aab"
           echo "========================================"
 # ============================================
-# Stage 4: Build iOS IPA and upload to App Store Connect (push to dev/main only, hosted macOS)
+# Stage 4: Build iOS IPA and upload to App Store Connect (push to main / release run only, hosted macOS)
 # ============================================
 - stage: Build_iOS
   displayName: 'Build iOS'
   dependsOn:
   - Validate_and_Test
   - Version
-  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isStaging, true), eq(variables.isProduction, true)))
   pool:
     vmImage: '$(macosImage)'
   variables:
-  # Environment-specific variable group (staging for dev, production for main)
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  # Environment-specific variable group (staging for main, production for release/*)
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
@@ -695,7 +694,7 @@ stages:
     - ${{ if eq(parameters.uploadStoreScreenshots, true) }}:
       - task: CmdLine@2
         displayName: 'Upload App Store screenshots (fastlane ios screenshots)'
-        condition: and(succeeded(), eq(variables.isMain, true))
+        condition: and(succeeded(), eq(variables.isProduction, true))
         env:
           APP_STORE_CONNECT_API_KEY: $(APP_STORE_CONNECT_API_KEY)
           FASTLANE_SKIP_UPDATE_CHECK: "true"
@@ -732,18 +731,18 @@ stages:
             exit 1
           fi
 # ============================================
-# Stage 5: Deploy Android to Google Play (runs on merged PR to dev/main only)
+# Stage 5: Deploy Android to Google Play (push to main / release run only)
 # ============================================
 - stage: Deploy_Android_PlayStore
   displayName: 'Deploy Android to Google Play'
   dependsOn:
   - Build_Android
-  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isDev, true), eq(variables.isMain, true)))
+  condition: and(succeeded(), eq(variables.isPR, false), or(eq(variables.isStaging, true), eq(variables.isProduction, true)))
   pool:
     name: 'covenant-build-pool'
   variables:
   # Environment-specific variable group (contains GOOGLE_PLAY_JSON_KEY)
-  - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/main') }}:
+  - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
     - group: SigookApp-Production
   - ${{ else }}:
     - group: SigookApp-Staging
@@ -793,7 +792,7 @@ stages:
             exit 1
           fi
     # The Play listing is shared by every track, so the screenshots can be
-    # refreshed from a dev run without shipping a production release
+    # refreshed from a main run without shipping a production release
     - ${{ if eq(parameters.uploadStoreScreenshots, true) }}:
       - task: CmdLine@2
         displayName: 'Upload Play screenshots (fastlane android screenshots)'
@@ -819,7 +818,7 @@ stages:
   - Build_iOS
   - Deploy_Android_PlayStore
   condition: >-
-    and(succeeded(), eq(variables.isMain, true),
+    and(succeeded(), eq(variables.isProduction, true),
     eq(dependencies.Deploy_Android_PlayStore.outputs['Deploy_PlayStore.DeployGooglePlay.deployStatus'], 'success'),
     eq(dependencies.Build_iOS.outputs['Build_IPA.DeployAppStoreConnect.deployStatus'], 'success'))
   pool:

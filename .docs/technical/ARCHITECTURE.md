@@ -565,7 +565,7 @@ Scoping rules:
 
 | | Staging | Production |
 |---|---|---|
-| Branch | `dev` (auto-deploy on push) | `main` (manual deploy from Azure DevOps) |
+| Branch | `main` (auto-deploy on push) | `release/YYYY.MM.DD` (API + Web auto-deploy on branch creation and every push; other apps run manually on it) |
 | API + identity | sigook-api-staging.azurewebsites.net (`staging.accounts.sigook.ca`) | sigook-api.azurewebsites.net (`accounts.sigook.ca`) |
 | Web | sigook-web-staging.azurewebsites.net | sigook.azurewebsites.net |
 | Marketing | lively-island-020c8260f.7.azurestaticapps.net | www.covenantgroupl.com |

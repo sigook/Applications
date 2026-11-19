@@ -1,6 +1,6 @@
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { z } from 'zod';
-import { digitsOnly, isBlank, tryNormalizePhone } from '../api/lookupRules.js';
+import { blankToUndefined, digitsOnly, isBlank, tryNormalizePhone } from '../api/lookupRules.js';
 import type { AgencyRequestListModel, CatalogItem, ProvinceModel } from '../models/apiModels.js';
 import { jsonResult, type Services } from './services.js';
 
@@ -94,6 +94,34 @@ export function registerLookupTools(server: McpServer, { api, catalog }: Service
       }))
     });
   });
+
+  server.registerTool('find_workers', {
+    description: 'Searches workers of the current agency by name, phone or worker number. Returns workerProfileId, the id that add_worker_document needs. Phone must be in Sigook format (### ###-####); use normalize_phone first.',
+    inputSchema: {
+      name: z.string().nullish().describe('Full or partial name.'),
+      phone: z.string().nullish().describe('Phone in Sigook format ### ###-####.'),
+      numberId: z.number().int().nullish().describe('Worker number as shown in Sigook (NumberId).')
+    }
+  }, async ({ name, phone, numberId }, { signal }) => {
+    if (isBlank(name) && isBlank(phone) && !numberId) return jsonResult({ error: 'Provide name, phone or numberId.' });
+    const page = await api.getWorkers({ fullName: blankToUndefined(name), phone: blankToUndefined(phone), numberId }, 10, signal);
+    return jsonResult({
+      totalItems: page.totalItems,
+      workers: page.items.map(worker => ({
+        workerProfileId: worker.id,
+        numberId: worker.numberId,
+        name: worker.fullName,
+        email: worker.email,
+        mobileNumber: worker.mobileNumber,
+        approvedToWork: worker.approvedToWork,
+        dnu: worker.dnu
+      }))
+    });
+  });
+
+  server.registerTool('list_identification_types', {
+    description: 'Lists the identification types of Sigook (passport, PR card, driver license, SIN/SSN...). Use the id as identificationTypeId in add_worker_document with kind identification.'
+  }, async ({ signal }) => jsonResult((await api.getIdentificationTypes(signal)).map(({ id, value }) => ({ id, value }))));
 
   server.registerTool('normalize_phone', {
     description: "Converts any North American phone string (e.g. '+1 4452510680', '(445) 251-0680') into the format Sigook requires: ### ###-####. Returns an error when the number does not have 10 digits.",

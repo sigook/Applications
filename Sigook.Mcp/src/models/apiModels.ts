@@ -126,3 +126,73 @@ export interface TeamsFileModel {
   lastModified?: string | null;
   lastModifiedBy?: string | null;
 }
+
+export interface IdentificationTypeModel {
+  id: string;
+  value: string;
+  code: number;
+}
+
+export interface WorkerListModel {
+  id: string;
+  workerId: string;
+  numberId: number;
+  fullName: string;
+  email?: string | null;
+  mobileNumber?: string | null;
+  approvedToWork: boolean;
+  dnu: boolean;
+}
+
+export interface WorkerFileModel {
+  fileName: string;
+  description?: string | null;
+}
+
+export interface WorkerLicenseModel {
+  license: WorkerFileModel;
+  number?: string | null;
+  issued?: string | null;
+  expires?: string | null;
+}
+
+export interface WorkerDocumentsDetail {
+  id: string;
+  firstName: string;
+  lastName: string;
+  socialInsurance?: string | null;
+  socialInsuranceExpire: boolean;
+  dueDate?: string | null;
+  socialInsuranceFile?: WorkerFileModel | null;
+  identificationNumber1?: string | null;
+  identificationNumber2?: string | null;
+  identificationType1?: CatalogItem | null;
+  identificationType2?: CatalogItem | null;
+  identificationType1File?: WorkerFileModel | null;
+  identificationType2File?: WorkerFileModel | null;
+  havePoliceCheckBackground: boolean;
+  policeCheckBackGround?: WorkerFileModel | null;
+  resume?: WorkerFileModel | null;
+  licenses: WorkerLicenseModel[];
+  certificates: WorkerFileModel[];
+  otherDocuments: WorkerFileModel[];
+}
+
+export interface WorkerIdentificationModel {
+  identificationNumber1?: string | null;
+  identificationType1?: { id: string } | null;
+  identificationType1File?: WorkerFileModel | null;
+  identificationNumber2?: string | null;
+  identificationType2?: { id: string } | null;
+  identificationType2File?: WorkerFileModel | null;
+  havePoliceCheckBackground: boolean;
+  policeCheckBackGround?: WorkerFileModel | null;
+  resume?: WorkerFileModel | null;
+}
+
+export interface WorkerSinModel {
+  socialInsurance: string;
+  socialInsuranceExpire: boolean;
+  dueDate?: string | null;
+  socialInsuranceFile: WorkerFileModel;
+}
