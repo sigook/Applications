@@ -525,6 +525,16 @@ $agency-flag-colors: $navy, $purple, $green-text, $accent-text, $grey-dark, $dan
       color: $white;
     }
   }
+
+  &--agency-covenant {
+    background: $covenant-green;
+    color: $covenant-navy;
+  }
+
+  &--agency-sigook {
+    background: $primary;
+    color: $navy;
+  }
 }
 
 
