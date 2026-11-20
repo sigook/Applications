@@ -12,6 +12,7 @@ using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Core.BL.Adapters;
 using Covenant.Core.BL.Services.Requests;
@@ -41,6 +42,7 @@ public class CancelRequestServiceTest
             Mock.Of<ILocationRepository>(),
             new FakeTimeProvider(),
             requestRepository.Object,
+            Mock.Of<IWorkerRepository>(),
             Mock.Of<INotificationDataRepository>(),
             Mock.Of<ICurrentUserService>(),
             Mock.Of<IRazorViewToStringRenderer>(),

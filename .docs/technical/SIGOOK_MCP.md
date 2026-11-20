@@ -107,6 +107,26 @@ claude mcp add sigook -s user -e SIGOOK_ENV=production -- sigook-mcp
 
 `vsts-npm-auth` opens the browser once for the feed login and writes a token to the user `.npmrc`. The token is only needed to install or update; the installed server keeps working when it expires. Use `@sigook/mcp` without `@dev` to take only stable versions published from `main`. Update by running the same `npm install -g`, after `vsts-npm-auth -config "$HOME\.npmrc" -F` if the token expired.
 
+### macOS / Linux
+
+`vsts-npm-auth` is Windows only. Create a Personal Access Token at `https://dev.azure.com/sigook/_usersSettings/tokens` with scope **Packaging → Read**, then:
+
+```bash
+npm config set "@sigook:registry" https://pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/registry/
+printf 'PAT: '; read -rs PAT; echo
+B64=$(printf %s "$PAT" | base64)
+for p in registry/ ''; do
+  R="//pkgs.dev.azure.com/sigook/sigook/_packaging/sigook-tools/npm/$p"
+  npm config set "$R:username" sigook
+  npm config set "$R:_password" "$B64"
+  npm config set "$R:email" npm@sigook.com
+done
+npm install -g @sigook/mcp@dev
+claude mcp add sigook -s user -e SIGOOK_ENV=production -- sigook-mcp
+```
+
+`EACCES` on `npm install -g` means Node was installed with the `.pkg` installer; use `nvm` or Homebrew Node instead of `sudo`. `claude mcp add` needs the Claude Code CLI on the PATH; the VS Code extension alone does not provide it (install it with `curl -fsSL https://claude.ai/install.sh | bash`). When the PAT expires, rerun the `printf … done` block with a new one.
+
 ## Running from the repo
 
 ```bash

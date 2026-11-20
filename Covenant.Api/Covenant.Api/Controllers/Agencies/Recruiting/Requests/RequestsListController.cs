@@ -52,14 +52,28 @@ public class RequestsListController(IMediator mediator, IRequestService requestS
     [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
     public async Task<IActionResult> GetFile(GetRequestForAgencyFilter pagination)
     {
-        if (pagination.OnlyMine)
-        {
-            pagination.Recruiter = User.GetNickname();
-        }
-        pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
-        pagination.SalesUserId = null;
+        ScopeToCurrentUser(pagination);
         var data = requestRepository.GetAllRequestsForAgency(User.GetAgencyIds(), pagination).ToList();
         var file = await mediator.Send(new GenerateAgencyRequestsReport(data));
         return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
+    /// <summary>Generates and downloads an Excel report of the workers booked in the requests that match the filter.</summary>
+    /// <param name="pagination">Request filter parameters.</param>
+    [HttpGet("WorkersFile")]
+    [Produces("application/octet-stream", "application/json")]
+    [ProducesResponseType(typeof(FileContentResult), StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetWorkersFile(GetRequestForAgencyFilter pagination)
+    {
+        ScopeToCurrentUser(pagination);
+        var file = await requestService.GetBookedWorkersReportFile(User.GetAgencyIds(), pagination);
+        return File(file.Document.ToArray(), CovenantConstants.ExcelMime, file.DocumentName);
+    }
+
+    private void ScopeToCurrentUser(GetRequestForAgencyFilter pagination)
+    {
+        if (pagination.OnlyMine) pagination.Recruiter = User.GetNickname();
+        pagination.HasPermissionToSeeInternalRequests = User.IsAdmin();
+        pagination.SalesUserId = null;
     }
 }

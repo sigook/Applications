@@ -12,6 +12,7 @@ public class GenerateAgencyWorkersProfileReport(IReadOnlyList<WorkerProfileListM
         "Number ID",
         "Full Name",
         "SIN Number",
+        "Birth Date",
         "Address",
         "Phone",
         "Email",
@@ -32,15 +33,16 @@ public class GenerateAgencyWorkersProfileReportHandler : GenerateAgencyReportHan
         sheet.Cell($"A{row}").SetValue(data.NumberId);
         sheet.Cell($"B{row}").SetValue(data.FullName);
         sheet.Cell($"C{row}").SetValue(data.SinNumber);
-        sheet.Cell($"D{row}").SetValue(data.Address);
-        sheet.Cell($"E{row}").SetValue(data.MobileNumber);
-        sheet.Cell($"F{row}").SetValue(data.Email);
-        sheet.Cell($"G{row}").SetValue(string.Join(", ", data.Requests.Select(r => r.Value)));
-        sheet.Cell($"H{row}").SetValue(data.CreatedAt);
-        sheet.Cell($"I{row}").SetValue(string.Join(", ", data.Skills));
-        sheet.Cell($"J{row}").SetValue(data.IsCurrentlyWorking.YesOrNo());
-        sheet.Cell($"K{row}").SetValue(data.Dnu.YesOrNo());
-        sheet.Cell($"L{row}").SetValue(data.ApprovedToWork.YesOrNo());
-        sheet.Cell($"M{row}").SetValue(data.IsSubcontractor.YesOrNo());
+        sheet.Cell($"D{row}").SetValue(data.BirthDay).Style.DateFormat.Format = "yyyy-MM-dd";
+        sheet.Cell($"E{row}").SetValue(data.Address);
+        sheet.Cell($"F{row}").SetValue(data.MobileNumber);
+        sheet.Cell($"G{row}").SetValue(data.Email);
+        sheet.Cell($"H{row}").SetValue(string.Join(", ", data.Requests.Select(r => r.Value)));
+        sheet.Cell($"I{row}").SetValue(data.CreatedAt);
+        sheet.Cell($"J{row}").SetValue(string.Join(", ", data.Skills));
+        sheet.Cell($"K{row}").SetValue(data.IsCurrentlyWorking.YesOrNo());
+        sheet.Cell($"L{row}").SetValue(data.Dnu.YesOrNo());
+        sheet.Cell($"M{row}").SetValue(data.ApprovedToWork.YesOrNo());
+        sheet.Cell($"N{row}").SetValue(data.IsSubcontractor.YesOrNo());
     }
 }

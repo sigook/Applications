@@ -17,6 +17,7 @@ public interface IWorkerRepository : IBaseRepository
     Task<WorkerProfileDetailModel> GetWorkerProfileDetail(Expression<Func<WorkerProfile, bool>> condition);
     Task<PaginatedList<WorkerProfileListModel>> GetWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter);
     IQueryable<WorkerProfileListModel> GetAllWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter);
+    Task<List<WorkerProfileListModel>> GetWorkersProfileBookedIn(IEnumerable<Guid> agencyIds, IQueryable<Guid> requestIds);
     Task<List<AgencyWorkerDropdownModel>> GetWorkerProfilesDropdown(IEnumerable<Guid> agencyIds, string searchTerm);
     Task<List<CovenantFileModel>> GetOtherDocuments(Guid profileId);
     Task<WorkerProfileOtherDocument> GetOtherDocument(Guid otherDocumentId);

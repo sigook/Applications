@@ -42,6 +42,12 @@
           </b-dropdown-item>
         </b-dropdown>
       </template>
+      <template v-if="!isSalesView" #dropdown-actions-after>
+        <b-dropdown-item aria-role="listitem" @click="exportBookedWorkers">
+          <b-icon icon="file-excel"></b-icon>
+          <span>Export Booked Workers</span>
+        </b-dropdown-item>
+      </template>
       <b-table-column field="numberId" label="ID" sortable searchable>
         <template v-slot:searchable>
           <b-input v-model="serverParams.numberId" placeholder="Search..." icon="magnify" size="is-small"></b-input>
@@ -236,6 +242,8 @@ import { getAgencyRequests, bulkCancelRequests, bulkUpdateRecruiters } from "@/m
 import { getSalesRequests } from "@/modules/agency/sales/api";
 import { useModuleBase } from '@/modules/agency/shared/useModuleBase';
 import { getSourcesForRequests } from "@/shared/api/catalogApi";
+import { downloadAgencyReport } from '@/shared/api/reportApi';
+import { downloadFile } from '@/shared/utils/downloadFile';
 import type { RequestJobBoardSummary, AgencyRequestFilter, AgencyRequestListItem, TableRequestsConfig } from '@/modules/agency/recruiting/requests/types';
 import type { CatalogItem, GridHandle, PaginatedList, Source, TableColumnRef } from '@/shared/types/common';
 import {
@@ -404,6 +412,18 @@ async function loadRequests(params: AgencyRequestFilter): Promise<PaginatedList<
 
 function reloadRequests() {
   grid.value?.reload();
+}
+
+async function exportBookedWorkers() {
+  emit('onDataLoading', true);
+  try {
+    const file = await downloadAgencyReport('/api/agency/recruiting/requests/WorkersFile', { ...serverParams.value });
+    downloadFile(file, `Booked_Workers_${new Date().toLocaleDateString()}`);
+  } catch (error) {
+    showAlertError(error);
+  } finally {
+    emit('onDataLoading', false);
+  }
 }
 
 async function bulkUpdateIsAsap() {

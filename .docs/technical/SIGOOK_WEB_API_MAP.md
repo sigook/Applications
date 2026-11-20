@@ -297,6 +297,7 @@ Report generation and blob downloads.
 |----------|------------|----------|--------------|---------------|-------|
 | `downloadAgencyReport(url, filter)` | GET | (dynamic url) | `ReportQueryParams` (params) | Blob | Generic blob downloader |
 | `getWorkersReportDocument(requestId)` | GET | `/api/agency/recruiting/requests/{requestId}/WorkersReport` | — | Blob | Excel export of the request's workers |
+| `downloadAgencyReport` (TableRequests · Actions → Export Booked Workers, recruiting only) | GET | `/api/agency/recruiting/requests/WorkersFile` | `AgencyRequestFilter` (query) | Blob | Workers booked in every request matching the grid filter, same columns as the Workers export |
 | `getJobPositionsHoursWorked(filter)` | GET | `/api/agency/accounting/reports/{companyProfileId}/job-positions` | `AgencyReportFilter & { companyProfileId }` (params) | `AgencyCompanyJobPosition[]` | Hours per position |
 | `getHoursWorkedReport(filter)` | GET | `/api/agency/accounting/reports/hours-worked` | `AgencyReportFilter` (params) | `HoursWorkedResume` | |
 | `getTimesheetsReport(filter)` | GET | `/api/agency/accounting/reports/timesheets/file` | `AgencyReportFilter` (params) | Blob | USA agencies |

@@ -14,6 +14,7 @@
             <b-icon icon="file-excel"></b-icon>
             <span>Export</span>
           </b-dropdown-item>
+          <slot name="dropdown-actions-after"></slot>
         </b-dropdown>
       </div>
     </div>
@@ -135,7 +136,7 @@ const pageSize = ref(params.value?.pageSize ?? DEFAULT_PAGE_SIZE);
 
 const isServer = computed(() => !!fetchPage);
 const canRefresh = computed(() => isServer.value || !!refresh);
-const hasDropdown = computed(() => !!gridExport || !!slots['dropdown-actions']);
+const hasDropdown = computed(() => !!gridExport || !!slots['dropdown-actions'] || !!slots['dropdown-actions-after']);
 const showToolbar = computed(() => canRefresh.value || hasDropdown.value || !!slots.actions || !!slots.filters);
 const showMobileCards = computed(() => isTouch.value && !!slots['mobile-card']);
 const tableData = computed<T[]>(() => (isServer.value ? rows.value : data ?? []));

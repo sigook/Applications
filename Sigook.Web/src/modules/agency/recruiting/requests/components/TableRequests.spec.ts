@@ -9,6 +9,8 @@ import { getSourcesForRequests } from '@/shared/api/catalogApi';
 import { createAgencyRequestNote, deleteAgencyRequestNote, getAgencyRequestNotes, updateAgencyRequestNote } from '@/modules/agency/shared/notes/api';
 import { RequestStatus } from '@/shared/constants/enums';
 import { showAlertError, showAlertSuccess } from '@/shared/utils/toast';
+import { downloadAgencyReport } from '@/shared/api/reportApi';
+import { downloadFile } from '@/shared/utils/downloadFile';
 import { mountWithPlugins } from '@/testing/mountWithPlugins';
 import type { AgencyRequestFilter, AgencyRequestListItem, AgencyRequestsPagedResponse, TableRequestsConfig } from '@/modules/agency/recruiting/requests/types';
 
@@ -39,6 +41,7 @@ vi.mock('@/modules/agency/recruiting/clients/api', () => ({ updateIsAsapRequests
 vi.mock('@/modules/agency/sales/api', () => ({ getSalesRequests: vi.fn() }));
 vi.mock('@/shared/api/catalogApi', () => ({ getSourcesForRequests: vi.fn() }));
 vi.mock('@/shared/api/reportApi', () => ({ downloadAgencyReport: vi.fn() }));
+vi.mock('@/shared/utils/downloadFile', () => ({ downloadFile: vi.fn() }));
 vi.mock('@/modules/agency/shared/notes/api', () => ({
   getAgencyRequestNotes: vi.fn(),
   createAgencyRequestNote: vi.fn(),
@@ -143,7 +146,7 @@ function cell(wrapper: Wrapper, row: number, label: string) {
 }
 
 function rowActions() {
-  return Array.from(document.body.querySelectorAll<HTMLElement>('.dropdown-item[role="listitem"]')).filter((i) => i.textContent.trim() !== 'Export');
+  return Array.from(document.body.querySelectorAll<HTMLElement>('.dropdown-item[role="listitem"]')).filter((i) => !['Export', 'Export Booked Workers'].includes(i.textContent.trim()));
 }
 
 function lastFilter() {
@@ -176,6 +179,11 @@ beforeEach(() => {
   route.query = {};
   agencyStore.agencyRequestFilter = null;
 });
+
+function exportBookedWorkersItem() {
+  return Array.from(document.body.querySelectorAll<HTMLElement>('.dropdown-item')).find((i) => i.textContent.trim() === 'Export Booked Workers');
+}
+
 
 describe('TableRequests', () => {
   it('loads the requests with the default filter and remembers it', async () => {
@@ -307,6 +315,39 @@ describe('TableRequests', () => {
     expect(rowActions().map((i) => i.textContent.trim())).toEqual(['Duplicate Request']);
   });
 
+  it('offers the booked workers export after the requests export', async () => {
+    await setup();
+    const items = Array.from(document.body.querySelectorAll<HTMLElement>('.dropdown-item'))
+      .map((i) => i.textContent.trim())
+      .filter((t) => t === 'Export' || t === 'Export Booked Workers');
+
+    expect(items).toEqual(['Export', 'Export Booked Workers']);
+  });
+
+  it('exports the workers booked in the filtered requests', async () => {
+    const file = new Blob(['xlsx']);
+    vi.mocked(downloadAgencyReport).mockResolvedValue(file);
+    const wrapper = await setup();
+    exportBookedWorkersItem()?.click();
+    await flushPromises();
+
+    expect(downloadAgencyReport).toHaveBeenCalledExactlyOnceWith('/api/agency/recruiting/requests/WorkersFile', expect.objectContaining({ onlyMine: false, sortBy: 0, isDescending: true }));
+    expect(downloadFile).toHaveBeenCalledExactlyOnceWith(file, `Booked_Workers_${new Date().toLocaleDateString()}`);
+    expect(wrapper.emitted('onDataLoading')?.slice(-2)).toEqual([[true], [false]]);
+  });
+
+  it('shows the error when exporting the booked workers fails', async () => {
+    const error = new Error('export failed');
+    vi.mocked(downloadAgencyReport).mockRejectedValue(error);
+    const wrapper = await setup();
+    exportBookedWorkersItem()?.click();
+    await flushPromises();
+
+    expect(showAlertError).toHaveBeenCalledWith(error);
+    expect(downloadFile).not.toHaveBeenCalled();
+    expect(wrapper.emitted('onDataLoading')?.slice(-2)).toEqual([[true], [false]]);
+  });
+
   it('filters by status', async () => {
     const wrapper = await setup();
     const statusInput = wrapper.findAllComponents({ name: 'BTaginput' })[1];
@@ -417,6 +458,7 @@ describe('TableRequests', () => {
     expect(getAgencyRequests).not.toHaveBeenCalled();
     expect(cell(wrapper, 0, 'ID').find('a').attributes('href')).toBe('/sales/requests/req-1');
     expect(cell(wrapper, 0, 'Client').find('a').attributes('href')).toBe('/sales/companies/cp-1');
+    expect(exportBookedWorkersItem()).toBeUndefined();
   });
 
   it('disables the quick actions until rows are checked', async () => {

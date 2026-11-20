@@ -1,3 +1,5 @@
+using Covenant.Common.Utils.Extensions;
+
 namespace Covenant.Common.Models.Workers.Agencies;
 
 public class WorkerProfileListModel
@@ -17,7 +19,12 @@ public class WorkerProfileListModel
     public bool IsSubcontractor { get; set; }
     public bool Dnu { get; set; }
     public DateTime CreatedAt { get; set; }
-    public string SinNumber { get; set; }
+    public string SinNumber
+    {
+        get => field.MaskSIN();
+        set;
+    }
+    public DateTime BirthDay { get; set; }
     public string ExternalId { get; set; }
     public IEnumerable<BaseModel<Guid>> Requests { get; set; }
 }

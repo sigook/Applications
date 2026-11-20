@@ -67,6 +67,27 @@ public class RequestsControllerTest(CustomWebApplicationFactory<RequestsControll
         Assert.Contains(Data.FakeRequest.NumberId.ToString(), cells);
     }
 
+    [Fact]
+    public async Task GetWorkersFile_ExportsWorkersBookedInFilteredRequests()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{ListUri()}/WorkersFile?numberId={Data.FakeRequest.NumberId}");
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        var rows = workbook.Worksheet(1).RowsUsed().Skip(1).ToList();
+        var row = Assert.Single(rows);
+        Assert.Equal(Data.FakeWorker.Email, row.Cell("G").GetString());
+        Assert.Equal(Data.FakeRequest.NumberId.ToString(), row.Cell("H").GetString());
+    }
+
+    [Fact]
+    public async Task GetWorkersFile_ExcludesRequestsOutsideTheFilter()
+    {
+        HttpResponseMessage response = await _client.GetAsync($"{ListUri()}/WorkersFile?numberId={Data.FakeIsAsapRequest.NumberId}");
+        response.EnsureSuccessStatusCode();
+        using var workbook = new XLWorkbook(await response.Content.ReadAsStreamAsync());
+        Assert.Empty(workbook.Worksheet(1).RowsUsed().Skip(1));
+    }
+
     private static void AssertListModelEntity(AgencyRequestListModel model, Request entity)
     {
         Assert.Equal(model.Id, entity.Id);

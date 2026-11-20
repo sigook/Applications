@@ -17,6 +17,7 @@ using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Common.Utils.Extensions;
@@ -36,6 +37,7 @@ public class RequestService(
     ILocationRepository locationRepository,
     TimeProvider timeProvider,
     IRequestRepository requestRepository,
+    IWorkerRepository workerRepository,
     INotificationDataRepository notificationDataRepository,
     ICurrentUserService currentUserService,
     IRazorViewToStringRenderer razorViewToStringRenderer,
@@ -579,6 +581,13 @@ public class RequestService(
     {
         var workers = await requestRepository.GetWorkersRequestByRequestId(requestId, new GetWorkersRequestFilter());
         return await mediator.Send(new GenerateWorkersReport(workers.Items));
+    }
+
+    public async Task<ResultGenerateDocument<MemoryStream>> GetBookedWorkersReportFile(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter)
+    {
+        var requestIds = requestRepository.GetAllRequestsForAgency(agencyIds, filter).Select(r => r.Id);
+        var workers = await workerRepository.GetWorkersProfileBookedIn(agencyIds, requestIds);
+        return await mediator.Send(new GenerateAgencyWorkersProfileReport(workers));
     }
 
     public async Task<Result> SetRequestSources(Guid requestId, IEnumerable<CreateRequestSourceModel> sources)

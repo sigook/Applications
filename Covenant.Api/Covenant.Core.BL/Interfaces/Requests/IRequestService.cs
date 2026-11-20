@@ -32,4 +32,5 @@ public interface IRequestService
     Task<ShiftModel> GetRequestShift(Guid requestId);
     Task<RequestLookupModel> GetLookup(Guid companyProfileId, Guid? requestId);
     Task<ResultGenerateDocument<MemoryStream>> GetWorkersReportFile(Guid requestId);
+    Task<ResultGenerateDocument<MemoryStream>> GetBookedWorkersReportFile(IEnumerable<Guid> agencyIds, GetRequestForAgencyFilter filter);
 }

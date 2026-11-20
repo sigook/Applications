@@ -316,13 +316,18 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
         return await query.ToPaginatedList(filter);
     }
 
-    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter)
+    public IQueryable<WorkerProfileListModel> GetAllWorkersProfile(IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter) =>
+        QueryWorkersProfile(Context.WorkerProfiles, agencyIds, filter);
+
+    public Task<List<WorkerProfileListModel>> GetWorkersProfileBookedIn(IEnumerable<Guid> agencyIds, IQueryable<Guid> requestIds)
     {
-        var workers = Context.WorkerProfiles
-            .Include(wp => wp.Skills)
-            .Include(wp => wp.Worker)
-            .Include(wp => wp.Notes)
-            .AsQueryable();
+        var workers = Context.WorkerProfiles.Where(wp => wp.WorkerRequests.Any(wr =>
+            wr.WorkerRequestStatus == WorkerRequestStatus.Booked && requestIds.Contains(wr.RequestId)));
+        return QueryWorkersProfile(workers, agencyIds, new GetWorkerProfileFilter()).ToListAsync();
+    }
+
+    private IQueryable<WorkerProfileListModel> QueryWorkersProfile(IQueryable<WorkerProfile> workers, IEnumerable<Guid> agencyIds, GetWorkerProfileFilter filter)
+    {
         if (filter.CompanyProfileId.HasValue)
         {
             workers = workers.Where(wp => wp.WorkerRequests.Any(wr =>
@@ -366,6 +371,7 @@ public class WorkerRepository(CovenantContext context, IOptions<FilesConfigurati
                         Dnu = wp.Dnu,
                         CreatedAt = wp.CreatedAt,
                         SinNumber = wp.SocialInsurance,
+                        BirthDay = wp.BirthDay,
                         ExternalId = wp.ExternalId
                     };
         var predicateNew = ApplyFilterWorkersProfile(agencyIds, filter);

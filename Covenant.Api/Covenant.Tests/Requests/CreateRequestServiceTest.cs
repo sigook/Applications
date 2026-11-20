@@ -80,6 +80,7 @@ public class CreateRequestServiceTest
             locationRepository.Object,
             timeProvider,
             _requestRepository.Object,
+            Mock.Of<IWorkerRepository>(),
             Mock.Of<INotificationDataRepository>(),
             currentUserService.Object,
             Mock.Of<IRazorViewToStringRenderer>(),

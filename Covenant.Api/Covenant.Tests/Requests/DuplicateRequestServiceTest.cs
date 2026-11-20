@@ -14,6 +14,7 @@ using Covenant.Common.Repositories.Agencies;
 using Covenant.Common.Repositories.Companies;
 using Covenant.Common.Repositories.Notifications;
 using Covenant.Common.Repositories.Requests;
+using Covenant.Common.Repositories.Workers;
 using Covenant.Common.Repositories;
 using Covenant.Common.Resources;
 using Covenant.Core.BL.Adapters;
@@ -76,6 +77,7 @@ public class DuplicateRequestServiceTest
             locationRepository.Object,
             new FakeTimeProvider(),
             _requestRepository.Object,
+            Mock.Of<IWorkerRepository>(),
             Mock.Of<INotificationDataRepository>(),
             currentUserService.Object,
             Mock.Of<IRazorViewToStringRenderer>(),

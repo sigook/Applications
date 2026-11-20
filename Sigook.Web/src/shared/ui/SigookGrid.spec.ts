@@ -228,6 +228,22 @@ describe('SigookGrid export', () => {
     expect(showAlertError).toHaveBeenCalledWith(error);
     expect(wrapper.emitted('update:loading')).toEqual([[true], [false]]);
   });
+
+  it('places the dropdown actions before and after the export', () => {
+    setup({ data: [], export: { url: 'api/report', fileName: 'Workers' } }, {
+      'dropdown-actions': '<b-dropdown-item>Before</b-dropdown-item>',
+      'dropdown-actions-after': '<b-dropdown-item>After</b-dropdown-item>',
+    });
+
+    const items = Array.from(document.body.querySelectorAll<HTMLElement>('.dropdown-item')).map((i) => i.textContent.trim());
+    expect(items).toEqual(['Before', 'Export', 'After']);
+  });
+
+  it('shows the actions dropdown with only trailing actions', () => {
+    const wrapper = setup({ data: [] }, { 'dropdown-actions-after': '<b-dropdown-item>After</b-dropdown-item>' });
+
+    expect(wrapper.find('.sigook-grid-toolbar').text()).toContain('Actions');
+  });
 });
 
 describe('SigookGrid on touch screens', () => {
