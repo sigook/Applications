@@ -1,5 +1,6 @@
 import { defineConfig, mergeConfig } from 'vitest/config';
 import viteConfig from './vite.config';
+import thresholds from './test-thresholds.json';
 
 export default mergeConfig(
   viteConfig,
@@ -23,14 +24,9 @@ export default mergeConfig(
           'src/main.ts',
           'src/testing/**',
         ],
-        reporter: ['text-summary', 'cobertura', 'html'],
+        reporter: ['text-summary', 'cobertura', 'html', 'json'],
         reportsDirectory: 'coverage',
-        thresholds: {
-          statements: 93,
-          branches: 94,
-          functions: 86,
-          lines: 94,
-        },
+        thresholds: process.env.COVERAGE_PARTIAL ? undefined : thresholds,
       },
     },
   }),

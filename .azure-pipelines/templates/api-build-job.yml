@@ -8,6 +8,8 @@ parameters:
 jobs:
   - job: Build_Test_Solution
     displayName: 'Build, Test and Publish API Image'
+    dependsOn: DetectChanges
+    condition: and(succeeded(), eq(dependencies.DetectChanges.outputs['detect.api'], 'true'))
     variables:
       dotnetSdkVersion: '10.0.401'
     steps:

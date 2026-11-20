@@ -7,6 +7,19 @@ parameters:
     type: boolean
     default: true
 
+  - name: notifications
+    type: object
+    default:
+      - appType: platform
+        api: 'true'
+        web: 'true'
+      - appType: api
+        api: 'true'
+        web: 'false'
+      - appType: agency-portal
+        api: 'false'
+        web: 'true'
+
 variables:
   isProduction: $[startsWith(variables['Build.SourceBranch'], 'refs/heads/release/')]
   isStaging: $[eq(variables['Build.SourceBranch'], 'refs/heads/main')]
@@ -27,6 +40,11 @@ stages:
     pool:
       name: 'covenant-build-pool'
     jobs:
+      - template: detect-changes.yml
+        parameters:
+          deployApi: ${{ parameters.deployApi }}
+          deployWeb: ${{ parameters.deployWeb }}
+
       - ${{ if parameters.deployApi }}:
         - template: api-build-job.yml
           parameters:
@@ -50,6 +68,10 @@ stages:
       - deployment: Release
         displayName: 'Release to Azure App Service'
         environment: ${{ variables.deployEnvironment }}
+        condition: or(eq(stageDependencies.Build.DetectChanges.outputs['detect.api'], 'true'), eq(stageDependencies.Build.DetectChanges.outputs['detect.web'], 'true'))
+        variables:
+          apiChanged: $[ stageDependencies.Build.DetectChanges.outputs['detect.api'] ]
+          webChanged: $[ stageDependencies.Build.DetectChanges.outputs['detect.web'] ]
         strategy:
           runOnce:
             deploy:
@@ -60,52 +82,57 @@ stages:
                   - template: slot-prepare.yml
                     parameters:
                       appName: $(webAppName)
+                      condition: "and(succeeded(), eq(variables.webChanged, 'true'))"
                       image: web
 
                 - ${{ if parameters.deployApi }}:
                   - template: slot-prepare.yml
                     parameters:
                       appName: $(apiAppName)
+                      condition: "and(succeeded(), eq(variables.apiChanged, 'true'))"
                       image: api
 
                   - template: slot-swap.yml
                     parameters:
                       appName: $(apiAppName)
+                      condition: "and(succeeded(), eq(variables.apiChanged, 'true'))"
 
                 - ${{ if parameters.deployWeb }}:
                   - template: slot-swap.yml
                     parameters:
                       appName: $(webAppName)
+                      condition: "and(succeeded(), eq(variables.webChanged, 'true'))"
 
                 - ${{ if parameters.deployApi }}:
                   - template: slot-stop.yml
                     parameters:
                       appName: $(apiAppName)
+                      condition: "and(always(), eq(variables.apiChanged, 'true'))"
 
                 - ${{ if parameters.deployWeb }}:
                   - template: slot-stop.yml
                     parameters:
                       appName: $(webAppName)
+                      condition: "and(always(), eq(variables.webChanged, 'true'))"
 
   - stage: Notify
     displayName: 'Notify Production Deploy'
-    dependsOn: Deploy
+    dependsOn:
+      - Build
+      - Deploy
     pool:
       name: 'covenant-build-pool'
     condition: and(succeeded(), eq(variables['isProduction'], true))
+    variables:
+      - group: Sigook-Notifications
     jobs:
-      - job: SendEmail
-        displayName: 'Send Deployment Email'
-        variables:
-          - group: Sigook-Notifications
-        steps:
-          - checkout: none
-          - template: notify-deployment.yml
-            parameters:
-              ${{ if and(parameters.deployApi, parameters.deployWeb) }}:
-                appType: 'platform'
-              ${{ elseif parameters.deployApi }}:
-                appType: 'api'
-              ${{ else }}:
-                appType: 'agency-portal'
-              recipients: '$(NotificationRecipients)'
+      - ${{ each notification in parameters.notifications }}:
+        - job: Notify_${{ replace(notification.appType, '-', '_') }}
+          displayName: 'Send Deployment Email (${{ notification.appType }})'
+          condition: and(eq(stageDependencies.Build.DetectChanges.outputs['detect.api'], '${{ notification.api }}'), eq(stageDependencies.Build.DetectChanges.outputs['detect.web'], '${{ notification.web }}'))
+          steps:
+            - checkout: none
+            - template: notify-deployment.yml
+              parameters:
+                appType: ${{ notification.appType }}
+                recipients: '$(NotificationRecipients)'

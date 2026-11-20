@@ -79,7 +79,8 @@ pnpm run type-check              # TypeScript check
 pnpm run lint                    # ESLint
 pnpm test                        # Unit tests (Vitest)
 pnpm run test:watch              # Unit tests in watch mode
-pnpm run test:ci                 # Unit tests + coverage + JUnit (what CI runs)
+pnpm run test:ci                 # Unit tests + coverage + JUnit (full suite)
+node scripts/test-affected.mjs --base <sha> --baseline <coverage-baseline.json>   # What CI runs: affected specs + coverage merged with a baseline (--full = whole suite + new baseline)
 pnpm run format                  # Prettier
 pnpm run preview                 # Preview production build
 ```

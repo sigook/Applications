@@ -1,0 +1,70 @@
+parameters:
+  - name: deployApi
+    type: boolean
+
+  - name: deployWeb
+    type: boolean
+
+jobs:
+  - job: DetectChanges
+    displayName: 'Detect Changed Apps'
+    steps:
+      - checkout: self
+        displayName: 'Checkout Repository'
+        fetchDepth: 1
+
+      - bash: |
+          set -u
+
+          api=false
+          web=false
+          base=''
+
+          finish() {
+            [ "${{ parameters.deployApi }}" = "True" ] || api=false
+            [ "${{ parameters.deployWeb }}" = "True" ] || web=false
+            echo "Base commit: ${base:-none}"
+            echo "API changed: $api"
+            echo "Web changed: $web"
+            echo "##vso[task.setvariable variable=api;isOutput=true]$api"
+            echo "##vso[task.setvariable variable=web;isOutput=true]$web"
+            echo "##vso[task.setvariable variable=baseSha;isOutput=true]$base"
+            exit 0
+          }
+
+          all() {
+            echo "$1: releasing every app"
+            api=true
+            web=true
+            finish
+          }
+
+          [ "$BUILD_REASON" = "Manual" ] && all "Manual run"
+
+          if [ "$BUILD_REASON" = "PullRequest" ]; then
+            target="${SYSTEM_PULLREQUEST_TARGETBRANCH#refs/heads/}"
+            git fetch --quiet --depth=1 origin "$target" || all "Cannot fetch $target"
+            base=$(git rev-parse FETCH_HEAD)
+          else
+            branchFilter=''
+            [ "$BUILD_SOURCEBRANCH" = "refs/heads/main" ] && branchFilter="&branchName=refs/heads/main"
+            url="${SYSTEM_COLLECTIONURI}${SYSTEM_TEAMPROJECT}/_apis/build/builds?definitions=${SYSTEM_DEFINITIONID}&statusFilter=completed&resultFilter=succeeded&queryOrder=finishTimeDescending&\$top=1${branchFilter}&api-version=7.1"
+            base=$(curl -sf -H "Authorization: Bearer $SYSTEM_ACCESSTOKEN" "$url" | grep -o '"sourceVersion":"[0-9a-f]*"' | head -1 | cut -d'"' -f4)
+            [ -n "$base" ] || all "No previous successful build"
+            git fetch --quiet --depth=1 origin "$base" || all "Cannot fetch $base"
+          fi
+
+          changed=$(git diff --name-only "$base" HEAD) || all "Cannot diff against $base"
+          echo "Changed files since $base:"
+          echo "$changed"
+
+          echo "$changed" | grep -Eq '^\.azure-pipelines/(sigook-(staging|production)-pipeline\.yml|templates/)' && all "Pipeline definition changed"
+
+          echo "$changed" | grep -v '\.md$' | grep '^Covenant\.Api/' | grep -Evq '^Covenant\.Api/Sigook\.Functions(\.Tests)?/' && api=true
+          echo "$changed" | grep -v '\.md$' | grep -q '^Sigook\.Web/' && web=true
+
+          finish
+        name: detect
+        displayName: 'Compare against last successful build'
+        env:
+          SYSTEM_ACCESSTOKEN: $(System.AccessToken)

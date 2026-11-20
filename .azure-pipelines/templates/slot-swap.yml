@@ -1,4 +1,8 @@
 parameters:
+  - name: condition
+    type: string
+    default: 'succeeded()'
+
   - name: appName
     type: string
 
@@ -13,6 +17,7 @@ parameters:
 steps:
   - task: AzureAppServiceManage@0
     displayName: 'Swap ${{ parameters.appName }}/${{ parameters.slot }} into production'
+    condition: ${{ parameters.condition }}
     inputs:
       azureSubscription: 'SigookPipelines'
       Action: 'Swap Slots'

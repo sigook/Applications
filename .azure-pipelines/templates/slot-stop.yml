@@ -1,4 +1,8 @@
 parameters:
+  - name: condition
+    type: string
+    default: 'always()'
+
   - name: appName
     type: string
 
@@ -13,7 +17,7 @@ parameters:
 steps:
   - task: AzureAppServiceManage@0
     displayName: 'Stop ${{ parameters.appName }}/${{ parameters.slot }}'
-    condition: always()
+    condition: ${{ parameters.condition }}
     inputs:
       azureSubscription: 'SigookPipelines'
       Action: 'Stop Azure App Service'

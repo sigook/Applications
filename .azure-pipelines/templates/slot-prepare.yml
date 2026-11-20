@@ -1,4 +1,8 @@
 parameters:
+  - name: condition
+    type: string
+    default: 'succeeded()'
+
   - name: appName
     type: string
 
@@ -16,6 +20,7 @@ parameters:
 steps:
   - task: AzureAppServiceManage@0
     displayName: 'Start ${{ parameters.appName }}/${{ parameters.slot }}'
+    condition: ${{ parameters.condition }}
     inputs:
       azureSubscription: 'SigookPipelines'
       Action: 'Start Azure App Service'
@@ -26,6 +31,7 @@ steps:
 
   - task: AzureWebAppContainer@1
     displayName: 'Deploy ${{ parameters.image }} to ${{ parameters.appName }}/${{ parameters.slot }}'
+    condition: ${{ parameters.condition }}
     inputs:
       azureSubscription: 'SigookPipelines'
       appName: ${{ parameters.appName }}

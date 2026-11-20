@@ -21,17 +21,17 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 ### PR Validation Strategy
 
-- **PRs to `main`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web a change in either one validates both, in the `Sigook-Staging` run. The required checks on `main` (GitHub ruleset `main-applications`) are `Sigook-Staging`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge. Sigook.Functions and CognitiveServices also validate PRs to `main`.
-- **Direct push to `main`**: Full flow (build, test, deploy to staging). For Covenant.Api and Sigook.Web a change in either one releases both.
+- **PRs to `main`**: Full validation (build, test, lint). Primary quality gate. For Covenant.Api and Sigook.Web the `Sigook-Staging` run validates only the app(s) the PR changes against `main` (see [Change detection](#change-detection)). The required checks on `main` (GitHub ruleset `main-applications`) are `Sigook-Staging`, `SigookApp-CICD` and `CovenantGroup-CICD`; a run skipped by its path filter reports neutral and does not block the merge. Sigook.Functions and CognitiveServices also validate PRs to `main`.
+- **Direct push to `main`**: Full flow (build, test, deploy to staging). For Covenant.Api and Sigook.Web only the app(s) changed since the last successful run are built and released.
 - **Release branches** get no PRs: they are created from `main` and only receive cherry-picked hotfixes. GitHub ruleset `release-branches` blocks deleting and force-pushing `release/*`.
 
 ### Cutting a release
 
 1. On GitHub, create the branch `release/YYYY.MM.DD` from `main` (date of the cut, e.g. `release/2026.11.19`)
-2. `Sigook-Production` starts by itself and deploys Covenant.Api + Sigook.Web to production, then sends the Notify email
+2. `Sigook-Production` starts by itself and deploys to production whichever of Covenant.Api and Sigook.Web changed since the last successful production run, then sends the Notify email
 3. When the release must also ship Covenant.Web, Sigook.App, Sigook.Mcp, Sigook.Functions or CognitiveServices, run that pipeline in Azure DevOps choosing the release branch
 
-**Hotfix:** merge the fix to `main` first (it reaches staging), then `git cherry-pick` it onto the active release branch and push: `Sigook-Production` redeploys API + Web. Re-run the other pipelines on the release branch only if the fix touches them. Release branches are never merged back into `main`.
+**Hotfix:** merge the fix to `main` first (it reaches staging), then `git cherry-pick` it onto the active release branch and push: `Sigook-Production` redeploys the app(s) the fix touches. Re-run the other pipelines on the release branch only if the fix touches them. Release branches are never merged back into `main`.
 
 ### Shared Azure Resources
 
@@ -47,8 +47,8 @@ All checkouts are shallow (`fetchDepth: 1`).
 
 | Pipeline | File | Trigger Path | Stages | Deploy Target |
 |----------|------|-------------|--------|---------------|
-| Staging (`Sigook-Staging`) | `sigook-staging-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `main` and PRs to `main` | Build (API and/or Web) → Deploy | `sigook-api-staging` + `sigook-web-staging` |
-| Production (`Sigook-Production`) | `sigook-production-pipeline.yml` | Any push to `release/*` (no path filter), branch creation included | Build (API and/or Web) → Deploy → Notify | `sigook-api` + `sigook` |
+| Staging (`Sigook-Staging`) | `sigook-staging-pipeline.yml` | `Covenant.Api/**`, `Sigook.Web/**` on `main` and PRs to `main` | Build (DetectChanges → API and/or Web) → Deploy | `sigook-api-staging` + `sigook-web-staging` |
+| Production (`Sigook-Production`) | `sigook-production-pipeline.yml` | Any push to `release/*` (no path filter), branch creation included | Build (DetectChanges → API and/or Web) → Deploy → Notify | `sigook-api` + `sigook` |
 | Covenant.Web | `covenant-web-pipeline.yml` | `Covenant.Web/**` | CI_CD (Build and Test job → Deploy job) → Notify | Static Web Apps: `covenantgroup-staging-swa` / `covenantgroup-swa` |
 | Sigook.App | `sigook-app-pipeline.yml` | `Sigook.App/**` | Analyze+Validate → Version → Build AAB ‖ Build IPA+App Store Connect → Google Play → Notify | Google Play (closed testing/production) + TestFlight/App Store |
 | Sigook.App iOS Bootstrap | `sigook-app-ios-bootstrap-pipeline.yml` | Manual only (no trigger) | Migrate iOS project | Artifact `ios-bootstrap` (no deploy) |
@@ -57,9 +57,9 @@ All checkouts are shallow (`fetchDepth: 1`).
 | Sigook.Mcp (`SigookMcp-CICD`) | `sigook-mcp-pipeline.yml` | `Sigook.Mcp/**` on `main` and PRs to `main`; manual on `release/*` | Build+Test+Publish (single job) | Azure Artifacts feed `sigook-tools` (prerelease from `main`, stable from `release/*`) |
 | Staging Refresh | `database-refresh-pipeline.yml` | Manual only (no trigger) | RefreshDatabases + RefreshFiles (independent, each behind a boolean parameter) | Postgres `sigook` (`CovenantCoreStaging`, `CovenantSecurityStaging`) and blob containers `files`, `invoices`, `paystubs` of `sigookfilesstaging` |
 
-**Note:** Only the CI `trigger:` blocks of the `main` pipelines exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `sigook-staging-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still run validation.
+**Note:** Only the CI `trigger:` blocks of the `main` pipelines exclude `**/*.md` (documentation pushes don't trigger builds). The `pr:` blocks of `sigook-staging-pipeline.yml` and `covenant-web-pipeline.yml` have no exclude, so docs-only PRs still start a run (DetectChanges finds no app changed and skips both build jobs).
 
-The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `sigook-staging-pipeline.yml` CI trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline, although a PR touching them still runs the API validation.
+The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the API image and has no pipeline of its own. The `sigook-app-pipeline.yml` `trigger:` and `pr:` blocks exclude the store screenshots (`Sigook.App/fastlane/screenshots/**` and `Sigook.App/fastlane/metadata/android/*/images/**`), so committing images refreshed by the Screenshots pipeline does not start an App build. The `sigook-staging-pipeline.yml` CI trigger excludes `Covenant.Api/Sigook.Functions/**` and `Covenant.Api/Sigook.Functions.Tests/**`; those folders belong to the Functions pipeline, and DetectChanges ignores them too, so a PR touching only them does not run the API job.
 
 ---
 
@@ -71,15 +71,32 @@ The identity server is part of `Covenant.Api` (OpenIddict), so it ships with the
 
 Two pipeline definitions run the same template, `templates/release-template.yml` (parameters, pool, variables and stages), through `extends`:
 - `sigook-staging-pipeline.yml` (`Sigook-Staging`): `main` with path filters, plus PR validation
-- `sigook-production-pipeline.yml` (`Sigook-Production`): `release/*` with **no path filter**, `pr: none`. Azure Pipelines only triggers a new branch with path filters when the branch brings changes inside those paths, and a release branch cut from `main` brings none, so this trigger must stay unfiltered. Every push to a release branch releases both apps
+- `sigook-production-pipeline.yml` (`Sigook-Production`): `release/*` with **no path filter**, `pr: none`. Azure Pipelines only triggers a new branch with path filters when the branch brings changes inside those paths, and a release branch cut from `main` brings none, so this trigger must stay unfiltered. DetectChanges decides which apps each push releases
 
-**PR runs:** every PR to `main` touching `Covenant.Api/**` or `Sigook.Web/**` runs both build jobs without publishing images; Deploy and Notify are skipped.
+**PR runs:** every PR to `main` touching `Covenant.Api/**` or `Sigook.Web/**` runs the build job of each changed app without publishing images; Deploy and Notify are skipped.
 
-**Trigger:** Automatic on push to `main` touching `Covenant.Api/**` or `Sigook.Web/**` (`batch: true`, so pushes during a run are grouped into the next one; `*.md` and the Functions folders are excluded) → staging. Automatic on creation of / push to `release/*` → production. Parameters `deployApi` and `deployWeb` are both `true` by default, so an automatic run always releases both apps; in a manual run, clear one to release a single app. Clearing both fails at compile time because the Build stage has no jobs.
+**Trigger:** Automatic on push to `main` touching `Covenant.Api/**` or `Sigook.Web/**` (`batch: true`, so pushes during a run are grouped into the next one; `*.md` and the Functions folders are excluded) → staging. Automatic on creation of / push to `release/*` → production. Parameters `deployApi` and `deployWeb` are both `true` by default; clearing one leaves that app out at compile time. A manual run releases every app whose parameter is checked, changed or not.
 
-**Stage 1 - Build and Test:** the API job (`templates/api-build-job.yml`) and the Web job (`templates/web-build-job.yml`) validate each app and push the images on `main` and `release/*`. A failure in either job stops the release before Azure is touched.
+#### Change detection
 
-**Stage 2 - Deploy** (`main` and `release/*` only; one `deployment` job on environment `staging`/`production`), in this order:
+The first job of the Build stage, `DetectChanges` (`templates/detect-changes.yml`), sets the output variables `detect.api`, `detect.web` and `detect.baseSha`:
+
+| Run | Compared against (`baseSha`) | Result |
+|-----|------------------------------|--------|
+| Manual | — | Both `true` |
+| PR | Tip of the target branch (`main`) | Apps changed by the PR |
+| `main` | Commit of the last **succeeded** run of `Sigook-Staging` on `main` | Apps changed since then |
+| `release/*` | Commit of the last **succeeded** run of `Sigook-Production` (any release branch) | Apps changed since then |
+
+- API = any file under `Covenant.Api/` except `*.md`, `Covenant.Api/Sigook.Functions/` and `Covenant.Api/Sigook.Functions.Tests/`; Web = any file under `Sigook.Web/` except `*.md`
+- Both are `true` when the diff touches `sigook-staging-pipeline.yml`, `sigook-production-pipeline.yml` or `.azure-pipelines/templates/`, when there is no previous succeeded run, or when the base commit cannot be fetched or diffed
+- Comparing against the last succeeded run (not the previous commit) keeps `batch: true` correct and makes a failed run's changes ride along with the next one
+- The previous run is looked up with `System.AccessToken` (`_apis/build/builds`) and its commit is fetched shallow (`git fetch --depth=1 origin <sha>`)
+- A cleared `deployApi`/`deployWeb` parameter forces its output to `false`. Caveat: a succeeded manual run with one app cleared moves the base past that app's changes; queue it again manually if needed
+
+**Stage 1 - Build and Test:** the API job (`templates/api-build-job.yml`) and the Web job (`templates/web-build-job.yml`) validate each app and push the images on `main` and `release/*`. Each job depends on `DetectChanges` and runs only when its app changed; otherwise it is *Skipped* and the stage still succeeds. A failure in either job stops the release before Azure is touched.
+
+**Stage 2 - Deploy** (`main` and `release/*` only; one `deployment` job on environment `staging`/`production`, skipped when no app changed). The job maps `detect.api`/`detect.web` to `apiChanged`/`webChanged` and each step's `condition` skips the steps of an unchanged app, so when both changed the order below is kept and the API always goes live before the Web:
 1. Web: start the `warmup` slot and deploy the image
 2. API: start the `warmup` slot and deploy the image; the new version boots and runs the EF migrations
 3. Swap API
@@ -88,7 +105,7 @@ Two pipeline definitions run the same template, `templates/release-template.yml`
 
 Web is prepared first so a failure there happens before the migrations, and the API boots as late as possible because its slot consumes Service Bus messages while it runs. API swaps first because the previous Web bundle keeps working against an API whose changes are backward compatible. If the Web swap fails, the API is already live: re-run the Deploy stage. Between the two swaps new page loads run the previous Web against the new API.
 
-**Stage 3 - Notify** (production only, `Sigook-Notifications`): a single email per release: appType `platform` when both apps were released, otherwise `api` or `agency-portal`.
+**Stage 3 - Notify** (production only, `Sigook-Notifications`, depends on Build and Deploy): one job per appType (`platform`, `api`, `agency-portal`, from the template parameter `notifications`); the job whose `detect.api`/`detect.web` pair matches runs, so a single email goes out per release and none when nothing changed.
 
 ### Covenant.Api (.NET 10)
 
@@ -119,7 +136,12 @@ Built and deployed by [Release](#release-covenantapi--sigookweb).
 - pnpm via corepack, version resolved from the `packageManager` field in package.json (the `npm i -g` fallback reads the same field)
 - Cache pnpm content-addressable store (by `pnpm-lock.yaml`)
 - Lint with ESLint, TypeScript type-check (the only `vue-tsc` run)
-- Unit tests with Vitest (`pnpm run test:ci`); a failing test, or coverage below the floor in `vitest.config.ts` (`coverage.thresholds`, raised toward the 80% target as tests are added), fails the PR. JUnit results (`test-results/junit.xml`) go to the run's Tests tab and Cobertura coverage (`coverage/cobertura-coverage.xml`) to its Code Coverage tab, both published even when tests fail
+- Unit tests with Vitest through `scripts/test-affected.mjs`; a failing test, or coverage below the floor in `test-thresholds.json` (read by `vitest.config.ts` and by the script, raised toward the 80% target as tests are added), fails the PR:
+  - **Coverage baseline:** every `main` run whose Web job succeeds publishes the artifact `web-coverage` (`coverage/coverage-baseline.json`: the full Istanbul coverage of that commit, keyed by paths relative to `Sigook.Web/`). Step *Find Coverage Baseline* takes the newest completed `main` run of the same definition that has it (`_apis/build/builds/{id}/artifacts?artifactName=web-coverage` answers 404 otherwise), fetches its commit shallow and downloads it
+  - **Affected run** (`main` and PRs, when a baseline exists): `vitest related` runs only the specs that import a file of `Sigook.Web/src/` changed since the baseline's commit (a changed `<name>.spec.ts` also counts its `<name>.ts`/`<name>.vue`), with `COVERAGE_PARTIAL=1` so Vitest skips its thresholds. The script then takes the new coverage of the changed files, the baseline's for the rest, drops deleted files, writes Cobertura + the new baseline and checks the totals against `test-thresholds.json`. Since `vitest related` runs every spec importing a changed file, the merged totals equal a full run (verified locally: identical counts)
+  - **Full run** (`vitest run --coverage`, same as `test:ci`): on `release/*` always, as the full check before production; elsewhere when there is no baseline or the diff touches `package.json`, `pnpm-lock.yaml`/`pnpm-workspace.yaml`, `vite.config.ts`/`vitest.config.ts`, `tsconfig*.json`, `test-thresholds.json`, `scripts/` or `src/testing/`
+  - Not detected by an affected run: a spec that `vi.mock`s a module it never imports, and coverage drift in unchanged files whose specs exercise a changed dependency; the full run on `release/*` catches both
+  - JUnit results (`test-results/junit.xml`) go to the run's Tests tab and Cobertura coverage (`coverage/cobertura-coverage.xml`) to its Code Coverage tab, both published even when tests fail
 - Release on `main`/`release/*` only: token replacement in `index.html`, `public/**/*.html` and `public/**/*.json` (version injection using `#{...}#` tokens)
 - `pnpm exec vite build --mode staging|production` into `wwwroot/` — runs on PRs too (always `staging`) so bundling errors fail the PR
 - Release on `main`/`release/*` only: Docker build + push. `Sigook.Web/Dockerfile` is Nginx alpine copying the prebuilt `wwwroot/`; `.dockerignore` allowlists only `wwwroot` and `nginx.conf`

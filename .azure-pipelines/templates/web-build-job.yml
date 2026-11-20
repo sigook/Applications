@@ -11,6 +11,8 @@ parameters:
 jobs:
   - job: Validate
     displayName: 'Lint, Type-check and Build Web Image'
+    dependsOn: DetectChanges
+    condition: and(succeeded(), eq(dependencies.DetectChanges.outputs['detect.web'], 'true'))
     variables:
       workingDirectory: '$(System.DefaultWorkingDirectory)/Sigook.Web'
     steps:
@@ -54,9 +56,49 @@ jobs:
         displayName: 'TypeScript Type Check'
         workingDirectory: $(workingDirectory)
 
-      - script: pnpm run test:ci
-        displayName: 'Unit Tests'
-        workingDirectory: $(workingDirectory)
+      - ${{ if startsWith(variables['Build.SourceBranch'], 'refs/heads/release/') }}:
+        - script: node scripts/test-affected.mjs --full
+          displayName: 'Unit Tests (full suite)'
+          workingDirectory: $(workingDirectory)
+
+      - ${{ else }}:
+        - bash: |
+            set -u
+            api="${SYSTEM_COLLECTIONURI}${SYSTEM_TEAMPROJECT}/_apis/build"
+            auth="Authorization: Bearer $SYSTEM_ACCESSTOKEN"
+            echo "##vso[task.setvariable variable=coverageBaselineBuildId]"
+            echo "##vso[task.setvariable variable=coverageBaselineSha]"
+            builds=$(curl -sf -H "$auth" "$api/builds?definitions=${SYSTEM_DEFINITIONID}&branchName=refs/heads/main&statusFilter=completed&queryOrder=finishTimeDescending&\$top=20&api-version=7.1" \
+              | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>{for(const b of JSON.parse(s).value)console.log(b.id,b.sourceVersion)})')
+            while read -r id sha; do
+              [ -n "$id" ] || continue
+              curl -sf -o /dev/null -H "$auth" "$api/builds/$id/artifacts?artifactName=web-coverage&api-version=7.1" || continue
+              git fetch --quiet --depth=1 origin "$sha" || continue
+              echo "Coverage baseline: build $id, commit $sha"
+              echo "##vso[task.setvariable variable=coverageBaselineBuildId]$id"
+              echo "##vso[task.setvariable variable=coverageBaselineSha]$sha"
+              exit 0
+            done <<< "$builds"
+            echo "No coverage baseline found: the full suite will run"
+          displayName: 'Find Coverage Baseline'
+          env:
+            SYSTEM_ACCESSTOKEN: $(System.AccessToken)
+
+        - task: DownloadPipelineArtifact@2
+          displayName: 'Download Coverage Baseline'
+          condition: and(succeeded(), ne(variables['coverageBaselineBuildId'], ''))
+          inputs:
+            buildType: 'specific'
+            project: '$(System.TeamProjectId)'
+            definition: '$(System.DefinitionId)'
+            buildVersionToDownload: 'specific'
+            pipelineId: '$(coverageBaselineBuildId)'
+            artifactName: 'web-coverage'
+            targetPath: '$(Agent.TempDirectory)/web-coverage'
+
+        - script: node scripts/test-affected.mjs --base "$(coverageBaselineSha)" --baseline "$(Agent.TempDirectory)/web-coverage/coverage-baseline.json"
+          displayName: 'Unit Tests (affected)'
+          workingDirectory: $(workingDirectory)
 
       - task: PublishTestResults@2
         displayName: 'Publish Unit Test Results'
@@ -65,7 +107,7 @@ jobs:
           testResultsFormat: 'JUnit'
           testResultsFiles: '$(workingDirectory)/test-results/junit.xml'
           testRunTitle: 'Sigook.Web Unit Tests'
-          failTaskOnMissingResultsFile: true
+          failTaskOnMissingResultsFile: false
 
       - template: dotnet-setup.yml
         parameters:
@@ -96,6 +138,11 @@ jobs:
       - script: pnpm exec vite build --mode ${{ parameters.deployEnvironment }}
         displayName: 'Vite Build (${{ parameters.deployEnvironment }})'
         workingDirectory: $(workingDirectory)
+
+      - publish: '$(workingDirectory)/coverage/coverage-baseline.json'
+        displayName: 'Publish Coverage Baseline'
+        artifact: 'web-coverage'
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
 
       - ${{ if parameters.publishImage }}:
         - task: Docker@2
