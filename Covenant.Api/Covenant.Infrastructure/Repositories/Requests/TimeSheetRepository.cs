@@ -336,11 +336,16 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
 
     }
 
-    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId)
-    {
-        var timeSheets = Context.TimeSheets
+    private IQueryable<TimeSheet> TimeSheetsPendingPayStub(IEnumerable<Guid> agencyIds) =>
+        Context.TimeSheets
             .Where(ts => ts.TimeInApproved != null && ts.TimeOutApproved != null && ts.TimeSheetTotalPayroll == null)
             .Where(ts => agencyIds.Contains(ts.WorkerRequest.Request.CompanyProfile.AgencyId))
+            .Where(ts => !ts.WorkerRequest.Request.CompanyProfile.Agency.Locations
+                .Any(l => l.IsBilling && l.Location.City.Province.Country.Code == "USA"));
+
+    public async Task<List<TimeSheetApprovedPayrollModel>> GetTimeSheetForCreatingPayStubs(IEnumerable<Guid> agencyIds, Guid workerId)
+    {
+        var timeSheets = TimeSheetsPendingPayStub(agencyIds)
             .Where(ts => ts.WorkerRequest.WorkerProfile.WorkerId == workerId);
 
         var query = from ts in timeSheets
@@ -428,11 +433,7 @@ public class TimesheetRepository(CovenantContext context, Rates rates, TimeLimit
 
     public async Task<List<WorkerReadyForPayStubModel>> GetWorkersReadyForPayStub(IEnumerable<Guid> agencyIds)
     {
-        var timeSheet = Context.TimeSheets.Where(c => c.TimeInApproved != null
-                                                      && c.TimeOutApproved != null
-                                                      && agencyIds.Contains(c.WorkerRequest.Request.CompanyProfile.AgencyId)
-                                                      && c.TimeSheetTotalPayroll == null);
-        return await (from ts in timeSheet
+        return await (from ts in TimeSheetsPendingPayStub(agencyIds)
                       where !ts.WorkerRequest.WorkerProfile.IsSubcontractor
                       group ts by new
                       {
