@@ -2,6 +2,7 @@ using ClosedXML.Excel;
 using Covenant.Api.Authorization;
 using Covenant.Api.Controllers.Agencies.Accounting;
 using Covenant.Common.Configuration;
+using Covenant.Common.Constants;
 using Covenant.Common.Entities.Agencies;
 using Covenant.Common.Entities.Companies;
 using Covenant.Common.Entities.Requests;
@@ -22,6 +23,7 @@ using Microsoft.EntityFrameworkCore;
 using Moq;
 using System.Net;
 using System.Net.Mime;
+using System.Security.Claims;
 using Xunit;
 
 namespace Covenant.Integration.Tests.Agencies.Accounting;
@@ -61,6 +63,19 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         Assert.StartsWith("PS-", payStub.PayStubNumber);
         Assert.Equal(2, await Context.TimeSheetTotalPayrolls.CountAsync(t => worker.TimeSheetIds.Contains(t.TimeSheetId)));
         Assert.DoesNotContain(await WorkersReady(), w => w.WorkerId == worker.WorkerId);
+    }
+
+    [Fact]
+    public async Task UsaAgencyWorker_IsNotReady_AndGenerateCreatesNothing()
+    {
+        PaidWorker worker = _data.ForUsaAgency;
+        Assert.DoesNotContain(await WorkersReady(), w => w.WorkerId == worker.WorkerId);
+
+        HttpResponseMessage response = await Generate(worker.WorkerId);
+
+        response.EnsureSuccessStatusCode();
+        Assert.False(await Context.PayStubs.AnyAsync(p => p.WorkerProfileId == worker.Profile.Id));
+        Assert.False(await Context.TimeSheetTotalPayrolls.AnyAsync(t => worker.TimeSheetIds.Contains(t.TimeSheetId)));
     }
 
     [Fact]
@@ -330,7 +345,11 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDefaultTestConfiguration();
-            services.AddTestAuthenticationBuilder().AddTestAuth(o => o.AddAdminRole(Data.AgencyId));
+            services.AddTestAuthenticationBuilder().AddTestAuth(o =>
+            {
+                o.AddAdminRole(Data.AgencyId);
+                o.Identity.AddClaim(new Claim(CovenantConstants.AgencyIds, $"{Data.AgencyId},{Data.UsaAgencyId}"));
+            });
             services.AddTestDatabase();
             services.AddSingleton(Rates.DefaultRates);
             services.AddSingleton(TimeLimits.DefaultTimeLimits);
@@ -394,6 +413,7 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
     public class Data : ITestData
     {
         public static readonly Guid AgencyId = Guid.NewGuid();
+        public static readonly Guid UsaAgencyId = Guid.NewGuid();
         public static readonly DateTime FakeNow = new(2019, 01, 08);
         public const decimal WorkerRate = 20m;
 
@@ -402,8 +422,11 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         private readonly City city;
         private readonly Agency agency;
         private readonly CompanyProfile company;
+        private readonly City usaCity;
+        private readonly CompanyProfile usaCompany;
 
         public PaidWorker ForGenerate { get; }
+        public PaidWorker ForUsaAgency { get; }
         public PaidWorker ForGenerateTwice { get; }
         public PaidWorker WithoutApprovedTime { get; }
         public PaidWorker ForList { get; }
@@ -414,7 +437,7 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         public PaidWorker ForRegenerate { get; }
         public PaidWorker ForYtd { get; }
 
-        private PaidWorker[] Workers => [ForGenerate, ForGenerateTwice, WithoutApprovedTime, ForList, ForFile, ForDelete, ForManual, ForPdf, ForRegenerate, ForYtd];
+        private PaidWorker[] Workers => [ForGenerate, ForUsaAgency, ForGenerateTwice, WithoutApprovedTime, ForList, ForFile, ForDelete, ForManual, ForPdf, ForRegenerate, ForYtd];
 
         public Data()
         {
@@ -422,6 +445,10 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
             agency = FakeData.FakeAgency(AgencyId, city);
             company = FakeData.FakeCompanyProfile(agency, city: city, companyEmail: "paystubs@company.com");
             ForGenerate = new PaidWorker(agency, company, city, "generate");
+            usaCity = FakeData.FakeCity(FakeData.FakeProvince(FakeData.FakeCountry("USA")));
+            Agency usaAgency = FakeData.FakeAgency(UsaAgencyId, usaCity);
+            usaCompany = FakeData.FakeCompanyProfile(usaAgency, city: usaCity, companyEmail: "paystubs-usa@company.com");
+            ForUsaAgency = new PaidWorker(usaAgency, usaCompany, usaCity, "usa-agency");
             ForGenerateTwice = new PaidWorker(agency, company, city, "generate-twice");
             WithoutApprovedTime = new PaidWorker(agency, company, city, "not-approved", approved: false);
             ForList = new PaidWorker(agency, company, city, "list");
@@ -437,6 +464,8 @@ public class PayStubsControllerTest(SeededWebApplicationFactory<PayStubsControll
         {
             context.Cities.Add(city);
             context.CompanyProfiles.Add(company);
+            context.Cities.Add(usaCity);
+            context.CompanyProfiles.Add(usaCompany);
             foreach (PaidWorker worker in Workers) worker.Seed(context);
             context.SaveChanges();
         }
