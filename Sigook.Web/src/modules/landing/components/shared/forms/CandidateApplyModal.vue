@@ -202,13 +202,18 @@ onUnmounted(() => {
 @media (max-width: 720px) {
   .reg-modal {
     padding: 0;
+    align-items: flex-start;
   }
 
   .reg-modal__panel {
     max-width: none;
-    max-height: 100vh;
-    height: 100vh;
+    max-height: 100dvh;
+    height: 100dvh;
     border-radius: 0;
+  }
+
+  .reg-modal__head {
+    padding-top: calc(20px + env(safe-area-inset-top));
   }
 }
 </style>

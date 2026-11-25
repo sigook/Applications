@@ -12,3 +12,11 @@ html,body {
   margin: 0;
   padding: 0;
 }
+
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
+  }
+}

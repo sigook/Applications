@@ -196,6 +196,15 @@ $visible-sticky-grid: '.table-wrapper.has-sticky-header:not(.tab-item[tabindex="
   .modal .modal-content,
   .modal .modal-card {
     max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px);
+  }
+}
+
+@media (pointer: coarse) {
+  input,
+  select,
+  textarea {
+    font-size: max(16px, 1em) !important;
   }
 }
 

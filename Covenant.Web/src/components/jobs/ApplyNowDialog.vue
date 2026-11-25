@@ -1,5 +1,5 @@
 <template>
-  <v-dialog v-model="isOpen" max-width="600px">
+  <v-dialog v-model="isOpen" max-width="600px" :fullscreen="smAndDown" scrollable>
     <v-card>
       <!-- HEADER -->
       <v-toolbar color="primary" dark>
@@ -227,6 +227,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, watch } from 'vue'
+import { useDisplay } from 'vuetify'
 import Cleave from 'cleave.js'
 import { useApplicationForm } from '@/composables/useApplicationForm'
 import { applicationService } from '@/services/applicationService'
@@ -244,6 +245,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: boolean]
   'application-submitted': []
 }>()
+
+const { smAndDown } = useDisplay()
 
 const isOpen = computed({
   get: () => modelValue,
